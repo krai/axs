@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import re
 
 class ParamSource:
     """ An object of ParamSource class is a non-persistent container of parameters
@@ -54,6 +55,24 @@ class ParamSource:
             else:
                 print(f"[{self.get_name()}]  I don't have parameter '{param_name}', and no parent either - raising KeyError")
                 raise KeyError(param_name)
+
+
+    def substitute(self, input_string):
+        """ Perform single-level parameter substitutions in the given string
+
+            Usage examples:
+                clic base_map substitute '#{first}# und #{second}#'
+                clic derived_map substitute '#{first}#, #{third}# und #{fifth}#' --first=Erste
+        """
+        pattern         = re.compile( '({}(\w+){})'.format(re.escape('#{'), re.escape('}#')) )
+        output_string   = input_string
+
+        for match in re.finditer(pattern, input_string):
+            expression, param_name = match.group(1), match.group(2)
+            param_value = self[param_name]
+            output_string = output_string.replace(expression, param_value)
+
+        return output_string
 
 
     def get(self, param_name, default_value=None):
