@@ -39,19 +39,29 @@ class ParamSource:
         return self.parent_object
 
 
-    def __getitem__(self, param_name):
+    def __getitem__(self, param_name, calling_top_context=None):
         "Lazy parameter access: returns the parameter value from self or the closest parent"
+
+        calling_top_context = calling_top_context or self
 
         print(f"[{self.get_name()}] Attempt to access parameter '{param_name}'...")
         own_parameters = self.parameters_loaded()
+        hash_param_name = '#'+param_name
         if param_name in own_parameters:
-            print(f"[{self.get_name()}]  I have parameter '{param_name}', returning")
-            return own_parameters[param_name]
+            param_value = own_parameters[param_name]
+            print(f'[{self.get_name()}]  I have parameter "{param_name}", returning "{param_value}"')
+            return param_value
+        elif hash_param_name in own_parameters:
+            unsubstituted_expression = own_parameters[hash_param_name]
+            print(f'[{self.get_name()}]  I have parameter "{hash_param_name}", the value is "{unsubstituted_expression}"')
+            substituted_value = calling_top_context.substitute( unsubstituted_expression )
+            print(f'[{self.get_name()}]  Substituting "{unsubstituted_expression}", returning "{substituted_value}"')
+            return substituted_value
         else:
             parent_object = self.parent_loaded()
             if parent_object:
                 print(f"[{self.get_name()}]  I don't have parameter '{param_name}', fallback to the parent")
-                return parent_object[param_name]
+                return parent_object.__getitem__(param_name, calling_top_context)
             else:
                 print(f"[{self.get_name()}]  I don't have parameter '{param_name}', and no parent either - raising KeyError")
                 raise KeyError(param_name)

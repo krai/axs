@@ -72,7 +72,7 @@ def clic_parse(arglist):
     for arg in arglist:
         call_param_key = None
 
-        matched_parampair = re.match('^--([\w\.]+)([\ ,;:]?)=(.*)$', arg)
+        matched_parampair = re.match('^--(#?[\w\.]+)([\ ,;:]?)=(.*)$', arg)
         if matched_parampair:
             call_param_key      = matched_parampair.group(1)
             delimiter           = matched_parampair.group(2)

@@ -6,15 +6,15 @@
 """
 
 
-def meme(does, quality, person='Bill', be='Be'):
+def meme(does, quality, person, be, person2):
     """ Construct the stick-figure Bill meme from supplied parameters
 
         Usage examples:
             clic be_like meme "finds and fixes an error in Wikipedia" smart
-            clic dont_be_like meme 'wrote an OS that everybody hates' selfish
+            clic dont_be_like meme 'wrote an OS that everybody hates' selfish --person2=everybody
     """
 
-    return f"\nThis is {person}.\n\n{person} {does}.\n\n{person} is {quality}.\n\n{be} like {person}.\n"
+    return f"\nThis is {person}.\n\n{person} {does}.\n\n{person} is {quality}.\n\n{be} like {person2}.\n"
 
 
 if __name__ == '__main__':
