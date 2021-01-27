@@ -93,9 +93,9 @@ if __name__ == '__main__':
     dad['third']        = 'KOLMAS'
     granddad['seventh'] = 'SEITSMES'
 
-    print(f"\tchild['second']={child['second']}\n")
-    print(f"\tchild['third']={child['third']}\n")
-    print(f"\tchild['seventh']={child['seventh']}\n")
+    print(f"granddad.parameters_loaded()={granddad.parameters_loaded()}")
+    print(f"dad.parameters_loaded()={dad.parameters_loaded()}")
+    print(f"child.parameters_loaded()={child.parameters_loaded()}\n")
 
     from function_access import feed_a_function, four_param_example_func
 

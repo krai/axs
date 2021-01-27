@@ -41,7 +41,12 @@ class Entry(Runnable):
 
 
     def parameters_loaded(self):
-        "Lazy-load and cache parameters from the file system"
+        """ Lazy-load, cache and return own parameters from the file system
+
+            Usage examples:
+                clic base_map parameters_loaded
+                clic derived_map parameters_loaded
+        """
 
         if self.own_parameters==None:   # lazy-loading condition
             parameters_full_path = self.get_path( self.FILENAME_parameters )
