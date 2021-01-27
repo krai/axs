@@ -112,7 +112,7 @@ class Runnable(ParamSource):
             result = function_access.feed_a_function(function_object, pos_params, runnable)
         except NameError as method_not_found_e:
             try:
-                entry_method_object = getattr(self, function_name)
+                entry_method_object = getattr(runnable, function_name)
                 result = function_access.feed_a_function(entry_method_object, pos_params, runnable, class_method=True)
             except AttributeError:
                 raise method_not_found_e
