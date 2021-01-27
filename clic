@@ -48,6 +48,19 @@ def clic_parse(arglist):
 
         return x
 
+
+    def traverset(dictionary, key_path, value):
+        last_syllable = key_path.pop()          # in the edge case of one element, the list becomes empty after popping
+
+        dict_ptr = dictionary
+        for key_syllable in key_path:
+            if key_syllable not in dict_ptr:    # explicit path vivification
+                dict_ptr[key_syllable] = {}
+            dict_ptr = dict_ptr[key_syllable]   # iterative descent
+
+        dict_ptr[last_syllable] = value
+
+
     entry_path  = arglist.pop(0)
     method_name = arglist.pop(0)
 
@@ -78,7 +91,7 @@ def clic_parse(arglist):
                     call_param_value    = matched_paramsingle.group(2) != '-'   # either boolean True or False
 
         if call_param_key:
-            named_params[call_param_key] = call_param_value
+            traverset(named_params, call_param_key.split('.'), call_param_value)
         else:
             raise(Exception("Parsing error - cannot understand '{}'".format(arg)))
 
