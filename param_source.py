@@ -86,8 +86,12 @@ class ParamSource:
 
 
     def get(self, param_name, default_value=None):
-        "A safe wrapper around __getitem__() - returns the default_value if missing"
+        """ A safe wrapper around __getitem__() - returns the default_value if missing
 
+            Usage examples:
+                clic base_map get fourth Vierte
+                clic derived_map get fifth
+        """
         try:
             return self[param_name]
         except KeyError:
