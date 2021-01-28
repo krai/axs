@@ -3,6 +3,7 @@
 """ A simple, one-call CommandLine API for this framework.
 """
 
+import logging
 import re
 import sys
 from stored_entry import Entry
@@ -99,11 +100,14 @@ def clic_parse(arglist):
 
 
 def main():
-     entry_path, method_name, pos_params, named_params = clic_parse(sys.argv[1:])
 
-     entry = Entry(entry_path=entry_path)
-     results = entry.call(method_name, pos_params, named_params)
-     return results
+    #logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")
+
+    entry_path, method_name, pos_params, named_params = clic_parse(sys.argv[1:])
+
+    entry = Entry(entry_path=entry_path)
+    results = entry.call(method_name, pos_params, named_params)
+    return results
 
 
 if __name__ == '__main__':
