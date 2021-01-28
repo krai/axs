@@ -5,8 +5,9 @@
 #   Thanks for this SO entry for inspiration:
 #       https://stackoverflow.com/questions/196960/can-you-list-the-keyword-arguments-a-python-function-receives
 
-import sys          # to obtain Python's version
 import inspect      # to obtain a random function's signature
+import logging      # for non-obtrusive logging
+import sys          # to obtain Python's version
 
 
 def expected_call_structure(function_object, class_method=False):
@@ -70,17 +71,19 @@ def feed_a_function(function_object, given_arg_list, dict_like_object, class_met
             except KeyError:
                 optional_arg_values.append( defaults[opt_idx] )
 
-        #print(f"feed_a_function: About to call `{function_object.__name__}` with {*given_arg_list, *non_listed_required_arg_values, *optional_arg_values}")
+        logging.debug(f"About to call `{function_object.__name__}` with {*given_arg_list, *non_listed_required_arg_values, *optional_arg_values}")
         ret_values = function_object(*given_arg_list, *non_listed_required_arg_values, *optional_arg_values)
         return ret_values
 
 
 def four_param_example_func(alpha, beta, gamma=333, delta=4444):
-    print(f'\t[four_param_example_func] alpha = {alpha}, beta = {beta}, gamma = {gamma}, delta = {delta}')
+    logging.debug(f'alpha = {alpha}, beta = {beta}, gamma = {gamma}, delta = {delta}')
     return alpha, beta, gamma, delta
 
 
 if __name__ == '__main__':
+
+    logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s: %(message)s")
 
     print('-'*40 + ' Direct calls: ' + '-'*40)
 

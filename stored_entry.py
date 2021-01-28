@@ -2,6 +2,7 @@
 
 import imp
 import json
+import logging
 import os
 import shutil
 
@@ -19,7 +20,7 @@ class Entry(Runnable):
 
         self.entry_path = entry_path
         super().__init__(**kwargs)
-        print(f"[{self.get_name()}] Initializing the Entry with entry_path={self.entry_path}")
+        logging.debug(f"[{self.get_name()}] Initializing the Entry with entry_path={self.entry_path}")
 
 
     def get_path(self, file_name=None):
@@ -102,12 +103,14 @@ class Entry(Runnable):
         with open(parameters_full_path, "w") as json_fd:
             json_fd.write( json.dumps(own_parameters, indent=4)+'\n' )
 
-        print(f"[{self.get_name()}] parameters saved")
+        logging.debug(f"[{self.get_name()}] parameters saved")
 
         return own_parameters
 
 
 if __name__ == '__main__':
+
+    logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")
 
     print('-'*40 + ' Entry direct loading and access: ' + '-'*40)
 
@@ -130,5 +133,5 @@ if __name__ == '__main__':
     print("")
 
     dont_be_like    = Entry(entry_path='./dont_be_like')
-    print(f"dont_be_like.call('meme',['wrote an OS that everybody hates'],{{'quality':'selfish'}})={dont_be_like.call('meme',['wrote an OS that everybody hates'],{'quality':'selfish'})}")
+    print(f"dont_be_like.call('meme',['wrote an OS that everybody hates'],{{'quality':'selfish'}})={dont_be_like.call('meme',['wrote an OS that everybody hates'],{'quality':'selfish','person2':'everybody'})}")
 

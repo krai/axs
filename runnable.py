@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import logging
+
 import function_access
 from param_source import ParamSource
 
@@ -15,7 +17,7 @@ class Runnable(ParamSource):
 
         self.module_object  = module_object
         super().__init__(**kwargs)
-        print(f"[{self.get_name()}] Initializing the Runnable with {repr(self.module_object)+' as module_object' if self.module_object else 'no module_object'}")
+        logging.debug(f"[{self.get_name()}] Initializing the Runnable with {repr(self.module_object)+' as module_object' if self.module_object else 'no module_object'}")
 
 
     def module_loaded(self):
@@ -76,7 +78,7 @@ class Runnable(ParamSource):
                 print( "Signature:     {}({})".format( method_name, signature ))
                 print( "DocString:    {}".format( function_object.__doc__ ))
             except Exception as e:
-                print( str(e) )
+                logging.error( str(e) )
         else:
             try:
                 module_object   = self.module_loaded()      # the entry may not contain any code...
@@ -86,7 +88,7 @@ class Runnable(ParamSource):
                 parent_may_know = ", but you may want to check its parent: "+self.parent_object.get_name() if self.parent_loaded() else ""
                 print("This entry has no code of its own" + parent_may_know)
             except Exception as e:
-                print( str(e) )
+                logging.error( str(e) )
 
 
     def call(self, function_name, pos_params=None, override_dict=None):
@@ -121,6 +123,8 @@ class Runnable(ParamSource):
 
 
 if __name__ == '__main__':
+
+    logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")
 
     print('-'*40 + ' Creating a hierarchy of Runnables: ' + '-'*40)
 
