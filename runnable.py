@@ -98,7 +98,7 @@ class Runnable(ParamSource):
             The function can have a mix of positional args and named args with optional defaults.
         """
 
-        runnable = Runnable(name="override", own_parameters=override_dict, parent_object=self) if override_dict else self
+        override_obj = type(self)(name="override", own_parameters=override_dict, parent_object=self) if override_dict else self
 
         try:
             pos_params          = pos_params or []
@@ -111,11 +111,11 @@ class Runnable(ParamSource):
             } )
             """
 
-            result = function_access.feed_a_function(function_object, pos_params, runnable)
+            result = function_access.feed_a_function(function_object, pos_params, override_obj)
         except NameError as method_not_found_e:
             try:
-                entry_method_object = getattr(runnable, function_name)
-                result = function_access.feed_a_function(entry_method_object, pos_params, runnable, class_method=True)
+                entry_method_object = getattr(override_obj, function_name)
+                result = function_access.feed_a_function(entry_method_object, pos_params, override_obj, class_method=True)
             except AttributeError:
                 raise method_not_found_e
 
