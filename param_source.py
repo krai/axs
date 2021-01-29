@@ -52,11 +52,11 @@ class ParamSource:
             logging.debug(f'[{self.get_name()}]  I have parameter "{param_name}", returning "{param_value}"')
             return param_value
         elif hash_param_name in own_parameters:
-            unsubstituted_expression = own_parameters[hash_param_name]
-            logging.debug(f'[{self.get_name()}]  I have parameter "{hash_param_name}", the value is "{unsubstituted_expression}"')
-            substituted_value = calling_top_context.substitute( unsubstituted_expression )
-            logging.debug(f'[{self.get_name()}]  Substituting "{unsubstituted_expression}", returning "{substituted_value}"')
-            return substituted_value
+            unsubstituted_structure = own_parameters[hash_param_name]
+            logging.debug(f'[{self.get_name()}]  I have parameter "{hash_param_name}", the value is "{unsubstituted_structure}"')
+            substituted_structure = calling_top_context.substitute( unsubstituted_structure )
+            logging.debug(f'[{self.get_name()}]  Substituting "{unsubstituted_structure}", returning "{substituted_structure}"')
+            return substituted_structure
         else:
             parent_object = self.parent_loaded()
             if parent_object:
@@ -67,22 +67,42 @@ class ParamSource:
                 raise KeyError(param_name)
 
 
-    def substitute(self, input_string):
-        """ Perform single-level parameter substitutions in the given string
+    def substitute(self, input_structure):
+        """ Perform single-level parameter substitutions in the given structure
 
             Usage examples:
                 clic base_map substitute '#{first}# und #{second}#'
                 clic derived_map substitute '#{first}#, #{third}# und #{fifth}#' --first=Erste
         """
-        pattern         = re.compile( '({}(\w+){})'.format(re.escape('#{'), re.escape('}#')) )
-        output_string   = input_string
+        pre_pattern     = '{}(\w+){}'.format(re.escape('#{'), re.escape('}#'))
+        full_pattern    = re.compile(     pre_pattern+'$' )
+        sub_pattern     = re.compile( '('+pre_pattern+')' )
 
-        for match in re.finditer(pattern, input_string):
-            expression, param_name = match.group(1), match.group(2)
-            param_value = self[param_name]
-            output_string = output_string.replace(expression, param_value)
+        def scalar_substitute(input_template):
 
-        return output_string
+            full_match = re.match(full_pattern, input_template)
+            if full_match:                          # input_template is made of exactly one anchor
+                param_name = full_match.group(1)
+                return self[ param_name ]           # output type is determined by the value
+            else:
+                output_string = input_template
+
+                for sub_match in re.finditer(sub_pattern, input_template):  # input_template may contain 0 or more anchors
+                    expression, param_name = sub_match.group(1), sub_match.group(2)
+                    param_value  = self[ param_name ]
+                    output_string = output_string.replace(expression, str(param_value) )    # fit the output into a string
+
+                return output_string
+
+        # Structural recursion:
+        if type(input_structure)==list:
+            return [self.substitute(e) for e in input_structure]                            # all list elements are substituted
+        elif type(input_structure)==dict:
+            return { k : self.substitute(input_structure[k]) for k in input_structure }     # only values are substituted
+        elif type(input_structure)==str:
+            return scalar_substitute(input_structure)                                       # ground step
+        else:
+            return input_structure                                                          # basement step
 
 
     def get(self, param_name, default_value=None):
