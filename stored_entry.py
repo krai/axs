@@ -25,8 +25,9 @@ class Entry(Runnable):
 
     def get_path(self, file_name=None):
         """
-            Usage example:
-                clic additive get_path README.md
+            Usage examples:
+                axs base_map get_path
+                axs derived_map get_path README.md
         """
         if file_name:
             if file_name.startswith('/'):
@@ -45,8 +46,8 @@ class Entry(Runnable):
         """ Lazy-load, cache and return own parameters from the file system
 
             Usage examples:
-                clic base_map parameters_loaded
-                clic derived_map parameters_loaded
+                axs base_map parameters_loaded
+                axs derived_map parameters_loaded
         """
 
         if self.own_parameters==None:   # lazy-loading condition
@@ -87,7 +88,7 @@ class Entry(Runnable):
             Note: only parameters get stored.
 
             Usage example:
-                clic derived_map save --new_path=derived_map_copy
+                axs derived_map save --new_path=derived_map_copy
         """
         own_parameters = self.parameters_loaded()   # Note the order!
         if update:

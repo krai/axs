@@ -9,7 +9,7 @@ import sys
 from stored_entry import Entry
 
 
-def clic_parse(arglist):
+def cli_parse(arglist):
     """Parse the command line representing a single call:
 
     The expected format is:
@@ -103,7 +103,7 @@ def main():
 
     #logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")
 
-    entry_path, method_name, pos_params, named_params = clic_parse(sys.argv[1:])
+    entry_path, method_name, pos_params, named_params = cli_parse(sys.argv[1:])
 
     entry = Entry(entry_path=entry_path)
     results = entry.call(method_name, pos_params, named_params)

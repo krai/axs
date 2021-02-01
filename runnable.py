@@ -54,8 +54,8 @@ class Runnable(ParamSource):
         """ Recursively reach for the method and examine its DocString and calling signature.
 
             Usage example:
-                clic additive help
-                clic additive help inc
+                axs be_like help
+                axs be_like help meme
         """
         print( "Entry:         {}".format( self.get_name() ) )
 

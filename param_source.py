@@ -71,8 +71,8 @@ class ParamSource:
         """ Perform single-level parameter substitutions in the given structure
 
             Usage examples:
-                clic base_map substitute '#{first}# und #{second}#'
-                clic derived_map substitute '#{first}#, #{third}# und #{fifth}#' --first=Erste
+                axs base_map substitute '#{first}# und #{second}#'
+                axs derived_map substitute '#{first}#, #{third}# und #{fifth}#' --first=Erste
         """
         pre_pattern     = '{}(\w+){}'.format(re.escape('#{'), re.escape('}#'))
         full_pattern    = re.compile(     pre_pattern+'$' )
@@ -109,8 +109,8 @@ class ParamSource:
         """ A safe wrapper around __getitem__() - returns the default_value if missing
 
             Usage examples:
-                clic base_map get fourth Vierte
-                clic derived_map get fifth
+                axs base_map get fourth Vierte
+                axs derived_map get fifth
         """
         try:
             return self[param_name]

@@ -11,7 +11,7 @@ def run(shell_cmd, env=None):
     """ Run the given shell command in the given environment
 
         Usage example:
-            clic shell run 'echo This is a test.'
+            axs shell run 'echo This is a test.'
     """
 
     env = env or {}
