@@ -20,7 +20,7 @@ class Runnable(ParamSource):
         logging.debug(f"[{self.get_name()}] Initializing the Runnable with {repr(self.module_object)+' as module_object' if self.module_object else 'no module_object'}")
 
 
-    def module_loaded(self):
+    def methods_loaded(self):
         """ Placeholder for lazy-loading code in subclasses that support it.
 
             Note the convention:
@@ -39,7 +39,7 @@ class Runnable(ParamSource):
 
         _ancestry_path += [ self.get_name() ]
         try:
-            module_object   = self.module_loaded()
+            module_object   = self.methods_loaded()
             function_object = getattr(module_object, function_name)
         except (ImportError, AttributeError) as e:
             if self.parent_loaded():
@@ -81,7 +81,7 @@ class Runnable(ParamSource):
                 logging.error( str(e) )
         else:
             try:
-                module_object   = self.module_loaded()      # the entry may not contain any code...
+                module_object   = self.methods_loaded()     # the entry may not contain any code...
                 doc_string      = module_object.__doc__     # the module may not contain any DocString...
                 print( "DocString:    {}".format(doc_string))
             except ImportError:

@@ -61,11 +61,11 @@ class Entry(Runnable):
         return self.own_parameters
 
 
-    def module_loaded(self):
+    def methods_loaded(self, module_name=MODULENAME_methods):
         "Lazy-load and cache methods from the file system"
 
         if self.module_object==None:    # lazy-loading condition
-            (open_file_descriptor, path_to_module, module_description) = imp.find_module( self.MODULENAME_methods, [self.get_path()] )
+            (open_file_descriptor, path_to_module, module_description) = imp.find_module( module_name, [self.get_path()] )
 
             self.module_object = imp.load_module(path_to_module, open_file_descriptor, path_to_module, module_description) or False
 
