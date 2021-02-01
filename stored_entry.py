@@ -62,12 +62,24 @@ class Entry(Runnable):
 
 
     def methods_loaded(self, module_name=MODULENAME_methods):
-        "Lazy-load and cache methods from the file system"
+        """ Lazy-load and cache methods from the file system
 
+            Note the convention:
+                stored None means "not loaded yet", as in "cached value missing"
+                whereas stored False means "this object has no code to load", "nothing to see here".
+
+            Usage examples:
+                axs be_like methods_loaded
+                axs dont_be_like methods_loaded
+                axs dont_be_like methods_loaded alt_python_code
+        """
         if self.module_object==None:    # lazy-loading condition
-            (open_file_descriptor, path_to_module, module_description) = imp.find_module( module_name, [self.get_path()] )
+            try:
+                (open_file_descriptor, path_to_module, module_description) = imp.find_module( module_name, [self.get_path()] )
 
-            self.module_object = imp.load_module(path_to_module, open_file_descriptor, path_to_module, module_description) or False
+                self.module_object = imp.load_module(path_to_module, open_file_descriptor, path_to_module, module_description) or False
+            except ImportError as e:
+                self.module_object = False
 
         return self.module_object
 

@@ -38,10 +38,12 @@ class Runnable(ParamSource):
             _ancestry_path = []
 
         _ancestry_path += [ self.get_name() ]
+
+        module_object   = self.methods_loaded()
+
         try:
-            module_object   = self.methods_loaded()
             function_object = getattr(module_object, function_name)
-        except (ImportError, AttributeError) as e:
+        except AttributeError as e:
             if self.parent_loaded():
                 return self.parent_object.reach_method(function_name, _ancestry_path)
             else:
@@ -53,7 +55,7 @@ class Runnable(ParamSource):
     def help(self, method_name=None):
         """ Recursively reach for the method and examine its DocString and calling signature.
 
-            Usage example:
+            Usage examples:
                 axs be_like help
                 axs be_like help meme
         """
