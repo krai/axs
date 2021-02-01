@@ -2,7 +2,7 @@
 
 """ Example entry that is not a part of any collection.
 
-    It contains one function: meme()
+    It contains text substitution examples.
 """
 
 

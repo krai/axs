@@ -10,6 +10,12 @@ import logging      # for non-obtrusive logging
 import sys          # to obtain Python's version
 
 
+def list_function_names(module_object):
+    """ Return the list of functions of a given module/namespace
+    """
+    return [name for name, function_object in inspect.getmembers(module_object, inspect.isfunction)]
+
+
 def expected_call_structure(function_object, class_method=False):
     """ Get the expected parameters of a function and their default values.
     """

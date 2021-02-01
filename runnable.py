@@ -31,6 +31,17 @@ class Runnable(ParamSource):
         return self.module_object or False
 
 
+    def list_own_methods(self):
+        """ A lightweight method to list all own methods of an entry
+
+            Usage examples:
+                axs be_like list_own_methods
+                axs shell list_own_methods
+        """
+        module_object = self.methods_loaded()
+        return function_access.list_function_names(module_object) if module_object else []
+
+
     def reach_method(self, function_name, _ancestry_path=None):
         "Recursively find a method for the given entry - either its own or belonging to one of its parents."
 
@@ -82,15 +93,14 @@ class Runnable(ParamSource):
             except Exception as e:
                 logging.error( str(e) )
         else:
-            try:
-                module_object   = self.methods_loaded()     # the entry may not contain any code...
+            module_object   = self.methods_loaded()     # the entry may not contain any code...
+            if module_object:
                 doc_string      = module_object.__doc__     # the module may not contain any DocString...
                 print( "DocString:    {}".format(doc_string))
-            except ImportError:
+                print( "OwnMethods:   {}".format(self.list_own_methods()))
+            else:
                 parent_may_know = ", but you may want to check its parent: "+self.parent_object.get_name() if self.parent_loaded() else ""
                 print("This entry has no code of its own" + parent_may_know)
-            except Exception as e:
-                logging.error( str(e) )
 
 
     def call(self, function_name, pos_params=None, override_dict=None):
@@ -144,6 +154,10 @@ if __name__ == '__main__':
     dad         = Runnable(name='dad',      module_object=Namespace( double=(lambda x: x*2), triple=trice                   ), parent_object=granddad)
     child       = Runnable(name='child',    module_object=Namespace( square=(lambda x: x*x)                                 ), parent_object=dad)
 
+
+    print(f"granddad can run: {granddad.list_own_methods()}")
+    print(f"dad can run: {dad.list_own_methods()}")
+    print(f"child can run: {child.list_own_methods()}")
 
     print('-'*40 + ' Testing reach_method(): ' + '-'*40)
 

@@ -2,7 +2,7 @@
 
 """ Example entry that is not a part of any collection.
 
-    It contains one function: run()
+    This entry knows how to run an arbitrary command in a given environment.
 """
 
 import subprocess
