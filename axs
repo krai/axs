@@ -13,7 +13,7 @@ def cli_parse(arglist):
     """Parse the command line representing a single call:
 
     The expected format is:
-        <entry_path> <method_name> [<pos_param>]* [<opt_param>]*
+        <entry_path> <action_name> [<pos_param>]* [<opt_param>]*
 
         You can use as many positional params as possible while their values are scalars.
         However as soon as you need to define a structure, a switch to optional param syntax will be necessary.
@@ -63,7 +63,7 @@ def cli_parse(arglist):
 
 
     entry_path  = arglist.pop(0)
-    method_name = arglist.pop(0)
+    action_name = arglist.pop(0)
 
     pos_params  = []
     while len(arglist) and not arglist[0].startswith('--'):
@@ -96,17 +96,17 @@ def cli_parse(arglist):
         else:
             raise(Exception("Parsing error - cannot understand '{}'".format(arg)))
 
-    return entry_path, method_name, pos_params, named_params
+    return entry_path, action_name, pos_params, named_params
 
 
 def main():
 
     #logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")
 
-    entry_path, method_name, pos_params, named_params = cli_parse(sys.argv[1:])
+    entry_path, action_name, pos_params, named_params = cli_parse(sys.argv[1:])
 
     entry = Entry(entry_path=entry_path)
-    results = entry.call(method_name, pos_params, named_params)
+    results = entry.call(action_name, pos_params, named_params)
     return results
 
 

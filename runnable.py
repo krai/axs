@@ -9,7 +9,7 @@ class Runnable(ParamSource):
     """ An object of Runnable class is a non-persistent container of parameters (inherited) and code (own)
         that may optionally also have a parent object of the same class.
 
-        It can run a method of its own or inherited using own or inherited parameters.
+        It can run an own or inherited action using own or inherited parameters.
     """
 
     def __init__(self, module_object=None, **kwargs):
@@ -20,7 +20,7 @@ class Runnable(ParamSource):
         logging.debug(f"[{self.get_name()}] Initializing the Runnable with {repr(self.module_object)+' as module_object' if self.module_object else 'no module_object'}")
 
 
-    def methods_loaded(self):
+    def functions_loaded(self):
         """ Placeholder for lazy-loading code in subclasses that support it.
 
             Note the convention:
@@ -31,105 +31,112 @@ class Runnable(ParamSource):
         return self.module_object or False
 
 
-    def list_own_methods(self):
+    def list_own_functions(self):
         """ A lightweight method to list all own methods of an entry
 
             Usage examples:
-                axs be_like list_own_methods
-                axs shell list_own_methods
+                axs be_like list_own_functions
+                axs shell list_own_functions
         """
-        module_object = self.methods_loaded()
+        module_object = self.functions_loaded()
         return function_access.list_function_names(module_object) if module_object else []
 
 
-    def reach_method(self, function_name, _ancestry_path=None):
-        "Recursively find a method for the given entry - either its own or belonging to one of its parents."
-
-        if _ancestry_path == None:
-            _ancestry_path = []
+    def reach_function(self, function_name, _ancestry_path):
+        "Recursively find an Entry's function - either its own or belonging to the nearest parent."
 
         _ancestry_path += [ self.get_name() ]
 
-        module_object   = self.methods_loaded()
+        module_object   = self.functions_loaded()
 
-        try:
-            function_object = getattr(module_object, function_name)
-        except AttributeError as e:
-            if self.parent_loaded():
-                return self.parent_object.reach_method(function_name, _ancestry_path)
-            else:
-                raise NameError( "could not find the method '{}' along the ancestry path '{}'".format(function_name, ' --> '.join(_ancestry_path) ) )
-
-        return function_object
+        if hasattr(module_object, function_name):
+            return getattr(module_object, function_name)
+        elif self.parent_loaded():
+            return self.parent_object.reach_function(function_name, _ancestry_path)
+        else:
+            return None
 
 
-    def help(self, method_name=None):
-        """ Recursively reach for the method and examine its DocString and calling signature.
+    def reach_action(self, action_name, _ancestry_path=None):
+        "First try to reach for an Entry's function, if unavailable - try Entry's method instead."
+
+        if _ancestry_path == None:  # if we have to initialize it internally, the value will be lost to the caller
+            _ancestry_path = []
+
+        function_object = self.reach_function( action_name, _ancestry_path )
+        if function_object:
+            return function_object
+        elif hasattr(self, action_name):
+            _ancestry_path.clear()  # empty the specific list given to us - a form of feedback
+            return getattr(self, action_name)
+        else:
+            raise NameError( "could not find the action '{}' neither along the ancestry path '{}' nor in the Entry class".format(action_name, ' --> '.join(_ancestry_path) ) )
+
+
+    def help(self, action_name=None):
+        """ Reach for an Entry's function or method and examine its DocString and calling signature.
 
             Usage examples:
                 axs be_like help
-                axs be_like help meme
+                axs dont_be_like help meme
+                axs dont_be_like help get
         """
-        print( "Entry:         {}".format( self.get_name() ) )
+        print( "Entry name:    {}\n".format( self.get_name() ))
 
-        if method_name:
-            print( "Method:        {}".format( method_name ) )
+        if action_name:
             try:
                 ancestry_path   = []
-                function_object = self.reach_method(method_name, _ancestry_path=ancestry_path) # the method may not be reachable
+                action_object   = self.reach_action(action_name, _ancestry_path=ancestry_path)
 
-                required_arg_names, optional_arg_names, method_defaults, varargs, varkw = function_access.expected_call_structure(function_object)
+                required_arg_names, optional_arg_names, action_defaults, varargs, varkw = function_access.expected_call_structure( action_object )
 
-                signature = ', '.join(required_arg_names + [optional_arg_names[i]+'='+str(method_defaults[i]) for i in range(len(optional_arg_names))] )
+                signature = ', '.join(required_arg_names + [optional_arg_names[i]+'='+str(action_defaults[i]) for i in range(len(optional_arg_names))] )
 
                 if varargs or varkw:
-                    print( """NB: this method cannot be called via our calling mechanism,
+                    print( """NB: this action cannot be called via our calling mechanism,
                               because it makes use of variable arguments (*) or variable keywords (**)""" )
 
-                print( "MethodPath:    {}".format( function_object.__module__ ))
-                print( "Ancestry path: {}".format( ' --> '.join(ancestry_path) ))
-                print( "Signature:     {}({})".format( method_name, signature ))
-                print( "DocString:    {}".format( function_object.__doc__ ))
+                if ancestry_path:
+                    print( "Function:      {}".format( action_name ))
+                    print( "Ancestry path: {}".format( ' --> '.join(ancestry_path) ))
+                else:
+                    print( "Method:        {}".format( action_name ))
+                    print( "Module:        {}".format( action_object.__module__ ))
+
+                print( "Signature:     {}({})".format( action_name, signature ))
+                print( "DocString:    {}".format( action_object.__doc__ ))
             except Exception as e:
                 logging.error( str(e) )
         else:
-            module_object   = self.methods_loaded()     # the entry may not contain any code...
+            module_object   = self.functions_loaded()     # the entry may not contain any code...
             if module_object:
                 doc_string      = module_object.__doc__     # the module may not contain any DocString...
                 print( "DocString:    {}".format(doc_string))
-                print( "OwnMethods:   {}".format(self.list_own_methods()))
+                print( "OwnFunctions:  {}".format(self.list_own_functions()))
             else:
                 parent_may_know = ", but you may want to check its parent: "+self.parent_object.get_name() if self.parent_loaded() else ""
                 print("This entry has no code of its own" + parent_may_know)
 
 
-    def call(self, function_name, pos_params=None, override_dict=None):
-        """ Call a given method of a given entry and feed it
+    def call(self, action_name, pos_params=None, override_dict=None):
+        """ Call a given function or method of a given entry and feed it
             with arguments from the current object optionally overridden by a given dictionary.
 
-            The function can have a mix of positional args and named args with optional defaults.
+            The action can have a mix of positional args and named args with optional defaults.
         """
 
-        override_obj = type(self)(name="override", own_parameters=override_dict, parent_object=self) if override_dict else self
+        override_obj    = type(self)(name="override", own_parameters=override_dict, parent_object=self) if override_dict else self
+        pos_params      = pos_params or []
+        action_object   = self.reach_action(action_name)
 
-        try:
-            pos_params          = pos_params or []
-            function_object     = self.reach_method(function_name)
+        """
+        merged_params.update( {             # These special parameters are non-overridable at the moment. Should they be?
+            '__kernel__'    : self.kernel,
+            '__entry__'     : self,
+        } )
+        """
 
-            """
-            merged_params.update( {             # These special parameters are non-overridable at the moment. Should they be?
-                '__kernel__'    : self.kernel,
-                '__entry__'     : self,
-            } )
-            """
-
-            result = function_access.feed_a_function(function_object, pos_params, override_obj)
-        except NameError as method_not_found_e:
-            try:
-                entry_method_object = getattr(override_obj, function_name)
-                result = function_access.feed_a_function(entry_method_object, pos_params, override_obj, class_method=True)
-            except AttributeError:
-                raise method_not_found_e
+        result          = function_access.feed(action_object, pos_params, override_obj)
 
         return result
 
@@ -155,30 +162,30 @@ if __name__ == '__main__':
     child       = Runnable(name='child',    module_object=Namespace( square=(lambda x: x*x)                                 ), parent_object=dad)
 
 
-    print(f"granddad can run: {granddad.list_own_methods()}")
-    print(f"dad can run: {dad.list_own_methods()}")
-    print(f"child can run: {child.list_own_methods()}")
+    print(f"granddad can run: {granddad.list_own_functions()}")
+    print(f"dad can run: {dad.list_own_functions()}")
+    print(f"child can run: {child.list_own_functions()}")
 
-    print('-'*40 + ' Testing reach_method(): ' + '-'*40)
+    print('-'*40 + ' Testing reach_action(): ' + '-'*40)
 
-    path_to_method = []
-    result = child.reach_method('square', path_to_method)(12)
-    print(f"square(12)={result}, path to the method: {path_to_method}")
+    path_to_function = []
+    result = child.reach_action('square', path_to_function)(12)
+    print(f"square(12)={result}, path to the function: {path_to_function}")
 
-    path_to_method = []
-    result = child.reach_method('add_one', path_to_method)(12)
-    print(f"add_one(12)={result}, path to the method: {path_to_method}")
+    path_to_function = []
+    result = child.reach_action('add_one', path_to_function)(12)
+    print(f"add_one(12)={result}, path to the function: {path_to_function}")
 
-    path_to_method = []
-    result = child.reach_method('double', path_to_method)(12)
-    print(f"double(12)={result}, path to the method: {path_to_method}")
+    path_to_function = []
+    result = child.reach_action('double', path_to_function)(12)
+    print(f"double(12)={result}, path to the function: {path_to_function}")
 
 
     print('-'*40 + ' Testing help(): ' + '-'*40)
 
-    child.help(method_name='triple')
+    child.help('triple')
     print("")
-    child.help(method_name='add_one')
+    child.help('add_one')
 
 
     print('-'*40 + ' Testing call(): ' + '-'*40)

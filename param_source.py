@@ -152,7 +152,7 @@ if __name__ == '__main__':
     print(f"dad.parameters_loaded()={dad.parameters_loaded()}")
     print(f"child.parameters_loaded()={child.parameters_loaded()}\n")
 
-    from function_access import feed_a_function, four_param_example_func
+    from function_access import feed, four_param_example_func
 
     print('-'*40 + ' Access call: ' + '-'*40)
 
@@ -161,7 +161,7 @@ if __name__ == '__main__':
 
     param_tuple = ()
     param_dict = foo_param_child
-    print(f"feed_a_function(four_param_example_func, {param_tuple}, {param_dict} -->")
-    output_tuple = feed_a_function( four_param_example_func, param_tuple, param_dict )
+    print(f"feed(four_param_example_func, {param_tuple}, {param_dict} -->")
+    output_tuple = feed( four_param_example_func, param_tuple, param_dict )
     print(f"--> {output_tuple}\n")
 

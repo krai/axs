@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-#   Accessing almost any python function in CK way (feed it with parameters from a dictionary-like object)
+#   Accessing almost any python function or method (collectively called an "action") in CK way
+#   by feeding it parameters from a list and a dictionary-like object.
 #
 #   Thanks for this SO entry for inspiration:
 #       https://stackoverflow.com/questions/196960/can-you-list-the-keyword-arguments-a-python-function-receives
@@ -16,18 +17,18 @@ def list_function_names(module_object):
     return [name for name, function_object in inspect.getmembers(module_object, inspect.isfunction)]
 
 
-def expected_call_structure(function_object, class_method=False):
+def expected_call_structure(action_object):
     """ Get the expected parameters of a function and their default values.
     """
 
     if sys.version_info[0] < 3:
-        supported_arg_names, varargs, varkw, defaults = inspect.getargspec(function_object)
+        supported_arg_names, varargs, varkw, defaults = inspect.getargspec(action_object)
     else:
-        supported_arg_names, varargs, varkw, defaults, kwonlyargs, kwonlydefaults, annotations = inspect.getfullargspec(function_object)
+        supported_arg_names, varargs, varkw, defaults, kwonlyargs, kwonlydefaults, annotations = inspect.getfullargspec(action_object)
 
     defaults = defaults or tuple()
 
-    if class_method:
+    if inspect.ismethod(action_object):
         supported_arg_names.pop(0)
 
     num_required        = len(supported_arg_names) - len(defaults)
@@ -37,14 +38,14 @@ def expected_call_structure(function_object, class_method=False):
     return required_arg_names, optional_arg_names, defaults, varargs, varkw
 
 
-def feed_a_function(function_object, given_arg_list, dict_like_object, class_method=False):
-    """ Call a given function_object and feed it with arguments from given list and dictionary-like object (must support []).
+def feed(action_object, given_arg_list, dict_like_object):
+    """ Call a given action_object and feed it with arguments from given list and dictionary-like object (must support []).
 
         The function can be declared as having named args and defaults.
         Neither *varargs or **kwargs are supported.
     """
 
-    required_arg_names, optional_arg_names, defaults, varargs, varkw = expected_call_structure(function_object, class_method)
+    required_arg_names, optional_arg_names, defaults, varargs, varkw = expected_call_structure(action_object)
 
     # Topping up the list of required positional arguments, or detecting missing ones:
     num_given                       = len(given_arg_list)
@@ -65,7 +66,7 @@ def feed_a_function(function_object, given_arg_list, dict_like_object, class_met
 
     if missing_arg_names:
         raise TypeError( 'The "{}" function is missing required positional arguments: {}'
-                        .format(function_object.__name__, missing_arg_names)
+                        .format(action_object.__name__, missing_arg_names)
         )
 
     else:
@@ -77,8 +78,8 @@ def feed_a_function(function_object, given_arg_list, dict_like_object, class_met
             except KeyError:
                 optional_arg_values.append( defaults[opt_idx] )
 
-        logging.debug(f"About to call `{function_object.__name__}` with {*given_arg_list, *non_listed_required_arg_values, *optional_arg_values}")
-        ret_values = function_object(*given_arg_list, *non_listed_required_arg_values, *optional_arg_values)
+        logging.debug(f"About to call `{action_object.__name__}` with {*given_arg_list, *non_listed_required_arg_values, *optional_arg_values}")
+        ret_values = action_object(*given_arg_list, *non_listed_required_arg_values, *optional_arg_values)
         return ret_values
 
 
@@ -108,19 +109,19 @@ if __name__ == '__main__':
 
     param_tuple = (50, 60)
     param_dict  = {'delta':80}
-    print(f"feed_a_function(four_param_example_func, {param_tuple}, {param_dict} -->")
-    output_tuple = feed_a_function( four_param_example_func, param_tuple, param_dict )
+    print(f"feed(four_param_example_func, {param_tuple}, {param_dict} -->")
+    output_tuple = feed( four_param_example_func, param_tuple, param_dict )
     print(f"--> {output_tuple}\n")
 
     param_tuple = (500,)
     param_dict  = {'beta':600, 'gamma':700}
-    print(f"feed_a_function(four_param_example_func, {param_tuple}, {param_dict} -->")
-    output_tuple = feed_a_function( four_param_example_func, param_tuple, param_dict )
+    print(f"feed(four_param_example_func, {param_tuple}, {param_dict} -->")
+    output_tuple = feed( four_param_example_func, param_tuple, param_dict )
     print(f"--> {output_tuple}\n")
 
     param_tuple = ()
     param_dict  = {'alpha':5000, 'beta':6000, 'delta':8000}
-    print(f"feed_a_function(four_param_example_func, {param_tuple}, {param_dict} -->")
-    output_tuple = feed_a_function( four_param_example_func, param_tuple, param_dict )
+    print(f"feed(four_param_example_func, {param_tuple}, {param_dict} -->")
+    output_tuple = feed( four_param_example_func, param_tuple, param_dict )
     print(f"--> {output_tuple}\n")
 

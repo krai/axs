@@ -12,7 +12,7 @@ class Entry(Runnable):
     "An Entry is a Runnable stored in the file system"
 
     FILENAME_parameters     = 'parameters.json'
-    MODULENAME_methods      = 'python_code'     # the actual filename ends in .py
+    MODULENAME_functions    = 'python_code'     # the actual filename ends in .py
     PARAMNAME_parent_path   = 'parent_path'
 
     def __init__(self, entry_path=None, **kwargs):
@@ -61,17 +61,17 @@ class Entry(Runnable):
         return self.own_parameters
 
 
-    def methods_loaded(self, module_name=MODULENAME_methods):
-        """ Lazy-load and cache methods from the file system
+    def functions_loaded(self, module_name=MODULENAME_functions):
+        """ Lazy-load and cache functions from the file system
 
             Note the convention:
                 stored None means "not loaded yet", as in "cached value missing"
                 whereas stored False means "this object has no code to load", "nothing to see here".
 
             Usage examples:
-                axs be_like methods_loaded
-                axs dont_be_like methods_loaded
-                axs dont_be_like methods_loaded alt_python_code
+                axs be_like functions_loaded
+                axs dont_be_like functions_loaded
+                axs dont_be_like functions_loaded alt_python_code
         """
         if self.module_object==None:    # lazy-loading condition
             try:
