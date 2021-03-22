@@ -125,17 +125,14 @@ class Runnable(ParamSource):
             The action can have a mix of positional args and named args with optional defaults.
         """
 
-        override_obj    = type(self)(name="override", own_parameters=override_dict, parent_object=self) if override_dict else self
+        if override_dict == None:
+            override_dict = {}
+
+        override_dict['__entry__'] = self
+
+        override_obj    = type(self)(name="override", own_parameters=override_dict, parent_object=self)
         pos_params      = pos_params or []
         action_object   = self.reach_action(action_name)
-
-        """
-        merged_params.update( {             # These special parameters are non-overridable at the moment. Should they be?
-            '__kernel__'    : self.kernel,
-            '__entry__'     : self,
-        } )
-        """
-
         result          = function_access.feed(action_object, pos_params, override_obj)
 
         return result
