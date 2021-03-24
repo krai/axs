@@ -21,4 +21,4 @@ if __name__ == '__main__':
 
     # When the entry's code is run as a script, perform local tests:
     #
-    print(f"meme('does not instagram her food', 'considerate', 'Mary') = {meme('does not instagram her food', 'considerate', 'Mary')}")
+    print(f"meme('does not instagram her food', 'considerate', 'Mary', 'Be', 'Mary') = {meme('does not instagram her food', 'considerate', 'Mary', 'Be', 'Mary')}")
