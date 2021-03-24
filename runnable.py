@@ -43,7 +43,7 @@ class Runnable(ParamSource):
 
 
     def reach_function(self, function_name, _ancestry_path):
-        "Recursively find an Entry's function - either its own or belonging to the nearest parent."
+        "Recursively find a Runnable's function - either its own or belonging to the nearest parent."
 
         _ancestry_path += [ self.get_name() ]
 
@@ -58,7 +58,7 @@ class Runnable(ParamSource):
 
 
     def reach_action(self, action_name, _ancestry_path=None):
-        "First try to reach for an Entry's function, if unavailable - try Entry's method instead."
+        "First try to reach for a Runnable's function (externally loaded code), if unavailable - try Runnable's method instead."
 
         if _ancestry_path == None:  # if we have to initialize it internally, the value will be lost to the caller
             _ancestry_path = []
@@ -70,18 +70,19 @@ class Runnable(ParamSource):
             _ancestry_path.clear()  # empty the specific list given to us - a form of feedback
             return getattr(self, action_name)
         else:
-            raise NameError( "could not find the action '{}' neither along the ancestry path '{}' nor in the Entry class".format(action_name, ' --> '.join(_ancestry_path) ) )
+            raise NameError( "could not find the action '{}' neither along the ancestry path '{}' nor in the {} class".
+                              format(action_name, ' --> '.join(_ancestry_path),  self.__class__.__name__) )
 
 
     def help(self, action_name=None):
-        """ Reach for an Entry's function or method and examine its DocString and calling signature.
+        """ Reach for a Runnable's function or method and examine its DocString and calling signature.
 
             Usage examples:
                 axs be_like help
                 axs dont_be_like help meme
                 axs dont_be_like help get
         """
-        print( "Entry name:    {}\n".format( self.get_name() ))
+        print( "{:14s} {}\n".format( self.__class__.__name__+' name:', self.get_name() ))
 
         if action_name:
             try:
