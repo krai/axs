@@ -69,6 +69,10 @@ class ParamSource:
 
     def dig(self, key_path):
         """ Traverse the given path of keys into a parameter's internal structure
+
+            Usage examples:
+                axs counting_collection/romance/french dig --key_path,=number_mapping,7
+                axs counting_collection/germanic/dutch dig number_mapping.6
         """
         if type(key_path)!=list:
             key_path = key_path.split('.')
@@ -89,6 +93,7 @@ class ParamSource:
             Usage examples:
                 axs base_map substitute '#{first}# und #{second}#'
                 axs derived_map substitute '#{first}#, #{third}# und #{fifth}#' --first=Erste
+                axs counting_collection/romance/spanish substitute '#{number_mapping.3}# + #{number_mapping.5}# = #{number_mapping.8}#'
         """
         pre_pattern     = '{}([\w\.]+){}'.format(re.escape('#{'), re.escape('}#'))
         full_pattern    = re.compile(     pre_pattern+'$' )
