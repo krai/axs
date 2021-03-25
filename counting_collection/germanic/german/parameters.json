@@ -1,0 +1,16 @@
+{
+    "language": "German",
+    "number_mapping": [
+        "Null",
+        "Ein",
+        "Zwei",
+        "Drei",
+        "Vier",
+        "Fünf",
+        "Sechs",
+        "Sieben",
+        "Acht",
+        "Neun",
+        "Zehn"
+    ]
+}
