@@ -15,12 +15,13 @@ class Entry(Runnable):
     MODULENAME_functions    = 'python_code'     # the actual filename ends in .py
     PARAMNAME_parent_path   = 'parent_path'
 
-    def __init__(self, entry_path=None, **kwargs):
+    def __init__(self, entry_path=None, kernel=None, **kwargs):
         "Accept setting entry_path in addition to parent's parameters"
 
         self.entry_path = entry_path
+        self.kernel     = kernel
         super().__init__(**kwargs)
-        logging.debug(f"[{self.get_name()}] Initializing the Entry with entry_path={self.entry_path}")
+        logging.debug(f"[{self.get_name()}] Initializing the Entry with entry_path={self.entry_path} and kernel={self.kernel}")
 
 
     def get_path(self, file_name=None):
@@ -36,6 +37,10 @@ class Entry(Runnable):
                 return os.path.join(self.entry_path, file_name)
         else:
             return self.entry_path
+
+
+    def get_kernel(self):
+        return self.kernel
 
 
     def get_name(self):
@@ -86,11 +91,13 @@ class Entry(Runnable):
 
     def parent_loaded(self):
         if self.parent_object==None:     # lazy-loading condition
-            parent_path = self.parameters_loaded().get( self.PARAMNAME_parent_path )     # only look into own_parameters to avoid infinite recursion
+            parent_path = self.parameters_loaded().get( self.PARAMNAME_parent_path )    # only look into own_parameters to avoid infinite recursion
             if parent_path:
-                self.parent_object = Entry(entry_path=self.get_path(parent_path))   # extend the relative path, but preserve absolute one
+                full_parent_path    = self.get_path(parent_path)    # extend the relative path, but preserve absolute one
+                ak                  = self.get_kernel()             # go through the kernel, if available:
+                self.parent_object  = ak.bypath(entry_path=full_parent_path) if ak else Entry(entry_path=full_parent_path)
             else:
-                self.parent_object = False
+                self.parent_object  = False
 
         return self.parent_object
 

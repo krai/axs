@@ -6,8 +6,6 @@
 import logging
 import re
 import sys
-from stored_entry import Entry
-
 
 def cli_parse(arglist):
     """Parse the command line representing a single call:
@@ -100,12 +98,13 @@ def cli_parse(arglist):
 
 
 def main():
+    #logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")   # put this BEFORE IMPORTING the kernel to see logging from the kernel
 
-    #logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")
+    from kernel import default_kernel as ak
 
     entry_path, action_name, pos_params, named_params = cli_parse(sys.argv[1:])
 
-    entry = Entry(entry_path=entry_path)
+    entry = ak.bypath(entry_path=entry_path)
     results = entry.call(action_name, pos_params, named_params)
     return results
 
