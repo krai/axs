@@ -67,6 +67,22 @@ class ParamSource:
                 raise KeyError(param_name)
 
 
+    def dig(self, key_path):
+        """ Traverse the given path of keys into a parameter's internal structure
+        """
+        if type(key_path)!=list:
+            key_path = key_path.split('.')
+
+        first_syllable  = key_path.pop(0)
+        struct_ptr      = self[ first_syllable ]
+
+        for key_syllable in key_path:
+            if type(struct_ptr)==list:  # descend into lists with numeric indices
+                key_syllable = int(key_syllable)
+            struct_ptr = struct_ptr[key_syllable]   # iterative descent
+        return struct_ptr
+
+
     def substitute(self, input_structure):
         """ Perform single-level parameter substitutions in the given structure
 
@@ -74,7 +90,7 @@ class ParamSource:
                 axs base_map substitute '#{first}# und #{second}#'
                 axs derived_map substitute '#{first}#, #{third}# und #{fifth}#' --first=Erste
         """
-        pre_pattern     = '{}(\w+){}'.format(re.escape('#{'), re.escape('}#'))
+        pre_pattern     = '{}([\w\.]+){}'.format(re.escape('#{'), re.escape('}#'))
         full_pattern    = re.compile(     pre_pattern+'$' )
         sub_pattern     = re.compile( '('+pre_pattern+')' )
 
@@ -82,14 +98,14 @@ class ParamSource:
 
             full_match = re.match(full_pattern, input_template)
             if full_match:                          # input_template is made of exactly one anchor
-                param_name = full_match.group(1)
-                return self[ param_name ]           # output type is determined by the value
+                key_path = full_match.group(1)
+                return self.dig( key_path )         # output type is determined by the value
             else:
                 output_string = input_template
 
                 for sub_match in re.finditer(sub_pattern, input_template):  # input_template may contain 0 or more anchors
-                    expression, param_name = sub_match.group(1), sub_match.group(2)
-                    param_value  = self[ param_name ]
+                    expression, key_path = sub_match.group(1), sub_match.group(2)
+                    param_value  = self.dig( key_path )
                     output_string = output_string.replace(expression, str(param_value) )    # fit the output into a string
 
                 return output_string
