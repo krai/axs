@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-""" A simple, one-call CommandLine API for this framework.
+""" A simple CommandLine API for this framework.
 """
 
 import logging
@@ -8,10 +8,10 @@ import re
 import sys
 
 def cli_parse(arglist):
-    """Parse the command line representing a single call:
+    """Parse the command pipeline representing a chain of calls
 
     The expected format is:
-        <entry_name> <action_name> [<pos_param>]* [<opt_param>]*
+        <action_name> [<pos_param>]* [<opt_param>]* [, <action_name> [<pos_param>]* [<opt_param>]*]*
 
         You can use as many positional params as possible while their values are scalars.
         However as soon as you need to define a structure, a switch to optional param syntax will be necessary.
@@ -46,19 +46,6 @@ def cli_parse(arglist):
                 pass
 
         return x
-
-
-    def traverset(dictionary, key_path, value):
-        last_syllable = key_path.pop()          # in the edge case of one element, the list becomes empty after popping
-
-        dict_ptr = dictionary
-        for key_syllable in key_path:
-            if key_syllable not in dict_ptr:    # explicit path vivification
-                dict_ptr[key_syllable] = {}
-            dict_ptr = dict_ptr[key_syllable]   # iterative descent
-
-        dict_ptr[last_syllable] = value
-
 
 
     pipeline = []
@@ -114,13 +101,8 @@ def main():
 
     from kernel import default_kernel as ak
 
-    pipeline    = cli_parse(sys.argv[1:])
-    results     = ak    # start from the kernel, continue with other entries
-    for link_id, kernel_link in enumerate(pipeline):
-        results = results.call(*kernel_link)
-
-    return results
-
+    pipeline = cli_parse(sys.argv[1:])
+    return ak.execute(pipeline)
 
 if __name__ == '__main__':
     print(main())

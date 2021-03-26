@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.2'   # TODO: update with every kernel change
+__version__ = '0.2.3'   # TODO: update with every kernel change
 
 import logging
 import os
@@ -26,13 +26,13 @@ class MicroKernel(Runnable):
 
 
     def version(self):
-        """ Get the current kernel version
+        """Get the current kernel version
         """
         return __version__
 
 
     def kernel_path(self, entry_path=None):
-        """ Get the path where the kernel is currently installed
+        """Get the path where the kernel is currently installed
         """
         kernel_dir_path = os.path.dirname( os.path.realpath(__file__) )
         if entry_path:
@@ -46,7 +46,7 @@ class MicroKernel(Runnable):
 
 
     def bypath(self, entry_path):
-        """ Fetch an entry by its path, cached by the path
+        """Fetch an entry by its path, cached by the path
         """
         cache_hit = self.entry_cache.get(entry_path)
 
@@ -60,17 +60,25 @@ class MicroKernel(Runnable):
 
 
     def core_collection(self):
-        """ Fetch the core_collection entry
+        """Fetch the core_collection entry
         """
         return self.bypath( self.kernel_path( 'core_collection' ) )
 
 
     def byname(self, entry_name):
-        """ Fetch an entry by its name (delegated to core_collection)
+        """Fetch an entry by its name (delegated to core_collection)
         """
         logging.debug(f"[{self.name}] byname({entry_name})")
         return self.core_collection().call('byname', [entry_name])
 
+
+    def execute(self, pipeline):
+        """Execute a parsed pipeline (a chain of calls)
+        """
+        results = self      # start from the kernel, continue to other entries
+        for kernel_link in pipeline:
+            results = results.call(*kernel_link)
+        return results
 
 
 #logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")
@@ -83,5 +91,8 @@ if __name__ == '__main__':
 
     ak.introduce()
 
-    result      = ak.byname('be_like').call('meme', ['does not instagram her food', 'considerate'], {'person': 'Mary'})
+    result = ak.execute([
+                ('byname', ['be_like'], {}),
+                ('meme', ['does not instagram her food', 'considerate'], {'person': 'Mary'}),
+    ])
     print( result )
