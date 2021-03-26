@@ -1,8 +1,19 @@
 #!/usr/bin/env python3
 
-__version__ = '0.2.0'   # TODO: update with every kernel change
+"""
+# Accessing the kernel via API (default and non-default)
+
+if condition:
+    from kernel import MicroKernel
+    ak = MicroKernel(name='SpecialKernel')
+else:
+    from kernel import default as ak
+"""
+
+__version__ = '0.2.1'   # TODO: update with every kernel change
 
 import logging
+import os
 from stored_entry import Entry
 
 
@@ -15,8 +26,17 @@ class MicroKernel:
     def version(self):
         return __version__
 
+
+    def kernel_path(self, entry_path=None):
+        kernel_dir_path = os.path.dirname( os.path.realpath(__file__) )
+        if entry_path:
+            return os.path.join(kernel_dir_path, entry_path)
+        else:
+            return kernel_dir_path
+
+
     def introduce(self):
-        print(f"I am {self.name} version {self.version()}")
+        print(f"I am {self.name} version={self.version()} kernel_path={self.kernel_path()}")
 
 
     def bypath(self, entry_path):
@@ -30,6 +50,17 @@ class MicroKernel:
 
         return cache_hit
 
+
+    def core_collection(self):
+        return self.bypath( self.kernel_path( 'core_collection' ) )
+
+
+    def byname(self, entry_name):
+        logging.debug(f"[{self.name}] byname({entry_name})")
+        return self.core_collection().call('byname', [entry_name])
+
+
+
 #logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")
 
 default_kernel = MicroKernel()
@@ -40,6 +71,5 @@ if __name__ == '__main__':
 
     ak.introduce()
 
-    entry_bl    = ak.bypath('be_like')
-    result      = entry_bl.call('meme', ['does not instagram her food', 'considerate'], {'person': 'Mary'})
+    result      = ak.byname('be_like').call('meme', ['does not instagram her food', 'considerate'], {'person': 'Mary'})
     print( result )

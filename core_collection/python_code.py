@@ -9,7 +9,10 @@ def byname(entry_name, contained_entries, contained_collections=None, __entry__=
     ak = __entry__.get_kernel()
     assert ak != None, "__entry__'s kernel should be defined"
 
-    if entry_name in contained_entries:
+    if entry_name == __entry__.get_name():
+        print(f"collection.byname({entry_name}): found the collection itself")
+        return __entry__
+    elif entry_name in contained_entries:
         if type(contained_entries)==dict:
             relative_entry_path = contained_entries[entry_name]
             print(f"collection.byname({entry_name}): mapping to relative_entry_path={relative_entry_path}")
@@ -32,15 +35,10 @@ def byname(entry_name, contained_entries, contained_collections=None, __entry__=
                 print(f"collection.byname({entry_name}): using relative_collection_path={relative_collection_path}")
 
             collection_object   = ak.bypath(entry_path=__entry__.get_path(relative_collection_path))
-
-            if entry_name == collection_name:
-                print(f"collection.byname({entry_name}): found the collection itself")
-                return collection_object
-            else:
-                found_object    = collection_object.call("byname", [ entry_name ])
-                if found_object:
-                    print(f"collection.byname({entry_name}): found in collection {collection_name}")
-                    return found_object
+            found_object        = collection_object.call("byname", [ entry_name ])
+            if found_object:
+                print(f"collection.byname({entry_name}): found in collection {collection_name}")
+                return found_object
     
     return None
 

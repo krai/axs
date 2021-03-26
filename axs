@@ -11,7 +11,7 @@ def cli_parse(arglist):
     """Parse the command line representing a single call:
 
     The expected format is:
-        <entry_path> <action_name> [<pos_param>]* [<opt_param>]*
+        <entry_name> <action_name> [<pos_param>]* [<opt_param>]*
 
         You can use as many positional params as possible while their values are scalars.
         However as soon as you need to define a structure, a switch to optional param syntax will be necessary.
@@ -60,7 +60,7 @@ def cli_parse(arglist):
         dict_ptr[last_syllable] = value
 
 
-    entry_path  = arglist.pop(0)
+    entry_name  = arglist.pop(0)
     action_name = arglist.pop(0)
 
     pos_params  = []
@@ -94,7 +94,7 @@ def cli_parse(arglist):
         else:
             raise(Exception("Parsing error - cannot understand '{}'".format(arg)))
 
-    return entry_path, action_name, pos_params, named_params
+    return entry_name, action_name, pos_params, named_params
 
 
 def main():
@@ -102,9 +102,9 @@ def main():
 
     from kernel import default_kernel as ak
 
-    entry_path, action_name, pos_params, named_params = cli_parse(sys.argv[1:])
+    entry_name, action_name, pos_params, named_params = cli_parse(sys.argv[1:])
 
-    entry = ak.bypath(entry_path=entry_path)
+    entry = ak.byname(entry_name)
     results = entry.call(action_name, pos_params, named_params)
     return results
 
