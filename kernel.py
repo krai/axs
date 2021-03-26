@@ -10,24 +10,30 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.1'   # TODO: update with every kernel change
+__version__ = '0.2.2'   # TODO: update with every kernel change
 
 import logging
 import os
+from runnable import Runnable
 from stored_entry import Entry
 
 
-class MicroKernel:
-    def __init__(self, entry_cache=None, name="DefaultKernel"):
+class MicroKernel(Runnable):
+    def __init__(self, entry_cache=None, **kwargs):
         self.entry_cache    = entry_cache or {}
-        self.name           = name
+        super().__init__(**kwargs)
         logging.debug(f"[{self.name}] Initializing the MicroKernel with entry_cache={self.entry_cache}")
 
+
     def version(self):
+        """ Get the current kernel version
+        """
         return __version__
 
 
     def kernel_path(self, entry_path=None):
+        """ Get the path where the kernel is currently installed
+        """
         kernel_dir_path = os.path.dirname( os.path.realpath(__file__) )
         if entry_path:
             return os.path.join(kernel_dir_path, entry_path)
@@ -40,6 +46,8 @@ class MicroKernel:
 
 
     def bypath(self, entry_path):
+        """ Fetch an entry by its path, cached by the path
+        """
         cache_hit = self.entry_cache.get(entry_path)
 
         if cache_hit:
@@ -52,10 +60,14 @@ class MicroKernel:
 
 
     def core_collection(self):
+        """ Fetch the core_collection entry
+        """
         return self.bypath( self.kernel_path( 'core_collection' ) )
 
 
     def byname(self, entry_name):
+        """ Fetch an entry by its name (delegated to core_collection)
+        """
         logging.debug(f"[{self.name}] byname({entry_name})")
         return self.core_collection().call('byname', [entry_name])
 
@@ -63,7 +75,7 @@ class MicroKernel:
 
 #logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")
 
-default_kernel = MicroKernel()
+default_kernel = MicroKernel(name="DefaultKernel")
 
 if __name__ == '__main__':
 

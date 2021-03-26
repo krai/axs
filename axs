@@ -60,41 +60,53 @@ def cli_parse(arglist):
         dict_ptr[last_syllable] = value
 
 
-    entry_name  = arglist.pop(0)
-    action_name = arglist.pop(0)
 
-    pos_params  = []
-    while len(arglist) and not arglist[0].startswith('--'):
-        pos_params.append( to_num_or_not_to_num( arglist.pop(0) ) )
+    pipeline = []
+    i = 0
 
-    named_params = {}
-    for arg in arglist:
-        call_param_key = None
+    while i<len(arglist):
 
-        matched_parampair = re.match('^--(#?[\w\.]+)([\ ,;:]?)=(.*)$', arg)
-        if matched_parampair:
-            call_param_key      = matched_parampair.group(1)
-            delimiter           = matched_parampair.group(2)
-            call_param_value    = matched_parampair.group(3)
-            if delimiter:
-                call_param_value    = [to_num_or_not_to_num(el) for el in call_param_value.split(delimiter)]
+        if arglist[i]==',':     # just skip the pipeline link separator
+            i += 1
+
+        call_params = {}
+        call_pos_params = []
+        curr_link = ( arglist[i], call_pos_params, call_params )
+        i += 1
+        pipeline.append( curr_link )
+
+        ## Going through the parameters
+        while i<len(arglist) and not arglist[i].startswith(','):
+            if not arglist[i].startswith('--'):
+                call_pos_params.append( to_num_or_not_to_num(arglist[i]) )
             else:
-                call_param_value    = to_num_or_not_to_num(call_param_value)
-        else:
-            matched_paramsingle = re.match('^--([\w\.]+)([,-]?)$', arg)
-            if matched_paramsingle:
-                call_param_key      = matched_paramsingle.group(1)
-                if matched_paramsingle.group(2) == ',':
-                    call_param_value    = []                                    # the way to express an empty list
+                call_param_key = None
+
+                matched_parampair = re.match('^--([\w\.]+)([\ ,;:]?)=(.*)$', arglist[i])
+                if matched_parampair:
+                    call_param_key      = matched_parampair.group(1)
+                    delimiter           = matched_parampair.group(2)
+                    call_param_value    = matched_parampair.group(3)
+                    if delimiter:
+                        call_param_value    = [to_num_or_not_to_num(el) for el in call_param_value.split(delimiter)]
+                    else:
+                        call_param_value    = to_num_or_not_to_num(call_param_value)
                 else:
-                    call_param_value    = matched_paramsingle.group(2) != '-'   # either boolean True or False
+                    matched_paramsingle = re.match('^--([\w\.]+)([,-]?)$', arglist[i])
+                    if matched_paramsingle:
+                        call_param_key      = matched_paramsingle.group(1)
+                        if matched_paramsingle.group(2) == ',':
+                            call_param_value    = []                                    # the way to express an empty list
+                        else:
+                            call_param_value    = matched_paramsingle.group(2) != '-'   # either boolean True or False
 
-        if call_param_key:
-            traverset(named_params, call_param_key.split('.'), call_param_value)
-        else:
-            raise(Exception("Parsing error - cannot understand '{}'".format(arg)))
+                if call_param_key:
+                    call_params[call_param_key] = call_param_value
+                else:
+                    raise(Exception("Parsing error - cannot understand '{}'".format(arglist[i])))
+            i += 1
 
-    return entry_name, action_name, pos_params, named_params
+    return pipeline
 
 
 def main():
@@ -102,10 +114,11 @@ def main():
 
     from kernel import default_kernel as ak
 
-    entry_name, action_name, pos_params, named_params = cli_parse(sys.argv[1:])
+    pipeline    = cli_parse(sys.argv[1:])
+    results     = ak    # start from the kernel, continue with other entries
+    for link_id, kernel_link in enumerate(pipeline):
+        results = results.call(*kernel_link)
 
-    entry = ak.byname(entry_name)
-    results = entry.call(action_name, pos_params, named_params)
     return results
 
 

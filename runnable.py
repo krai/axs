@@ -35,8 +35,8 @@ class Runnable(ParamSource):
         """ A lightweight method to list all own methods of an entry
 
             Usage examples:
-                axs be_like list_own_functions
-                axs shell list_own_functions
+                axs byname be_like , list_own_functions
+                axs byname shell , list_own_functions
         """
         module_object = self.functions_loaded()
         return function_access.list_function_names(module_object) if module_object else []
@@ -78,9 +78,9 @@ class Runnable(ParamSource):
         """ Reach for a Runnable's function or method and examine its DocString and calling signature.
 
             Usage examples:
-                axs be_like help
-                axs dont_be_like help meme
-                axs dont_be_like help get
+                axs byname be_like , help
+                axs byname dont_be_like , help meme
+                axs byname dont_be_like , help get
         """
         print( "{:14s} {}\n".format( self.__class__.__name__+' name:', self.get_name() ))
 
