@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.3'   # TODO: update with every kernel change
+__version__ = '0.2.4'   # TODO: update with every kernel change
 
 import logging
 import os
@@ -29,7 +29,7 @@ Usage examples :
 
     def __init__(self, entry_cache=None, **kwargs):
         self.entry_cache    = entry_cache or {}
-        super().__init__(**kwargs)
+        super().__init__(kernel=self, **kwargs)
         logging.debug(f"[{self.name}] Initializing the MicroKernel with entry_cache={self.entry_cache}")
 
 
@@ -78,15 +78,6 @@ Usage examples :
         """
         logging.debug(f"[{self.name}] byname({entry_name})")
         return self.core_collection().call('byname', [entry_name])
-
-
-    def execute(self, pipeline):
-        """Execute a parsed pipeline (a chain of calls)
-        """
-        results = self      # start from the kernel, continue to other entries
-        for kernel_link in pipeline:
-            results = results.call(*kernel_link)
-        return results
 
 
 #logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")

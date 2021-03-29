@@ -13,12 +13,17 @@ class Runnable(ParamSource):
         It can run an own or inherited action using own or inherited parameters.
     """
 
-    def __init__(self, module_object=None, **kwargs):
-        "Accept setting module_object in addition to parent's parameters"
+    def __init__(self, module_object=None, kernel=None, **kwargs):
+        "Accept setting module_object and kernel in addition to parent's parameters"
 
         self.module_object  = module_object
+        self.kernel         = kernel
         super().__init__(**kwargs)
-        logging.debug(f"[{self.get_name()}] Initializing the Runnable with {repr(self.module_object)+' as module_object' if self.module_object else 'no module_object'}")
+        logging.debug(f"[{self.get_name()}] Initializing the Runnable with {repr(self.module_object)+' as module_object' if self.module_object else 'no module_object'} and kernel={self.kernel}")
+
+
+    def get_kernel(self):
+        return self.kernel
 
 
     def functions_loaded(self):
@@ -154,6 +159,16 @@ Usage examples :
         result          = function_access.feed(action_object, pos_params, override_obj)
 
         return result
+
+
+    def execute(self, pipeline):
+        """Execute a parsed pipeline (a chain of calls that starts from the kernel object)
+        """
+
+        results = self.get_kernel()
+        for call_params in pipeline:
+            results = results.call(*call_params)
+        return results
 
 
 if __name__ == '__main__':

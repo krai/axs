@@ -15,13 +15,12 @@ class Entry(Runnable):
     MODULENAME_functions    = 'python_code'     # the actual filename ends in .py
     PARAMNAME_parent_path   = 'parent_path'
 
-    def __init__(self, entry_path=None, kernel=None, **kwargs):
+    def __init__(self, entry_path=None, **kwargs):
         "Accept setting entry_path in addition to parent's parameters"
 
         self.entry_path = entry_path
-        self.kernel     = kernel
         super().__init__(**kwargs)
-        logging.debug(f"[{self.get_name()}] Initializing the Entry with entry_path={self.entry_path} and kernel={self.kernel}")
+        logging.debug(f"[{self.get_name()}] Initializing the Entry with entry_path={self.entry_path}")
 
 
     def get_path(self, file_name=None):
@@ -38,10 +37,6 @@ Usage examples :
                 return os.path.join(self.entry_path, file_name)
         else:
             return self.entry_path
-
-
-    def get_kernel(self):
-        return self.kernel
 
 
     def get_name(self):

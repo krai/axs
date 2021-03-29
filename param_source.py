@@ -16,7 +16,7 @@ class ParamSource:
         self.name = name
         self.own_parameters = own_parameters
         self.parent_object  = parent_object
-        logging.debug(f"[{self.get_name()}] Initializing the ParamSource with {self.own_parameters} and {self.parent_object.get_name()+' as parent' if self.parent_object else 'no parent'}")
+        logging.debug(f"[{self.get_name()}] Initializing the ParamSource with own_parameters={self.own_parameters} and {self.parent_object.get_name()+' as parent' if self.parent_object else 'no parent'}")
 
     def get_name(self):
         "Read-only access to the name"
