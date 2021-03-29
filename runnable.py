@@ -6,7 +6,7 @@ import function_access
 from param_source import ParamSource
 
 class Runnable(ParamSource):
-    """ An object of Runnable class is a non-persistent container of parameters (inherited) and code (own)
+    """An object of Runnable class is a non-persistent container of parameters (inherited) and code (own)
         that may optionally also have a parent object of the same class.
 
         It can run an own or inherited action using own or inherited parameters.
@@ -21,7 +21,7 @@ class Runnable(ParamSource):
 
 
     def functions_loaded(self):
-        """ Placeholder for lazy-loading code in subclasses that support it.
+        """Placeholder for lazy-loading code in subclasses that support it.
 
             Note the convention:
                 stored None means "not loaded yet", as in "cached value missing"
@@ -32,9 +32,9 @@ class Runnable(ParamSource):
 
 
     def list_own_functions(self):
-        """ A lightweight method to list all own methods of an entry
+        """A lightweight method to list all own methods of an entry
 
-            Usage examples:
+Usage examples :
                 axs byname be_like , list_own_functions
                 axs byname shell , list_own_functions
         """
@@ -75,14 +75,25 @@ class Runnable(ParamSource):
 
 
     def help(self, action_name=None):
-        """ Reach for a Runnable's function or method and examine its DocString and calling signature.
+        """Reach for a Runnable's function or method and examine its DocString and calling signature.
 
-            Usage examples:
+Usage examples :
+                axs help
+                axs help help
+                axs help substitute
                 axs byname be_like , help
                 axs byname dont_be_like , help meme
                 axs byname dont_be_like , help get
         """
-        print( "{:14s} {}\n".format( self.__class__.__name__+' name:', self.get_name() ))
+
+        common_format = "{:15s}: {}"
+        entry_class = self.__class__
+
+        print( common_format.format( entry_class.__name__+' class', entry_class.__doc__ ))
+        print( common_format.format( 'Class methods', function_access.list_function_names(entry_class) ))
+
+        print('')
+        print( common_format.format( 'Specific '+entry_class.__name__, self.get_name() ))
 
         if action_name:
             try:
@@ -98,29 +109,29 @@ class Runnable(ParamSource):
                               because it makes use of variable arguments (*) or variable keywords (**)""" )
 
                 if ancestry_path:
-                    print( "Function:      {}".format( action_name ))
-                    print( "Ancestry path: {}".format( ' --> '.join(ancestry_path) ))
+                    print( common_format.format('Function', action_name ))
+                    print( common_format.format('Ancestry path', ' --> '.join(ancestry_path) ))
                 else:
-                    print( "Method:        {}".format( action_name ))
-                    print( "Module:        {}".format( action_object.__module__ ))
+                    print( common_format.format( 'Method', action_name ))
+                    print( common_format.format( 'Declared in', action_object.__module__+'.py' ))
 
-                print( "Signature:     {}({})".format( action_name, signature ))
-                print( "DocString:    {}".format( action_object.__doc__ ))
+                print( common_format.format( 'Signature', action_name+'('+signature+')' ))
+                print( common_format.format( 'DocString', action_object.__doc__ ))
             except Exception as e:
                 logging.error( str(e) )
         else:
             module_object   = self.functions_loaded()     # the entry may not contain any code...
             if module_object:
                 doc_string      = module_object.__doc__     # the module may not contain any DocString...
-                print( "DocString:    {}".format(doc_string))
-                print( "OwnFunctions:  {}".format(self.list_own_functions()))
+                print( common_format.format('Description', doc_string))
+                print( common_format.format('OwnFunctions', self.list_own_functions()))
             else:
                 parent_may_know = ", but you may want to check its parent: "+self.parent_object.get_name() if self.parent_loaded() else ""
-                print("This entry has no code of its own" + parent_may_know)
+                print("This Runnable has no loadable functions" + parent_may_know)
 
 
     def call(self, action_name, pos_params=None, override_dict=None):
-        """ Call a given function or method of a given entry and feed it
+        """Call a given function or method of a given entry and feed it
             with arguments from the current object optionally overridden by a given dictionary.
 
             The action can have a mix of positional args and named args with optional defaults.

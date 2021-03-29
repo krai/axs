@@ -19,6 +19,14 @@ from stored_entry import Entry
 
 
 class MicroKernel(Runnable):
+    """One central place to create and cache Entries, and to execute pipelines
+
+Usage examples :
+                axs version
+                axs kernel_path
+                axs help help
+    """
+
     def __init__(self, entry_cache=None, **kwargs):
         self.entry_cache    = entry_cache or {}
         super().__init__(**kwargs)

@@ -25,8 +25,9 @@ class Entry(Runnable):
 
 
     def get_path(self, file_name=None):
-        """
-            Usage examples:
+        """The directory path of the stored Entry, optionally joined with a given relative name.
+
+Usage examples :
                 axs byname base_map , get_path
                 axs byname derived_map , get_path README.md
         """
@@ -48,9 +49,9 @@ class Entry(Runnable):
 
 
     def parameters_loaded(self):
-        """ Lazy-load, cache and return own parameters from the file system
+        """Lazy-load, cache and return own parameters from the file system
 
-            Usage examples:
+Usage examples :
                 axs byname base_map , parameters_loaded
                 axs byname derived_map , parameters_loaded
         """
@@ -67,13 +68,13 @@ class Entry(Runnable):
 
 
     def functions_loaded(self, module_name=MODULENAME_functions):
-        """ Lazy-load and cache functions from the file system
+        """Lazy-load and cache functions from the file system
 
             Note the convention:
                 stored None means "not loaded yet", as in "cached value missing"
                 whereas stored False means "this object has no code to load", "nothing to see here".
 
-            Usage examples:
+Usage examples :
                 axs byname be_like , functions_loaded
                 axs byname dont_be_like , functions_loaded
                 axs byname dont_be_like , functions_loaded alt_python_code
@@ -103,10 +104,10 @@ class Entry(Runnable):
 
 
     def save(self, update=None, new_path=None):
-        """ Store [updated] own_parameters of the entry back or to a new location.
+        """Store [updated] own_parameters of the entry back or to a new location.
             Note: only parameters get stored.
 
-            Usage example:
+Usage examples :
                 axs byname derived_map , save --new_path=derived_map_copy
         """
         own_parameters = self.parameters_loaded()   # Note the order!

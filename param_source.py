@@ -68,9 +68,9 @@ class ParamSource:
 
 
     def dig(self, key_path):
-        """ Traverse the given path of keys into a parameter's internal structure
+        """Traverse the given path of keys into a parameter's internal structure
 
-            Usage examples:
+Usage examples :
                 axs byname counting_collection , byname french , dig --key_path,=number_mapping,7
                 axs byname counting_collection , byname dutch , dig number_mapping.6
         """
@@ -88,9 +88,9 @@ class ParamSource:
 
 
     def substitute(self, input_structure):
-        """ Perform single-level parameter substitutions in the given structure
+        """Perform single-level parameter substitutions in the given structure
 
-            Usage examples:
+Usage examples :
                 axs byname base_map , substitute '#{first}# und #{second}#'
                 axs byname derived_map , substitute '#{first}#, #{third}# und #{fifth}#' --first=Erste
                 axs byname counting_collection , byname castellano , substitute '#{number_mapping.3}# + #{number_mapping.5}# = #{number_mapping.8}#'
@@ -127,9 +127,9 @@ class ParamSource:
 
 
     def get(self, param_name, default_value=None):
-        """ A safe wrapper around __getitem__() - returns the default_value if missing
+        """A safe wrapper around __getitem__() - returns the default_value if missing
 
-            Usage examples:
+Usage examples :
                 axs byname base_map , get fourth Vierte
                 axs byname derived_map , get fifth
         """

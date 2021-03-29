@@ -12,13 +12,13 @@ import sys          # to obtain Python's version
 
 
 def list_function_names(module_object):
-    """ Return the list of functions of a given module/namespace
+    """Return the list of functions of a given module/class/namespace
     """
     return [name for name, function_object in inspect.getmembers(module_object, inspect.isfunction)]
 
 
 def expected_call_structure(action_object):
-    """ Get the expected parameters of a function and their default values.
+    """Get the expected parameters of a function and their default values.
     """
 
     if sys.version_info[0] < 3:
@@ -39,7 +39,7 @@ def expected_call_structure(action_object):
 
 
 def feed(action_object, given_arg_list, dict_like_object):
-    """ Call a given action_object and feed it with arguments from given list and dictionary-like object (must support []).
+    """Call a given action_object and feed it with arguments from given list and dictionary-like object (must support []).
 
         The function can be declared as having named args and defaults.
         Neither *varargs or **kwargs are supported.
@@ -84,6 +84,8 @@ def feed(action_object, given_arg_list, dict_like_object):
 
 
 def four_param_example_func(alpha, beta, gamma=333, delta=4444):
+    "Just an example function for testing purposes"
+
     logging.debug(f'alpha = {alpha}, beta = {beta}, gamma = {gamma}, delta = {delta}')
     return alpha, beta, gamma, delta
 
