@@ -15,13 +15,14 @@ class Entry(Runnable):
     MODULENAME_functions    = 'python_code'     # the actual filename ends in .py
     PARAMNAME_parent_path   = 'parent_path'
 
-    def __init__(self, entry_path=None, parameters_path=None, **kwargs):
+    def __init__(self, entry_path=None, parameters_path=None, module_name=None, **kwargs):
         "Accept setting entry_path in addition to parent's parameters"
 
         self.entry_path         = entry_path
         self.parameters_path    = parameters_path
+        self.module_name        = module_name
         super().__init__(**kwargs)
-        logging.debug(f"[{self.get_name()}] Initializing the Entry with entry_path={self.entry_path} and parameters_path={self.parameters_path}")
+        logging.debug(f"[{self.get_name()}] Initializing the Entry with entry_path={self.entry_path}, parameters_path={self.parameters_path}, module_name={self.module_name}")
 
 
     def get_path(self, file_name=None):
@@ -41,13 +42,17 @@ Usage examples :
 
 
     def get_name(self):
-        return self.entry_path and os.path.basename(self.entry_path)
+        return self.name or (self.entry_path and os.path.basename(self.entry_path))
 
 
     def get_parameters_path(self):
         """Return the path to a json file that is supposed to contain loadable parameters
         """
         return self.parameters_path or self.get_path( self.FILENAME_parameters )
+
+
+    def get_module_name(self):
+        return self.module_name or self.MODULENAME_functions
 
 
     def parameters_loaded(self):
@@ -69,7 +74,7 @@ Usage examples :
         return self.own_parameters
 
 
-    def functions_loaded(self, module_name=MODULENAME_functions):
+    def functions_loaded(self):
         """Lazy-load and cache functions from the file system
 
             Note the convention:
@@ -79,11 +84,11 @@ Usage examples :
 Usage examples :
                 axs byname be_like , functions_loaded
                 axs byname dont_be_like , functions_loaded
-                axs byname dont_be_like , functions_loaded alt_python_code
         """
         if self.module_object==None:    # lazy-loading condition
             entry_path = self.get_path()
             if entry_path:
+                module_name = self.get_module_name()
                 try:
                     (open_file_descriptor, path_to_module, module_description) = imp.find_module( module_name, [entry_path] )
 

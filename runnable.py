@@ -132,7 +132,8 @@ Usage examples :
                 print( common_format.format('Description', doc_string))
                 print( common_format.format('OwnFunctions', self.list_own_functions()))
             else:
-                parent_may_know = ", but you may want to check its parent: "+self.parent_object.get_name() if self.parent_loaded() else ""
+                parent_object   = self.parent_loaded()
+                parent_may_know = ", but you may want to check its parent: "+parent_object.get_name() if parent_object else ""
                 print("This Runnable has no loadable functions" + parent_may_know)
 
 
@@ -150,7 +151,7 @@ Usage examples :
 
         # a tricky copy constructor that allows us to have a bit of both (original methods on overridden data)
         override_obj                = copy(self)
-        override_obj.name           = 'override'
+        override_obj.name           = 'overriden_'+self.get_name()
         override_obj.own_parameters = override_dict
         override_obj.parent_object  = self
 

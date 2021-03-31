@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.5'   # TODO: update with every kernel change
+__version__ = '0.2.6'   # TODO: update with every kernel change
 
 import logging
 import os
@@ -55,10 +55,12 @@ Usage examples :
 
     def bypath(self, path):
         """Fetch an entry by its path, cached by the path
+            Ad-hoc entries built either form a data file (.json) or functions' file (.py) can also be created.
 
 Usage examples :
                 axs bypath core_collection/counting_collection/germanic/dutch , dig number_mapping.5
                 axs bypath xyz/boo.json , substitute "Hello, #{boo}#"
+                axs bypath pqr/iterative.py , factorial 6
         """
         cache_hit = self.entry_cache.get(path)
 
@@ -67,7 +69,10 @@ Usage examples :
         else:
             logging.debug(f"[{self.name}] bypath: cache MISS for path={path}")
             if path.endswith('.json'):
-                cache_hit = self.entry_cache[path] = Entry(parameters_path=path, kernel=self)
+                cache_hit = self.entry_cache[path] = Entry(name="AdHoc_data", parameters_path=path, module_object=False, kernel=self)
+            elif path.endswith('.py'):
+                module_name = path[:-len('.py')]
+                cache_hit = self.entry_cache[path] = Entry(name="AdHoc_functions", own_parameters={}, entry_path='.', module_name=module_name, parent_object=False, kernel=self)
             else:
                 cache_hit = self.entry_cache[path] = Entry(entry_path=path, kernel=self)
 
