@@ -123,6 +123,8 @@ Usage examples :
                 axs byname derived_map , save --new_path=derived_map_copy
         """
         own_parameters = self.parameters_loaded()   # Note the order!
+        if '__entry__' in own_parameters:
+            own_parameters = self.parent_object.parameters_loaded()
         if update:
             own_parameters.update( update )
 

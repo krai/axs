@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.6'   # TODO: update with every kernel change
+__version__ = '0.2.7'   # TODO: update with every kernel change
 
 import logging
 import os
@@ -85,11 +85,30 @@ Usage examples :
         return self.bypath( self.kernel_path( 'core_collection' ) )
 
 
+    def work_collection(self):
+        """Fetch the work_collection entry
+        """
+        work_collection_path = os.getenv('AXS_WORK_COLLECTION') or os.path.join(os.getenv('HOME'), 'work_collection')
+        if not os.path.exists(work_collection_path):
+            core_collection_path = self.kernel_path( 'core_collection' )
+            work_collection_parameters = {
+                "parent_path": core_collection_path,
+                "contained_entries": [],
+                "contained_collections": {
+                    "core_collection": core_collection_path
+                }
+            }
+            work_collection_object = Entry(name="work_collection", entry_path=work_collection_path, own_parameters=work_collection_parameters, kernel=self)
+            work_collection_object.save(new_path=work_collection_path)
+            print(f"New empty work_collection initialized at {work_collection_path}")
+        return self.bypath( work_collection_path )
+
+
     def byname(self, entry_name):
         """Fetch an entry by its name (delegated to core_collection)
         """
         logging.debug(f"[{self.name}] byname({entry_name})")
-        return self.core_collection().call('byname', [entry_name])
+        return self.work_collection().call('byname', [entry_name])
 
 
 #logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")
