@@ -15,12 +15,13 @@ class Entry(Runnable):
     MODULENAME_functions    = 'python_code'     # the actual filename ends in .py
     PARAMNAME_parent_path   = 'parent_path'
 
-    def __init__(self, entry_path=None, **kwargs):
+    def __init__(self, entry_path=None, parameters_path=None, **kwargs):
         "Accept setting entry_path in addition to parent's parameters"
 
-        self.entry_path = entry_path
+        self.entry_path         = entry_path
+        self.parameters_path    = parameters_path
         super().__init__(**kwargs)
-        logging.debug(f"[{self.get_name()}] Initializing the Entry with entry_path={self.entry_path}")
+        logging.debug(f"[{self.get_name()}] Initializing the Entry with entry_path={self.entry_path} and parameters_path={self.parameters_path}")
 
 
     def get_path(self, file_name=None):
@@ -43,6 +44,12 @@ Usage examples :
         return self.entry_path and os.path.basename(self.entry_path)
 
 
+    def get_parameters_path(self):
+        """Return the path to a json file that is supposed to contain loadable parameters
+        """
+        return self.parameters_path or self.get_path( self.FILENAME_parameters )
+
+
     def parameters_loaded(self):
         """Lazy-load, cache and return own parameters from the file system
 
@@ -52,9 +59,9 @@ Usage examples :
         """
 
         if self.own_parameters==None:   # lazy-loading condition
-            parameters_full_path = self.get_path( self.FILENAME_parameters )
-            if os.path.isfile( parameters_full_path ):
-                with open( parameters_full_path ) as json_fd:
+            parameters_path = self.get_parameters_path()
+            if os.path.isfile( parameters_path ):
+                with open( parameters_path ) as json_fd:
                     self.own_parameters = json.load(json_fd)
             else:
                 self.own_parameters = {}
@@ -75,11 +82,16 @@ Usage examples :
                 axs byname dont_be_like , functions_loaded alt_python_code
         """
         if self.module_object==None:    # lazy-loading condition
-            try:
-                (open_file_descriptor, path_to_module, module_description) = imp.find_module( module_name, [self.get_path()] )
+            entry_path = self.get_path()
+            if entry_path:
+                try:
+                    (open_file_descriptor, path_to_module, module_description) = imp.find_module( module_name, [entry_path] )
 
-                self.module_object = imp.load_module(path_to_module, open_file_descriptor, path_to_module, module_description) or False
-            except ImportError as e:
+                    self.module_object = imp.load_module(path_to_module, open_file_descriptor, path_to_module, module_description) or False
+                except ImportError as e:
+                    self.module_object = False
+            else:
+                logging.debug(f"[{self.get_name()}] The entry does not have a path, so no functions either")
                 self.module_object = False
 
         return self.module_object
@@ -91,7 +103,7 @@ Usage examples :
             if parent_path:
                 full_parent_path    = self.get_path(parent_path)    # extend the relative path, but preserve absolute one
                 ak                  = self.get_kernel()             # go through the kernel, if available:
-                self.parent_object  = ak.bypath(entry_path=full_parent_path) if ak else Entry(entry_path=full_parent_path)
+                self.parent_object  = ak.bypath(path=full_parent_path) if ak else Entry(entry_path=full_parent_path)
             else:
                 self.parent_object  = False
 

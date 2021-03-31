@@ -19,7 +19,7 @@ def byname(entry_name, contained_entries, contained_collections=None, __entry__=
         else:
             relative_entry_path = entry_name
             print(f"collection.byname({entry_name}): using relative_entry_path={entry_name}")
-        return ak.bypath(entry_path=__entry__.get_path(relative_entry_path))
+        return ak.bypath(path=__entry__.get_path(relative_entry_path))
 
     elif contained_collections:
         print(f"collection.byname({entry_name}) recursing into contained_collections...")
@@ -34,7 +34,7 @@ def byname(entry_name, contained_entries, contained_collections=None, __entry__=
                 relative_collection_path = collection_name
                 print(f"collection.byname({entry_name}): using relative_collection_path={relative_collection_path}")
 
-            collection_object   = ak.bypath(entry_path=__entry__.get_path(relative_collection_path))
+            collection_object   = ak.bypath(path=__entry__.get_path(relative_collection_path))
             found_object        = collection_object.call("byname", [ entry_name ])
             if found_object:
                 print(f"collection.byname({entry_name}): found in collection {collection_name}")

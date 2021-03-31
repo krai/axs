@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.4'   # TODO: update with every kernel change
+__version__ = '0.2.5'   # TODO: update with every kernel change
 
 import logging
 import os
@@ -53,16 +53,23 @@ Usage examples :
         print(f"I am {self.name} version={self.version()} kernel_path={self.kernel_path()}")
 
 
-    def bypath(self, entry_path):
+    def bypath(self, path):
         """Fetch an entry by its path, cached by the path
+
+Usage examples :
+                axs bypath core_collection/counting_collection/germanic/dutch , dig number_mapping.5
+                axs bypath xyz/boo.json , substitute "Hello, #{boo}#"
         """
-        cache_hit = self.entry_cache.get(entry_path)
+        cache_hit = self.entry_cache.get(path)
 
         if cache_hit:
-            logging.debug(f"[{self.name}] bypath: cache HIT for entry_path={entry_path}")
+            logging.debug(f"[{self.name}] bypath: cache HIT for path={path}")
         else:
-            logging.debug(f"[{self.name}] bypath: cache MISS for entry_path={entry_path}")
-            cache_hit = self.entry_cache[entry_path] = Entry(entry_path=entry_path, kernel=self)
+            logging.debug(f"[{self.name}] bypath: cache MISS for path={path}")
+            if path.endswith('.json'):
+                cache_hit = self.entry_cache[path] = Entry(parameters_path=path, kernel=self)
+            else:
+                cache_hit = self.entry_cache[path] = Entry(entry_path=path, kernel=self)
 
         return cache_hit
 
