@@ -27,5 +27,6 @@
         "Español":      "romance/spanish",
         "castellano":   "romance/spanish",
         "Castellano":   "romance/spanish"
-    }
+    },
+    "tags": [ "collection" ]
 }

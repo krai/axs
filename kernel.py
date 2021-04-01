@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.10'   # TODO: update with every kernel change
+__version__ = '0.2.11'   # TODO: update with every kernel change
 
 import logging
 import os
@@ -53,7 +53,7 @@ Usage examples :
         print(f"I am {self.name} version={self.version()} kernel_path={self.kernel_path()}")
 
 
-    def bypath(self, path):
+    def bypath(self, path, name=None):
         """Fetch an entry by its path, cached by the path
             Ad-hoc entries built either form a data file (.json) or functions' file (.py) can also be created.
 
@@ -69,12 +69,14 @@ Usage examples :
         else:
             logging.debug(f"[{self.name}] bypath: cache MISS for path={path}")
             if path.endswith('.json'):
-                cache_hit = self.entry_cache[path] = Entry(name="AdHoc_data", parameters_path=path, module_object=False, kernel=self)
+                name = name or "AdHoc_data"
+                cache_hit = self.entry_cache[path] = Entry(name=name, parameters_path=path, module_object=False, kernel=self)
             elif path.endswith('.py'):
                 module_name = path[:-len('.py')]
-                cache_hit = self.entry_cache[path] = Entry(name="AdHoc_functions", own_parameters={}, entry_path='.', module_name=module_name, parent_object=False, kernel=self)
+                name = name or "AdHoc_functions"
+                cache_hit = self.entry_cache[path] = Entry(name=name, own_parameters={}, entry_path='.', module_name=module_name, parent_object=False, kernel=self)
             else:
-                cache_hit = self.entry_cache[path] = Entry(entry_path=path, kernel=self)
+                cache_hit = self.entry_cache[path] = Entry(name=name, entry_path=path, kernel=self)
 
         return cache_hit
 
@@ -108,6 +110,14 @@ Usage examples :
         """
         logging.debug(f"[{self.name}] byname({entry_name})")
         return self.work_collection().call('byname', [entry_name])
+
+
+    def byquery(self, query):
+        """Fetch an entry by a query over its tags (delegated to core_collection)
+        """
+        logging.debug(f"[{self.name}] byquery({query})")
+        return self.work_collection().call('byquery', [query])
+
 
 
 #logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")
