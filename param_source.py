@@ -13,10 +13,11 @@ class ParamSource:
     def __init__(self, name=None, own_parameters=None, parent_object=None):
         "A trivial constructor"
 
-        self.name = name
+        self.name           = name
         self.own_parameters = own_parameters
         self.parent_object  = parent_object
         logging.debug(f"[{self.get_name()}] Initializing the ParamSource with own_parameters={self.own_parameters} and {self.parent_object.get_name()+' as parent' if self.parent_object else 'no parent'}")
+
 
     def get_name(self):
         "Read-only access to the name"
@@ -46,18 +47,26 @@ class ParamSource:
 
         logging.debug(f"[{self.get_name()}] Attempt to access parameter '{param_name}'...")
         own_parameters = self.parameters_loaded()
-        hash_param_name = '#'+param_name
         if param_name in own_parameters:
             param_value = own_parameters[param_name]
             logging.debug(f'[{self.get_name()}]  I have parameter "{param_name}", returning "{param_value}"')
             return param_value
-        elif hash_param_name in own_parameters:
-            unsubstituted_structure = own_parameters[hash_param_name]
-            logging.debug(f'[{self.get_name()}]  I have parameter "{hash_param_name}", the value is "{unsubstituted_structure}"')
-            substituted_structure = calling_top_context.substitute( unsubstituted_structure )
-            logging.debug(f'[{self.get_name()}]  Substituting "{unsubstituted_structure}", returning "{substituted_structure}"')
-            return substituted_structure
         else:
+            for prefix in ('#', '*'):
+                prefixed_param_name = prefix+param_name
+                if prefixed_param_name in own_parameters:
+                    unsubstituted_structure = own_parameters[prefixed_param_name]
+                    logging.debug(f'[{self.get_name()}]  I have parameter "{prefixed_param_name}", the value is "{unsubstituted_structure}"')
+                    substituted_structure = calling_top_context.substitute( unsubstituted_structure )
+                    logging.debug(f'[{self.get_name()}]  Substituting "{unsubstituted_structure}", returning "{substituted_structure}"')
+                    if prefix=='#':
+                        return substituted_structure
+                    elif prefix=='*':
+                        logging.debug(f'[{self.get_name()}]  About to execute the pipeline: "{substituted_structure}"')
+                        pipeline_result = calling_top_context.execute( substituted_structure )
+                        logging.debug(f'[{self.get_name()}]  Executed "{substituted_structure}", returning "{pipeline_result}"')
+                        return pipeline_result
+
             parent_object = self.parent_loaded()
             if parent_object:
                 logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}', fallback to the parent")
