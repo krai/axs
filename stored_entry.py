@@ -13,7 +13,7 @@ class Entry(Runnable):
 
     FILENAME_parameters     = 'parameters.json'
     MODULENAME_functions    = 'python_code'     # the actual filename ends in .py
-    PARAMNAME_parent_path   = 'parent_path'
+    PARAMNAME_parent_entry  = 'parent_entry'
 
     def __init__(self, entry_path=None, parameters_path=None, module_name=None, **kwargs):
         "Accept setting entry_path in addition to parent's parameters"
@@ -104,13 +104,7 @@ Usage examples :
 
     def parent_loaded(self):
         if self.parent_object==None:     # lazy-loading condition
-            parent_path = self.parameters_loaded().get( self.PARAMNAME_parent_path )    # only look into own_parameters to avoid infinite recursion
-            if parent_path:
-                full_parent_path    = self.get_path(parent_path)    # extend the relative path, but preserve absolute one
-                ak                  = self.get_kernel()             # go through the kernel, if available:
-                self.parent_object  = ak.bypath(path=full_parent_path) if ak else Entry(entry_path=full_parent_path)
-            else:
-                self.parent_object  = False
+            self.parent_object  = self.get( self.PARAMNAME_parent_entry, parent_recursion=False ) or False
 
         return self.parent_object
 

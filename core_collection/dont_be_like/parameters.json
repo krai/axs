@@ -1,4 +1,4 @@
 {
-    "parent_path":  "../be_like",
+    "*parent_entry": [["byname", ["be_like"]]],
     "be"            : "Don't be"
 }

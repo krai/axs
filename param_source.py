@@ -40,7 +40,7 @@ class ParamSource:
         return self.parent_object
 
 
-    def __getitem__(self, param_name, calling_top_context=None):
+    def __getitem__(self, param_name, calling_top_context=None, parent_recursion=True):
         "Lazy parameter access: returns the parameter value from self or the closest parent"
 
         calling_top_context = calling_top_context or self
@@ -67,13 +67,14 @@ class ParamSource:
                         logging.debug(f'[{self.get_name()}]  Executed "{substituted_structure}", returning "{pipeline_result}"')
                         return pipeline_result
 
-            parent_object = self.parent_loaded()
-            if parent_object:
-                logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}', fallback to the parent")
-                return parent_object.__getitem__(param_name, calling_top_context)
-            else:
-                logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}', and no parent either - raising KeyError")
-                raise KeyError(param_name)
+            if parent_recursion:
+                parent_object = self.parent_loaded()
+                if parent_object:
+                    logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}', fallback to the parent")
+                    return parent_object.__getitem__(param_name, calling_top_context=calling_top_context)
+
+            logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}', and no parent either - raising KeyError")
+            raise KeyError(param_name)
 
 
     def dig(self, key_path):
@@ -135,7 +136,7 @@ Usage examples :
             return input_structure                                                          # basement step
 
 
-    def get(self, param_name, default_value=None):
+    def get(self, param_name, default_value=None, calling_top_context=None, parent_recursion=True):
         """A safe wrapper around __getitem__() - returns the default_value if missing
 
 Usage examples :
@@ -143,7 +144,7 @@ Usage examples :
                 axs byname derived_map , get fifth
         """
         try:
-            return self[param_name]
+            return self.__getitem__(param_name, calling_top_context=calling_top_context, parent_recursion=parent_recursion)
         except KeyError:
             return default_value
 

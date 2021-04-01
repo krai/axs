@@ -1,5 +1,5 @@
 {
-    "parent_path":  "../../core_collection",
+    "*parent_entry":  [["core_collection"]],
     "contained_entries": {
         "dutch":        "germanic/dutch",
         "Dutch":        "germanic/dutch",

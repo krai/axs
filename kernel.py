@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.8'   # TODO: update with every kernel change
+__version__ = '0.2.9'   # TODO: update with every kernel change
 
 import logging
 import os
@@ -90,12 +90,11 @@ Usage examples :
         """
         work_collection_path = os.getenv('AXS_WORK_COLLECTION') or os.path.join(os.getenv('HOME'), 'work_collection')
         if not os.path.exists(work_collection_path):
-            core_collection_path = self.kernel_path( 'core_collection' )
             work_collection_parameters = {
-                "parent_path": core_collection_path,
+                "*parent_entry": [["core_collection"]],
                 "contained_entries": [],
                 "contained_collections": {
-                    "core_collection": core_collection_path
+                    "core_collection": self.kernel_path( 'core_collection' )
                 }
             }
             work_collection_object = Entry(name="work_collection", entry_path=work_collection_path, own_parameters=work_collection_parameters, kernel=self)
