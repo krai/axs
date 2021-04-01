@@ -3,6 +3,7 @@
 """ A simple CommandLine API for this framework.
 """
 
+import json
 import logging
 import re
 import sys
@@ -28,6 +29,7 @@ def cli_parse(arglist):
             --lambda.mu=                    # dictionary empty string value
             --nu.xi=omicron                 # dictionary scalar value (number or string)
             --pi.rho,=tag1,tag2,tag3        # dictionary that contains a list
+            ---xyz='[{"pq":"rs"},123]'      # parsed JSON
     """
 
     def to_num_or_not_to_num(x):
@@ -69,23 +71,29 @@ def cli_parse(arglist):
             else:
                 call_param_key = None
 
-                matched_parampair = re.match('^--(#?[\w\.]+)([\ ,;:]?)=(.*)$', arglist[i])
-                if matched_parampair:
-                    call_param_key      = matched_parampair.group(1)
-                    delimiter           = matched_parampair.group(2)
-                    call_param_value    = matched_parampair.group(3)
-                    if delimiter:
-                        call_param_value    = [to_num_or_not_to_num(el) for el in call_param_value.split(delimiter)]
-                    else:
-                        call_param_value    = to_num_or_not_to_num(call_param_value)
+                matched_json_param = re.match('^---([\*#]?\w+)=(.*)$', arglist[i])
+                if matched_json_param:
+                    call_param_key      = matched_json_param.group(1)
+                    call_param_json     = matched_json_param.group(2)
+                    call_param_value    = json.loads( call_param_json )
                 else:
-                    matched_paramsingle = re.match('^--([\w\.]+)([,-]?)$', arglist[i])
-                    if matched_paramsingle:
-                        call_param_key      = matched_paramsingle.group(1)
-                        if matched_paramsingle.group(2) == ',':
-                            call_param_value    = []                                    # the way to express an empty list
+                    matched_parampair = re.match('^--(#?[\w\.]+)([\ ,;:]?)=(.*)$', arglist[i])
+                    if matched_parampair:
+                        call_param_key      = matched_parampair.group(1)
+                        delimiter           = matched_parampair.group(2)
+                        call_param_value    = matched_parampair.group(3)
+                        if delimiter:
+                            call_param_value    = [to_num_or_not_to_num(el) for el in call_param_value.split(delimiter)]
                         else:
-                            call_param_value    = matched_paramsingle.group(2) != '-'   # either boolean True or False
+                            call_param_value    = to_num_or_not_to_num(call_param_value)
+                    else:
+                        matched_paramsingle = re.match('^--([\w\.]+)([,-]?)$', arglist[i])
+                        if matched_paramsingle:
+                            call_param_key      = matched_paramsingle.group(1)
+                            if matched_paramsingle.group(2) == ',':
+                                call_param_value    = []                                    # the way to express an empty list
+                            else:
+                                call_param_value    = matched_paramsingle.group(2) != '-'   # either boolean True or False
 
                 if call_param_key:
                     call_params[call_param_key] = call_param_value
