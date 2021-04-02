@@ -10,6 +10,8 @@ class ParamSource:
         It can return the value of a known parameter or delegate the request for an unknown parameter to its parent.
     """
 
+    PARAMNAME_parent_entry  = 'parent_entry'
+
     def __init__(self, name=None, own_parameters=None, parent_object=None):
         "A trivial constructor"
 
@@ -35,7 +37,8 @@ class ParamSource:
 
 
     def parent_loaded(self):
-        "Placeholder for lazy-loading the parent in subclasses that support it"
+        if self.parent_object==None:     # lazy-loading condition
+            self.parent_object  = self.get( self.PARAMNAME_parent_entry, parent_recursion=False ) or False
 
         return self.parent_object
 
