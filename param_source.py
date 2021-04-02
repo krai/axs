@@ -77,11 +77,13 @@ class ParamSource:
             raise KeyError(param_name)
 
 
-    def dig(self, key_path):
-        """Traverse the given path of keys into a parameter's internal structure
+    def dig(self, key_path, safe=False):
+        """Traverse the given path of keys into a parameter's internal structure.
+            --safe allows it not to fail when the path is not traversable
 
 Usage examples :
                 axs dig greek.2 --greek,=alpha,beta,gamma,delta
+                axs dig greek.4 --greek,=alpha,beta,gamma,delta --safe
                 axs byname counting_collection , byname french , dig --key_path,=number_mapping,7
                 axs byname counting_collection , byname dutch , dig number_mapping.6
         """
@@ -89,13 +91,20 @@ Usage examples :
             key_path = key_path.split('.')
 
         first_syllable  = key_path.pop(0)
-        struct_ptr      = self[ first_syllable ]
 
-        for key_syllable in key_path:
-            if type(struct_ptr)==list:  # descend into lists with numeric indices
-                key_syllable = int(key_syllable)
-            struct_ptr = struct_ptr[key_syllable]   # iterative descent
-        return struct_ptr
+        try:
+            struct_ptr      = self[ first_syllable ]
+
+            for key_syllable in key_path:
+                if type(struct_ptr)==list:  # descend into lists with numeric indices
+                    key_syllable = int(key_syllable)
+                struct_ptr = struct_ptr[key_syllable]   # iterative descent
+            return struct_ptr
+        except (KeyError, IndexError, ValueError) as e:
+            if safe:
+                return None
+            else:
+                raise e
 
 
     def substitute(self, input_structure):
