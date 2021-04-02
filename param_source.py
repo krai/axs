@@ -77,7 +77,7 @@ class ParamSource:
             raise KeyError(param_name)
 
 
-    def dig(self, key_path, safe=False):
+    def dig(self, key_path, safe=False, parent_recursion=True):
         """Traverse the given path of keys into a parameter's internal structure.
             --safe allows it not to fail when the path is not traversable
 
@@ -90,12 +90,12 @@ Usage examples :
         if type(key_path)!=list:
             key_path = key_path.split('.')
 
-        first_syllable  = key_path.pop(0)
+        param_name = key_path[0]
 
         try:
-            struct_ptr      = self[ first_syllable ]
+            struct_ptr  = self.__getitem__(param_name, parent_recursion=parent_recursion)
 
-            for key_syllable in key_path:
+            for key_syllable in key_path[1:]:
                 if type(struct_ptr)==list:  # descend into lists with numeric indices
                     key_syllable = int(key_syllable)
                 struct_ptr = struct_ptr[key_syllable]   # iterative descent
