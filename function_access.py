@@ -90,6 +90,24 @@ def four_param_example_func(alpha, beta, gamma=333, delta=4444):
     return alpha, beta, gamma, delta
 
 
+def to_num_or_not_to_num(x):
+    "Convert the parameter to a number if it looks like it"
+
+    try:
+        x_int = int(x)
+        if type(x_int)==int:
+            return x_int
+    except:
+        try:
+            x_float = float(x)
+            if type(x_float)==float:
+                return x_float
+        except:
+            pass
+
+    return x
+
+
 if __name__ == '__main__':
 
     logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s: %(message)s")

@@ -8,6 +8,8 @@ import logging
 import re
 import sys
 
+from function_access import to_num_or_not_to_num
+
 def cli_parse(arglist):
     """Parse the command pipeline representing a chain of calls
 
@@ -31,23 +33,6 @@ def cli_parse(arglist):
             --pi.rho,=tag1,tag2,tag3        # dictionary that contains a list
             ---xyz='[{"pq":"rs"},123]'      # parsed JSON
     """
-
-    def to_num_or_not_to_num(x):
-        "Convert the parameter to a number if it looks like it"
-
-        try:
-            x_int = int(x)
-            if type(x_int)==int:
-                return x_int
-        except:
-            try:
-                x_float = float(x)
-                if type(x_float)==float:
-                    return x_float
-            except:
-                pass
-
-        return x
 
 
     pipeline = []
