@@ -49,6 +49,9 @@ class ParamSource:
         calling_top_context = calling_top_context or self
 
         logging.debug(f"[{self.get_name()}] Attempt to access parameter '{param_name}'...")
+        if param_name=='__entry__':
+            return self
+
         own_parameters = self.parameters_loaded()
         if param_name in own_parameters:
             param_value = own_parameters[param_name]

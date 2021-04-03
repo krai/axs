@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.16'   # TODO: update with every kernel change
+__version__ = '0.2.17'   # TODO: update with every kernel change
 
 import logging
 import os
@@ -92,6 +92,7 @@ Usage examples :
         """
         work_collection_path = os.getenv('AXS_WORK_COLLECTION') or os.path.join(os.getenv('HOME'), 'work_collection')
         if not os.path.exists(work_collection_path):
+            print(f"Creating new empty work_collection at {work_collection_path}...")
             work_collection_parameters = {
                 "*parent_entry": [["core_collection"]],
                 "contained_entries": [],
@@ -100,8 +101,7 @@ Usage examples :
                 }
             }
             work_collection_object = Entry(name="work_collection", entry_path=work_collection_path, own_parameters=work_collection_parameters, kernel=self)
-            work_collection_object.save(new_path=work_collection_path)
-            print(f"New empty work_collection initialized at {work_collection_path}")
+            work_collection_object.save()
         return self.bypath( work_collection_path )
 
 
@@ -117,7 +117,6 @@ Usage examples :
         """
         logging.debug(f"[{self.name}] byquery({query})")
         return self.work_collection().call('byquery', [query])
-
 
 
 #logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")

@@ -144,20 +144,11 @@ Usage examples :
             The action can have a mix of positional args and named args with optional defaults.
         """
 
-        if override_dict == None:
-            override_dict = {}
+        if override_dict:
+            self.parameters_loaded().update( override_dict )
 
-        override_dict['__entry__']  = self
-
-        # a tricky copy constructor that allows us to have a bit of both (original methods on overridden data)
-        override_obj                = copy(self)
-        override_obj.name           = 'overriden_'+self.get_name()
-        override_obj.own_parameters = override_dict
-        override_obj.parent_object  = self
-
-        pos_params      = pos_params or []
-        action_object   = override_obj.reach_action(action_name)
-        result          = function_access.feed(action_object, pos_params, override_obj)
+        action_object   = self.reach_action(action_name)
+        result          = function_access.feed(action_object, pos_params or [], self)
 
         return result
 

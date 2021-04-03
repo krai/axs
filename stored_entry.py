@@ -101,32 +101,33 @@ Usage examples :
         return self.module_object
 
 
-    def save(self, update=None, new_path=None):
-        """Store [updated] own_parameters of the entry back or to a new location.
-            Note: only parameters get stored.
+    def save(self):
+        """Store [updated] own_parameters of the entry
+            Note1: the entry didn't have to have existed prior to saving
+            Note2: only parameters get stored
 
 Usage examples :
-                axs byname derived_map , save --new_path=derived_map_copy
+                axs bypath foo_entry , save --x=new_x_value --y=new_y_value
+                axs bypath new_collection , save --contained_entries, --contained_collections, ---*parent_entry='[["core_collection"]]'
         """
-        own_parameters = self.parameters_loaded()   # Note the order!
-        if '__entry__' in own_parameters:
-            own_parameters = self.parent_object.parameters_loaded()
-        if update:
-            own_parameters.update( update )
 
-        if new_path:
-            if not os.path.exists(new_path):    # Autovivify the directories in between if necessary
-                os.makedirs(new_path)
+        parameters_full_path    = self.get_parameters_path()
 
-            self.entry_path = new_path
+        # Autovivify the directories in between if necessary:
+        parameters_dirname      = os.path.dirname( parameters_full_path )
+        if parameters_dirname and not os.path.exists(parameters_dirname):
+            os.makedirs(parameters_dirname)
 
-        parameters_full_path = self.get_path( self.FILENAME_parameters )
+        # Store the [potentially updated] own_parameters:
+        own_parameters          = self.parameters_loaded()
+        json_data               = json.dumps(own_parameters, indent=4)
         with open(parameters_full_path, "w") as json_fd:
-            json_fd.write( json.dumps(own_parameters, indent=4)+'\n' )
+            json_fd.write( json_data+"\n" )
 
-        logging.debug(f"[{self.get_name()}] parameters saved")
+        logging.debug(f"[{self.get_name()}] parameters saved to {parameters_full_path}")
+        print(f"Storing:\n{json_data}\nto {parameters_full_path}")
 
-        return own_parameters
+        return self
 
 
 if __name__ == '__main__':
