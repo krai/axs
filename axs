@@ -46,9 +46,10 @@ def cli_parse(arglist):
         if arglist[i]==',':     # just skip the pipeline link separator
             i += 1
 
-        call_params = {}
+        call_params     = {}
         call_pos_params = []
-        curr_link = ( arglist[i], call_pos_params, call_params )
+        call_pos_preps  = []
+        curr_link = ( arglist[i], call_pos_params, call_params, call_pos_preps )
         i += 1
         pipeline.append( curr_link )
 
@@ -57,19 +58,22 @@ def cli_parse(arglist):
             if not arglist[i].startswith('--'):
                 call_pos_params.append( to_num_or_not_to_num(arglist[i]) )
             else:
-                call_param_key = None
+                call_param_key  = None
+                call_param_prep = ''
 
-                matched_json_param = re.match('^---([\*#]?[\w\.]*)=(.*)$', arglist[i])
+                matched_json_param = re.match('^---([\*#]?)([\w\.]*)=(.*)$', arglist[i])
                 if matched_json_param:
-                    call_param_key      = matched_json_param.group(1)
-                    call_param_json     = matched_json_param.group(2)
+                    call_param_prep     = matched_json_param.group(1)
+                    call_param_key      = matched_json_param.group(2)
+                    call_param_json     = matched_json_param.group(3)
                     call_param_value    = json.loads( call_param_json )
                 else:
-                    matched_parampair = re.match('^--(#?[\w\.]*)([\ ,;:]?)=(.*)$', arglist[i])
+                    matched_parampair = re.match('^--(#?)([\w\.]*)([\ ,;:]?)=(.*)$', arglist[i])
                     if matched_parampair:
-                        call_param_key      = matched_parampair.group(1)
-                        delimiter           = matched_parampair.group(2)
-                        call_param_value    = matched_parampair.group(3)
+                        call_param_prep     = matched_parampair.group(1)
+                        call_param_key      = matched_parampair.group(2)
+                        delimiter           = matched_parampair.group(3)
+                        call_param_value    = matched_parampair.group(4)
                         if delimiter:
                             call_param_value    = [to_num_or_not_to_num(el) for el in call_param_value.split(delimiter)]
                         else:
@@ -84,8 +88,9 @@ def cli_parse(arglist):
                                 call_param_value    = matched_paramsingle.group(2) != '-'   # either boolean True or False
 
                 if call_param_key:
-                    call_params[call_param_key] = call_param_value
+                    call_params[call_param_prep + call_param_key] = call_param_value
                 elif call_param_key=='':
+                    call_pos_preps.append( call_param_prep )
                     call_pos_params.append( call_param_value )
                 else:
                     raise(Exception("Parsing error - cannot understand '{}'".format(arglist[i])))

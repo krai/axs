@@ -137,7 +137,7 @@ Usage examples :
                 print("This Runnable has no loadable functions" + parent_may_know)
 
 
-    def call(self, action_name, pos_params=None, override_dict=None):
+    def call(self, action_name, pos_params=None, override_dict=None, pos_preps=None):
         """Call a given function or method of a given entry and feed it
             with arguments from the current object optionally overridden by a given dictionary.
 
@@ -147,8 +147,20 @@ Usage examples :
         if override_dict:
             self.parameters_loaded().update( override_dict )
 
+        pos_params = pos_params or []
+
+        # deferred substitution/execution of positional arguments
+        if pos_preps:
+            for idx in range(len(pos_params)):
+                prep = pos_preps[idx]
+                if prep in ('#', '*'):
+                    if prep=='*':   # The order is important for nested executions that may want to perform their own substitutions
+                        pos_params[idx] = self.execute( pos_params[idx] )
+                    pos_params[idx] = self.substitute( pos_params[idx] )
+
+
         action_object   = self.reach_action(action_name)
-        result          = function_access.feed(action_object, pos_params or [], self)
+        result          = function_access.feed(action_object, pos_params, self)
 
         return result
 
