@@ -16,10 +16,13 @@ def cli_parse(arglist):
     The expected format is:
         <action_name> [<pos_param>]* [<opt_param>]* [, <action_name> [<pos_param>]* [<opt_param>]*]*
 
-        You can use as many positional params as possible while their values are scalars.
-        However as soon as you need to define a structure, a switch to optional param syntax will be necessary.
+        Positional parameters can have the following formats:
+            ---='{"hello": "world"}'        # parsed JSON
+            --,=abc,123,def                 # comma-separated list ["abc", 123, "def"]
+            --,                             # empty list
+            free_word                       # string or number
 
-        Optional params can represent a lot of things:
+        Optional parameters can have the following formats:
             --alpha                         # boolean True
             --beta-                         # boolean False
             --gamma=                        # scalar empty string
@@ -56,13 +59,13 @@ def cli_parse(arglist):
             else:
                 call_param_key = None
 
-                matched_json_param = re.match('^---([\*#]?\w+)=(.*)$', arglist[i])
+                matched_json_param = re.match('^---([\*#]?[\w\.]*)=(.*)$', arglist[i])
                 if matched_json_param:
                     call_param_key      = matched_json_param.group(1)
                     call_param_json     = matched_json_param.group(2)
                     call_param_value    = json.loads( call_param_json )
                 else:
-                    matched_parampair = re.match('^--(#?[\w\.]+)([\ ,;:]?)=(.*)$', arglist[i])
+                    matched_parampair = re.match('^--(#?[\w\.]*)([\ ,;:]?)=(.*)$', arglist[i])
                     if matched_parampair:
                         call_param_key      = matched_parampair.group(1)
                         delimiter           = matched_parampair.group(2)
@@ -72,7 +75,7 @@ def cli_parse(arglist):
                         else:
                             call_param_value    = to_num_or_not_to_num(call_param_value)
                     else:
-                        matched_paramsingle = re.match('^--([\w\.]+)([,-]?)$', arglist[i])
+                        matched_paramsingle = re.match('^--([\w\.]*)([,+-]?)$', arglist[i])
                         if matched_paramsingle:
                             call_param_key      = matched_paramsingle.group(1)
                             if matched_paramsingle.group(2) == ',':
@@ -82,6 +85,8 @@ def cli_parse(arglist):
 
                 if call_param_key:
                     call_params[call_param_key] = call_param_value
+                elif call_param_key=='':
+                    call_pos_params.append( call_param_value )
                 else:
                     raise(Exception("Parsing error - cannot understand '{}'".format(arglist[i])))
             i += 1
