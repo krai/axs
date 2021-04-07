@@ -1,0 +1,22 @@
+# After changing this file, check it on:
+#   http://lint.travis-ci.org/
+
+os:         linux
+language:   python
+
+python:
+    - 3.6
+    - 3.7
+
+install:
+    - CWD=`pwd`
+    - THIS_REPO_NAME=`basename $CWD`
+    - PYTHON_EXE=python
+    - echo "TRAVIS_OS_NAME=${TRAVIS_OS_NAME}, TRAVIS_PYTHON_VERSION=${TRAVIS_PYTHON_VERSION}"
+    - echo "CWD=${CWD}, THIS_REPO_NAME=${THIS_REPO_NAME}, PATH=${PATH}"
+    - which ${PYTHON_EXE}
+    - ${PYTHON_EXE} --version
+
+script:
+    - ${PYTHON_EXE} function_access.py
+
