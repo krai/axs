@@ -14,7 +14,9 @@ import sys          # to obtain Python's version
 def list_function_names(module_object):
     """Return the list of functions of a given module/class/namespace
     """
-    return [name for name, function_object in inspect.getmembers(module_object, inspect.isfunction)]
+    function_names = [name for name, function_object in inspect.getmembers(module_object, inspect.isfunction)]
+    logging.debug(f"Module/Class/Namespace {module_object.__name__} contains the following functions: {function_names}")
+    return function_names
 
 
 def expected_call_structure(action_object):
@@ -35,6 +37,7 @@ def expected_call_structure(action_object):
     required_arg_names  = supported_arg_names[:num_required]
     optional_arg_names  = supported_arg_names[num_required:]
 
+    logging.debug(f"{action_object.__name__}() required={required_arg_names}, optional={optional_arg_names}, defaults={defaults}, varargs={varargs}, varkw={varkw}")
     return required_arg_names, optional_arg_names, defaults, varargs, varkw
 
 
@@ -96,13 +99,16 @@ def to_num_or_not_to_num(x):
     try:
         x_int = int(x)
         if type(x_int)==int:
+            logging.debug(f"converting {repr(x)} to int")
             return x_int
     except:
         try:
             x_float = float(x)
             if type(x_float)==float:
+                logging.debug(f"converting {repr(x)} to float")
                 return x_float
         except:
+            logging.debug(f"keeping {repr(x)} as it was")
             pass
 
     return x
@@ -112,36 +118,36 @@ if __name__ == '__main__':
 
     logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s: %(message)s")
 
-    print('-'*40 + ' Direct calls: ' + '-'*40)
+    print('-'*40 + ' four_param_example_func() calls: ' + '-'*40)
 
-    param_tuple = (10, 20)
-    print(f"four_param_example_func{param_tuple} --> ")
-    output_tuple = four_param_example_func(*param_tuple)
-    print(f"--> {output_tuple}\n")
+    assert four_param_example_func(10, 20)==(10, 20, 333, 4444), "Direct call with only positional args"
 
-    param_tuple = (100, 200, 300)
-    print(f"four_param_example_func{param_tuple} --> ")
-    output_tuple = four_param_example_func(*param_tuple)
-    print(f"--> {output_tuple}\n")
+    assert four_param_example_func(100, 200, 300)==(100, 200, 300, 4444), "Direct call with all positional and some optional-as-positional args"
 
+    assert four_param_example_func(1000, 2000, delta=4000)==(1000, 2000, 333, 4000), "Direct call with all positional and some optional args"
 
-    print('-'*40 + ' Access calls: ' + '-'*40)
+    print('-'*40 + ' feed() calls: ' + '-'*40)
 
-    param_tuple = (50, 60)
-    param_dict  = {'delta':80}
-    print(f"feed(four_param_example_func, {param_tuple}, {param_dict} -->")
-    output_tuple = feed( four_param_example_func, param_tuple, param_dict )
-    print(f"--> {output_tuple}\n")
+    assert feed(four_param_example_func, (50, 60), {'delta':80})==(50, 60, 333, 80), "Feed() call with all positional and some optional args"
 
-    param_tuple = (500,)
-    param_dict  = {'beta':600, 'gamma':700}
-    print(f"feed(four_param_example_func, {param_tuple}, {param_dict} -->")
-    output_tuple = feed( four_param_example_func, param_tuple, param_dict )
-    print(f"--> {output_tuple}\n")
+    assert feed(four_param_example_func, (500,), {'beta':600, 'gamma':700})==(500, 600, 700, 4444), "Feed() call with some positional, some named-positional and some optional args"
 
-    param_tuple = ()
-    param_dict  = {'alpha':5000, 'beta':6000, 'delta':8000}
-    print(f"feed(four_param_example_func, {param_tuple}, {param_dict} -->")
-    output_tuple = feed( four_param_example_func, param_tuple, param_dict )
-    print(f"--> {output_tuple}\n")
+    assert feed(four_param_example_func, (), {'alpha':5000, 'beta':6000, 'delta':8000})==(5000, 6000, 333, 8000), "Feed() call with all args posing as optional"
 
+    print('-'*40 + ' to_num_or_not_to_num() calls: ' + '-'*40)
+
+    assert to_num_or_not_to_num("100")==100, "Converting string into int"
+
+    assert to_num_or_not_to_num("100.52")==100.52, "Converting string into float"
+
+    assert to_num_or_not_to_num("abcde")=="abcde", "Not converting into num #1"
+
+    assert to_num_or_not_to_num("100.52x")=="100.52x", "Not converting into num #2"
+
+    print('-'*40 + ' expected_call_structure() calls: ' + '-'*40)
+
+    assert expected_call_structure(four_param_example_func)==(['alpha', 'beta'], ['gamma', 'delta'], (333, 4444), None, None)
+
+    print('-'*40 + ' list_function_names() calls: ' + '-'*40)
+
+    assert sorted(list_function_names(sys.modules[__name__]))==['expected_call_structure', 'feed', 'four_param_example_func', 'list_function_names', 'to_num_or_not_to_num'], "Functions defined in this module"
