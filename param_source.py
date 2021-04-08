@@ -164,6 +164,7 @@ Usage examples :
         try:
             return self.__getitem__(param_name, calling_top_context=calling_top_context, parent_recursion=parent_recursion)
         except KeyError:
+            logging.debug(f"[{self.get_name()}] caught KeyError: parameter '{param_name}' is missing, returning the default value '{default_value}'")
             return default_value
 
 
@@ -177,40 +178,43 @@ if __name__ == '__main__':
 
     logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")
 
-    print('-'*40 + ' Access request delegation down the ParamSource hierarchy: ' + '-'*40)
+    print('-'*20 + ' Access request delegation down the ParamSource hierarchy: ' + '-'*20)
 
     granddad    = ParamSource(name='granddad',  own_parameters={"fifth":"viies", "sixth":"kuues"} )
     dad         = ParamSource(name='dad',       own_parameters={"third":"kolmas", "fourth":"neljas"},   parent_object=granddad)
     child       = ParamSource(name='child',     own_parameters={"first":"esimene", "second":"teine"},   parent_object=dad)
 
-    print(f"\tchild['first']={child['first']}\n")
-    print(f"\tchild['third']={child['third']}\n")
-    print(f"\tchild['fifth']={child['fifth']}\n")
-    try:
-        print(f"\tchild['seventh']={child['seventh']}\n")
-    except KeyError as e:
-        print(f"\tMissing parameter: {e}\n")
+    assert child['first']=='esimene', "Getting own data"
+    assert child['third']=='kolmas', "Inheriting dad's data"
+    assert child['fifth']=='viies', "Inheriting granddad's data"
+    assert child.substitute("#{second}#, #{third}# ja #{fifth}#")=="teine, kolmas ja viies", "Substitution of data of mixed inheritance"
 
-    print(f"\tAnother missing value: child.get('ninth')={child.get('ninth', 'MISSING')}\n")
+    try:
+        missing = child['seventh']
+    except KeyError as e:
+        print(f"\tParameter {e} is correctly missing\n")
+
+    assert child.get('ninth', 'MISSING')=='MISSING', "Missing data substituted with default value"
 
     dad['second']       = 'TEINE'
     dad['third']        = 'KOLMAS'
     granddad['seventh'] = 'SEITSMES'
 
-    print(f"granddad.parameters_loaded()={granddad.parameters_loaded()}")
-    print(f"dad.parameters_loaded()={dad.parameters_loaded()}")
-    print(f"child.parameters_loaded()={child.parameters_loaded()}\n")
+    assert granddad.parameters_loaded()=={'fifth': 'viies', 'sixth': 'kuues', 'seventh': 'SEITSMES'}, "Modified granddad's data"
+    assert dad.parameters_loaded()=={'third': 'KOLMAS', 'fourth': 'neljas', 'second': 'TEINE'}, "Modified dad's data"
+    assert child.parameters_loaded()=={'first': 'esimene', 'second': 'teine'}, "Unmodified child's data"
 
     from function_access import feed, four_param_example_func
 
-    print('-'*40 + ' Access call: ' + '-'*40)
+    print('-'*40 + ' feed() calls: ' + '-'*40)
 
-    foo_param_parent = ParamSource('foo_param_parent',  {"alpha": 100, "beta": 200, "delta": 400, "epsilon": 600})
-    foo_param_child  = ParamSource('foo_param_child',   {"alpha": 10, "lambda": 7777},                              foo_param_parent)
+    foo_param_parent = ParamSource(name='foo_param_parent', own_parameters={"alpha": 100, "beta": 200, "delta": 400, "epsilon": 600})
+    foo_param_child  = ParamSource(name='foo_param_child',  own_parameters={"alpha": 10, "lambda": 7777},            parent_object=foo_param_parent)
 
-    param_tuple = ()
-    param_dict = foo_param_child
-    print(f"feed(four_param_example_func, {param_tuple}, {param_dict} -->")
-    output_tuple = feed( four_param_example_func, param_tuple, param_dict )
-    print(f"--> {output_tuple}\n")
+    assert feed(four_param_example_func, (), foo_param_child)==(10, 200, 333, 400), "feed() call with all parameters coming from ParamSource object"
 
+    bar_params = ParamSource(name='bar_params', own_parameters={"mate": "world", "deep": {"hole": [10,20,30], "sea": "Red"} })
+
+    assert feed(bar_params.substitute, ("Hello, #{mate}#!",), bar_params)=="Hello, world!", "feed() call with both positional and optional parameters #1"
+
+    assert feed(bar_params.dig, ("deep.hole.2",), bar_params)==30, "feed() call with both positional and optional parameters #2"

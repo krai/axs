@@ -13,9 +13,9 @@ python:
 
 jobs:
   include:
-    - name: "Python 3.7.4 on macOS"
+    - name: "Python 3 on macOS"
       os: osx
-      osx_image: xcode11.2  # Python 3.7.4 running on macOS 10.14.4
+      osx_image: xcode11.2  # Python 3.7, but may change with time
       language: shell       # 'language: python' is an error on Travis CI macOS
       env: PYTHON_EXE=python3
     - name: "Python 3.8.0 on Windows"
@@ -38,4 +38,5 @@ install:
 
 script:
     - ${PYTHON_EXE} function_access.py
+    - ${PYTHON_EXE} param_source.py
 
