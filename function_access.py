@@ -15,7 +15,7 @@ def list_function_names(module_object):
     """Return the list of functions of a given module/class/namespace
     """
     function_names = [name for name, function_object in inspect.getmembers(module_object, inspect.isfunction)]
-    logging.debug(f"Module/Class/Namespace {module_object.__name__} contains the following functions: {function_names}")
+    logging.debug(f"Module/Class/Namespace {module_object.__name__ if hasattr(module_object, '__name__') else ''} contains the following functions: {function_names}")
     return function_names
 
 

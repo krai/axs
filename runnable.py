@@ -51,16 +51,22 @@ Usage examples :
     def reach_function(self, function_name, _ancestry_path):
         "Recursively find a Runnable's function - either its own or belonging to the nearest parent."
 
-        _ancestry_path += [ self.get_name() ]
+        _ancestry_path.append( self.get_name() )
 
         module_object   = self.functions_loaded()
 
         if hasattr(module_object, function_name):
             return getattr(module_object, function_name)
-        elif self.parent_loaded():
-            return self.parent_object.reach_function(function_name, _ancestry_path)
         else:
-            return None
+            found_function = None
+            for parent_object in self.parents_loaded():
+                found_function = parent_object.reach_function(function_name, _ancestry_path)
+                if found_function:
+                    break
+                else:
+                    _ancestry_path.pop()
+
+            return found_function
 
 
     def reach_action(self, action_name, _ancestry_path=None):
@@ -132,9 +138,9 @@ Usage examples :
                 print( common_format.format('Description', doc_string))
                 print( common_format.format('OwnFunctions', self.list_own_functions()))
             else:
-                parent_object   = self.parent_loaded()
-                parent_may_know = ", but you may want to check its parent: "+parent_object.get_name() if parent_object else ""
-                print("This Runnable has no loadable functions" + parent_may_know)
+                parents_names   = self.get_parents_names()
+                parents_may_know = ", but you may want to check its parents: "+parents_names if parents_names else ""
+                print("This Runnable has no loadable functions" + parents_may_know)
 
 
     def call(self, action_name, pos_params=None, override_dict=None, pos_preps=None):
@@ -191,13 +197,15 @@ if __name__ == '__main__':
         "Multiplies the argument by 3"
         return number*3
 
-    granddad    = Runnable(name='granddad', module_object=Namespace( add_one=plus_one, subtract_one=(lambda x: x-1)  ) )
-    dad         = Runnable(name='dad',      module_object=Namespace( double=(lambda x: x*2), triple=trice                   ), parent_object=granddad)
-    child       = Runnable(name='child',    module_object=Namespace( square=(lambda x: x*x)                                 ), parent_object=dad)
+    granddad    = Runnable(name='granddad', module_object=Namespace( add_one=plus_one, subtract_one=(lambda x: x-1)         ) )
+    dad         = Runnable(name='dad',      module_object=Namespace( double=(lambda x: x*2), triple=trice                   ), parent_objects=[granddad])
+    mum         = Runnable(name='mum',      module_object=Namespace( cube=(lambda x: x*x*x)                                 ) )
+    child       = Runnable(name='child',    module_object=Namespace( square=(lambda x: x*x)                                 ), parent_objects=[dad, mum])
 
 
     print(f"granddad can run: {granddad.list_own_functions()}")
     print(f"dad can run: {dad.list_own_functions()}")
+    print(f"mum can run: {mum.list_own_functions()}")
     print(f"child can run: {child.list_own_functions()}")
 
     print('-'*40 + ' Testing reach_action(): ' + '-'*40)
@@ -213,6 +221,10 @@ if __name__ == '__main__':
     path_to_function = []
     result = child.reach_action('double', path_to_function)(12)
     print(f"double(12)={result}, path to the function: {path_to_function}")
+
+    path_to_function = []
+    result = child.reach_action('cube', path_to_function)(12)
+    print(f"cube(12)={result}, path to the function: {path_to_function}")
 
 
     print('-'*40 + ' Testing help(): ' + '-'*40)

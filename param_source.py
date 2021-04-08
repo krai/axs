@@ -10,15 +10,15 @@ class ParamSource:
         It can return the value of a known parameter or delegate the request for an unknown parameter to its parent.
     """
 
-    PARAMNAME_parent_entry  = 'parent_entry'
+    PARAMNAMES_parent_entry = ('parent_entry', 'parent_entry_2')
 
-    def __init__(self, name=None, own_parameters=None, parent_object=None):
+    def __init__(self, name=None, own_parameters=None, parent_objects=None):
         "A trivial constructor"
 
         self.name           = name
         self.own_parameters = own_parameters
-        self.parent_object  = parent_object
-        logging.debug(f"[{self.get_name()}] Initializing the ParamSource with own_parameters={self.own_parameters} and {self.parent_object.get_name()+' as parent' if self.parent_object else 'no parent'}")
+        self.parent_objects = parent_objects
+        logging.debug(f"[{self.get_name()}] Initializing the ParamSource with own_parameters={self.own_parameters}, inheriting from {self.get_parents_names() or 'no parents'}")
 
 
     def get_name(self):
@@ -36,11 +36,24 @@ class ParamSource:
         return self.own_parameters
 
 
-    def parent_loaded(self):
-        if self.parent_object==None:     # lazy-loading condition
-            self.parent_object  = self.get( self.PARAMNAME_parent_entry, parent_recursion=False ) or False
+    def parents_loaded(self):
+        if self.parent_objects==None:     # lazy-loading condition
+            self.parent_objects = []
+            for parent_param_name in self.PARAMNAMES_parent_entry:
+                parent_object = self.get( parent_param_name, parent_recursion=False )
+                if parent_object:
+                    self.parent_objects.append( parent_object )
+                else:
+                    break
 
-        return self.parent_object
+        return self.parent_objects
+
+
+    def get_parents_names(self):
+        "Returns a string representation of the name list"
+
+        parent_objects = self.parents_loaded()
+        return repr([parent_object.get_name() for parent_object in parent_objects]) if parent_objects else ""
 
 
     def __getitem__(self, param_name, calling_top_context=None, parent_recursion=True):
@@ -74,12 +87,15 @@ class ParamSource:
                         return pipeline_result
 
             if parent_recursion:
-                parent_object = self.parent_loaded()
-                if parent_object:
-                    logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}', fallback to the parent")
-                    return parent_object.__getitem__(param_name, calling_top_context=calling_top_context)
+                for parent_object in self.parents_loaded():
+                    logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}', fallback to the parent '{parent_object.get_name()}'")
+                    try:
+                        return parent_object.__getitem__(param_name, calling_top_context=calling_top_context)
+                    except KeyError:
+                        logging.debug(f"[{self.get_name()}]  My parent '{parent_object.get_name()}'' did not know about '{param_name}'")
+                        pass
 
-            logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}', and no parent either - raising KeyError")
+            logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}'{', and neither do the parents' if parent_recursion else ''} - raising KeyError")
             raise KeyError(param_name)
 
 
@@ -180,28 +196,36 @@ if __name__ == '__main__':
 
     print('-'*20 + ' Access request delegation down the ParamSource hierarchy: ' + '-'*20)
 
-    granddad    = ParamSource(name='granddad',  own_parameters={"fifth":"viies", "sixth":"kuues"} )
-    dad         = ParamSource(name='dad',       own_parameters={"third":"kolmas", "fourth":"neljas"},   parent_object=granddad)
-    child       = ParamSource(name='child',     own_parameters={"first":"esimene", "second":"teine"},   parent_object=dad)
+    granddad    = ParamSource(name='granddad',  own_parameters={"seventh":"seitsmes", "nineth":"yheksas"})
+    dad         = ParamSource(name='dad',       own_parameters={"third":"kolmas",     "fifth":"viies"},   parent_objects=[granddad])
+
+    grandma     = ParamSource(name='grandma',   own_parameters={"eighth":"kaheksas", "tenth":"kymnes"})
+    mum         = ParamSource(name='mum',       own_parameters={"fourth":"neljas",   "sixth":"kuues"},    parent_objects=[grandma])
+
+    child       = ParamSource(name='child',     own_parameters={"first":"esimene",   "second":"teine"},   parent_objects=[dad, mum])
 
     assert child['first']=='esimene', "Getting own data"
     assert child['third']=='kolmas', "Inheriting dad's data"
-    assert child['fifth']=='viies', "Inheriting granddad's data"
-    assert child.substitute("#{second}#, #{third}# ja #{fifth}#")=="teine, kolmas ja viies", "Substitution of data of mixed inheritance"
+    assert child['seventh']=='seitsmes', "Inheriting granddad's data"
+
+    assert child['fourth']=='neljas', "Inheriting mum's data"
+    assert child['eighth']=='kaheksas', "Inheriting grandma's data"
+
+    assert child.substitute("#{second}#, #{fifth}#, #{sixth}#, #{nineth}# ja #{tenth}#")=="teine, viies, kuues, yheksas ja kymnes", "Substitution of data of mixed inheritance"
 
     try:
-        missing = child['seventh']
+        missing = child['missing1']
     except KeyError as e:
         print(f"\tParameter {e} is correctly missing\n")
 
-    assert child.get('ninth', 'MISSING')=='MISSING', "Missing data substituted with default value"
+    assert child.get('missing2', 'MISSING')=='MISSING', "Missing data substituted with default value"
 
-    dad['second']       = 'TEINE'
     dad['third']        = 'KOLMAS'
-    granddad['seventh'] = 'SEITSMES'
+    dad['seventh']      = 'SEITSMES'
+    granddad['missing'] = 'PUUDU'
 
-    assert granddad.parameters_loaded()=={'fifth': 'viies', 'sixth': 'kuues', 'seventh': 'SEITSMES'}, "Modified granddad's data"
-    assert dad.parameters_loaded()=={'third': 'KOLMAS', 'fourth': 'neljas', 'second': 'TEINE'}, "Modified dad's data"
+    assert granddad.parameters_loaded()=={"seventh":"seitsmes", "nineth":"yheksas", "missing":"PUUDU"}, "Modified granddad's data"
+    assert dad.parameters_loaded()=={"third":"KOLMAS", "fifth":"viies", "seventh":"SEITSMES"}, "Modified dad's data"
     assert child.parameters_loaded()=={'first': 'esimene', 'second': 'teine'}, "Unmodified child's data"
 
     from function_access import feed, four_param_example_func
@@ -209,7 +233,7 @@ if __name__ == '__main__':
     print('-'*40 + ' feed() calls: ' + '-'*40)
 
     foo_param_parent = ParamSource(name='foo_param_parent', own_parameters={"alpha": 100, "beta": 200, "delta": 400, "epsilon": 600})
-    foo_param_child  = ParamSource(name='foo_param_child',  own_parameters={"alpha": 10, "lambda": 7777},            parent_object=foo_param_parent)
+    foo_param_child  = ParamSource(name='foo_param_child',  own_parameters={"alpha": 10, "lambda": 7777},            parent_objects=[foo_param_parent])
 
     assert feed(four_param_example_func, (), foo_param_child)==(10, 200, 333, 400), "feed() call with all parameters coming from ParamSource object"
 
