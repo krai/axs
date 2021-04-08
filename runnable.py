@@ -19,7 +19,7 @@ class Runnable(ParamSource):
         self.module_object  = module_object
         self.kernel         = kernel
         super().__init__(**kwargs)
-        logging.debug(f"[{self.get_name()}] Initializing the Runnable with {repr(self.module_object)+' as module_object' if self.module_object else 'no module_object'} and kernel={self.kernel}")
+        logging.debug(f"[{self.get_name()}] Initializing the Runnable with {self.list_own_functions() if self.module_object else 'no'} pre-loaded functions and kernel={self.kernel}")
 
 
     def get_kernel(self):
@@ -72,13 +72,18 @@ Usage examples :
     def reach_action(self, action_name, _ancestry_path=None):
         "First try to reach for a Runnable's function (externally loaded code), if unavailable - try Runnable's method instead."
 
+        logging.debug(f"[{self.get_name()}] reach_action({action_name}) ...")
         if _ancestry_path == None:  # if we have to initialize it internally, the value will be lost to the caller
             _ancestry_path = []
 
         function_object = self.reach_function( action_name, _ancestry_path )
         if function_object:
+            logging.debug(f"[{self.get_name()}] reach_action({action_name}) was found as a function")
+
             return function_object
         elif hasattr(self, action_name):
+            logging.debug(f"[{self.get_name()}] reach_action({action_name}) was found as a class method")
+
             _ancestry_path.clear()  # empty the specific list given to us - a form of feedback
             return getattr(self, action_name)
         else:
@@ -164,7 +169,6 @@ Usage examples :
                         pos_params[idx] = self.execute( pos_params[idx] )
                     pos_params[idx] = self.substitute( pos_params[idx] )
 
-
         action_object   = self.reach_action(action_name)
         result          = function_access.feed(action_object, pos_params, self)
 
@@ -202,30 +206,25 @@ if __name__ == '__main__':
     mum         = Runnable(name='mum',      module_object=Namespace( cube=(lambda x: x*x*x)                                 ) )
     child       = Runnable(name='child',    module_object=Namespace( square=(lambda x: x*x)                                 ), parent_objects=[dad, mum])
 
-
-    print(f"granddad can run: {granddad.list_own_functions()}")
-    print(f"dad can run: {dad.list_own_functions()}")
-    print(f"mum can run: {mum.list_own_functions()}")
-    print(f"child can run: {child.list_own_functions()}")
+    assert sorted(granddad.list_own_functions())==['add_one', 'subtract_one'], "granddad's own functions"
+    assert sorted(dad.list_own_functions())==['double', 'triple'], "dad's own functions"
 
     print('-'*40 + ' Testing reach_action(): ' + '-'*40)
 
-    path_to_function = []
-    result = child.reach_action('square', path_to_function)(12)
-    print(f"square(12)={result}, path to the function: {path_to_function}")
+    assert sorted(mum.reach_action('list_own_functions')())==['cube'], "mum's own functions listed via reach_action"
+    assert sorted(child.reach_action('list_own_functions')())==['square'], "child's own functionss listed via reach_action"
 
-    path_to_function = []
-    result = child.reach_action('add_one', path_to_function)(12)
-    print(f"add_one(12)={result}, path to the function: {path_to_function}")
-
-    path_to_function = []
-    result = child.reach_action('double', path_to_function)(12)
-    print(f"double(12)={result}, path to the function: {path_to_function}")
-
-    path_to_function = []
-    result = child.reach_action('cube', path_to_function)(12)
-    print(f"cube(12)={result}, path to the function: {path_to_function}")
-
+    input_arg = 12
+    func_applied_to_input_arg = {
+        "square": ("child", 144),
+        "add_one": ("granddad", 13),
+        "double": ("dad", 24),
+        "cube": ("mum", 1728)
+    }
+    for func_name in func_applied_to_input_arg:
+        owner_entry_name, func_value = func_applied_to_input_arg[func_name]
+        path_to_function = []
+        assert child.reach_action(func_name, path_to_function)(input_arg)==func_value, f"{owner_entry_name}'s function '{func_name}'"
 
     print('-'*40 + ' Testing help(): ' + '-'*40)
 
@@ -233,19 +232,18 @@ if __name__ == '__main__':
     print("")
     child.help('add_one')
 
-
     print('-'*40 + ' Testing call(): ' + '-'*40)
 
-    print(f"child.call('double', [20])={child.call('double', [20])}\n")
-    print(f"child.call('triple', override_dict=dict('number': 11))={child.call('triple', override_dict={'number': 11} )}\n")
+    assert child.call('double', [20])==40, "call() for dad's function, positional args"
+    assert child.call('triple', override_dict={'number': 11})==33, "call() for dad's function, named args"
 
     dad['x']=100
-    print(f"child.call('subtract_one')={child.call('subtract_one')}\n")
-    print(f"child.call('square')={child.call('square')}\n")
 
-    print(f"child.call('get', ['x'])={child.call('get', ['x'])}\n")
+    assert child.call('subtract_one')==99, "call() for granddad's function, inherit arg from dad"
+    assert child.call('square')==10000, "call() for child's function, inherit arg from dad"
+    assert child.call('get', ['x'])==100, "call() for class method, inherit arg from dad"
 
     try:
         print(f"child.call('nonexistent')={child.call('nonexistent')}\n")
     except NameError as e:
-        print(e)
+        assert str(e)=="could not find the action 'nonexistent' neither along the ancestry path 'child' nor in the Runnable class"

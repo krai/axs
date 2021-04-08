@@ -216,7 +216,7 @@ if __name__ == '__main__':
     try:
         missing = child['missing1']
     except KeyError as e:
-        print(f"\tParameter {e} is correctly missing\n")
+        assert str(e)=="'missing1'", "Parameter 'missing1' is correctly missing"
 
     assert child.get('missing2', 'MISSING')=='MISSING', "Missing data substituted with default value"
 
