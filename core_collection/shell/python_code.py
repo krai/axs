@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
-""" Example entry that is not a part of any collection.
-
-    This entry knows how to run an arbitrary command in a given environment.
+""" This entry knows how to run an arbitrary command in a given environment.
 """
 
 import subprocess
