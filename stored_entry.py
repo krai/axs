@@ -32,7 +32,7 @@ Usage examples :
                 axs byname derived_map , get_path README.md
         """
         if file_name:
-            if file_name.startswith('/'):
+            if file_name.startswith(os.path.sep):
                 return file_name
             else:
                 return os.path.join(self.entry_path, file_name)
