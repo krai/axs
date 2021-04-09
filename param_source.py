@@ -60,7 +60,7 @@ class ParamSource:
         "Lazy parameter access: returns the parameter value from self or the closest parent"
 
         calling_top_context = calling_top_context or self
-
+        param_name          = str(param_name)
         logging.debug(f"[{self.get_name()}] Attempt to access parameter '{param_name}'...")
         if param_name=='__entry__':
             return self
@@ -187,6 +187,7 @@ Usage examples :
     def __setitem__(self, param_name, param_value):
         "A simple setter method. We always set the value at the top"
 
+        param_name = str(param_name)
         self.parameters_loaded()[param_name] = param_value
 
 
