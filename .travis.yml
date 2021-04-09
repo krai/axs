@@ -40,3 +40,4 @@ script:
     - ${PYTHON_EXE} function_access.py
     - ${PYTHON_EXE} param_source.py
     - ${PYTHON_EXE} runnable.py
+    - ${PYTHON_EXE} stored_entry.py

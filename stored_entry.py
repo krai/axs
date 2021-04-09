@@ -134,26 +134,30 @@ if __name__ == '__main__':
 
     logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")
 
-    print('-'*40 + ' Entry direct loading and access: ' + '-'*40)
+    print('-'*40 + ' Entry direct creation and storing: ' + '-'*40)
 
-    base_map = Entry(entry_path='./base_map')
-    print(f"base_map.get_path()={base_map.get_path()}")
-    print(f"base_map['first']={base_map['first']}")
-    print(f"base_map.get('fourth')={base_map.get('fourth')}")
-    print("")
+    base_ordinals = Entry(entry_path='base_ordinals', own_parameters={
+        "0": "zero",
+        "1": "one",
+        "2": "two",
+        "3": "three",
+    })
+    assert base_ordinals[2]=="two", "Accessing own parameter of an unstored object"
 
-    derived_map = Entry(entry_path='./derived_map')
-    print(f"derived_map.get_path()={derived_map.get_path()}")
-    print(f"derived_map['fourth']={derived_map['fourth']}")
-    print(f"derived_map['second']={derived_map['second']}")
-    print("")
+    derived_ordinals = Entry(entry_path='derived_ordinals', own_parameters={
+        "5": "five",
+        "6": "six",
+        "7": "seven",
+        "8": "eight",
+    }, parent_objects=[base_ordinals]).save()
 
-    base_map.save( new_path='copy_base_map' )
-    print("")
+    assert derived_ordinals["7"]=="seven", "Accessing own parameter of a stored object"
+    assert derived_ordinals[3]=="three", "Accessing inherited (unstored) parameter of a stored object"
+    base_ordinals.save()
+    assert derived_ordinals["1"]=="one", "Accessing inherited (stored) parameter of a stored object"
 
-    derived_map.save( update={'sixth':'sechste'}, new_path='extended_derived_map' )
-    print("")
+    base_ordinals[4]="four"
+    base_ordinals.save()
+    assert base_ordinals["4"]=="four", "Accessing inherited (added) parameter of a stored object"
 
-    dont_be_like    = Entry(entry_path='./dont_be_like')
-    print(f"dont_be_like.call('meme',['wrote an OS that everybody hates'],{{'quality':'selfish'}})={dont_be_like.call('meme',['wrote an OS that everybody hates'],{'quality':'selfish','person2':'everybody'})}")
-
+    # FIXME: add examples entries with code, and call that code
