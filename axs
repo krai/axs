@@ -55,11 +55,13 @@ def cli_parse(arglist):
 
         ## Going through the parameters
         while i<len(arglist) and not arglist[i].startswith(','):
+            call_param_prep = ''
+
             if not arglist[i].startswith('--'):
+                call_pos_preps.append( call_param_prep )
                 call_pos_params.append( to_num_or_not_to_num(arglist[i]) )
             else:
                 call_param_key  = None
-                call_param_prep = ''
 
                 matched_json_param = re.match('^---([\*#]?)([\w\.]*)=(.*)$', arglist[i])
                 if matched_json_param:
