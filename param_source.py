@@ -190,6 +190,40 @@ Usage examples :
         param_name = str(param_name)
         self.parameters_loaded()[param_name] = param_value
 
+        return self
+
+
+    def plant(self, key_path, value):
+        """Traverse the given path of keys into a parameter's internal structure
+            and change/add a value there.
+            Fairly tolerant to short lists & missing values.
+
+Usage examples :
+                axs bypath foo , plant num.tens --,=10,20,30 , plant num.doubles --,=2,4,6,8 , parameters_loaded
+        """
+        if type(key_path)!=list:
+            key_path = key_path.split('.')
+
+        struct_ptr = self.parameters_loaded()
+
+        last_idx = len(key_path)-1
+        for key_idx, key_syllable in enumerate(key_path):
+            if type(struct_ptr)==list:  # descend into lists with numeric indices
+                key_syllable = int(key_syllable)
+                padding_size = key_syllable-len(struct_ptr)+1
+                struct_ptr.extend([None]*(padding_size-1))  # explicit list vivification
+                if padding_size>0:
+                    struct_ptr.append({})
+            elif key_syllable not in struct_ptr:
+                struct_ptr[key_syllable] = {}               # explicit dict vivification
+
+            if key_idx<last_idx:
+                struct_ptr = struct_ptr[key_syllable]       # iterative descent
+            else:
+                struct_ptr[key_syllable] = value
+
+        return self
+
 
 if __name__ == '__main__':
 
