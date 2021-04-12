@@ -18,7 +18,11 @@ class ParamSource:
         self.name           = name
         self.own_parameters = own_parameters
         self.parent_objects = parent_objects
-        logging.debug(f"[{self.get_name()}] Initializing the ParamSource with own_parameters={self.own_parameters}, inheriting from {self.get_parents_names() or 'no parents'}")
+
+        logging.debug(f"[{self.get_name()}] Initializing the ParamSource with own_parameters={self.own_parameters}, inheriting from {'some parents' or 'no parents'}")
+# FIXME: The following would cause infinite recursion (expecting cached entries before they actually end up in cache)
+#        logging.debug(f"[{self.get_name()}] Initializing the ParamSource with own_parameters={self.own_parameters}, inheriting from {self.get_parents_names() or 'no parents'}")
+
 
 
     def get_name(self):
@@ -38,6 +42,7 @@ class ParamSource:
 
     def parents_loaded(self):
         if self.parent_objects==None:     # lazy-loading condition
+            logging.debug(f"[{self.get_name()}] Lazy-loading the parents...")
             self.parent_objects = []
             for parent_param_name in self.PARAMNAMES_parent_entry:
                 parent_object = self.get( parent_param_name, parent_recursion=False )
@@ -45,6 +50,8 @@ class ParamSource:
                     self.parent_objects.append( parent_object )
                 else:
                     break
+        else:
+            logging.debug(f"[{self.get_name()}] Parents have already been cached")
 
         return self.parent_objects
 
@@ -197,7 +204,7 @@ Usage examples :
         """Traverse the given path of keys into a parameter's internal structure
             and change/add a value there.
             Fairly tolerant to short lists & missing values.
-
+ls -l
 Usage examples :
                 axs bypath foo , plant num.tens --,=10,20,30 , plant num.doubles --,=2,4,6,8 , parameters_loaded
         """

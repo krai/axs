@@ -62,6 +62,8 @@ Usage examples :
                 axs bypath xyz/boo.json , substitute "Hello, #{boo}#"
                 axs bypath pqr/iterative.py , factorial 6
         """
+        path = os.path.realpath( path )
+
         cache_hit = self.entry_cache.get(path)
 
         if cache_hit:
@@ -77,6 +79,7 @@ Usage examples :
                 cache_hit = self.entry_cache[path] = Entry(name=name, own_parameters={}, entry_path='.', module_name=module_name, parent_object=False, kernel=self)
             else:
                 cache_hit = self.entry_cache[path] = Entry(name=name, entry_path=path, kernel=self)
+            logging.debug(f"[{self.name}] bypath: successfully CACHED {cache_hit.get_name()} under path={path}")
 
         return cache_hit
 
