@@ -30,7 +30,7 @@ Usage examples :
 
     print(f"axs-git-pull: name={name}, url={url}")
 
-    repo_entry  = ak.bypath(name)
+    repo_entry  = ak.bypath(name) if name else __entry__
     repo_path   = repo_entry.get_path()
 
     if os.path.exists( repo_path ):
