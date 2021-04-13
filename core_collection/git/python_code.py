@@ -13,6 +13,8 @@ def pull(name=None, url=None, container_dir=None, __entry__=None):
 Usage examples :
             axs byname git , pull counting_collection
             axs work_collection , plant contained_entries.counting_collection counting_collection , save
+
+            axs byname counting_collection , pull
     """
 
     assert __entry__ != None, "__entry__ should be defined"
