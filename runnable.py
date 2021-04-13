@@ -163,11 +163,7 @@ Usage examples :
         # deferred substitution/execution of positional arguments
         if pos_preps:
             for idx in range(len(pos_params)):
-                prep = pos_preps[idx]
-                if prep in ('#', '*'):
-                    if prep=='*':   # The order is important for nested executions that may want to perform their own substitutions
-                        pos_params[idx] = self.execute( pos_params[idx] )
-                    pos_params[idx] = self.substitute( pos_params[idx] )
+                pos_params[idx] = self.unary_operation( pos_preps[idx], pos_params[idx] )
 
         action_object   = self.reach_action(action_name)
         result          = function_access.feed(action_object, pos_params, self)

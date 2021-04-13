@@ -63,6 +63,24 @@ class ParamSource:
         return repr([parent_object.get_name() for parent_object in parent_objects]) if parent_objects else ""
 
 
+    def unary_operation(self, operation, unmodified_structure):
+
+        unary_mapping = {
+            '#':    self.substitute,
+            '*':    self.execute,
+            ':':    self.get_kernel().byname,
+            '?':    self.get_kernel().byquery,
+        }
+
+        if operation:
+            logging.debug(f'[{self.get_name()}]  Applying unary operation {operation} to "{unmodified_structure}" ...')
+            modified_structure = unary_mapping[operation](unmodified_structure)
+            logging.debug(f'[{self.get_name()}]  Applied unary operation {operation} to "{unmodified_structure}", got "{modified_structure}"')
+            return modified_structure
+        else:
+            return unmodified_structure
+
+
     def __getitem__(self, param_name, calling_top_context=None, parent_recursion=True):
         "Lazy parameter access: returns the parameter value from self or the closest parent"
 
@@ -78,20 +96,10 @@ class ParamSource:
             logging.debug(f'[{self.get_name()}]  I have parameter "{param_name}", returning "{param_value}"')
             return param_value
         else:
-            for prefix in ('#', '*'):
-                prefixed_param_name = prefix+param_name
-                if prefixed_param_name in own_parameters:
-                    unsubstituted_structure = own_parameters[prefixed_param_name]
-                    logging.debug(f'[{self.get_name()}]  I have parameter "{prefixed_param_name}", the value is "{unsubstituted_structure}"')
-                    substituted_structure = calling_top_context.substitute( unsubstituted_structure )
-                    logging.debug(f'[{self.get_name()}]  Substituting "{unsubstituted_structure}", returning "{substituted_structure}"')
-                    if prefix=='#':
-                        return substituted_structure
-                    elif prefix=='*':
-                        logging.debug(f'[{self.get_name()}]  About to execute the pipeline: "{substituted_structure}"')
-                        pipeline_result = calling_top_context.execute( substituted_structure )
-                        logging.debug(f'[{self.get_name()}]  Executed "{substituted_structure}", returning "{pipeline_result}"')
-                        return pipeline_result
+            for own_key in own_parameters:
+                prefix, name_proper = own_key[0], own_key[1:]
+                if not own_key[0].isalnum() and own_key[1:]==param_name:
+                    return calling_top_context.unary_operation(prefix, own_parameters[own_key])
 
             if parent_recursion:
                 for parent_object in self.parents_loaded():

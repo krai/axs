@@ -49,8 +49,7 @@ def cli_parse(arglist):
         call_params     = {}
         call_pos_params = []
         call_pos_preps  = []
-        curr_link = ( arglist[i], call_pos_params, call_params, call_pos_preps )
-        i += 1
+        curr_link = [ None, call_pos_params, call_params, call_pos_preps ]
         pipeline.append( curr_link )
 
         ## Going through the parameters
@@ -58,19 +57,27 @@ def cli_parse(arglist):
             call_param_prep = ''
 
             if not arglist[i].startswith('--'):
-                call_pos_preps.append( call_param_prep )
-                call_pos_params.append( to_num_or_not_to_num(arglist[i]) )
+                if curr_link[0]==None:  # no action has been parsed yet
+                    if re.match(r'^\w+$', arglist[i]):  # normal action
+                        curr_link[0] = arglist[i]
+                    else:                               # a "guess me" action
+                        curr_link[0] = 'noop'
+                        call_pos_preps.append( arglist[i][0] )
+                        call_pos_params.append( arglist[i][1:] )
+                else:   # a regular positional param
+                    call_pos_preps.append( call_param_prep )
+                    call_pos_params.append( to_num_or_not_to_num(arglist[i]) )
             else:
                 call_param_key  = None
 
-                matched_json_param = re.match('^---([\*#]?)([\w\.]*)=(.*)$', arglist[i])
+                matched_json_param = re.match('^---([#\*:\?]?)([\w\.]*)=(.*)$', arglist[i])
                 if matched_json_param:
                     call_param_prep     = matched_json_param.group(1)
                     call_param_key      = matched_json_param.group(2)
                     call_param_json     = matched_json_param.group(3)
                     call_param_value    = json.loads( call_param_json )
                 else:
-                    matched_parampair = re.match('^--(#?)([\w\.]*)([\ ,;:]?)=(.*)$', arglist[i])
+                    matched_parampair = re.match('^--([#:\?]?)([\w\.]*)([\ ,;:]?)=(.*)$', arglist[i])
                     if matched_parampair:
                         call_param_prep     = matched_parampair.group(1)
                         call_param_key      = matched_parampair.group(2)
