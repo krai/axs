@@ -25,7 +25,7 @@ def walk(__entry__):
         else:
             relative_entry_path = entry_name
             print(f"collection({collection_own_name}).walk(): using relative_entry_path={entry_name}")
-        yield ak.bypath(path=__entry__.get_path(relative_entry_path), name=entry_name)
+        yield ak.bypath(path=__entry__.get_path(relative_entry_path), name=entry_name, container=__entry__)
 
     print(f"collection({collection_own_name}).walk(): recursing into contained_collections:")
     contained_collections = __entry__.get('contained_collections',[])
@@ -39,7 +39,7 @@ def walk(__entry__):
             relative_collection_path = collection_name
             print(f"collection({collection_own_name}).walk(): using relative_collection_path={relative_collection_path}")
 
-        collection_object   = ak.bypath(path=__entry__.get_path(relative_collection_path), name=collection_name)
+        collection_object   = ak.bypath(path=__entry__.get_path(relative_collection_path), name=collection_name, container=__entry__)
 
         yield from walk(collection_object)
 

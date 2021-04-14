@@ -14,12 +14,13 @@ class Entry(Runnable):
     FILENAME_parameters     = 'parameters.json'
     MODULENAME_functions    = 'python_code'     # the actual filename ends in .py
 
-    def __init__(self, entry_path=None, parameters_path=None, module_name=None, **kwargs):
+    def __init__(self, entry_path=None, parameters_path=None, module_name=None, container=None, **kwargs):
         "Accept setting entry_path in addition to parent's parameters"
 
         self.entry_path         = entry_path
         self.parameters_path    = parameters_path
         self.module_name        = module_name
+        self.container_object   = container
         super().__init__(**kwargs)
         logging.debug(f"[{self.get_name()}] Initializing the Entry with entry_path={self.entry_path}, parameters_path={self.parameters_path}, module_name={self.module_name}")
 
@@ -52,6 +53,10 @@ Usage examples :
 
     def get_module_name(self):
         return self.module_name or self.MODULENAME_functions
+
+
+    def get_container(self):
+        return self.container_object
 
 
     def parameters_loaded(self):
