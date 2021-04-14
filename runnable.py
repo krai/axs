@@ -91,6 +91,16 @@ Usage examples :
                               format(action_name, ' --> '.join(_ancestry_path),  self.__class__.__name__) )
 
 
+    def can(self, action_name):
+        "Returns whether object has such an action or not (a boolean)"
+
+        try:
+            self.reach_action(action_name)
+            return True
+        except NameError:
+            return False
+
+
     def help(self, action_name=None):
         """Reach for a Runnable's function or method and examine its DocString and calling signature.
 
