@@ -68,6 +68,7 @@ Usage examples :
                 with open( parameters_path ) as json_fd:
                     self.own_parameters = json.load(json_fd)
             else:
+                logging.warning(f"[{self.get_name()}] parameters file {parameters_path} did not exist, initializing to empty parameters")
                 self.own_parameters = {}
 
         return self.own_parameters
@@ -124,8 +125,7 @@ Usage examples :
         with open(parameters_full_path, "w") as json_fd:
             json_fd.write( json_data+"\n" )
 
-        logging.debug(f"[{self.get_name()}] parameters saved to {parameters_full_path}")
-        print(f"Storing:\n{json_data}\nto {parameters_full_path}")
+        logging.warning(f"[{self.get_name()}] parameters {json_data} saved to '{parameters_full_path}'")
 
         return self
 
