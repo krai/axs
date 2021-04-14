@@ -13,35 +13,22 @@ def walk(__entry__):
     collection_own_name = __entry__.get_name()
 
 
-    print(f"collection({collection_own_name}).walk(): trying the collection itself")
+    print(f"collection({collection_own_name}).walk(): yielding the collection itself")
     yield __entry__
 
     print(f"collection({collection_own_name}).walk(): walking contained_entries:")
     contained_entries = __entry__.get('contained_entries',[])
     for entry_name in contained_entries:
-        if type(contained_entries)==dict:
-            relative_entry_path = contained_entries[entry_name]
-            print(f"collection({collection_own_name}).walk(): mapping {entry_name} to relative_entry_path={relative_entry_path}")
+        relative_entry_path = contained_entries[entry_name]
+        print(f"collection({collection_own_name}).walk(): mapping {entry_name} to relative_entry_path={relative_entry_path}")
+
+        contained_entry = ak.bypath(path=__entry__.get_path(relative_entry_path), name=entry_name, container=__entry__)
+        if contained_entry.can( 'walk' ):
+            print(f"collection({collection_own_name}).walk(): recursively walking collection {entry_name}...")
+            yield from walk(contained_entry)
         else:
-            relative_entry_path = entry_name
-            print(f"collection({collection_own_name}).walk(): using relative_entry_path={entry_name}")
-        yield ak.bypath(path=__entry__.get_path(relative_entry_path), name=entry_name, container=__entry__)
-
-    print(f"collection({collection_own_name}).walk(): recursing into contained_collections:")
-    contained_collections = __entry__.get('contained_collections',[])
-    for collection_name in contained_collections:
-        print(f"collection({collection_own_name}).walk() checking in {collection_name}...")
-
-        if type(contained_collections)==dict:
-            relative_collection_path = contained_collections[collection_name]
-            print(f"collection({collection_own_name}).walk(): mapping {collection_name} to relative_collection_path={relative_collection_path}")
-        else:
-            relative_collection_path = collection_name
-            print(f"collection({collection_own_name}).walk(): using relative_collection_path={relative_collection_path}")
-
-        collection_object   = ak.bypath(path=__entry__.get_path(relative_collection_path), name=collection_name, container=__entry__)
-
-        yield from walk(collection_object)
+            print(f"collection({collection_own_name}).walk(): yielding non-collection {entry_name}")
+            yield contained_entry
 
 
 def byname(entry_name, __entry__=None):

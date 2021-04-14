@@ -114,7 +114,7 @@ Usage examples :
 
 Usage examples :
                 axs bypath foo_entry , save --x=new_x_value --y=new_y_value
-                axs bypath new_collection , save --contained_entries, --contained_collections, ---*parent_entry='[["core_collection"]]'
+                axs bypath new_collection , save ---contained_entries='{}' ---*parent_entry='[["core_collection"]]'
         """
 
         parameters_full_path    = self.get_parameters_path()

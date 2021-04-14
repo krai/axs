@@ -1,12 +1,11 @@
 {
-    "contained_entries":        [
-        "shell",
-        "git",
+    "contained_entries": {
+        "shell":        "shell",
+        "git":          "git",
 
-        "base_map",
-        "derived_map",
-        "be_like",
-        "dont_be_like"
-    ],
-    "contained_collections":    []
+        "base_map":     "base_map",
+        "derived_map":  "derived_map",
+        "be_like":      "be_like",
+        "dont_be_like": "dont_be_like"
+    }
 }
