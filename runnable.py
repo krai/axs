@@ -103,14 +103,15 @@ Usage examples :
                 axs byname dont_be_like , help get
         """
 
+        help_buffer = []
         common_format = "{:15s}: {}"
         entry_class = self.__class__
 
-        print( common_format.format( entry_class.__name__+' class', entry_class.__doc__ ))
-        print( common_format.format( 'Class methods', function_access.list_function_names(entry_class) ))
+        help_buffer.append( common_format.format( entry_class.__name__+' class', entry_class.__doc__ ))
+        help_buffer.append( common_format.format( 'Class methods', function_access.list_function_names(entry_class) ))
 
-        print('')
-        print( common_format.format( 'Specific '+entry_class.__name__, self.get_name() ))
+        help_buffer.append('')
+        help_buffer.append( common_format.format( 'Specific '+entry_class.__name__, self.get_name() ))
 
         if action_name:
             try:
@@ -122,30 +123,32 @@ Usage examples :
                 signature = ', '.join(required_arg_names + [optional_arg_names[i]+'='+str(action_defaults[i]) for i in range(len(optional_arg_names))] )
 
                 if varargs or varkw:
-                    print( """NB: this action cannot be called via our calling mechanism,
+                    help_buffer.append( """NB: this action cannot be called via our calling mechanism,
                               because it makes use of variable arguments (*) or variable keywords (**)""" )
 
                 if ancestry_path:
-                    print( common_format.format('Function', action_name ))
-                    print( common_format.format('Ancestry path', ' --> '.join(ancestry_path) ))
+                    help_buffer.append( common_format.format('Function', action_name ))
+                    help_buffer.append( common_format.format('Ancestry path', ' --> '.join(ancestry_path) ))
                 else:
-                    print( common_format.format( 'Method', action_name ))
-                    print( common_format.format( 'Declared in', action_object.__module__+'.py' ))
+                    help_buffer.append( common_format.format( 'Method', action_name ))
+                    help_buffer.append( common_format.format( 'Declared in', action_object.__module__+'.py' ))
 
-                print( common_format.format( 'Signature', action_name+'('+signature+')' ))
-                print( common_format.format( 'DocString', action_object.__doc__ ))
+                help_buffer.append( common_format.format( 'Signature', action_name+'('+signature+')' ))
+                help_buffer.append( common_format.format( 'DocString', action_object.__doc__ ))
             except Exception as e:
                 logging.error( str(e) )
         else:
             module_object   = self.functions_loaded()     # the entry may not contain any code...
             if module_object:
                 doc_string      = module_object.__doc__     # the module may not contain any DocString...
-                print( common_format.format('Description', doc_string))
-                print( common_format.format('OwnFunctions', self.list_own_functions()))
+                help_buffer.append( common_format.format('Description', doc_string))
+                help_buffer.append( common_format.format('OwnFunctions', self.list_own_functions()))
             else:
                 parents_names   = self.get_parents_names()
                 parents_may_know = ", but you may want to check its parents: "+parents_names if parents_names else ""
-                print("This Runnable has no loadable functions" + parents_may_know)
+                help_buffer.append("This Runnable has no loadable functions" + parents_may_know)
+
+        return '\n'.join(help_buffer)
 
 
     def call(self, action_name, pos_params=None, override_dict=None, pos_preps=None):
