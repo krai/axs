@@ -70,35 +70,46 @@ def cli_parse(arglist):
             else:
                 call_param_key  = None
 
-                matched_json_param = re.match('^---([#\*:\?]?)([\w\.]*)=(.*)$', arglist[i])
+                matched_json_param = re.match('^---(([#\*\?]?)([\w\.]*)(:{1,2}\w+)?)=(.*)$', arglist[i])
                 if matched_json_param:
-                    call_param_prep     = matched_json_param.group(1)
-                    call_param_key      = matched_json_param.group(2)
-                    call_param_json     = matched_json_param.group(3)
+                    if matched_json_param.group(3):
+                        call_param_key      = matched_json_param.group(1)
+                    else:
+                        call_param_prep     = matched_json_param.group(2) or matched_json_param.group(4)
+
+                    call_param_json     = matched_json_param.group(5)
                     call_param_value    = json.loads( call_param_json )
                 else:
-                    matched_parampair = re.match('^--([#:\?]?)([\w\.]*)([\ ,;:]?)=(.*)$', arglist[i])
+                    matched_parampair = re.match('^--(([#\?]?)([\w\.]*)(:{1,2}\w+)?)([\ ,;:]?)=(.*)$', arglist[i])
                     if matched_parampair:
-                        call_param_prep     = matched_parampair.group(1)
-                        call_param_key      = matched_parampair.group(2)
-                        delimiter           = matched_parampair.group(3)
-                        call_param_value    = matched_parampair.group(4)
+                        if matched_parampair.group(3):
+                            call_param_key  = matched_parampair.group(1)
+                        else:
+                            call_param_prep = matched_parampair.group(2) or matched_parampair.group(4)
+
+                        delimiter           = matched_parampair.group(5)
+                        call_param_value    = matched_parampair.group(6)
+
                         if delimiter:
                             call_param_value    = [to_num_or_not_to_num(el) for el in call_param_value.split(delimiter)]
                         else:
                             call_param_value    = to_num_or_not_to_num(call_param_value)
                     else:
-                        matched_paramsingle = re.match('^--([\w\.]*)([,+-]?)$', arglist[i])
+                        matched_paramsingle = re.match('^--(([#\?]?)([\w\.]*)(:{1,2}\w+)?)([,+-]?)$', arglist[i])
                         if matched_paramsingle:
-                            call_param_key      = matched_paramsingle.group(1)
-                            if matched_paramsingle.group(2) == ',':
+                            if matched_paramsingle.group(3):
+                                call_param_key  = matched_paramsingle.group(1)
+                            else:
+                                call_param_prep = matched_paramsingle.group(2) or matched_paramsingle.group(4)
+
+                            if matched_paramsingle.group(5) == ',':
                                 call_param_value    = []                                    # the way to express an empty list
                             else:
-                                call_param_value    = matched_paramsingle.group(2) != '-'   # either boolean True or False
+                                call_param_value    = matched_paramsingle.group(5) != '-'   # boolean True or False
 
                 if call_param_key:
-                    call_params[call_param_prep + call_param_key] = call_param_value
-                elif call_param_key=='':
+                    call_params[call_param_key] = call_param_value
+                elif call_param_prep:
                     call_pos_preps.append( call_param_prep )
                     call_pos_params.append( call_param_value )
                 else:

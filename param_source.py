@@ -63,6 +63,12 @@ class ParamSource:
         return repr([parent_object.get_name() for parent_object in parent_objects]) if parent_objects else ""
 
 
+    def noop(self, arg):
+        "Returns its own single argument"
+
+        return arg
+
+
     def unary_operation(self, operation, unmodified_structure):
 
         unary_mapping = {
@@ -74,7 +80,15 @@ class ParamSource:
 
         if operation:
             logging.debug(f'[{self.get_name()}]  Applying unary operation {operation} to "{unmodified_structure}" ...')
-            modified_structure = unary_mapping[operation](unmodified_structure)
+            if len(operation)==1:
+                modified_structure = unary_mapping[operation](unmodified_structure)
+            else:
+                operation = operation[1:]
+                if operation[0]==':':
+                    modified_structure = self.call(operation[1:], unmodified_structure)
+                else:
+                    modified_structure = self.get_kernel().call(operation, unmodified_structure)
+
             logging.debug(f'[{self.get_name()}]  Applied unary operation {operation} to "{unmodified_structure}", got "{modified_structure}"')
             return modified_structure
         else:
@@ -96,6 +110,17 @@ class ParamSource:
             logging.debug(f'[{self.get_name()}]  I have parameter "{param_name}", returning "{param_value}"')
             return param_value
         else:
+            param_name_len_plus = len(param_name)+1
+            for own_key in own_parameters:
+                if own_key[:param_name_len_plus]==param_name+':':
+                    action_name = own_key[param_name_len_plus:]
+                    if action_name[0]==':':                 # double colon means "call the method on this object"
+                        action_name = action_name[1:]
+                        runnable_for_the_call = calling_top_context
+                    else:                                   # single colon means "call the method on the kernel"
+                        runnable_for_the_call = self.get_kernel()
+                    return runnable_for_the_call.call(action_name, own_parameters[own_key])
+
             for own_key in own_parameters:
                 prefix, name_proper = own_key[0], own_key[1:]
                 if not own_key[0].isalnum() and own_key[1:]==param_name:

@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.30'   # TODO: update with every kernel change
+__version__ = '0.2.31'   # TODO: update with every kernel change
 
 import logging
 import os
@@ -51,10 +51,6 @@ Usage examples :
 
     def introduce(self):
         print(f"I am {self.name} version={self.version()} kernel_path={self.kernel_path()}")
-
-
-    def noop(self, arg):
-        return arg
 
 
     def bypath(self, path, name=None, container=None):
