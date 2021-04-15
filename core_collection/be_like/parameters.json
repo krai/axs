@@ -1,5 +1,5 @@
 {
     "person":   "Bill",
     "be":       "Be",
-    "#person2": "#{person}#"
+    "person2::substitute": ["#{person}#"]
 }
