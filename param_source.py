@@ -69,32 +69,6 @@ class ParamSource:
         return arg
 
 
-    def unary_operation(self, operation, unmodified_structure):
-
-        unary_mapping = {
-            '#':    self.substitute,
-            '*':    self.execute,
-            ':':    self.get_kernel().byname,
-            '?':    self.get_kernel().byquery,
-        }
-
-        if operation:
-            logging.debug(f'[{self.get_name()}]  Applying unary operation {operation} to "{unmodified_structure}" ...')
-            if len(operation)==1:
-                modified_structure = unary_mapping[operation](unmodified_structure)
-            else:
-                operation = operation[1:]
-                if operation[0]=='^':
-                    modified_structure = self.call(operation[1:], unmodified_structure)
-                else:
-                    modified_structure = self.get_kernel().call(operation, unmodified_structure)
-
-            logging.debug(f'[{self.get_name()}]  Applied unary operation {operation} to "{unmodified_structure}", got "{modified_structure}"')
-            return modified_structure
-        else:
-            return unmodified_structure
-
-
     def __getitem__(self, param_name, calling_top_context=None, parent_recursion=True):
         "Lazy parameter access: returns the parameter value from self or the closest parent"
 
@@ -110,21 +84,10 @@ class ParamSource:
             logging.debug(f'[{self.get_name()}]  I have parameter "{param_name}", returning "{param_value}"')
             return param_value
         else:
-            param_name_len_plus = len(param_name)+1
+            param_name_len = len(param_name)
             for own_key in own_parameters:
-                if own_key[:param_name_len_plus]==param_name+'^':
-                    action_name = own_key[param_name_len_plus:]
-                    if action_name[0]=='^':                 # double caret means "call the method on this object"
-                        action_name = action_name[1:]
-                        runnable_for_the_call = calling_top_context
-                    else:                                   # single caret means "call the method on the kernel"
-                        runnable_for_the_call = self.get_kernel()
-                    return runnable_for_the_call.call(action_name, own_parameters[own_key])
-
-            for own_key in own_parameters:
-                prefix, name_proper = own_key[0], own_key[1:]
-                if not own_key[0].isalnum() and own_key[1:]==param_name:
-                    return calling_top_context.unary_operation(prefix, own_parameters[own_key])
+                if own_key[:param_name_len+1]==param_name+'^':
+                    return self.deferred_call(own_key[param_name_len:], own_parameters[own_key])
 
             if parent_recursion:
                 for parent_object in self.parents_loaded():

@@ -161,6 +161,25 @@ Usage examples :
         return '\n'.join(help_buffer)
 
 
+    def deferred_call(self, deferred_action_name, unmodified_structure):
+        """Preprocess the unmodified structure by running a specific action over it
+        """
+
+        if deferred_action_name:
+            logging.debug(f'[{self.get_name()}]  Applying action {deferred_action_name} to "{unmodified_structure}" ...')
+
+            deferred_action_name = deferred_action_name[1:]
+            if deferred_action_name[0]=='^':
+                modified_structure = self.call(deferred_action_name[1:], unmodified_structure)
+            else:
+                modified_structure = self.get_kernel().call(deferred_action_name, unmodified_structure)
+
+            logging.debug(f'[{self.get_name()}]  Applied action {deferred_action_name} to "{unmodified_structure}", got "{modified_structure}"')
+            return modified_structure
+        else:
+            return unmodified_structure
+
+
     def call(self, action_name, pos_params=None, override_dict=None, pos_preps=None):
         """Call a given function or method of a given entry and feed it
             with arguments from the current object optionally overridden by a given dictionary.
@@ -176,10 +195,9 @@ Usage examples :
         if type(pos_params)!=list:      # simplifies syntax for single positional parameter actions
             pos_params = [ pos_params ]
 
-        # deferred substitution/execution of positional arguments
         if pos_preps:
             for idx in range(len(pos_params)):
-                pos_params[idx] = self.unary_operation( pos_preps[idx], pos_params[idx] )
+                pos_params[idx] = self.deferred_call( pos_preps[idx], pos_params[idx] )
 
         action_object   = self.reach_action(action_name)
         result          = function_access.feed(action_object, pos_params, self)
