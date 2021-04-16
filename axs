@@ -70,7 +70,7 @@ def cli_parse(arglist):
             else:
                 call_param_key  = None
 
-                matched_json_param = re.match('^---(([#\*\?]?)([\w\.]*)([:^]{1,2}\w+)?)=(.*)$', arglist[i])
+                matched_json_param = re.match('^---(([#:\*\?]?)([\w\.]*)(\^{1,2}\w+)?)=(.*)$', arglist[i])
                 if matched_json_param:
                     if matched_json_param.group(3):
                         call_param_key      = matched_json_param.group(1)
@@ -80,7 +80,7 @@ def cli_parse(arglist):
                     call_param_json     = matched_json_param.group(5)
                     call_param_value    = json.loads( call_param_json )
                 else:
-                    matched_parampair = re.match('^--(([#\?]?)([\w\.]*)([:^]{1,2}\w+)?)([\ ,;:]?)=(.*)$', arglist[i])
+                    matched_parampair = re.match('^--(([#:\?]?)([\w\.]*)(\^{1,2}\w+)?)([\ ,;:]?)=(.*)$', arglist[i])
                     if matched_parampair:
                         if matched_parampair.group(3):
                             call_param_key  = matched_parampair.group(1)
@@ -95,7 +95,7 @@ def cli_parse(arglist):
                         else:
                             call_param_value    = to_num_or_not_to_num(call_param_value)
                     else:
-                        matched_paramsingle = re.match('^--(([#\?]?)([\w\.]*)([:^]{1,2}\w+)?)([,+-]?)$', arglist[i])
+                        matched_paramsingle = re.match('^--(([#:\?]?)([\w\.]*)(\^{1,2}\w+)?)([,+-]?)$', arglist[i])
                         if matched_paramsingle:
                             if matched_paramsingle.group(3):
                                 call_param_key  = matched_paramsingle.group(1)

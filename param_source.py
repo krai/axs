@@ -84,7 +84,7 @@ class ParamSource:
                 modified_structure = unary_mapping[operation](unmodified_structure)
             else:
                 operation = operation[1:]
-                if operation[0] in ":^":
+                if operation[0]=='^':
                     modified_structure = self.call(operation[1:], unmodified_structure)
                 else:
                     modified_structure = self.get_kernel().call(operation, unmodified_structure)
@@ -110,14 +110,14 @@ class ParamSource:
             logging.debug(f'[{self.get_name()}]  I have parameter "{param_name}", returning "{param_value}"')
             return param_value
         else:
-            param_name_len = len(param_name)
+            param_name_len_plus = len(param_name)+1
             for own_key in own_parameters:
-                if own_key[:param_name_len]==param_name and own_key[param_name_len] in ":^":
-                    action_name = own_key[param_name_len+1:]
-                    if action_name[0] in ":^":              # double colon means "call the method on this object"
+                if own_key[:param_name_len_plus]==param_name+'^':
+                    action_name = own_key[param_name_len_plus:]
+                    if action_name[0]=='^':                 # double caret means "call the method on this object"
                         action_name = action_name[1:]
                         runnable_for_the_call = calling_top_context
-                    else:                                   # single colon means "call the method on the kernel"
+                    else:                                   # single caret means "call the method on the kernel"
                         runnable_for_the_call = self.get_kernel()
                     return runnable_for_the_call.call(action_name, own_parameters[own_key])
 
