@@ -173,6 +173,9 @@ Usage examples :
 
         pos_params = pos_params or []
 
+        if type(pos_params)!=list:      # simplifies syntax for single positional parameter actions
+            pos_params = [ pos_params ]
+
         # deferred substitution/execution of positional arguments
         if pos_preps:
             for idx in range(len(pos_params)):
