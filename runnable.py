@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import logging
+import re
 
 import function_access
 from param_source import ParamSource
@@ -180,7 +181,7 @@ Usage examples :
 
         if pos_preps:
             for idx in range(len(pos_params)):
-                pos_params[idx] = self.nested_call( pos_preps[idx], pos_params[idx])    # NB: nested calls do not have override_dict
+                pos_params[idx] = self.dispatch_call( pos_preps[idx], pos_params[idx])      # NB: dispatched calls do not have override_dict
 
         action_object   = self.reach_action(action_name)
         result          = function_access.feed(action_object, pos_params, self)
@@ -190,7 +191,7 @@ Usage examples :
         return result
 
 
-    def nested_call(self, action_name, pos_params=None):
+    def dispatch_call(self, action_name, pos_params=None):
         """Preprocess args by running a specific action over them
         """
 
@@ -202,6 +203,32 @@ Usage examples :
                 return self.call(action_name[1:], pos_params)
             else:
                 return self.get_kernel().call(action_name, pos_params)
+
+
+    def calls_over_struct(self, input_structure):
+        """Walk the structure and perform all nested calls in it.
+        """
+
+        def scalar_call(scalar_input):
+            if scalar_input.startswith('^'):
+                matched = re.match(r'^(\^{1,2}\w+)(([:,\ /;=]).*)?$', scalar_input)
+                if matched:
+                    delimiter   = matched.group(3)
+                    action_name = matched.group(1)
+                    pos_params  = [ function_access.to_num_or_not_to_num(el) for el in matched.group(2).split(delimiter)[1:] ] if delimiter else []
+                    return self.dispatch_call(action_name, pos_params)
+
+            return scalar_input
+
+        # Structural recursion:
+        if type(input_structure)==list:
+            return [self.calls_over_struct(e) for e in input_structure]                         # all list elements are substituted
+        elif type(input_structure)==dict:
+            return { k : self.calls_over_struct(input_structure[k]) for k in input_structure }  # only values are substituted
+        elif type(input_structure)==str:
+            return scalar_call(input_structure)                                                 # ground step
+        else:
+            return input_structure                                                              # basement step
 
 
     def execute(self, pipeline):
