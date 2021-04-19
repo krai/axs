@@ -161,31 +161,14 @@ Usage examples :
         return '\n'.join(help_buffer)
 
 
-    def deferred_call(self, deferred_action_name, unmodified_structure):
-        """Preprocess the unmodified structure by running a specific action over it
-        """
-
-        if deferred_action_name:
-            logging.debug(f'[{self.get_name()}]  Applying action {deferred_action_name} to "{unmodified_structure}" ...')
-
-            deferred_action_name = deferred_action_name[1:]
-            if deferred_action_name[0]=='^':
-                modified_structure = self.call(deferred_action_name[1:], unmodified_structure)
-            else:
-                modified_structure = self.get_kernel().call(deferred_action_name, unmodified_structure)
-
-            logging.debug(f'[{self.get_name()}]  Applied action {deferred_action_name} to "{unmodified_structure}", got "{modified_structure}"')
-            return modified_structure
-        else:
-            return unmodified_structure
-
-
     def call(self, action_name, pos_params=None, override_dict=None, pos_preps=None):
         """Call a given function or method of a given entry and feed it
             with arguments from the current object optionally overridden by a given dictionary.
 
             The action can have a mix of positional args and named args with optional defaults.
         """
+
+        logging.debug(f'[{self.get_name()}]  calling action {action_name} with "{pos_params}" ...')
 
         if override_dict:
             self.parameters_loaded().update( override_dict )
@@ -197,12 +180,28 @@ Usage examples :
 
         if pos_preps:
             for idx in range(len(pos_params)):
-                pos_params[idx] = self.deferred_call( pos_preps[idx], pos_params[idx] )
+                pos_params[idx] = self.nested_call( pos_preps[idx], pos_params[idx])    # NB: nested calls do not have override_dict
 
         action_object   = self.reach_action(action_name)
         result          = function_access.feed(action_object, pos_params, self)
 
+        logging.debug(f'[{self.get_name()}]  called action {action_name} with "{pos_params}", got "{result}"')
+
         return result
+
+
+    def nested_call(self, action_name, pos_params=None):
+        """Preprocess args by running a specific action over them
+        """
+
+        if not action_name:
+            return pos_params
+        else:
+            action_name = action_name[1:]
+            if action_name[0]=='^':
+                return self.call(action_name[1:], pos_params)
+            else:
+                return self.get_kernel().call(action_name, pos_params)
 
 
     def execute(self, pipeline):

@@ -93,7 +93,7 @@ class ParamSource:
             param_name_len = len(param_name)
             for own_key in own_parameters:
                 if own_key[:param_name_len+1]==param_name+'^':
-                    return self.deferred_call(own_key[param_name_len:], own_parameters[own_key])
+                    return self.nested_call(own_key[param_name_len:], own_parameters[own_key])      # NB: nested calls do not have override_dict
 
             if parent_recursion:
                 for parent_object in self.parents_loaded():
