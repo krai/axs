@@ -69,6 +69,12 @@ class ParamSource:
         return arg
 
 
+    def enumerate(self, *args):
+        "Enumerates its arguments in a dictionary"
+
+        return dict(enumerate(args))
+
+
     def __getitem__(self, param_name, calling_top_context=None, parent_recursion=True):
         "Lazy parameter access: returns the parameter value from self or the closest parent"
 
