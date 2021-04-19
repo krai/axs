@@ -52,68 +52,56 @@ def cli_parse(arglist):
         curr_link = [ None, call_pos_params, call_params, call_pos_preps ]
         pipeline.append( curr_link )
 
-        ## Going through the parameters
+        ## Going through the arguments
         while i<len(arglist) and not arglist[i].startswith(','):
-            call_param_prep = ''
-
             if not arglist[i].startswith('--'):
-                if curr_link[0]==None:  # no action has been parsed yet
-                    if re.match(r'^\w+$', arglist[i]):  # normal action
-                        curr_link[0] = arglist[i]
-                    else:                               # a "guess me" action
+                matched = re.match(r'^(\^{1,2}\w+)(([:,\ /;=]).*)?$', arglist[i])   # a nested action
+                if matched:
+                    delimiter = matched.group(3)
+                    call_pos_preps.append( matched.group(1) )
+                    call_pos_params.append( [to_num_or_not_to_num(el) for el in matched.group(2).split(delimiter)[1:] ] if delimiter else [] )
+
+                    if curr_link[0]==None:          # no action has been parsed yet
                         curr_link[0] = 'noop'
-                        call_pos_preps.append( arglist[i][0] )
-                        call_pos_params.append( arglist[i][1:] )
-                else:   # a regular positional param
-                    call_pos_preps.append( call_param_prep )
+                elif curr_link[0]==None and re.match(r'^\w+$', arglist[i]):         # a normal action
+                    curr_link[0] = arglist[i]
+                elif curr_link[0]:                                                  # a positional argument
+                    call_pos_preps.append( '' )
                     call_pos_params.append( to_num_or_not_to_num(arglist[i]) )
+                else:
+                    raise(Exception("Parsing error - cannot understand non-option '{}' before an action".format(arglist[i])))
+
             else:
-                call_param_key  = None
-
-                matched_json_param = re.match('^---(([\w\.]*)(\^{1,2}\w+)?)=(.*)$', arglist[i])
-                if matched_json_param:
-                    if matched_json_param.group(2):
-                        call_param_key      = matched_json_param.group(1)
-                    else:
-                        call_param_prep     = matched_json_param.group(3)
-
-                    call_param_json     = matched_json_param.group(4)
+                matched = re.match(r'^---(([\w\.]*)(\^{1,2}\w+)?)=(.*)$', arglist[i])                # verbatim JSON value
+                if matched:
+                    call_param_json     = matched.group(4)
                     call_param_value    = json.loads( call_param_json )
                 else:
-                    matched_parampair = re.match('^--(([\w\.]*)(\^{1,2}\w+)?)([\ ,;:]?)=(.*)$', arglist[i])
-                    if matched_parampair:
-                        if matched_parampair.group(2):
-                            call_param_key  = matched_parampair.group(1)
-                        else:
-                            call_param_prep = matched_parampair.group(3)
-
-                        delimiter           = matched_parampair.group(4)
-                        call_param_value    = matched_parampair.group(5)
+                    matched = re.match(r'^--(([\w\.]*)(\^{1,2}\w+)?)([\ ,;:]?)=(.*)$', arglist[i])   # list or scalar value
+                    if matched:
+                        delimiter           = matched.group(4)
+                        call_param_value    = matched.group(5)
 
                         if delimiter:
                             call_param_value    = [to_num_or_not_to_num(el) for el in call_param_value.split(delimiter)]
                         else:
                             call_param_value    = to_num_or_not_to_num(call_param_value)
                     else:
-                        matched_paramsingle = re.match('^--(([\w\.]*)(\^{1,2}\w+)?)([,+-]?)$', arglist[i])
-                        if matched_paramsingle:
-                            if matched_paramsingle.group(2):
-                                call_param_key  = matched_paramsingle.group(1)
+                        matched = re.match(r'^--(([\w\.]*)(\^{1,2}\w+)?)([,+-]?)$', arglist[i])      # empty list or bool value
+                        if matched:
+                            if matched.group(4) == ',':
+                                call_param_value    = []                        # the way to express an empty list
                             else:
-                                call_param_prep = matched_paramsingle.group(3)
+                                call_param_value    = matched.group(4) != '-'   # boolean True or False
 
-                            if matched_paramsingle.group(4) == ',':
-                                call_param_value    = []                                    # the way to express an empty list
-                            else:
-                                call_param_value    = matched_paramsingle.group(4) != '-'   # boolean True or False
-
-                if call_param_key:
-                    call_params[call_param_key] = call_param_value
-                elif call_param_prep:
-                    call_pos_preps.append( call_param_prep )
-                    call_pos_params.append( call_param_value )
+                if matched:
+                    if matched.group(2):                                    # if option name was present
+                        call_params[matched.group(1)] = call_param_value    # that option name may also incorporate a nested action
+                    else:
+                        call_pos_preps.append( matched.group(3) )           # otherwise it's a positional nested action
+                        call_pos_params.append( call_param_value )
                 else:
-                    raise(Exception("Parsing error - cannot understand '{}'".format(arglist[i])))
+                    raise(Exception("Parsing error - cannot understand option '{}'".format(arglist[i])))
             i += 1
 
     return pipeline
