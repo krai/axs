@@ -35,9 +35,11 @@ install:
     - echo "CWD=${CWD}, THIS_REPO_NAME=${THIS_REPO_NAME}, PATH=${PATH}"
     - which ${PYTHON_EXE}
     - ${PYTHON_EXE} --version
+    - wget https://raw.github.com/lehmannro/assert.sh/master/assert.sh
 
 script:
     - ${PYTHON_EXE} function_access.py
     - ${PYTHON_EXE} param_source.py
     - ${PYTHON_EXE} runnable.py
     - ${PYTHON_EXE} stored_entry.py
+    - test_axs.sh
