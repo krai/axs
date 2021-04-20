@@ -30,6 +30,7 @@ jobs:
 
 install:
     - CWD=`pwd`
+    - PATH=$PATH:$CWD
     - THIS_REPO_NAME=`basename $CWD`
     - echo "TRAVIS_OS_NAME=${TRAVIS_OS_NAME}, TRAVIS_PYTHON_VERSION=${TRAVIS_PYTHON_VERSION}"
     - echo "CWD=${CWD}, THIS_REPO_NAME=${THIS_REPO_NAME}, PATH=${PATH}"
