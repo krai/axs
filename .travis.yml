@@ -43,4 +43,4 @@ script:
     - ${PYTHON_EXE} param_source.py
     - ${PYTHON_EXE} runnable.py
     - ${PYTHON_EXE} stored_entry.py
-    - test_axs.sh
+    - if [ "$TRAVIS_OS_NAME" != "windows" ]; then test_axs.sh ; fi
