@@ -1,5 +1,5 @@
 {
-    "parent_entry^byname": ["shell"],
+    "parent_entries^": [ "^byname:shell" ],
     "url_prefix": "https://github.com/ens-lg4",
     "#url": "#{url_prefix}#/#{name}#"
 }

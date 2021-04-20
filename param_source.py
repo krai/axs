@@ -10,7 +10,7 @@ class ParamSource:
         It can return the value of a known parameter or delegate the request for an unknown parameter to its parent.
     """
 
-    PARAMNAMES_parent_entry = ('parent_entry', 'parent_entry_2')
+    PARAMNAME_parent_entries = 'parent_entries'
 
     def __init__(self, name=None, own_parameters=None, parent_objects=None):
         "A trivial constructor"
@@ -43,13 +43,8 @@ class ParamSource:
     def parents_loaded(self):
         if self.parent_objects==None:     # lazy-loading condition
             logging.debug(f"[{self.get_name()}] Lazy-loading the parents...")
-            self.parent_objects = []
-            for parent_param_name in self.PARAMNAMES_parent_entry:
-                parent_object = self.get( parent_param_name, parent_recursion=False )
-                if parent_object:
-                    self.parent_objects.append( parent_object )
-                else:
-                    break
+            self.parent_objects = self.get(self.PARAMNAME_parent_entries, [], parent_recursion=False)
+            logging.debug(f"[{self.get_name()}] Parents loaded and cached.")
         else:
             logging.debug(f"[{self.get_name()}] Parents have already been cached")
 
