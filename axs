@@ -72,12 +72,12 @@ def cli_parse(arglist):
                     raise(Exception("Parsing error - cannot understand non-option '{}' before an action".format(arglist[i])))
 
             else:
-                matched = re.match(r'^---(([\w\.]*)(\^{1,2}\w+)?)=(.*)$', arglist[i])                # verbatim JSON value
+                matched = re.match(r'^---(([\w\.]*)(\^{1,2}\w*)?)=(.*)$', arglist[i])                # verbatim JSON value
                 if matched:
                     call_param_json     = matched.group(4)
                     call_param_value    = json.loads( call_param_json )
                 else:
-                    matched = re.match(r'^--(([\w\.]*)(\^{1,2}\w+)?)([\ ,;:]?)=(.*)$', arglist[i])   # list or scalar value
+                    matched = re.match(r'^--(([\w\.]*)(\^{1,2}\w*)?)([\ ,;:]?)=(.*)$', arglist[i])   # list or scalar value
                     if matched:
                         delimiter           = matched.group(4)
                         call_param_value    = matched.group(5)
