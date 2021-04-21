@@ -3,11 +3,12 @@
 """ This entry knows how to make other entries.
 """
 
+import os
+
 def walk(__entry__):
     """An internal recursive generator not to be called directly
     """
 
-    assert __entry__ != None, "__entry__ should be defined"
     ak = __entry__.get_kernel()
     assert ak != None, "__entry__'s kernel should be defined"
     collection_own_name = __entry__.get_name()
@@ -17,7 +18,7 @@ def walk(__entry__):
     yield __entry__
 
     print(f"collection({collection_own_name}).walk(): walking contained_entries:")
-    contained_entries = __entry__.get('contained_entries',[])
+    contained_entries = __entry__.get('contained_entries', {})
     for entry_name in contained_entries:
         relative_entry_path = contained_entries[entry_name]
         print(f"collection({collection_own_name}).walk(): mapping {entry_name} to relative_entry_path={relative_entry_path}")
@@ -31,7 +32,7 @@ def walk(__entry__):
             yield contained_entry
 
 
-def byname(entry_name, __entry__=None):
+def byname(entry_name, __entry__):
     """Fetch an entry by name
     """
 
@@ -41,7 +42,7 @@ def byname(entry_name, __entry__=None):
     return None
 
 
-def byquery(query,  __entry__=None):
+def byquery(query,  __entry__):
     """Fetch an entry by query
     """
 
@@ -121,6 +122,31 @@ def byquery(query,  __entry__=None):
             if candidate_still_ok:
                 return candidate_entry
     return None
+
+
+def add_entry_path(new_entry_path, new_entry_name=None, __entry__=None):
+    """Add a new entry to the collection given the path
+    """
+    assert __entry__ != None, "__entry__ should be defined"
+
+    trimmed_new_entry_path  = __entry__.trim_path( new_entry_path )
+    new_entry_name          = new_entry_name or os.path.basename( trimmed_new_entry_path )
+    existing_path           = __entry__.dig(['contained_entries', new_entry_name], safe=True)
+
+    if existing_path:
+        raise(KeyError(f"There was already another entry named {new_entry_name} with path {existing_path}, remove it first"))
+    else:
+        __entry__.plant(['contained_entries', new_entry_name], trimmed_new_entry_path)
+        return __entry__.save()
+
+
+def remove_entry_name(old_entry_name, __entry__):
+
+    contained_entries       = __entry__.get('contained_entries', {})
+    contained_entries.pop( old_entry_name, None )   # ignore attempts to remove inexistent keys
+
+    return __entry__.save()
+
 
 
 if __name__ == '__main__':
