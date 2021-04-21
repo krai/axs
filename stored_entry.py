@@ -41,6 +41,21 @@ Usage examples :
             return self.entry_path
 
 
+    def trim_path(self, input_path):
+        """Transform path to relative-to-entry if inside entry, or absolute if outside
+        """
+        if input_path.startswith( os.path.sep ):                    # given as absolute
+            real_input_path     = os.path.realpath( input_path )
+            real_entry_path_tr  = os.path.realpath( self.entry_path ) + os.path.sep
+
+            if real_input_path.startswith( real_entry_path_tr ):    # absolute and inside => trim
+                return real_input_path[ len(real_entry_path_tr): ]
+            else:                                                   # absolute, but outside => keep
+                return input_path
+        else:                                                       # relative, assume inside => keep
+            return input_path
+
+
     def get_name(self):
         return self.name or (self.entry_path and os.path.basename(self.entry_path))
 
