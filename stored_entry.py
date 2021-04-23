@@ -74,6 +74,13 @@ Usage examples :
         return self.container_object
 
 
+    def bypath(self, path, name=None):
+        """A parameterization of MicroKernel.bypath() that is always relative to the "current" entry,
+            mainly used by collections.
+        """
+        return self.get_kernel().bypath(self.get_path(path), name, container=self)
+
+
     def parameters_loaded(self):
         """Lazy-load, cache and return own parameters from the file system
 
