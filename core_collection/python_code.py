@@ -3,6 +3,7 @@
 """ This entry knows how to make other entries.
 """
 
+import logging
 import os
 
 def walk(__entry__):
@@ -14,21 +15,21 @@ def walk(__entry__):
     collection_own_name = __entry__.get_name()
 
 
-    print(f"collection({collection_own_name}).walk(): yielding the collection itself")
+    logging.debug(f"collection({collection_own_name}): yielding the collection itself")
     yield __entry__
 
-    print(f"collection({collection_own_name}).walk(): walking contained_entries:")
+    logging.debug(f"collection({collection_own_name}): walking contained_entries:")
     contained_entries = __entry__.get('contained_entries', {})
     for entry_name in contained_entries:
         relative_entry_path = contained_entries[entry_name]
-        print(f"collection({collection_own_name}).walk(): mapping {entry_name} to relative_entry_path={relative_entry_path}")
+        logging.debug(f"collection({collection_own_name}): mapping {entry_name} to relative_entry_path={relative_entry_path}")
 
         contained_entry = ak.bypath(path=__entry__.get_path(relative_entry_path), name=entry_name, container=__entry__)
         if contained_entry.can( 'walk' ):
-            print(f"collection({collection_own_name}).walk(): recursively walking collection {entry_name}...")
+            logging.debug(f"collection({collection_own_name}): recursively walking collection {entry_name}...")
             yield from walk(contained_entry)
         else:
-            print(f"collection({collection_own_name}).walk(): yielding non-collection {entry_name}")
+            logging.debug(f"collection({collection_own_name}): yielding non-collection {entry_name}")
             yield contained_entry
 
 
