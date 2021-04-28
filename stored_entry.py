@@ -81,6 +81,39 @@ Usage examples :
         return self.get_kernel().bypath(self.get_path(path), name, container=self)
 
 
+    def attach(self, container=None):
+        """Dispatch the request to register an entry in a container to the container.
+
+Usage examples :
+                axs bypath $HOME/work_collection/hebrew_letters , --letter_mapping,=aleph,beth,gimel,dalet --country=israel save , attach
+        """
+        if container==None:
+            container = self.get_kernel().work_collection()
+        elif type(container)==str:
+            container = self.get_kernel().byname(container)
+
+        container.call('add_entry_path', [self.get_path(), self.get_name()] )
+
+        self.container_object = container
+
+        return self
+
+
+    def detach(self):
+        """Dispatch the request to de-register an entry from a container to the container.
+
+Usage examples :
+                axs byname hebrew_letters , detach
+        """
+        container = self.get_container()
+        if container:
+            container.call("remove_entry_name", self.get_name() )
+        else:
+            logging.warning(f"[{self.get_name()}] was not attached to a container")
+
+        return self
+
+
     def parameters_loaded(self):
         """Lazy-load, cache and return own parameters from the file system
 
@@ -153,6 +186,21 @@ Usage examples :
             json_fd.write( json_data+"\n" )
 
         logging.warning(f"[{self.get_name()}] parameters {json_data} saved to '{parameters_full_path}'")
+
+        return self
+
+
+    def remove(self):
+        """Delete the entry from the file system (keeping the memory shadow)
+
+Usage examples :
+                axs byname hebrew_letters , detach , remove
+        """
+        entry_path = self.get_path('')
+        if entry_path:
+            shutil.rmtree(entry_path)
+        else:
+            logging.warning(f"[{self.get_name()}] was not saved to the file system, so cannot be removed")
 
         return self
 
