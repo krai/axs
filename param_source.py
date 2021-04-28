@@ -201,11 +201,11 @@ Usage examples :
         return self
 
 
-    def plant(self, key_path, value):
+    def plant(self, key_path, value, pluck=False):
         """Traverse the given path of keys into a parameter's internal structure
             and change/add a value there.
             Fairly tolerant to short lists & missing values.
-ls -l
+
 Usage examples :
                 axs bypath foo , plant num.tens --,=10,20,30 , plant num.doubles --,=2,4,6,8 , parameters_loaded
         """
@@ -227,10 +227,22 @@ Usage examples :
 
             if key_idx<last_idx:
                 struct_ptr = struct_ptr[key_syllable]       # iterative descent
+            elif pluck:
+                struct_ptr.pop(key_syllable)
             else:
                 struct_ptr[key_syllable] = value
 
         return self
+
+
+    def pluck(self, key_path):
+        """Traverse the given path of keys into a parameter's internal structure
+            and remove a key-value pair from there.
+
+Usage examples :
+                axs bypath foo , pluck foo.bar.baz , save
+        """
+        return self.plant(key_path, None, pluck=True)
 
 
 if __name__ == '__main__':
