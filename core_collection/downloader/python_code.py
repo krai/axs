@@ -1,4 +1,23 @@
+#!/usr/bin/env python3
 
+""" This entry knows how to download a file from a given URL.
+    The resulting file may either become a collection or a regular entry.
+
+Creating a recipe entry:
+    axs bypath examplepage_recipe , --url=http://example.com/ --entry_name=examplepage_downloaded --file_name=example.html --parent_entries^,=^byname:downloader save , attach
+
+Activating the recipe, performing the actual downloading:
+    axs byname examplepage_recipe , download
+
+Getting the path to the downloaded file:
+    cat `axs byname examplepage_downloaded , get_path`
+
+Cleaning up:
+    axs byname examplepage_downloaded , remove
+    axs byname examplepage_recipe , remove
+
+
+"""
 
 def download(url, entry_name, file_name, __entry__):
     """Create a new entry and download the url into it

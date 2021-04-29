@@ -2,6 +2,12 @@
 
 source assert.sh
 
+if [ `uname` = 'Darwin' ]; then
+    MD5CMD="md5 -r"
+else
+    MD5CMD="md5sum"
+fi
+
 assert 'axs get xyz --xyz=123' 123
 assert 'axs dig greek.2 --greek,=alpha,beta,gamma,delta' 'gamma'
 assert 'axs substitute "Hello, #{x}#" --x=mate' 'Hello, mate'
@@ -32,6 +38,13 @@ assert 'axs byname French , dig number_mapping.5' 'cinq'
 axs byname counting_collection , pull
 axs byname counting_collection , remove
 assert_end git_cloning_collection_access_and_removal
+
+axs bypath examplepage_recipe , --url=http://example.com/ --entry_name=examplepage_downloaded --file_name=example.html --parent_entries^,=^byname:downloader save , attach
+axs byname examplepage_recipe , download
+assert '$MD5CMD `axs byname examplepage_downloaded , get_path` | cut -f 1 -d" "' '84238dfc8092e5d9c0dac8ef93371a07'
+axs byname examplepage_downloaded , remove
+axs byname examplepage_recipe , remove
+assert_end url_downloading_recipe_activation_and_removal
 
 echo "axs tests done"
 
