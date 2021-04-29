@@ -194,11 +194,13 @@ Usage examples :
         """Delete the entry from the file system (keeping the memory shadow)
 
 Usage examples :
-                axs byname hebrew_letters , detach , remove
+                axs byname hebrew_letters , remove
         """
+        self.call('detach')
         entry_path = self.get_path('')
         if entry_path:
             shutil.rmtree(entry_path)
+            logging.warning(f"[{self.get_name()}] {entry_path} removed from the filesystem")
         else:
             logging.warning(f"[{self.get_name()}] was not saved to the file system, so cannot be removed")
 

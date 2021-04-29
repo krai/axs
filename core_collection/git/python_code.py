@@ -1,20 +1,23 @@
 #!/usr/bin/env python3
 
 """ This entry knows how to download git repositories.
+    They may either become collections or regular entries.
 """
 
 import os
 
-def pull(name=None, url=None, container_dir=None, __entry__=None):
+def pull(name=None, url=None, __entry__=None):
     """Either clone a git repository if it didn't exist locally,
         or pull a git repository if it did exit.
         Note: it does not (yet) add the repository to any collection, it has to be done manually.
 
 Usage examples :
-            axs byname git , pull counting_collection
-            axs work_collection , plant contained_entries.counting_collection counting_collection , save
+            axs byname git , pull counting_collection , attach
 
             axs byname counting_collection , pull
+
+Clean-up:
+            axs byname counting_collection , remove
     """
 
     assert __entry__ != None, "__entry__ should be defined"
@@ -43,3 +46,5 @@ Usage examples :
     print(f"Running command: {shell_cmd}")
 
     __entry__.call('run', [shell_cmd])
+
+    return ak.bypath(repo_path)

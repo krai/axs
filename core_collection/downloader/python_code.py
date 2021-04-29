@@ -13,8 +13,7 @@ Usage examples:
     Reaching to the original producer (this Entry):
             axs byname examplepage_downloaded , get producer , get_path
     Clean up:
-            rm -rf "`axs byname examplepage_downloaded , get_path ''`"
-            axs work_collection , remove_entry_name examplepage_downloaded
+            axs byname examplepage_downloaded , remove
     """
     data = {
         'url':          url,
