@@ -15,7 +15,6 @@ Usage examples :
             axs byname git , pull counting_collection , attach
 
             axs byname counting_collection , pull
-
 Clean-up:
             axs byname counting_collection , remove
     """
@@ -29,22 +28,23 @@ Clean-up:
             name = os.path.basename( url )
             if name.endswith('.git'):
                 name = name[:-4]        # trim it off
+        clone = True
     elif name:
         __entry__["name"] = name
         url = __entry__["url"]          # use this Entry's substitution mechanism
-
-    print(f"axs-git-pull: name={name}, url={url}")
-
-    repo_entry  = ak.bypath(name) if name else __entry__
-    repo_path   = repo_entry.get_path()
-
-    if os.path.exists( repo_path ):
-        shell_cmd = f"git -C {repo_path} pull"
+        clone = True
     else:
-        shell_cmd = f"git clone {url}"
+        clone = False
 
-    print(f"Running command: {shell_cmd}")
 
-    __entry__.call('run', [shell_cmd])
+    if clone:
+        work_collection = ak.work_collection()
+        container_path  = work_collection.get_path('')
+        __entry__.call('run', f"git -C {container_path} clone {url}" )
+        repo_entry      = work_collection.bypath(name)
+    else:
+        repo_entry      = __entry__
+        repo_path       = repo_entry.get_path()
+        __entry__.call('run',  f"git -C {repo_path} pull" )
 
-    return ak.bypath(repo_path)
+    return repo_entry

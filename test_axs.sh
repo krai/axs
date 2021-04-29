@@ -20,8 +20,18 @@ axs bypath granddad , save --gamma=31 --delta=41  --epsilon=51  --zeta=60
 axs bypath dad      , save            --delta=410 --epsilon=510 --parent_entries^,=^bypath:granddad
 axs bypath child    , save --lambda=7000 --mu=8000 --parent_entries^,=^bypath:dad,^bypath:mum
 assert 'axs bypath child , substitute "#{alpha}#+#{beta}#, #{gamma}#-#{delta}#, #{epsilon}#*#{lambda}#"' '10+200, 31-410, 510*7000'
-rm -rf grandma mum granddad dad child
-assert_end entry_creation_and_multiple_inheritance
+axs bypath child    , remove
+axs bypath mum      , remove
+axs bypath grandma  , remove
+axs bypath dad      , remove
+axs bypath granddad , remove
+assert_end entry_creation_multiple_inheritance_and_removal
+
+axs byname git , pull counting_collection , attach
+assert 'axs byname French , dig number_mapping.5' 'cinq'
+axs byname counting_collection , pull
+axs byname counting_collection , remove
+assert_end git_cloning_collection_access_and_removal
 
 echo "axs tests done"
 
