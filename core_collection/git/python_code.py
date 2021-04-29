@@ -45,6 +45,6 @@ Clean-up:
     else:
         repo_entry      = __entry__
         repo_path       = repo_entry.get_path()
-        __entry__.call('run',  f"git -C {repo_path} pull" )
+        __entry__.call('run',  f"git -C {repo_path} pull --ff-only" )
 
     return repo_entry
