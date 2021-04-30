@@ -6,6 +6,7 @@
         "derived_map": "derived_map",
         "be_like": "be_like",
         "dont_be_like": "dont_be_like",
-        "downloader": "downloader"
+        "downloader": "downloader",
+        "sysinfo": "sysinfo"
     }
 }
