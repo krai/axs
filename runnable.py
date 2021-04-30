@@ -131,11 +131,14 @@ Usage examples :
 
                 required_arg_names, optional_arg_names, action_defaults, varargs, varkw = function_access.expected_call_structure( action_object )
 
+                if varargs:
+                    required_arg_names.append( '*'+varargs )
+
                 signature = ', '.join(required_arg_names + [optional_arg_names[i]+'='+str(action_defaults[i]) for i in range(len(optional_arg_names))] )
 
-                if varargs or varkw:
+                if varkw:
                     help_buffer.append( """NB: this action cannot be called via our calling mechanism,
-                              because it makes use of variable arguments (*) or variable keywords (**)""" )
+                              because it makes use of variable keywords (**)""" )
 
                 if ancestry_path:
                     help_buffer.append( common_format.format('Function', action_name ))
