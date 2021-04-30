@@ -1,27 +1,31 @@
 #!/usr/bin/env python3
 
-""" This entry knows how to run an arbitrary command in a given environment.
+""" This entry knows how to run an arbitrary shell command in a given environment
+    and optionally capture the output.
 """
 
 import subprocess
 
-def run(shell_cmd, env=None):
-    """ Run the given shell command in the given environment
+def run(shell_cmd, env=None, capture_output=False, split_to_lines=False):
+    """Run the given shell command in the given environment
 
-        Usage example:
+Usage examples:
             axs byname shell , run 'echo This is a test.'
     """
-
     env = env or {}
+    if env:
+        shell_cmd = 'env ' + ' '.join([ f"{k}={env[k]}" for k in env]) + ' ' + shell_cmd
 
-    env_setting_prefix = 'env ' + ' '.join([ f"{k}={env[k]}" for k in env])
-    if env_setting_prefix:
-        shell_cmd = env_setting_prefix + ' ' + shell_cmd
+    completed_process = subprocess.run(shell_cmd, shell = True, stdout=(subprocess.PIPE if capture_output else None) )
+    if capture_output:
+        output  = completed_process.stdout.decode('utf-8').rstrip()
 
-    return_code = subprocess.call(shell_cmd, shell = True)
+        if split_to_lines:
+            output = output.split('\n')
 
-    return return_code
-
+        return output
+    else:
+        return completed_process.returncode
 
 
 if __name__ == '__main__':
