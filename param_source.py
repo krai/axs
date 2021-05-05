@@ -90,9 +90,9 @@ class ParamSource:
                 if own_key[:param_name_len+1]==param_name+'^':
                     action_name = own_key[param_name_len:]
                     if len(action_name)>1:
-                        return self.dispatch_call(action_name, own_parameters[own_key])     # NB: dispatched calls do not have override_dict
+                        return calling_top_context.dispatch_call(action_name, own_parameters[own_key])     # NB: dispatched calls do not have override_dict
                     else:
-                        return self.calls_over_struct(own_parameters[own_key])
+                        return calling_top_context.calls_over_struct(own_parameters[own_key])
 
             if parent_recursion:
                 for parent_object in self.parents_loaded():
