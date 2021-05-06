@@ -122,16 +122,16 @@ Usage examples :
                 axs byname derived_map , own_data
         """
 
-        if self.own_parameters==None:   # lazy-loading condition
+        if self.own_data_cache==None:   # lazy-loading condition
             parameters_path = self.get_parameters_path()
             if os.path.isfile( parameters_path ):
                 with open( parameters_path ) as json_fd:
-                    self.own_parameters = json.load(json_fd)
+                    self.own_data_cache = json.load(json_fd)
             else:
                 logging.warning(f"[{self.get_name()}] parameters file {parameters_path} did not exist, initializing to empty parameters")
-                self.own_parameters = {}
+                self.own_data_cache = {}
 
-        return self.own_parameters
+        return self.own_data_cache
 
 
     def own_functions(self):

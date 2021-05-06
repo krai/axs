@@ -16,12 +16,12 @@ class ParamSource:
         "A trivial constructor"
 
         self.name           = name
-        self.own_parameters = own_parameters
+        self.own_data_cache = own_parameters
         self.parent_objects = parent_objects
 
-        logging.debug(f"[{self.get_name()}] Initializing the ParamSource with own_parameters={self.own_parameters}, inheriting from {'some parents' or 'no parents'}")
+        logging.debug(f"[{self.get_name()}] Initializing the ParamSource with own_parameters={self.own_data_cache}, inheriting from {'some parents' or 'no parents'}")
 # FIXME: The following would cause infinite recursion (expecting cached entries before they actually end up in cache)
-#        logging.debug(f"[{self.get_name()}] Initializing the ParamSource with own_parameters={self.own_parameters}, inheriting from {self.get_parents_names() or 'no parents'}")
+#        logging.debug(f"[{self.get_name()}] Initializing the ParamSource with own_parameters={self.own_data_cache}, inheriting from {self.get_parents_names() or 'no parents'}")
 
 
 
@@ -34,10 +34,10 @@ class ParamSource:
     def own_data(self):
         "Placeholder for lazy-loading parameters in subclasses that support it"
 
-        if self.own_parameters == None:
-            self.own_parameters = {}
+        if self.own_data_cache == None:
+            self.own_data_cache = {}
 
-        return self.own_parameters
+        return self.own_data_cache
 
 
     def parents_loaded(self):
