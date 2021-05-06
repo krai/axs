@@ -11,7 +11,7 @@ from runnable import Runnable
 class Entry(Runnable):
     "An Entry is a Runnable stored in the file system"
 
-    FILENAME_parameters     = 'parameters.json'
+    FILENAME_parameters     = 'data_axs.json'
     MODULENAME_functions    = 'python_code'     # the actual filename ends in .py
 
     def __init__(self, entry_path=None, parameters_path=None, module_name=None, container=None, **kwargs):
