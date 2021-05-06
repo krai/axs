@@ -175,7 +175,7 @@ Usage examples :
         logging.debug(f'[{self.get_name()}]  calling action {action_name} with "{pos_params}" ...')
 
         if override_dict:
-            self.parameters_loaded().update( override_dict )
+            self.own_data().update( override_dict )
 
         pos_params = pos_params or []
 

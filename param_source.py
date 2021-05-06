@@ -31,7 +31,7 @@ class ParamSource:
         return self.name
 
 
-    def parameters_loaded(self):
+    def own_data(self):
         "Placeholder for lazy-loading parameters in subclasses that support it"
 
         if self.own_parameters == None:
@@ -79,7 +79,7 @@ class ParamSource:
         if param_name=='__entry__':
             return self
 
-        own_parameters = self.parameters_loaded()
+        own_parameters = self.own_data()
         if param_name in own_parameters:
             param_value = own_parameters[param_name]
             logging.debug(f'[{self.get_name()}]  I have parameter "{param_name}", returning "{param_value}"')
@@ -196,7 +196,7 @@ Usage examples :
         "A simple setter method. We always set the value at the top"
 
         param_name = str(param_name)
-        self.parameters_loaded()[param_name] = param_value
+        self.own_data()[param_name] = param_value
 
         return self
 
@@ -207,12 +207,12 @@ Usage examples :
             Fairly tolerant to short lists & missing values.
 
 Usage examples :
-                axs bypath foo , plant num.tens --,=10,20,30 , plant num.doubles --,=2,4,6,8 , parameters_loaded
+                axs bypath foo , plant num.tens --,=10,20,30 , plant num.doubles --,=2,4,6,8 , own_data
         """
         if type(key_path)!=list:
             key_path = key_path.split('.')
 
-        struct_ptr = self.parameters_loaded()
+        struct_ptr = self.own_data()
 
         last_idx = len(key_path)-1
         for key_idx, key_syllable in enumerate(key_path):
@@ -279,9 +279,9 @@ if __name__ == '__main__':
     dad['seventh']      = 'SEITSMES'
     granddad['missing'] = 'PUUDU'
 
-    assert granddad.parameters_loaded()=={"seventh":"seitsmes", "nineth":"yheksas", "missing":"PUUDU"}, "Modified granddad's data"
-    assert dad.parameters_loaded()=={"third":"KOLMAS", "fifth":"viies", "seventh":"SEITSMES"}, "Modified dad's data"
-    assert child.parameters_loaded()=={'first': 'esimene', 'second': 'teine'}, "Unmodified child's data"
+    assert granddad.own_data()=={"seventh":"seitsmes", "nineth":"yheksas", "missing":"PUUDU"}, "Modified granddad's data"
+    assert dad.own_data()=={"third":"KOLMAS", "fifth":"viies", "seventh":"SEITSMES"}, "Modified dad's data"
+    assert child.own_data()=={'first': 'esimene', 'second': 'teine'}, "Unmodified child's data"
 
     from function_access import feed, four_param_example_func
 

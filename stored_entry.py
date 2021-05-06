@@ -114,12 +114,12 @@ Usage examples :
         return self
 
 
-    def parameters_loaded(self):
-        """Lazy-load, cache and return own parameters from the file system
+    def own_data(self):
+        """Lazy-load, cache and return own data from the file system
 
 Usage examples :
-                axs byname base_map , parameters_loaded
-                axs byname derived_map , parameters_loaded
+                axs byname base_map , own_data
+                axs byname derived_map , own_data
         """
 
         if self.own_parameters==None:   # lazy-loading condition
@@ -180,7 +180,7 @@ Usage examples :
             os.makedirs(parameters_dirname)
 
         # Store the [potentially updated] own_parameters:
-        own_parameters          = self.parameters_loaded()
+        own_parameters          = self.own_data()
         json_data               = json.dumps(own_parameters, indent=4)
         with open(parameters_full_path, "w") as json_fd:
             json_fd.write( json_data+"\n" )
