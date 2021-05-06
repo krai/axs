@@ -14,10 +14,10 @@ class Runnable(ParamSource):
         It can run an own or inherited action using own or inherited parameters.
     """
 
-    def __init__(self, module_object=None, kernel=None, **kwargs):
-        "Accept setting module_object and kernel in addition to parent's parameters"
+    def __init__(self, own_functions=None, kernel=None, **kwargs):
+        "Accept setting own_functions and kernel in addition to parent's parameters"
 
-        self.own_functions_cache    = module_object
+        self.own_functions_cache    = own_functions
         self.kernel                 = kernel
         super().__init__(**kwargs)
         logging.debug(f"[{self.get_name()}] Initializing the Runnable with {self.list_own_functions() if self.own_functions_cache else 'no'} pre-loaded functions and kernel={self.kernel}")
@@ -45,8 +45,8 @@ Usage examples :
                 axs byname be_like , list_own_functions
                 axs byname shell , list_own_functions
         """
-        module_object = self.own_functions()
-        return function_access.list_function_names(module_object) if module_object else []
+        own_functions = self.own_functions()
+        return function_access.list_function_names(own_functions) if own_functions else []
 
 
     def reach_function(self, function_name, _ancestry_path):
@@ -54,10 +54,10 @@ Usage examples :
 
         _ancestry_path.append( self.get_name() )
 
-        module_object   = self.own_functions()
+        own_functions   = self.own_functions()
 
-        if hasattr(module_object, function_name):
-            return getattr(module_object, function_name)
+        if hasattr(own_functions, function_name):
+            return getattr(own_functions, function_name)
         else:
             found_function = None
             for parent_object in self.parents_loaded():
@@ -152,9 +152,9 @@ Usage examples :
             except Exception as e:
                 logging.error( str(e) )
         else:
-            module_object   = self.own_functions()     # the entry may not contain any code...
-            if module_object:
-                doc_string      = module_object.__doc__     # the module may not contain any DocString...
+            own_functions   = self.own_functions()     # the entry may not contain any code...
+            if own_functions:
+                doc_string      = own_functions.__doc__     # the module may not contain any DocString...
                 help_buffer.append( common_format.format('Description', doc_string))
                 help_buffer.append( common_format.format('OwnFunctions', self.list_own_functions()))
             else:
@@ -260,10 +260,10 @@ if __name__ == '__main__':
         "Multiplies the argument by 3"
         return number*3
 
-    granddad    = Runnable(name='granddad', module_object=Namespace( add_one=plus_one, subtract_one=(lambda x: x-1)         ) )
-    dad         = Runnable(name='dad',      module_object=Namespace( double=(lambda x: x*2), triple=trice                   ), parent_objects=[granddad])
-    mum         = Runnable(name='mum',      module_object=Namespace( cube=(lambda x: x*x*x)                                 ) )
-    child       = Runnable(name='child',    module_object=Namespace( square=(lambda x: x*x)                                 ), parent_objects=[dad, mum])
+    granddad    = Runnable(name='granddad', own_functions=Namespace( add_one=plus_one, subtract_one=(lambda x: x-1)         ) )
+    dad         = Runnable(name='dad',      own_functions=Namespace( double=(lambda x: x*2), triple=trice                   ), parent_objects=[granddad])
+    mum         = Runnable(name='mum',      own_functions=Namespace( cube=(lambda x: x*x*x)                                 ) )
+    child       = Runnable(name='child',    own_functions=Namespace( square=(lambda x: x*x)                                 ), parent_objects=[dad, mum])
 
     assert sorted(granddad.list_own_functions())==['add_one', 'subtract_one'], "granddad's own functions"
     assert sorted(dad.list_own_functions())==['double', 'triple'], "dad's own functions"

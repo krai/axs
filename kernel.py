@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.55'   # TODO: update with every kernel change
+__version__ = '0.2.56'   # TODO: update with every kernel change
 
 import logging
 import os
@@ -72,7 +72,7 @@ Usage examples :
             logging.debug(f"[{self.name}] bypath: cache MISS for path={path}")
             if path.endswith('.json'):
                 name = name or "AdHoc_data"
-                cache_hit = self.entry_cache[path] = Entry(name=name, parameters_path=path, module_object=False, kernel=self)
+                cache_hit = self.entry_cache[path] = Entry(name=name, parameters_path=path, own_functions=False, kernel=self)
             elif path.endswith('.py'):
                 module_name = path[:-len('.py')]
                 name = name or "AdHoc_functions"

@@ -11,11 +11,11 @@ import logging      # for non-obtrusive logging
 import sys          # to obtain Python's version
 
 
-def list_function_names(module_object):
-    """Return the list of functions of a given module/class/namespace
+def list_function_names(module_like_object):
+    """Return the list of functions of a given Module/Class/Namespace
     """
-    function_names = [name for name, function_object in inspect.getmembers(module_object, inspect.isfunction)]
-    logging.debug(f"Module/Class/Namespace {module_object.__name__ if hasattr(module_object, '__name__') else ''} contains the following functions: {function_names}")
+    function_names = [name for name, function_object in inspect.getmembers(module_like_object, inspect.isfunction)]
+    logging.debug(f"Module/Class/Namespace {module_like_object.__name__ if hasattr(module_like_object, '__name__') else ''} contains the following functions: {function_names}")
     return function_names
 
 
