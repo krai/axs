@@ -17,10 +17,10 @@ class Runnable(ParamSource):
     def __init__(self, module_object=None, kernel=None, **kwargs):
         "Accept setting module_object and kernel in addition to parent's parameters"
 
-        self.module_object  = module_object
-        self.kernel         = kernel
+        self.own_functions_cache    = module_object
+        self.kernel                 = kernel
         super().__init__(**kwargs)
-        logging.debug(f"[{self.get_name()}] Initializing the Runnable with {self.list_own_functions() if self.module_object else 'no'} pre-loaded functions and kernel={self.kernel}")
+        logging.debug(f"[{self.get_name()}] Initializing the Runnable with {self.list_own_functions() if self.own_functions_cache else 'no'} pre-loaded functions and kernel={self.kernel}")
 
 
     def get_kernel(self):
@@ -35,7 +35,7 @@ class Runnable(ParamSource):
                 whereas stored False means "this object has no code to load", "nothing to see here".
         """
 
-        return self.module_object or False
+        return self.own_functions_cache or False
 
 
     def list_own_functions(self):

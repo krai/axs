@@ -145,21 +145,21 @@ Usage examples :
                 axs byname be_like , own_functions
                 axs byname dont_be_like , own_functions
         """
-        if self.module_object==None:    # lazy-loading condition
+        if self.own_functions_cache==None:    # lazy-loading condition
             entry_path = self.get_path()
             if entry_path:
                 module_name = self.get_module_name()
                 try:
                     (open_file_descriptor, path_to_module, module_description) = imp.find_module( module_name, [entry_path] )
 
-                    self.module_object = imp.load_module(path_to_module, open_file_descriptor, path_to_module, module_description) or False
+                    self.own_functions_cache = imp.load_module(path_to_module, open_file_descriptor, path_to_module, module_description) or False
                 except ImportError as e:
-                    self.module_object = False
+                    self.own_functions_cache = False
             else:
                 logging.debug(f"[{self.get_name()}] The entry does not have a path, so no functions either")
-                self.module_object = False
+                self.own_functions_cache = False
 
-        return self.module_object
+        return self.own_functions_cache
 
 
     def save(self):
