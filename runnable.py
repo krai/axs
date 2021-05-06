@@ -27,7 +27,7 @@ class Runnable(ParamSource):
         return self.kernel
 
 
-    def functions_loaded(self):
+    def own_functions(self):
         """Placeholder for lazy-loading code in subclasses that support it.
 
             Note the convention:
@@ -45,7 +45,7 @@ Usage examples :
                 axs byname be_like , list_own_functions
                 axs byname shell , list_own_functions
         """
-        module_object = self.functions_loaded()
+        module_object = self.own_functions()
         return function_access.list_function_names(module_object) if module_object else []
 
 
@@ -54,7 +54,7 @@ Usage examples :
 
         _ancestry_path.append( self.get_name() )
 
-        module_object   = self.functions_loaded()
+        module_object   = self.own_functions()
 
         if hasattr(module_object, function_name):
             return getattr(module_object, function_name)
@@ -152,7 +152,7 @@ Usage examples :
             except Exception as e:
                 logging.error( str(e) )
         else:
-            module_object   = self.functions_loaded()     # the entry may not contain any code...
+            module_object   = self.own_functions()     # the entry may not contain any code...
             if module_object:
                 doc_string      = module_object.__doc__     # the module may not contain any DocString...
                 help_buffer.append( common_format.format('Description', doc_string))

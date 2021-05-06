@@ -134,7 +134,7 @@ Usage examples :
         return self.own_parameters
 
 
-    def functions_loaded(self):
+    def own_functions(self):
         """Lazy-load and cache functions from the file system
 
             Note the convention:
@@ -142,8 +142,8 @@ Usage examples :
                 whereas stored False means "this object has no code to load", "nothing to see here".
 
 Usage examples :
-                axs byname be_like , functions_loaded
-                axs byname dont_be_like , functions_loaded
+                axs byname be_like , own_functions
+                axs byname dont_be_like , own_functions
         """
         if self.module_object==None:    # lazy-loading condition
             entry_path = self.get_path()
