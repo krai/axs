@@ -163,7 +163,7 @@ Usage examples :
 
 
     def save(self):
-        """Store [updated] own_parameters of the entry
+        """Store [updated] own_data of the entry
             Note1: the entry didn't have to have existed prior to saving
             Note2: only parameters get stored
 
@@ -179,9 +179,9 @@ Usage examples :
         if parameters_dirname and not os.path.exists(parameters_dirname):
             os.makedirs(parameters_dirname)
 
-        # Store the [potentially updated] own_parameters:
-        own_parameters          = self.own_data()
-        json_data               = json.dumps(own_parameters, indent=4)
+        # Store the [potentially updated] own_data:
+        own_data                = self.own_data()
+        json_data               = json.dumps(own_data, indent=4)
         with open(parameters_full_path, "w") as json_fd:
             json_fd.write( json_data+"\n" )
 
@@ -213,7 +213,7 @@ if __name__ == '__main__':
 
     print('-'*40 + ' Entry direct creation and storing: ' + '-'*40)
 
-    base_ordinals = Entry(entry_path='base_ordinals', own_parameters={
+    base_ordinals = Entry(entry_path='base_ordinals', own_data={
         "0": "zero",
         "1": "one",
         "2": "two",
@@ -221,7 +221,7 @@ if __name__ == '__main__':
     })
     assert base_ordinals[2]=="two", "Accessing own parameter of an unstored object"
 
-    derived_ordinals = Entry(entry_path='derived_ordinals', own_parameters={
+    derived_ordinals = Entry(entry_path='derived_ordinals', own_data={
         "5": "five",
         "6": "six",
         "7": "seven",

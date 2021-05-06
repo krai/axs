@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.53'   # TODO: update with every kernel change
+__version__ = '0.2.54'   # TODO: update with every kernel change
 
 import logging
 import os
@@ -76,7 +76,7 @@ Usage examples :
             elif path.endswith('.py'):
                 module_name = path[:-len('.py')]
                 name = name or "AdHoc_functions"
-                cache_hit = self.entry_cache[path] = Entry(name=name, own_parameters={}, entry_path='.', module_name=module_name, parent_objects=[], kernel=self)
+                cache_hit = self.entry_cache[path] = Entry(name=name, own_data={}, entry_path='.', module_name=module_name, parent_objects=[], kernel=self)
             else:
                 cache_hit = self.entry_cache[path] = Entry(name=name, entry_path=path, kernel=self, container=container)
             logging.debug(f"[{self.name}] bypath: successfully CACHED {cache_hit.get_name()} under path={path}")
@@ -96,10 +96,10 @@ Usage examples :
         work_collection_path = os.getenv('AXS_WORK_COLLECTION') or os.path.join(os.getenv('HOME'), 'work_collection')
         if not os.path.exists(work_collection_path):
             print(f"Creating new empty work_collection at {work_collection_path}...")
-            work_collection_parameters = {
+            work_collection_data = {
                 "parent_entries^": [ "^core_collection" ],
             }
-            work_collection_object = Entry(name="work_collection", entry_path=work_collection_path, own_parameters=work_collection_parameters, kernel=self)
+            work_collection_object = Entry(name="work_collection", entry_path=work_collection_path, own_data=work_collection_data, kernel=self)
             work_collection_object.call('add_entry_path', [ self.kernel_path( 'core_collection' ) ] )
         return self.bypath( work_collection_path )
 

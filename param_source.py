@@ -12,16 +12,16 @@ class ParamSource:
 
     PARAMNAME_parent_entries = 'parent_entries'
 
-    def __init__(self, name=None, own_parameters=None, parent_objects=None):
+    def __init__(self, name=None, own_data=None, parent_objects=None):
         "A trivial constructor"
 
         self.name           = name
-        self.own_data_cache = own_parameters
+        self.own_data_cache = own_data
         self.parent_objects = parent_objects
 
-        logging.debug(f"[{self.get_name()}] Initializing the ParamSource with own_parameters={self.own_data_cache}, inheriting from {'some parents' or 'no parents'}")
+        logging.debug(f"[{self.get_name()}] Initializing the ParamSource with own_data={self.own_data_cache}, inheriting from {'some parents' or 'no parents'}")
 # FIXME: The following would cause infinite recursion (expecting cached entries before they actually end up in cache)
-#        logging.debug(f"[{self.get_name()}] Initializing the ParamSource with own_parameters={self.own_data_cache}, inheriting from {self.get_parents_names() or 'no parents'}")
+#        logging.debug(f"[{self.get_name()}] Initializing the ParamSource with own_data={self.own_data_cache}, inheriting from {self.get_parents_names() or 'no parents'}")
 
 
 
@@ -79,20 +79,20 @@ class ParamSource:
         if param_name=='__entry__':
             return self
 
-        own_parameters = self.own_data()
-        if param_name in own_parameters:
-            param_value = own_parameters[param_name]
+        own_data = self.own_data()
+        if param_name in own_data:
+            param_value = own_data[param_name]
             logging.debug(f'[{self.get_name()}]  I have parameter "{param_name}", returning "{param_value}"')
             return param_value
         else:
             param_name_len = len(param_name)
-            for own_key in own_parameters:
+            for own_key in own_data:
                 if own_key[:param_name_len+1]==param_name+'^':
                     action_name = own_key[param_name_len:]
                     if len(action_name)>1:
-                        return calling_top_context.dispatch_call(action_name, own_parameters[own_key])     # NB: dispatched calls do not have override_dict
+                        return calling_top_context.dispatch_call(action_name, own_data[own_key])     # NB: dispatched calls do not have override_dict
                     else:
-                        return calling_top_context.calls_over_struct(own_parameters[own_key])
+                        return calling_top_context.calls_over_struct(own_data[own_key])
 
             if parent_recursion:
                 for parent_object in self.parents_loaded():
@@ -251,13 +251,13 @@ if __name__ == '__main__':
 
     print('-'*20 + ' Access request delegation down the ParamSource hierarchy: ' + '-'*20)
 
-    granddad    = ParamSource(name='granddad',  own_parameters={"seventh":"seitsmes", "nineth":"yheksas"})
-    dad         = ParamSource(name='dad',       own_parameters={"third":"kolmas",     "fifth":"viies"},   parent_objects=[granddad])
+    granddad    = ParamSource(name='granddad',  own_data={"seventh":"seitsmes", "nineth":"yheksas"})
+    dad         = ParamSource(name='dad',       own_data={"third":"kolmas",     "fifth":"viies"},   parent_objects=[granddad])
 
-    grandma     = ParamSource(name='grandma',   own_parameters={"eighth":"kaheksas", "tenth":"kymnes"})
-    mum         = ParamSource(name='mum',       own_parameters={"fourth":"neljas",   "sixth":"kuues"},    parent_objects=[grandma])
+    grandma     = ParamSource(name='grandma',   own_data={"eighth":"kaheksas", "tenth":"kymnes"})
+    mum         = ParamSource(name='mum',       own_data={"fourth":"neljas",   "sixth":"kuues"},    parent_objects=[grandma])
 
-    child       = ParamSource(name='child',     own_parameters={"first":"esimene",   "second":"teine"},   parent_objects=[dad, mum])
+    child       = ParamSource(name='child',     own_data={"first":"esimene",   "second":"teine"},   parent_objects=[dad, mum])
 
     assert child['first']=='esimene', "Getting own data"
     assert child['third']=='kolmas', "Inheriting dad's data"
@@ -287,12 +287,12 @@ if __name__ == '__main__':
 
     print('-'*40 + ' feed() calls: ' + '-'*40)
 
-    foo_param_parent = ParamSource(name='foo_param_parent', own_parameters={"alpha": 100, "beta": 200, "delta": 400, "epsilon": 600})
-    foo_param_child  = ParamSource(name='foo_param_child',  own_parameters={"alpha": 10, "lambda": 7777},            parent_objects=[foo_param_parent])
+    foo_param_parent = ParamSource(name='foo_param_parent', own_data={"alpha": 100, "beta": 200, "delta": 400, "epsilon": 600})
+    foo_param_child  = ParamSource(name='foo_param_child',  own_data={"alpha": 10, "lambda": 7777},            parent_objects=[foo_param_parent])
 
     assert feed(four_param_example_func, (), foo_param_child)==(10, 200, 333, 400), "feed() call with all parameters coming from ParamSource object"
 
-    bar_params = ParamSource(name='bar_params', own_parameters={"mate": "world", "deep": {"hole": [10,20,30], "sea": "Red"} })
+    bar_params = ParamSource(name='bar_params', own_data={"mate": "world", "deep": {"hole": [10,20,30], "sea": "Red"} })
 
     assert feed(bar_params.substitute, ("Hello, #{mate}#!",), bar_params)=="Hello, world!", "feed() call with both positional and optional parameters #1"
 
