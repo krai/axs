@@ -15,9 +15,10 @@ class ParamSource:
     def __init__(self, name=None, own_data=None, parent_objects=None):
         "A trivial constructor"
 
-        self.name           = name
-        self.own_data_cache = own_data
-        self.parent_objects = parent_objects
+        self.name                           = name
+        self.own_data_cache                 = own_data
+        self.parent_objects                 = parent_objects
+        self.runtime_data_overrides_cache   = []
 
         logging.debug(f"[{self.get_name()}] Initializing the ParamSource with own_data={self.own_data_cache}, inheriting from {'some parents' or 'no parents'}")
 # FIXME: The following would cause infinite recursion (expecting cached entries before they actually end up in cache)
@@ -70,6 +71,13 @@ class ParamSource:
         return dict(enumerate(args))
 
 
+    def runtime_data_overrides(self, data_sources=None):
+        if data_sources!=None:
+            self.runtime_data_overrides_cache = data_sources if type(data_sources)==list else [data_sources]
+
+        return self.runtime_data_overrides_cache
+
+
     def __getitem__(self, param_name, calling_top_context=None, parent_recursion=True):
         "Lazy parameter access: returns the parameter value from self or the closest parent"
 
@@ -78,6 +86,12 @@ class ParamSource:
         logging.debug(f"[{self.get_name()}] Attempt to access parameter '{param_name}'...")
         if param_name=='__entry__':
             return self
+
+        for override_object in self.runtime_data_overrides():
+            if param_name in override_object:
+                param_value = override_object[param_name]
+                logging.debug(f'[{self.get_name()}]  Runtime override has parameter "{param_name}", returning "{param_value}"')
+                return param_value
 
         own_data = self.own_data()
         if param_name in own_data:

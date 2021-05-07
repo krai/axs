@@ -235,13 +235,24 @@ Usage examples :
 
 
     def execute(self, pipeline):
-        """Execute a parsed pipeline (a chain of calls that starts from the kernel object)
+        """Execute a parsed pipeline (a chain of calls that starts from the kernel object).
+            Whenever a result returned by a function is NOT an Runnable, the execution resets back to the kernel object.
+
+Usage examples :
+            axs byname sysinfo , get osname , dig result_0.arch , substitute "OS=#{result_1}#, arch=#{result_2}#"
         """
 
-        results = self.get_kernel()
-        for call_params in pipeline:
-            results = results.call(*call_params)
-        return results
+        runtime_results = {}
+        result = None
+        for i, call_params in enumerate(pipeline):
+            entry = result if hasattr(result, 'call') else self.get_kernel()
+
+            entry.runtime_data_overrides( [runtime_results] )
+            result = entry.call(*call_params)
+            entry.runtime_data_overrides([])
+
+            runtime_results['result_'+str(i)] = result
+        return result
 
 
 if __name__ == '__main__':
