@@ -239,7 +239,7 @@ Usage examples :
             Whenever a result returned by a function is NOT an Runnable, the execution resets back to the kernel object.
 
 Usage examples :
-            axs byname sysinfo , get osname , dig result_0.arch , substitute "OS=#{result_1}#, arch=#{result_2}#"
+                axs si: byname sysinfo , get osname , dig si.arch , substitute "OS=#{result_1}#, arch=#{result_2}#"
         """
 
         runtime_results = {}
@@ -248,10 +248,13 @@ Usage examples :
             entry = result if hasattr(result, 'call') else self.get_kernel()
 
             entry.runtime_data_overrides( [runtime_results] )
+
+            label = call_params.pop(4) if len(call_params)>4 else 'result_'+str(i)
+
             result = entry.call(*call_params)
             entry.runtime_data_overrides([])
 
-            runtime_results['result_'+str(i)] = result
+            runtime_results[label] = result
         return result
 
 

@@ -14,7 +14,7 @@ def cli_parse(arglist):
     """Parse the command pipeline representing a chain of calls
 
     The expected format is:
-        <action_name> [<pos_param>]* [<opt_param>]* [, <action_name> [<pos_param>]* [<opt_param>]*]*
+        [<label>:] <action_name> [<pos_param>]* [<opt_param>]* [, <action_name> [<pos_param>]* [<opt_param>]*]*
 
         Positional parameters can have the following formats:
             ---='{"hello": "world"}'        # parsed JSON
@@ -63,9 +63,11 @@ def cli_parse(arglist):
 
                     if curr_link[0]==None:          # no action has been parsed yet
                         curr_link[0] = 'noop'
-                elif curr_link[0]==None and re.match(r'^\w+$', arglist[i]):         # a normal action
+                elif curr_link[0]==None and len(curr_link)<5 and re.match(r'^\w+:$', arglist[i]):   # a label
+                    curr_link.append( arglist[i][:-1] )
+                elif curr_link[0]==None and re.match(r'^\w+$', arglist[i]):                         # a normal action
                     curr_link[0] = arglist[i]
-                elif curr_link[0]:                                                  # a positional argument
+                elif curr_link[0]:                                                                  # a positional argument
                     call_pos_preps.append( '' )
                     call_pos_params.append( to_num_or_not_to_num(arglist[i]) )
                 else:
