@@ -33,6 +33,18 @@ def walk(__entry__):
             yield contained_entry
 
 
+def new(name, __entry__):
+    """Create a new entry with the given name and attach it to this collection
+
+Usage examples :
+                axs work_collection , new unique_entry_name , save --hello=world
+    """
+
+    new_entry = __entry__.get_kernel().bypath( __entry__.get_path( name ), name=name ).attach( __entry__ ).save()
+
+    return new_entry
+
+
 def byname(entry_name, __entry__):
     """Fetch an entry by name
     """
