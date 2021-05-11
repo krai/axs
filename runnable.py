@@ -239,22 +239,28 @@ Usage examples :
             Whenever a result returned by a function is NOT an Runnable, the execution resets back to the kernel object.
 
 Usage examples :
-                axs si: byname sysinfo , get osname , dig si.arch , substitute "OS=#{result_1}#, arch=#{result_2}#"
+                axs si: byname sysinfo , os: dig si.osname , ar: dig si.arch , substitute '#{os}#--#{ar}#'
+                axs si: byname sysinfo , os: dig si.osname , ar: dig si.arch , runtime_entry , pluck si , save
         """
 
-        runtime_results = {}
+        ak = self.get_kernel()
+
+        from stored_entry import Entry  # FIXME: unwanted circular reference!
+        runtime_entry = Entry(entry_path='runtime_entry', own_data={})
+
         result = None
         for i, call_params in enumerate(pipeline):
-            entry = result if hasattr(result, 'call') else self.get_kernel()
+            entry = result if hasattr(result, 'call') else ak
 
-            entry.runtime_data_overrides( [runtime_results] )
+            entry.runtime_entry( runtime_entry )
 
-            label = call_params.pop(4) if len(call_params)>4 else 'result_'+str(i)
+            label = call_params.pop(4) if len(call_params)>4 else None
 
             result = entry.call(*call_params)
-            entry.runtime_data_overrides([])
+            entry.runtime_entry()
 
-            runtime_results[label] = result
+            if label:
+                runtime_entry[label] = result
         return result
 
 

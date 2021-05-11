@@ -8,6 +8,7 @@ import shutil
 
 from runnable import Runnable
 
+
 class Entry(Runnable):
     "An Entry is a Runnable stored in the file system"
 
@@ -181,6 +182,14 @@ Usage examples :
 
         # Store the [potentially updated] own_data:
         own_data                = self.own_data()
+
+        # Replace instances of Entry by delayed calls to fetch them by name (stub)
+        for k in own_data:
+            v = own_data[k]
+            if isinstance(v, Entry):
+                own_data[k+'^^byname'] = v.get_name()
+                del own_data[k]
+
         json_data               = json.dumps(own_data, indent=4)
         with open(parameters_full_path, "w") as json_fd:
             json_fd.write( json_data+"\n" )
