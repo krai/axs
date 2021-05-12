@@ -240,7 +240,7 @@ Usage examples :
 
 Usage examples :
                 axs si: byname sysinfo , os: dig si.osname , ar: dig si.arch , substitute '#{os}#--#{ar}#'
-                axs si: byname sysinfo , os: dig si.osname , ar: dig si.arch , runtime_entry , pluck si , save
+                axs si: byname sysinfo , os: dig si.osname , ar: dig si.arch , runtime_entry , save
         """
 
         ak = self.get_kernel()

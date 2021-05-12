@@ -187,7 +187,7 @@ Usage examples :
         for k in own_data:
             v = own_data[k]
             if isinstance(v, Entry):
-                own_data[k+'^^byname'] = v.get_name()
+                own_data[k+'^byname'] = v.get_name()
                 del own_data[k]
 
         json_data               = json.dumps(own_data, indent=4)
