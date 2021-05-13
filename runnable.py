@@ -241,12 +241,11 @@ Usage examples :
 Usage examples :
                 axs si: byname sysinfo , os: dig si.osname , ar: dig si.arch , substitute '#{os}#--#{ar}#'
                 axs si: byname sysinfo , os: dig si.osname , ar: dig si.arch , runtime_entry , save
+                axs runtime_entry , old_dir: cd , si: byname sysinfo , os: dig si.osname , ar: dig si.arch , get si , run 'echo "Hello, world!" >README.txt' , runtime_entry , save
         """
 
         ak = self.get_kernel()
-
-        from stored_entry import Entry  # FIXME: unwanted circular reference!
-        runtime_entry = Entry(entry_path='runtime_entry', own_data={})
+        runtime_entry = ak.bypath(path='runtime_entry', own_data={})
 
         result = None
         for i, call_params in enumerate(pipeline):

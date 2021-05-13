@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.63'   # TODO: update with every kernel change
+__version__ = '0.2.64'   # TODO: update with every kernel change
 
 import logging
 import os
@@ -53,7 +53,7 @@ Usage examples :
         print(f"I am {self.name} version={self.version()} kernel_path={self.kernel_path()}")
 
 
-    def bypath(self, path, name=None, container=None):
+    def bypath(self, path, name=None, container=None, own_data=None):
         """Fetch an entry by its path, cached by the path
             Ad-hoc entries built either form a data file (.json) or functions' file (.py) can also be created.
 
@@ -78,7 +78,7 @@ Usage examples :
                 name = name or "AdHoc_functions"
                 cache_hit = self.entry_cache[path] = Entry(name=name, own_data={}, entry_path='.', module_name=module_name, parent_objects=[], kernel=self)
             else:
-                cache_hit = self.entry_cache[path] = Entry(name=name, entry_path=path, kernel=self, container=container)
+                cache_hit = self.entry_cache[path] = Entry(name=name, entry_path=path, own_data=own_data, kernel=self, container=container)
             logging.debug(f"[{self.name}] bypath: successfully CACHED {cache_hit.get_name()} under path={path}")
 
         return cache_hit
