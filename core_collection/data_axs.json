@@ -7,6 +7,8 @@
         "be_like": "be_like",
         "dont_be_like": "dont_be_like",
         "downloader": "downloader",
-        "sysinfo": "sysinfo"
+        "sysinfo": "sysinfo",
+        "pip": "pip",
+        "generic_pip": "generic_pip"
     }
 }
