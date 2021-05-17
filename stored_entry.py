@@ -168,12 +168,13 @@ Usage examples :
             entry_path = self.get_path()
             if entry_path:
                 module_name = self.get_module_name()
+
                 try:
                     (open_file_descriptor, path_to_module, module_description) = imp.find_module( module_name, [entry_path] )
-
-                    self.own_functions_cache = imp.load_module(path_to_module, open_file_descriptor, path_to_module, module_description) or False
                 except ImportError as e:
                     self.own_functions_cache = False
+                else:
+                    self.own_functions_cache = imp.load_module(path_to_module, open_file_descriptor, path_to_module, module_description) or False
             else:
                 logging.debug(f"[{self.get_name()}] The entry does not have a path, so no functions either")
                 self.own_functions_cache = False
