@@ -9,6 +9,7 @@
         "downloader": "downloader",
         "sysinfo": "sysinfo",
         "pip": "pip",
-        "generic_pip": "generic_pip"
+        "generic_pip": "generic_pip",
+        "numpy_import_test": "numpy_import_test"
     }
 }
