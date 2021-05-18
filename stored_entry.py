@@ -146,6 +146,7 @@ Usage examples :
             if os.path.isfile( parameters_path ):
                 with open( parameters_path ) as json_fd:
                     self.own_data_cache = json.load(json_fd)
+                    self.activate('AFTER_DATA_LOADING')
             else:
                 logging.warning(f"[{self.get_name()}] parameters file {parameters_path} did not exist, initializing to empty parameters")
                 self.own_data_cache = {}
@@ -174,7 +175,10 @@ Usage examples :
                 except ImportError as e:
                     self.own_functions_cache = False
                 else:
+                    self.own_functions_cache = False    # to avoid infinite recursion
+                    self.activate('BEFORE_CODE_LOADING')
                     self.own_functions_cache = imp.load_module(path_to_module, open_file_descriptor, path_to_module, module_description) or False
+
             else:
                 logging.debug(f"[{self.get_name()}] The entry does not have a path, so no functions either")
                 self.own_functions_cache = False

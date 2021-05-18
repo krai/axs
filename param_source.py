@@ -208,6 +208,15 @@ Usage examples :
             return default_value
 
 
+    def activate(self, param_name):
+        """[Compute and] print the value of a [non-inherited] parameter and carry on - useful for debugging and hooking
+        """
+        param_value = self.get(param_name, None, parent_recursion=False)
+        if param_value!=None:
+            print(f"{self.get_name()}:{param_name}={param_value}")
+        return param_value
+
+
     def __setitem__(self, param_name, param_value):
         "A simple setter method. We always set the value at the top"
 
