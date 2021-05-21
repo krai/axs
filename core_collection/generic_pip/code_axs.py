@@ -24,7 +24,7 @@ def ask_package_version(package_name):
 Usage examples :
                 axs np: byname numpy_1.16.4_pip , use , get np , ask_package_version
                 
-                axs byname pip , ask_package_version numpy
+                axs byname generic_pip , ask_package_version numpy
     """
     module = __import__(package_name)
     return getattr(module, '__version__')
@@ -37,7 +37,7 @@ def ask_package_location(package_name):
 Usage examples :
                 axs np: byname numpy_1.16.4_pip , use , get np , ask_package_location
 
-                axs byname pip , ask_package_location numpy
+                axs byname generic_pip , ask_package_location numpy
     """
     module = __import__(package_name)
     return getattr(module, '__file__')
