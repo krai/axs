@@ -42,6 +42,16 @@ Usage examples :
             return self.entry_path
 
 
+    def get_path_dig(self, key_path):
+        """A frequently needed combination of fetching a relative path from an Entry's data
+            and getting an absolute file path from that relative path.
+
+Usage examples :
+                axs byquery package_name=numpy , get_path_dig rel_packages_dir
+        """
+        return self.get_path(self.dig(key_path))
+
+
     def trim_path(self, input_path):
         """Transform path to relative-to-entry if inside entry, or absolute if outside
         """

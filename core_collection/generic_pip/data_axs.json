@@ -1,1 +1,3 @@
-{}
+{
+    "abs_packages_dir^^get_path_dig": "rel_packages_dir"
+}
