@@ -6,15 +6,14 @@
 import sys
 
 
-def use(__entry__):
+def use(abs_packages_dir):
     """Make an entry that contains an installed pip package the preferred location to import the package from.
 
 Usage examples :
                 axs np: byname numpy_1.16.4_pip , use , get np , ask_package_location
     """
-    package_install_path = __entry__.get_path( __entry__['rel_packages_dir'] )
-    sys.path.insert(0, package_install_path)
-    return package_install_path
+    sys.path.insert(0, abs_packages_dir)
+    return abs_packages_dir
 
 
 def ask_package_version(package_name):
