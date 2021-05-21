@@ -248,7 +248,7 @@ Usage examples :
         runtime_entry = ak.bypath(path='runtime_entry', own_data={})
 
         result = None
-        for i, call_params in enumerate(pipeline):
+        for call_params in pipeline:
             entry = result if hasattr(result, 'call') else ak
 
             entry.runtime_entry( runtime_entry )
