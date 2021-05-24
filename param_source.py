@@ -78,7 +78,7 @@ class ParamSource:
         return self.runtime_entry_cache
 
 
-    def __getitem__(self, param_name, calling_top_context=None, parent_recursion=None):
+    def __getitem__(self, param_name, calling_top_context=None):
         "Lazy parameter access: returns the parameter value from self or the closest parent"
 
         calling_top_context = calling_top_context or self
@@ -110,7 +110,8 @@ class ParamSource:
                     else:
                         return calling_top_context.calls_over_struct(own_data[own_key])
 
-            if param_name[0]!='_' and ( parent_recursion==None or parent_recursion ) :
+            parent_recursion = param_name[0]!='_'       # A simple rule about parameter inheritability, encoded in parameter's name
+            if parent_recursion:
                 for parent_object in self.parents_loaded():
                     logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}', fallback to the parent '{parent_object.get_name()}'")
                     try:
@@ -123,7 +124,7 @@ class ParamSource:
             raise KeyError(param_name)
 
 
-    def dig(self, key_path, safe=False, parent_recursion=None):
+    def dig(self, key_path, safe=False):
         """Traverse the given path of keys into a parameter's internal structure.
             --safe allows it not to fail when the path is not traversable
 
@@ -139,7 +140,7 @@ Usage examples :
         param_name = key_path[0]
 
         try:
-            struct_ptr  = self.__getitem__(param_name, parent_recursion=parent_recursion)
+            struct_ptr  = self.__getitem__(param_name)
 
             for key_syllable in key_path[1:]:
                 if type(struct_ptr)==list:  # descend into lists with numeric indices
@@ -193,7 +194,7 @@ Usage examples :
             return input_structure                                                          # basement step
 
 
-    def get(self, param_name, default_value=None, calling_top_context=None, parent_recursion=None):
+    def get(self, param_name, default_value=None, calling_top_context=None):
         """A safe wrapper around __getitem__() - returns the default_value if missing
 
 Usage examples :
@@ -202,7 +203,7 @@ Usage examples :
                 axs byname derived_map , get fifth
         """
         try:
-            return self.__getitem__(param_name, calling_top_context=calling_top_context, parent_recursion=parent_recursion)
+            return self.__getitem__(param_name, calling_top_context=calling_top_context)
         except KeyError:
             logging.debug(f"[{self.get_name()}] caught KeyError: parameter '{param_name}' is missing, returning the default value '{default_value}'")
             return default_value
