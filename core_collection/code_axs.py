@@ -66,7 +66,7 @@ def byquery(query,  __entry__):
         split_key_path = key_path.split('.')    # computed only once during closure creation
 
         def filter_closure(entry):
-            return fun(entry.dig(split_key_path, safe=True, parent_recursion=False), against)   # computed every time during filter application
+            return fun(entry.dig(split_key_path, safe=True), against)       # computed every time during filter application
 
         return filter_closure
 
