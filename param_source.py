@@ -10,7 +10,7 @@ class ParamSource:
         It can return the value of a known parameter or delegate the request for an unknown parameter to its parent.
     """
 
-    PARAMNAME_parent_entries = 'parent_entries'
+    PARAMNAME_parent_entries        = 'parent_entries'
 
     def __init__(self, name=None, own_data=None, parent_objects=None):
         "A trivial constructor"
@@ -78,7 +78,7 @@ class ParamSource:
         return self.runtime_entry_cache
 
 
-    def __getitem__(self, param_name, calling_top_context=None, parent_recursion=True):
+    def __getitem__(self, param_name, calling_top_context=None, parent_recursion=None):
         "Lazy parameter access: returns the parameter value from self or the closest parent"
 
         calling_top_context = calling_top_context or self
@@ -110,7 +110,7 @@ class ParamSource:
                     else:
                         return calling_top_context.calls_over_struct(own_data[own_key])
 
-            if parent_recursion:
+            if param_name[0]!='_' and ( parent_recursion==None or parent_recursion ) :
                 for parent_object in self.parents_loaded():
                     logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}', fallback to the parent '{parent_object.get_name()}'")
                     try:
@@ -123,7 +123,7 @@ class ParamSource:
             raise KeyError(param_name)
 
 
-    def dig(self, key_path, safe=False, parent_recursion=True):
+    def dig(self, key_path, safe=False, parent_recursion=None):
         """Traverse the given path of keys into a parameter's internal structure.
             --safe allows it not to fail when the path is not traversable
 
@@ -193,7 +193,7 @@ Usage examples :
             return input_structure                                                          # basement step
 
 
-    def get(self, param_name, default_value=None, calling_top_context=None, parent_recursion=True):
+    def get(self, param_name, default_value=None, calling_top_context=None, parent_recursion=None):
         """A safe wrapper around __getitem__() - returns the default_value if missing
 
 Usage examples :
@@ -211,7 +211,7 @@ Usage examples :
     def activate(self, param_name):
         """[Compute and] print the value of a [non-inherited] parameter and carry on - useful for debugging and hooking
         """
-        param_value = self.get(param_name, None, parent_recursion=False)
+        param_value = self.get(param_name, None)
         if param_value!=None:
             print(f"{self.get_name()}:{param_name}={param_value}")
         return param_value

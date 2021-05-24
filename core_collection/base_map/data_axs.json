@@ -1,5 +1,6 @@
 {
-    "first"     : "erste",
-    "second"    : "zweite",
-    "third"     : "dritte"
+    "first"             : "erste",
+    "second"            : "zweite",
+    "third"             : "dritte",
+    "_uninheritable"    : "base"
 }
