@@ -4,7 +4,7 @@
     The resulting file may either become a collection or a regular entry.
 
 Creating a recipe entry:
-    axs bypath examplepage_recipe , --url=http://example.com/ --entry_name=examplepage_downloaded --file_name=example.html --parent_entries^,=^byname:downloader save , attach
+    axs bypath examplepage_recipe , --url=http://example.com/ --entry_name=examplepage_downloaded --file_name=example.html --_parent_entries^,=^byname:downloader save , attach
 
 Activating the recipe, performing the actual downloading:
     axs byname examplepage_recipe , download

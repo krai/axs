@@ -1,4 +1,4 @@
 {
-    "parent_entries^": [ "^byname:be_like" ],
+    "_parent_entries^": [ "^byname:be_like" ],
     "be"            : "Don't be"
 }

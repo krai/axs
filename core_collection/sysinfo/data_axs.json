@@ -1,5 +1,5 @@
 {
-    "parent_entries^": [ "^byname:shell" ],
+    "_parent_entries^": [ "^byname:shell" ],
     "osname^^run": ["uname -s", {}, true],
     "arch^^run": ["uname -m", {}, true]
 }
