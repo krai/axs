@@ -23,7 +23,7 @@ axs bypath grandma  , save --alpha=10 --beta=20  --gamma=30  --multisub^^substit
 axs bypath mum      , save            --beta=200 --gamma=300 --_parent_entries,:=^:bypath:grandma
 assert 'axs bypath mum , substitute "#{alpha}# and #{beta}#"' '10 and 200'
 assert 'axs bypath mum , get multisub --beta=2000' '10, 2000 and 300'
-axs bypath granddad , save --gamma=31 --delta=41  --epsilon=51  --zeta=60 --multisub2,:="^^substitute:#{gamma}#-#{delta}#,^^substitute:#{epsilon}#-#{zeta}#"
+axs bypath granddad , save --gamma=31 --delta=41  --epsilon=51  --zeta=60 --multisub2,:="^^:substitute:#{gamma}#-#{delta}#,^^:substitute:#{epsilon}#-#{zeta}#"
 axs bypath dad      , save            --delta=410 --epsilon=510 --_parent_entries,:=^:bypath:granddad
 axs bypath child    , save --lambda=7000 --mu=8000 --_parent_entries,:=^:bypath:dad,^:bypath:mum
 assert 'axs bypath child , substitute "#{alpha}#+#{beta}#, #{gamma}#-#{delta}#, #{epsilon}#*#{lambda}#"' '10+200, 31-410, 510*7000'
