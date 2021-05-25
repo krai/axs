@@ -1,5 +1,3 @@
 {
-    "_BEFORE_CODE_LOADING^^execute": [[
-        [ "byquery", "package_name=numpy" ]
-    ]]
+    "_BEFORE_CODE_LOADING": [ "^", "byquery", [ "package_name=numpy" ] ]
 }

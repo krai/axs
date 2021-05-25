@@ -1,3 +1,5 @@
 {
-    "_parent_entries^": [ "^byname:shell" ]
+    "_parent_entries": [
+        [ "^", "byname", "shell" ]
+    ]
 }

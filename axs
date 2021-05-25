@@ -48,60 +48,62 @@ def cli_parse(arglist):
 
         call_params     = {}
         call_pos_params = []
-        call_pos_preps  = []
-        curr_link = [ None, call_pos_params, call_params, call_pos_preps ]
+        curr_link = [ None, call_pos_params, call_params ]
         pipeline.append( curr_link )
 
         ## Going through the arguments
         while i<len(arglist) and not arglist[i].startswith(','):
             if not arglist[i].startswith('--'):
-                matched = re.match(r'^(\^{1,2}\w+)(([:,\ /;=]).*)?$', arglist[i])   # a nested action
+                matched = re.match(r'^(\^{1,2})(\w+)(([:,\ /;=]).*)?$', arglist[i])   # a nested action
                 if matched:
-                    delimiter = matched.group(3)
-                    call_pos_preps.append( matched.group(1) )
-                    call_pos_params.append( [to_num_or_not_to_num(el) for el in matched.group(2).split(delimiter)[1:] ] if delimiter else [] )
+                    delimiter = matched.group(4)
+                    call_pos_params.append( [ matched.group(1), matched.group(2), [to_num_or_not_to_num(el) for el in matched.group(3).split(delimiter)[1:] ] if delimiter else [] ] )
 
                     if curr_link[0]==None:          # no action has been parsed yet
                         curr_link[0] = 'noop'
-                elif curr_link[0]==None and len(curr_link)<5 and re.match(r'^\w+:$', arglist[i]):   # a label
+                elif curr_link[0]==None and len(curr_link)<5 and re.match(r'^\w+:$', arglist[i]):       # a label
                     curr_link.append( arglist[i][:-1] )
-                elif curr_link[0]==None and re.match(r'^\w+$', arglist[i]):                         # a normal action
+                elif curr_link[0]==None and re.match(r'^\w+$', arglist[i]):                             # a normal action
                     curr_link[0] = arglist[i]
-                elif curr_link[0]:                                                                  # a positional argument
-                    call_pos_preps.append( '' )
+                elif curr_link[0]:                                                                      # a positional argument
                     call_pos_params.append( to_num_or_not_to_num(arglist[i]) )
                 else:
                     raise(Exception("Parsing error - cannot understand non-option '{}' before an action".format(arglist[i])))
 
             else:
-                matched = re.match(r'^---(([\w\.]*)(\^{1,2}\w*)?)=(.*)$', arglist[i])                # verbatim JSON value
+                matched = re.match(r'^---(([\w\.]*)((\^{1,2})(\w+))?)=(.*)$', arglist[i])               # verbatim JSON value
                 if matched:
-                    call_param_json     = matched.group(4)
+                    call_param_json     = matched.group(6)
                     call_param_value    = json.loads( call_param_json )
                 else:
-                    matched = re.match(r'^--(([\w\.]*)(\^{1,2}\w*)?)([\ ,;:]?)=(.*)$', arglist[i])   # list or scalar value
+                    matched = re.match(r'^--(([\w\.]*)((\^{1,2})(\w+))?)([\ ,;:/]{0,2})=(.*)$', arglist[i])     # list or scalar value
                     if matched:
-                        delimiter           = matched.group(4)
-                        call_param_value    = matched.group(5)
+                        delimiters          = list(matched.group(6))
+                        call_param_value    = matched.group(7)
 
-                        if delimiter:
-                            call_param_value    = [to_num_or_not_to_num(el) for el in call_param_value.split(delimiter)]
+                        if len(delimiters)==2:
+                            call_param_value    = [ [ to_num_or_not_to_num(elem) for elem in group.split(delimiters[1]) ] for group in call_param_value.split(delimiters[0]) ]
+                        elif len(delimiters)==1:
+                            call_param_value    =   [ to_num_or_not_to_num(elem) for elem in call_param_value.split(delimiters[0]) ]
                         else:
-                            call_param_value    = to_num_or_not_to_num(call_param_value)
+                            call_param_value    =     to_num_or_not_to_num(call_param_value)
                     else:
-                        matched = re.match(r'^--(([\w\.]*)(\^{1,2}\w+)?)([,+-]?)$', arglist[i])      # empty list or bool value
+                        matched = re.match(r'^--(([\w\.]*)((\^{1,2})(\w+))?)([,+-]?)$', arglist[i])     # empty list or bool value
                         if matched:
-                            if matched.group(4) == ',':
+                            if matched.group(6) == ',':
                                 call_param_value    = []                        # the way to express an empty list
                             else:
-                                call_param_value    = matched.group(4) != '-'   # boolean True or False
+                                call_param_value    = matched.group(6) != '-'   # boolean True or False
 
                 if matched:
-                    if matched.group(2):                                    # if option name was present
-                        call_params[matched.group(1)] = call_param_value    # that option name may also incorporate a nested action
+                    if matched.group(3):    # if there was a nested action
+                        call_param_value = [ matched.group(4), matched.group(5), call_param_value ]
+
+                    if matched.group(2):    # if option name was present
+                        call_params[matched.group(2)] = call_param_value
                     else:
-                        call_pos_preps.append( matched.group(3) )           # otherwise it's a positional nested action
                         call_pos_params.append( call_param_value )
+
                 else:
                     raise(Exception("Parsing error - cannot understand option '{}'".format(arglist[i])))
             i += 1

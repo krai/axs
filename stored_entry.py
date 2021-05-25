@@ -203,7 +203,7 @@ Usage examples :
 
 Usage examples :
                 axs bypath foo_entry , save --x=new_x_value --y=new_y_value
-                axs bypath new_collection , save ---contained_entries='{}' --_parent_entries^,=^core_collection
+                axs bypath new_collection , save ---contained_entries='{}' --_parent_entries,:=^:core_collection
         """
 
         parameters_full_path    = self.get_parameters_path()
@@ -220,8 +220,7 @@ Usage examples :
         for k in own_data:
             v = own_data[k]
             if isinstance(v, Entry):
-                own_data[k+'^byname'] = v.get_name()
-                del own_data[k]
+                own_data[k] = [ "^", "byname", v.get_name()]
 
         json_data               = json.dumps(own_data, indent=4)
         with open(parameters_full_path, "w") as json_fd:

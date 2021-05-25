@@ -78,6 +78,12 @@ class ParamSource:
         return self.runtime_entry_cache
 
 
+    def nested_calls(self, input_structure):
+        "Placeholder for executing data-encoded calls in subclasses that support it"
+
+        return input_structure
+
+
     def __getitem__(self, param_name, calling_top_context=None):
         "Lazy parameter access: returns the parameter value from self or the closest parent"
 
@@ -93,35 +99,26 @@ class ParamSource:
             if param_name in runtime_data:
                 param_value = runtime_data[param_name]
                 logging.debug(f'[{self.get_name()}]  Runtime entry has parameter "{param_name}", returning "{param_value}"')
-                return param_value
+                return calling_top_context.nested_calls(param_value)
 
         own_data = self.own_data()
         if param_name in own_data:
             param_value = own_data[param_name]
             logging.debug(f'[{self.get_name()}]  I have parameter "{param_name}", returning "{param_value}"')
-            return param_value
-        else:
-            param_name_len = len(param_name)
-            for own_key in own_data:
-                if own_key[:param_name_len+1]==param_name+'^':
-                    action_name = own_key[param_name_len:]
-                    if len(action_name)>1:
-                        return calling_top_context.dispatch_call(action_name, own_data[own_key])     # NB: dispatched calls do not have override_dict
-                    else:
-                        return calling_top_context.calls_over_struct(own_data[own_key])
+            return calling_top_context.nested_calls(param_value)
 
-            parent_recursion = param_name[0]!='_'       # A simple rule about parameter inheritability, encoded in parameter's name
-            if parent_recursion:
-                for parent_object in self.parents_loaded():
-                    logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}', fallback to the parent '{parent_object.get_name()}'")
-                    try:
-                        return parent_object.__getitem__(param_name, calling_top_context=calling_top_context)
-                    except KeyError:
-                        logging.debug(f"[{self.get_name()}]  My parent '{parent_object.get_name()}'' did not know about '{param_name}'")
-                        pass
+        parent_recursion = param_name[0]!='_'       # A simple rule about parameter inheritability, encoded in parameter's name
+        if parent_recursion:
+            for parent_object in self.parents_loaded():
+                logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}', fallback to the parent '{parent_object.get_name()}'")
+                try:
+                    return parent_object.__getitem__(param_name, calling_top_context=calling_top_context)
+                except KeyError:
+                    logging.debug(f"[{self.get_name()}]  My parent '{parent_object.get_name()}'' did not know about '{param_name}'")
+                    pass
 
-            logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}'{', and neither do the parents' if parent_recursion else ''} - raising KeyError")
-            raise KeyError(param_name)
+        logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}'{', and neither do the parents' if parent_recursion else ''} - raising KeyError")
+        raise KeyError(param_name)
 
 
     def dig(self, key_path, safe=False):

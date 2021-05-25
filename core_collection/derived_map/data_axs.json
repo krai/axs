@@ -1,5 +1,5 @@
 {
     "fourth"    : "vierte",
     "fifth"     : "fuenfte",
-    "_parent_entries^": [ "^byname:base_map" ]
+    "_parent_entries": [ [ "^", "byname", "base_map" ] ]
 }

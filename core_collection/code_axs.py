@@ -155,9 +155,7 @@ def add_entry_path(new_entry_path, new_entry_name=None, __entry__=None):
 
 def remove_entry_name(old_entry_name, __entry__):
 
-    contained_entries       = __entry__.get('contained_entries', {})
-    contained_entries.pop( old_entry_name, None )   # ignore attempts to remove inexistent keys
-
+    contained_entries       = __entry__.pluck(['contained_entries', old_entry_name])
     return __entry__.save()
 
 

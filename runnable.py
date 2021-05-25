@@ -165,7 +165,7 @@ Usage examples :
         return '\n'.join(help_buffer)
 
 
-    def call(self, action_name, pos_params=None, override_dict=None, pos_preps=None):
+    def call(self, action_name, pos_params=None, override_dict=None):
         """Call a given function or method of a given entry and feed it
             with arguments from the current object optionally overridden by a given dictionary.
 
@@ -177,14 +177,12 @@ Usage examples :
         if override_dict:
             self.own_data().update( override_dict )
 
-        pos_params = pos_params or []
-
-        if type(pos_params)!=list:      # simplifies syntax for single positional parameter actions
-            pos_params = [ pos_params ]
-
-        if pos_preps:
-            for idx in range(len(pos_params)):
-                pos_params[idx] = self.dispatch_call( pos_preps[idx], pos_params[idx])      # NB: dispatched calls do not have override_dict
+        if not pos_params:
+            pos_params = []                                 # allow pos_params to be missing
+        elif type(pos_params)==list:
+            pos_params = self.nested_calls(pos_params)      # perform all nested calls if there are any
+        else:
+            pos_params = [ pos_params ]                     # simplified syntax for single positional parameter actions
 
         action_object   = self.reach_action(action_name)
         result          = function_access.feed(action_object, pos_params, self)
@@ -194,44 +192,23 @@ Usage examples :
         return result
 
 
-    def dispatch_call(self, action_name, pos_params=None):
-        """Preprocess args by running a specific action over them
+    def nested_calls(self, input_structure):
+        """Walk over the structure and perform any nested calls found in it.
+            Can be quite expensive for large structures, but ok for a prototype.
         """
 
-        if not action_name:
-            return pos_params
-        else:
-            action_name = action_name[1:]
-            if action_name[0]=='^':
-                return self.call(action_name[1:], pos_params)
+        if type(input_structure)==list and len(input_structure):
+            head = input_structure[0]
+            if head=='^^':
+                return self.call( *input_structure[1:] )
+            elif head=='^':
+                return self.get_kernel().call( *input_structure[1:] )
             else:
-                return self.get_kernel().call(action_name, pos_params)
-
-
-    def calls_over_struct(self, input_structure):
-        """Walk the structure and perform all nested calls in it.
-        """
-
-        def scalar_call(scalar_input):
-            if scalar_input.startswith('^'):
-                matched = re.match(r'^(\^{1,2}\w+)(([:,\ /;=]).*)?$', scalar_input)
-                if matched:
-                    delimiter   = matched.group(3)
-                    action_name = matched.group(1)
-                    pos_params  = [ function_access.to_num_or_not_to_num(el) for el in matched.group(2).split(delimiter)[1:] ] if delimiter else []
-                    return self.dispatch_call(action_name, pos_params)
-
-            return scalar_input
-
-        # Structural recursion:
-        if type(input_structure)==list:
-            return [self.calls_over_struct(e) for e in input_structure]                         # all list elements are substituted
+                return [ self.nested_calls(elem) for elem in input_structure ]              # list elements are substituted
         elif type(input_structure)==dict:
-            return { k : self.calls_over_struct(input_structure[k]) for k in input_structure }  # only values are substituted
-        elif type(input_structure)==str:
-            return scalar_call(input_structure)                                                 # ground step
+            return { k : self.nested_calls(input_structure[k]) for k in input_structure }   # only values are substituted
         else:
-            return input_structure                                                              # basement step
+            return input_structure
 
 
     def execute(self, pipeline):
@@ -253,7 +230,7 @@ Usage examples :
 
             entry.runtime_entry( runtime_entry )
 
-            label = call_params.pop(4) if len(call_params)>4 else None
+            label = call_params.pop(3) if len(call_params)>3 else None
 
             result = entry.call(*call_params)
             entry.runtime_entry()
