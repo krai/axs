@@ -78,20 +78,10 @@ class ParamSource:
         return self.runtime_entry_cache
 
 
-    def nested_calls(self, input_structure):
-        "Placeholder for executing data-encoded calls in subclasses that support it"
+    def getitem_generator(self, param_name):
+        "Walk the potential sources of the parameter (runtime, own_data and the parents recursively)"
 
-        return input_structure
-
-
-    def __getitem__(self, param_name, calling_top_context=None):
-        "Lazy parameter access: returns the parameter value from self or the closest parent"
-
-        calling_top_context = calling_top_context or self
-        param_name          = str(param_name)
         logging.debug(f"[{self.get_name()}] Attempt to access parameter '{param_name}'...")
-        if param_name=='__entry__':
-            return self
 
         runtime_entry = self.runtime_entry()
         if runtime_entry:
@@ -99,26 +89,42 @@ class ParamSource:
             if param_name in runtime_data:
                 param_value = runtime_data[param_name]
                 logging.debug(f'[{self.get_name()}]  Runtime entry has parameter "{param_name}", returning "{param_value}"')
-                return calling_top_context.nested_calls(param_value)
+                yield param_value
 
         own_data = self.own_data()
         if param_name in own_data:
             param_value = own_data[param_name]
             logging.debug(f'[{self.get_name()}]  I have parameter "{param_name}", returning "{param_value}"')
-            return calling_top_context.nested_calls(param_value)
+            yield param_value
 
         parent_recursion = param_name[0]!='_'       # A simple rule about parameter inheritability, encoded in parameter's name
         if parent_recursion:
             for parent_object in self.parents_loaded():
                 logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}', fallback to the parent '{parent_object.get_name()}'")
                 try:
-                    return parent_object.__getitem__(param_name, calling_top_context=calling_top_context)
-                except KeyError:
+                    yield from parent_object.getitem_generator(param_name)
+                except StopIteration:
                     logging.debug(f"[{self.get_name()}]  My parent '{parent_object.get_name()}'' did not know about '{param_name}'")
                     pass
 
-        logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}'{', and neither do the parents' if parent_recursion else ''} - raising KeyError")
-        raise KeyError(param_name)
+
+    def get_data_pile(self, param_name):
+        """Get all values of the same parameter in the order of their inheritance, top first.
+
+Usage examples :
+                axs byname dont_be_like , get_data_pile be
+        """
+        return list( self.getitem_generator( str(param_name) ) )
+
+
+    def __getitem__(self, param_name):
+        "Lazy parameter access: returns the parameter value from self or the closest parent"
+
+        try:
+            return next( self.getitem_generator( str(param_name) ) )
+        except StopIteration:
+            logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}', and neither do the parents - raising KeyError")
+            raise KeyError(param_name)
 
 
     def dig(self, key_path, safe=False):
@@ -191,7 +197,7 @@ Usage examples :
             return input_structure                                                          # basement step
 
 
-    def get(self, param_name, default_value=None, calling_top_context=None):
+    def get(self, param_name, default_value=None):
         """A safe wrapper around __getitem__() - returns the default_value if missing
 
 Usage examples :
@@ -200,7 +206,7 @@ Usage examples :
                 axs byname derived_map , get fifth
         """
         try:
-            return self.__getitem__(param_name, calling_top_context=calling_top_context)
+            return self.__getitem__(param_name)
         except KeyError:
             logging.debug(f"[{self.get_name()}] caught KeyError: parameter '{param_name}' is missing, returning the default value '{default_value}'")
             return default_value

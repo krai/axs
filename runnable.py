@@ -19,6 +19,8 @@ class Runnable(ParamSource):
 
         self.own_functions_cache    = own_functions
         self.kernel                 = kernel
+#        self.value_cache            = {}
+
         super().__init__(**kwargs)
         logging.debug(f"[{self.get_name()}] Initializing the Runnable with {self.list_own_functions() if self.own_functions_cache else 'no'} pre-loaded functions and kernel={self.kernel}")
 
@@ -163,6 +165,32 @@ Usage examples :
                 help_buffer.append("This Runnable has no loadable functions" + parents_may_know)
 
         return '\n'.join(help_buffer)
+
+
+    def __getitem__(self, param_name):
+        """Lazy parameter access: returns the parameter value from self or the closest parent,
+            automatically executing nested_calls on the result.
+        """
+
+        if param_name=='__entry__':
+            return self
+
+#        if param_name in self.value_cache:
+#            return self.value_cache[param_name]
+
+        try:
+            getitem_gen     = self.getitem_generator( str(param_name) )
+            param_value     = next(getitem_gen)
+
+        except StopIteration:
+            logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}', and neither do the parents - raising KeyError")
+            raise KeyError(param_name)
+
+        processed_value = self.nested_calls(param_value)
+
+#        self.value_cache[param_name] = processed_value
+
+        return processed_value
 
 
     def call(self, action_name, pos_params=None, override_dict=None):
