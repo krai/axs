@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.73'   # TODO: update with every kernel change
+__version__ = '0.2.74'   # TODO: update with every kernel change
 
 import logging
 import os
@@ -53,14 +53,16 @@ Usage examples :
         print(f"I am {self.name} version={self.version()} kernel_path={self.kernel_path()}")
 
 
-    def bypath(self, path, name=None, container=None, own_data=None):
+    def bypath(self, path, name=None, container=None, own_data=None, parent_objects=None):
         """Fetch an entry by its path, cached by the path
-            Ad-hoc entries built either form a data file (.json) or functions' file (.py) can also be created.
+            Ad-hoc entries built either form a data file (.json) or functions' file (.py) can also be created, and even manually stacked
 
 Usage examples :
-                axs bypath core_collection/counting_collection/germanic/dutch , dig number_mapping.5
-                axs bypath xyz/boo.json , substitute "Hello, #{boo}#"
-                axs bypath pqr/iterative.py , factorial 6
+                axs bypath counting_collection/germanic/dutch , dig number_mapping.5
+                axs bypath only_data/oxygen.json , substitute "Element #{name}# has symbol #{symbol}#, atomic number #{number}# and weight #{weight}#"
+                axs bypath only_code/iterative.py , factorial 6
+                axs elem: bypath only_data/carbon.json , get_kernel , code: bypath only_code/iterative.py --parent_objects,:=^:get:elem , factorial --:=^^:get:number
+                axs elem: bypath only_data/oxygen.json , get_kernel , lat: bypath latin --parent_objects,:=^:get:elem , get weight
         """
         path = os.path.realpath( path )
 
@@ -72,13 +74,13 @@ Usage examples :
             logging.debug(f"[{self.name}] bypath: cache MISS for path={path}")
             if path.endswith('.json'):
                 name = name or "AdHoc_data"
-                cache_hit = self.entry_cache[path] = Entry(name=name, parameters_path=path, own_functions=False, kernel=self)
+                cache_hit = self.entry_cache[path] = Entry(name=name, parameters_path=path, own_functions=False, parent_objects=parent_objects or [], kernel=self)
             elif path.endswith('.py'):
                 module_name = path[:-len('.py')]
                 name = name or "AdHoc_functions"
-                cache_hit = self.entry_cache[path] = Entry(name=name, own_data={}, entry_path='.', module_name=module_name, parent_objects=[], kernel=self)
+                cache_hit = self.entry_cache[path] = Entry(name=name, own_data={}, entry_path='.', module_name=module_name, parent_objects=parent_objects or [], kernel=self)
             else:
-                cache_hit = self.entry_cache[path] = Entry(name=name, entry_path=path, own_data=own_data, kernel=self, container=container)
+                cache_hit = self.entry_cache[path] = Entry(name=name, entry_path=path, own_data=own_data, container=container, parent_objects=parent_objects or None, kernel=self)
             logging.debug(f"[{self.name}] bypath: successfully CACHED {cache_hit.get_name()} under path={path}")
 
         return cache_hit
