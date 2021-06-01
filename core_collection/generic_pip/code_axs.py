@@ -77,6 +77,8 @@ def ask_package_version(package_name):
 
 Usage examples :
                 axs np: byname numpy_1.16.4_pip , use , get np , ask_package_version
+
+                axs gen: byname generic_pip , use $HOME/CK-TOOLS/lib-python-onnx-compiler.python-3.6.8-precompiled-macos-64/build , get gen , ask_package_version onnx
                 
                 axs byname generic_pip , ask_package_version numpy
     """
