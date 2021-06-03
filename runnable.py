@@ -268,6 +268,23 @@ Usage examples :
         return result
 
 
+    def python_api(self, src_text, line_sep='\\n'):
+        """Execute the given string as piece of Python code in the current Python interpreter and its environment.
+            You can have multiple semicolon-separated commands on a line by using a non-default line separator.
+            A value can be returned (and properly integrated into the pipeline) by assigning it to _ variable.
+
+Careful with that axe, Eugene: a potential security risk.
+
+Usage examples :
+                axs python_api 'print( len([10, 20, 30]) )''
+                axs python_api '_= self.version().split('.')''
+                axs byquery package_name=scipy , python_api 'import scipy\nfrom scipy.special import exp10\n_=exp10([1,2,5,10])'
+                axs byquery package_name=numpy , python_api 'syll=self["abs_packages_dir"].split("/"); _=syll[-1]' '; '
+        """
+        exec( src_text.replace(line_sep, '\n') )       # working around newline encoding in shells
+        return locals().get('_')
+
+
 if __name__ == '__main__':
 
     logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")
