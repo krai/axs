@@ -47,7 +47,6 @@ Usage examples :
     pip_entry['_parent_entries']        = [ [ "^", "byname", "generic_pip" ] ]
     pip_entry['package_name']           = package_name
     pip_entry['package_version']        = package_version if package_version!=None else 'UNKNOWN'
-    pip_entry['_AFTER_DATA_LOADING']    = [ "^^", "use" ]
     pip_entry.save()
 
     return pip_entry
