@@ -252,9 +252,9 @@ Usage examples :
         ak = self.get_kernel()
         runtime_entry = ak.bypath(path='runtime_entry', own_data={})
 
-        result = None
+        result = self
         for call_params in pipeline:
-            entry = result if hasattr(result, 'call') else ak
+            entry = result if hasattr(result, 'call') else self
 
             entry.runtime_entry( runtime_entry )
 
