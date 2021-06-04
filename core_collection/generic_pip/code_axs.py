@@ -16,7 +16,7 @@ Usage examples :
     return abs_packages_dir
 
 
-def get_metadata_path(abs_packages_dir, package_name):
+def get_metadata_path(abs_packages_dir, package_name, metadata_filename='METADATA'):
     """Locate the METADATA file that gets installed alongside the pip package, see
         https://packaging.python.org/specifications/recording-installed-packages/
 
@@ -26,11 +26,21 @@ Usage examples:
     import os.path
     from glob import glob
 
-    metadata_path_pattern   = os.path.join( abs_packages_dir, package_name+'-*.dist-info', 'METADATA' )
-    metadata_path_matches   = glob( metadata_path_pattern )
-    assert len(metadata_path_matches)==1, f"The package {package_name} does not have a METADATA matching {metadata_path_pattern}"
+    distinfo_path_pattern   = os.path.join( abs_packages_dir, '*.dist-info' )
+    for distinfo_path in glob( distinfo_path_pattern ):
+        distinfo_name = os.path.basename( distinfo_path ).split( '-', 1 )[0]
+        toplevel_path = os.path.join( distinfo_path, 'top_level.txt' )
+        if os.path.isfile( toplevel_path ):
+            with open( toplevel_path, 'r' ) as toplevel_fp:
+                toplevel = toplevel_fp.readline().rstrip()
+        else:
+            toplevel = distinfo_name
 
-    return metadata_path_matches[0]
+        if package_name.lower() in (toplevel.lower(), distinfo_name.lower()):
+            return os.path.join( distinfo_path, metadata_filename )
+
+    assert False, f"Could not find METADATA for package {package_name}"
+    return None
 
 
 def get_metadata(abs_packages_dir, package_name, header_name=None):
@@ -50,8 +60,8 @@ Usage examples:
 
     metadata_path = get_metadata_path(abs_packages_dir, package_name)
 
-    with open(metadata_path, 'rb') as fp:
-        headers = BytesHeaderParser(policy=default).parse(fp)
+    with open(metadata_path, 'rb') as metadata_fp:
+        headers = BytesHeaderParser(policy=default).parse(metadata_fp)
 
     if header_name:
         return [ v for k, v in headers.items() if k==header_name ]
