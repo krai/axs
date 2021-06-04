@@ -212,7 +212,7 @@ Usage examples :
             return default_value
 
 
-    def activate(self, param_name):
+    def touch(self, param_name):
         """[Compute and] print the value of a [non-inherited] parameter and carry on - useful for debugging and hooking
         """
         param_value = self.get(param_name, None)
