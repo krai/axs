@@ -10,6 +10,7 @@
         "sysinfo": "sysinfo",
         "pip": "pip",
         "generic_pip": "generic_pip",
-        "numpy_import_test": "numpy_import_test"
+        "numpy_import_test": "numpy_import_test",
+        "python_script": "python_script"
     }
 }

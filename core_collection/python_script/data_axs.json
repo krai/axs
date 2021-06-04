@@ -1,0 +1,8 @@
+{
+    "_parent_entries": [ [ "^", "byname", "shell" ] ],
+
+    "abs_script_path": [ "^^", "get_path_dig", "rel_script_path" ],
+    "shell_cmd": [ "^^", "substitute", "python3 #{abs_script_path}#" ],
+
+    "env": [ "^^", "ext_use_python_deps" ]
+}
