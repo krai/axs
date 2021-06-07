@@ -1,10 +1,10 @@
 {
     "_BEFORE_CODE_LOADING": [ "^^", "execute", [[
-        ["get", "numpy" ],
+        ["get_kernel"],
+        ["byquery", "package_name=numpy"],
         ["use"],
-        ["get", "scipy" ],
+        ["get_kernel"],
+        ["byquery", "package_name=scipy"],
         ["use"]
-    ]] ],
-    "numpy": [ "^", "byquery", [ "package_name=numpy" ] ],
-    "scipy": [ "^", "byquery", [ "package_name=scipy" ] ]
+    ]] ]
 }
