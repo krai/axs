@@ -19,7 +19,7 @@ class Runnable(ParamSource):
 
         self.own_functions_cache    = own_functions
         self.kernel                 = kernel
-#        self.value_cache            = {}
+        self.value_cache            = {}
 
         super().__init__(**kwargs)
         logging.debug(f"[{self.get_name()}] Initializing the Runnable with {self.list_own_functions() if self.own_functions_cache else 'no'} pre-loaded functions and kernel={self.kernel}")
@@ -115,7 +115,6 @@ Usage examples :
                 axs byname dont_be_like , help meme
                 axs byname dont_be_like , help get
         """
-
         help_buffer = []
         common_format = "{:15s}: {}"
         entry_class = self.__class__
@@ -167,30 +166,45 @@ Usage examples :
         return '\n'.join(help_buffer)
 
 
+    def clear_cache(self):
+        """Clear the value cache, so that nested_calls could be re-evaluated again.
+
+Usage examples :
+                axs mi: bypath missing , plant alpha 10 , plant beta 20 --formula:='^^:substitute:#{alpha}#-#{beta}#' , get formula
+                axs mi: bypath missing , plant alpha 10 , plant beta 20 --formula:='^^:substitute:#{alpha}#-#{beta}#' , get formula , get mi , clear_cache , get formula --alpha=100
+        """
+        logging.debug(f"[{self.get_name()}]  Clearing the value cache.")
+        self.value_cache = {}
+        return self
+
+
     def __getitem__(self, param_name):
         """Lazy parameter access: returns the parameter value from self or the closest parent,
             automatically executing nested_calls on the result.
         """
-
         if param_name=='__entry__':
             return self
 
-#        if param_name in self.value_cache:
-#            return self.value_cache[param_name]
+        if param_name in self.value_cache:
+            cached_value = self.value_cache[param_name]
+            logging.debug(f"[{self.get_name()}]  Parameter '{param_name}' is cached as {cached_value}, returning.")
+            return cached_value
 
         try:
-            getitem_gen     = self.getitem_generator( str(param_name) )
-            param_value     = next(getitem_gen)
+            getitem_gen         = self.getitem_generator( str(param_name) )
+            unprocessed_value   = next(getitem_gen)
 
         except StopIteration:
             logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}', and neither do the parents - raising KeyError")
             raise KeyError(param_name)
 
-        processed_value = self.nested_calls(param_value)
+        side_effects_ref    = [0]   # Pythonic reference to an integer counter
+        processed_value     = self.nested_calls(unprocessed_value, side_effects_ref)
 
-#        self.value_cache[param_name] = processed_value
+        cached_value = self.value_cache[param_name] = processed_value if side_effects_ref[0] else unprocessed_value
+        logging.debug(f"[{self.get_name()}]  Caching '{param_name}' as {cached_value}")
 
-        return processed_value
+        return cached_value
 
 
     def call(self, action_name, pos_params=None, override_dict=None):
@@ -199,7 +213,6 @@ Usage examples :
 
             The action can have a mix of positional args and named args with optional defaults.
         """
-
         logging.debug(f'[{self.get_name()}]  calling action {action_name} with "{pos_params}" ...')
 
         if override_dict:
@@ -208,7 +221,7 @@ Usage examples :
         if not pos_params:
             pos_params = []                                 # allow pos_params to be missing
         elif type(pos_params)==list:
-            pos_params = self.nested_calls(pos_params)      # perform all nested calls if there are any
+            pos_params = self.nested_calls(pos_params, [0]) # perform all nested calls if there are any
         else:
             pos_params = [ pos_params ]                     # simplified syntax for single positional parameter actions
 
@@ -220,21 +233,22 @@ Usage examples :
         return result
 
 
-    def nested_calls(self, input_structure):
+    def nested_calls(self, input_structure, side_effects_ref):
         """Walk over the structure and perform any nested calls found in it.
             Can be quite expensive for large structures, but ok for a prototype.
         """
-
         if type(input_structure)==list and len(input_structure):
             head = input_structure[0]
             if head=='^^':
+                side_effects_ref[0] += 1
                 return self.call( *input_structure[1:] )
             elif head=='^':
+                side_effects_ref[0] += 1
                 return self.get_kernel().call( *input_structure[1:] )
             else:
-                return [ self.nested_calls(elem) for elem in input_structure ]              # list elements are substituted
+                return [ self.nested_calls(elem, side_effects_ref) for elem in input_structure ]                # list elements are substituted
         elif type(input_structure)==dict:
-            return { k : self.nested_calls(input_structure[k]) for k in input_structure }   # only values are substituted
+            return { k : self.nested_calls(input_structure[k], side_effects_ref) for k in input_structure }     # only values are substituted
         else:
             return input_structure
 
@@ -248,7 +262,6 @@ Usage examples :
                 axs si: byname sysinfo , os: dig si.osname , ar: dig si.arch , runtime_entry , save
                 axs runtime_entry , old_dir: cd , si: byname sysinfo , os: dig si.osname , ar: dig si.arch , get si , run 'echo "Hello, world!" >README.txt' , runtime_entry , save
         """
-
         ak = self.get_kernel()
         runtime_entry = ak.bypath(path='runtime_entry', own_data={})
 
