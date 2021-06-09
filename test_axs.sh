@@ -19,6 +19,12 @@ assert 'axs bypath foo , substitute "#{greeting}#, #{address}#!"' 'Hello, mate!'
 rm -rf foo
 assert_end entry_creation_and_data_access
 
+asserts "axs mi: bypath missing , plant alpha 10 , plant beta 20 , plant formula --:='^^:substitute:#{alpha}#-#{beta}#' , own_data" "{'alpha': 10, 'beta': 20, 'formula': '10-20'}"
+assert "axs mi: bypath missing , plant alpha 10 , plant beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , own_data" "{'alpha': 10, 'beta': 20, 'formula': ['^^', 'substitute', '#{alpha}#-#{beta}#']}"
+assert "axs mi: bypath missing , plant alpha 10 , plant beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula --alpha=30" "30-20"
+assert "axs mi: bypath missing , plant alpha 10 , plant beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula --alpha=30 , get mi , own_data" "{'alpha': 30, 'beta': 20, 'formula': ['^^', 'substitute', '#{alpha}#-#{beta}#']}"
+assert_end escaping_nested_calls_immediate_execution
+
 axs bypath grandma  , save --alpha=10 --beta=20  --gamma=30  --multisub^^substitute="#{alpha}#, #{beta}# and #{gamma}#"
 axs bypath mum      , save            --beta=200 --gamma=300 --_parent_entries,:=^:bypath:grandma
 assert 'axs bypath mum , substitute "#{alpha}# and #{beta}#"' '10 and 200'

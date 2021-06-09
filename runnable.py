@@ -5,7 +5,7 @@ import re
 
 import function_access
 from param_source import ParamSource
-from copy import copy
+from copy import deepcopy
 
 class Runnable(ParamSource):
     """An object of Runnable class is a non-persistent container of parameters (inherited) and code (own)
@@ -13,6 +13,8 @@ class Runnable(ParamSource):
 
         It can run an own or inherited action using own or inherited parameters.
     """
+
+    ESCAPE_do_not_process           = 'AS^IS'
 
     def __init__(self, own_functions=None, kernel=None, **kwargs):
         "Accept setting own_functions and kernel in addition to parent's parameters"
@@ -236,6 +238,11 @@ Usage examples :
     def nested_calls(self, input_structure, side_effects_ref):
         """Walk over the structure and perform any nested calls found in it.
             Can be quite expensive for large structures, but ok for a prototype.
+
+Usage examples :
+                axs noop  --:='^^:substitute:#{alpha}#-#{beta}#' --alpha=11 --beta=22
+                axs noop  --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#'
+                axs nested_calls  --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' --,=0 --alpha=11 --beta=22
         """
         if type(input_structure)==list and len(input_structure):
             head = input_structure[0]
@@ -245,6 +252,8 @@ Usage examples :
             elif head=='^':
                 side_effects_ref[0] += 1
                 return self.get_kernel().call( *input_structure[1:] )
+            elif head==self.ESCAPE_do_not_process:
+                return deepcopy( input_structure[1:] )                                                          # drop the escape symbol, keep the rest
             else:
                 return [ self.nested_calls(elem, side_effects_ref) for elem in input_structure ]                # list elements are substituted
         elif type(input_structure)==dict:
