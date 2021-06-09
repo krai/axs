@@ -200,10 +200,7 @@ Usage examples :
             logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}', and neither do the parents - raising KeyError")
             raise KeyError(param_name)
 
-        side_effects_ref    = [0]   # Pythonic reference to an integer counter
-        processed_value     = self.nested_calls(unprocessed_value, side_effects_ref)
-
-        cached_value = self.value_cache[param_name] = processed_value if side_effects_ref[0] else unprocessed_value
+        cached_value = self.value_cache[param_name] = self.nested_calls(unprocessed_value)
         logging.debug(f"[{self.get_name()}]  Caching '{param_name}' as {cached_value}")
 
         return cached_value
@@ -223,7 +220,7 @@ Usage examples :
         if not pos_params:
             pos_params = []                                 # allow pos_params to be missing
         elif type(pos_params)==list:
-            pos_params = self.nested_calls(pos_params, [0]) # perform all nested calls if there are any
+            pos_params = self.nested_calls(pos_params)      # perform all nested calls if there are any
         else:
             pos_params = [ pos_params ]                     # simplified syntax for single positional parameter actions
 
@@ -235,31 +232,42 @@ Usage examples :
         return result
 
 
-    def nested_calls(self, input_structure, side_effects_ref):
+    def nested_calls(self, unprocessed_struct):
         """Walk over the structure and perform any nested calls found in it.
             Can be quite expensive for large structures, but ok for a prototype.
 
 Usage examples :
                 axs noop  --:='^^:substitute:#{alpha}#-#{beta}#' --alpha=11 --beta=22
                 axs noop  --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#'
-                axs nested_calls  --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' --,=0 --alpha=11 --beta=22
+                axs nested_calls  --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' --alpha=11 --beta=22
         """
-        if type(input_structure)==list and len(input_structure):
-            head = input_structure[0]
-            if head=='^^':
-                side_effects_ref[0] += 1
-                return self.call( *input_structure[1:] )
-            elif head=='^':
-                side_effects_ref[0] += 1
-                return self.get_kernel().call( *input_structure[1:] )
-            elif head==self.ESCAPE_do_not_process:
-                return deepcopy( input_structure[1:] )                                                          # drop the escape symbol, keep the rest
+
+        side_effects_count = 0
+
+        def nested_calls_rec(input_structure):
+            nonlocal side_effects_count
+
+            if type(input_structure)==list and len(input_structure):
+                head = input_structure[0]
+                if head=='^^':
+                    side_effects_count += 1
+                    return self.call( *input_structure[1:] )
+                elif head=='^':
+                    side_effects_count += 1
+                    return self.get_kernel().call( *input_structure[1:] )
+                elif head==self.ESCAPE_do_not_process:
+                    side_effects_count += 1                                                     # it is only a "side effect" for the purposes of our GC-facilitating decision making below
+                    return deepcopy( input_structure[1:] )                                      # drop the escape symbol, keeping the rest of the substructure intact
+                else:
+                    return [ nested_calls_rec(elem) for elem in input_structure ]               # list elements are substituted
+            elif type(input_structure)==dict:
+                return { k : nested_calls_rec(input_structure[k]) for k in input_structure }    # only values are substituted
             else:
-                return [ self.nested_calls(elem, side_effects_ref) for elem in input_structure ]                # list elements are substituted
-        elif type(input_structure)==dict:
-            return { k : self.nested_calls(input_structure[k], side_effects_ref) for k in input_structure }     # only values are substituted
-        else:
-            return input_structure
+                return input_structure
+
+        processed_struct = nested_calls_rec(unprocessed_struct)
+
+        return processed_struct if side_effects_count else unprocessed_struct                   # keeping the original if unchanged should help with GC
 
 
     def execute(self, pipeline):
