@@ -18,7 +18,7 @@ class ParamSource:
         self.name                   = name
         self.own_data_cache         = own_data
         self.parent_objects         = parent_objects
-        self.runtime_entry_cache    = None
+        self.runtime_stack_cache    = []
 
         logging.debug(f"[{self.get_name()}] Initializing the ParamSource with own_data={self.own_data_cache}, inheriting from {'some parents' or 'no parents'}")
 # FIXME: The following would cause infinite recursion (expecting cached entries before they actually end up in cache)
@@ -71,11 +71,16 @@ class ParamSource:
         return dict(enumerate(args))
 
 
-    def runtime_entry(self, *args):
-        if len(args):
-            self.runtime_entry_cache = args[0]
+    def runtime_stack(self):
+        "A list of entries to query for parameters before own_data during [] parameter access"
 
-        return self.runtime_entry_cache
+        return self.runtime_stack_cache
+
+
+    def rt_pipeline_entry(self):
+        "Returns the entry that persists through the pipeline's execution"
+
+        return self.runtime_stack_cache[0]
 
 
     def getitem_generator(self, param_name):
@@ -83,13 +88,13 @@ class ParamSource:
 
         logging.debug(f"[{self.get_name()}] Attempt to access parameter '{param_name}'...")
 
-        runtime_entry = self.runtime_entry()
-        if runtime_entry:
-            runtime_data = runtime_entry.own_data()
-            if param_name in runtime_data:
-                param_value = runtime_data[param_name]
-                logging.debug(f'[{self.get_name()}]  Runtime entry has parameter "{param_name}", returning "{param_value}"')
-                yield param_value
+        for runtime_entry in self.runtime_stack()[::-1]:
+            if runtime_entry:
+                runtime_data = runtime_entry.own_data()
+                if param_name in runtime_data:
+                    param_value = runtime_data[param_name]
+                    logging.debug(f'[{self.get_name()}]  Runtime entry {runtime_entry.get_name()} has parameter "{param_name}", returning "{param_value}"')
+                    yield param_value
 
         own_data = self.own_data()
         if param_name in own_data:
@@ -217,7 +222,7 @@ Usage examples :
         """
         param_value = self.get(param_name, None)
         if param_value!=None:
-            print(f"{self.get_name()}:{param_name}={param_value}")
+            logging.warning(f"[{self.get_name()}] touch {param_name}={param_value}")
         return param_value
 
 

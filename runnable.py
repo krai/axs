@@ -172,7 +172,7 @@ Usage examples :
         """Clear the value cache, so that nested_calls could be re-evaluated again.
 
 Usage examples :
-                axs mi: bypath missing , plant alpha 10 , plant beta 20 --formula:='^^:substitute:#{alpha}#-#{beta}#' , get formula
+                axs mi: bypath missing , plant alpha 10 , plant beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula
                 axs mi: bypath missing , plant alpha 10 , plant beta 20 --formula:='^^:substitute:#{alpha}#-#{beta}#' , get formula , get mi , clear_cache , get formula --alpha=100
         """
         logging.debug(f"[{self.get_name()}]  Clearing the value cache.")
@@ -214,9 +214,6 @@ Usage examples :
         """
         logging.debug(f'[{self.get_name()}]  calling action {action_name} with "{pos_params}" ...')
 
-        if override_dict:
-            self.own_data().update( override_dict )
-
         if not pos_params:
             pos_params = []                                 # allow pos_params to be missing
         elif type(pos_params)==list:
@@ -224,8 +221,13 @@ Usage examples :
         else:
             pos_params = [ pos_params ]                     # simplified syntax for single positional parameter actions
 
+        rt_call_specific = ParamSource(name='rt_call_specific', own_data=override_dict or {})   # FIXME: overlapping entry names are not unique
+        self.runtime_stack().append( rt_call_specific )
+
         action_object   = self.reach_action(action_name)
         result          = function_access.feed(action_object, pos_params, self)
+
+        self.runtime_stack().pop()
 
         logging.debug(f'[{self.get_name()}]  called action {action_name} with "{pos_params}", got "{result}"')
 
@@ -276,25 +278,26 @@ Usage examples :
 
 Usage examples :
                 axs si: byname sysinfo , os: dig si.osname , ar: dig si.arch , substitute '#{os}#--#{ar}#'
-                axs si: byname sysinfo , os: dig si.osname , ar: dig si.arch , runtime_entry , save
-                axs runtime_entry , old_dir: cd , si: byname sysinfo , os: dig si.osname , ar: dig si.arch , get si , run 'echo "Hello, world!" >README.txt' , runtime_entry , save
+                axs si: byname sysinfo , os: dig si.osname , ar: dig si.arch , rt_pipeline_entry , save
+                axs rt_pipeline_entry , old_dir: cd , si: byname sysinfo , os: dig si.osname , ar: dig si.arch , get si , run 'echo "Hello, world!" >README.txt' , rt_pipeline_entry , save
         """
         ak = self.get_kernel()
-        runtime_entry = ak.bypath(path='runtime_entry', own_data={})
+        rt_pipeline_wide = ak.bypath(path='rt_pipeline_wide', own_data={})
 
         result = self
         for call_params in pipeline:
             entry = result if hasattr(result, 'call') else self
 
-            entry.runtime_entry( runtime_entry )
+            entry.runtime_stack().append( rt_pipeline_wide )
 
             label = call_params.pop(3) if len(call_params)>3 else None
 
             result = entry.call(*call_params)
-            entry.runtime_entry()
+
+            entry.runtime_stack().pop()
 
             if label:
-                runtime_entry[label] = result
+                rt_pipeline_wide[label] = result
         return result
 
 

@@ -94,11 +94,11 @@ Usage examples :
 
     def cd(self):
         """Change the current working directory into the Entry's directory.
-            Especially useful when recording a pipeline via its runtime_entry.
+            Especially useful when recording a pipeline via its rt_pipeline_entry .
             Returns the directory path that was current prior to this execution.
 
 Usage examples :
-                axs runtime_entry , cd , byname shell , run 'echo "Hello, world!" > README.txt'
+                axs rt_pipeline_entry , cd , byname shell , run 'echo "Hello, world!" > README.txt'
         """
         prev_path   = os.getcwd()
 

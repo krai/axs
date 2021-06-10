@@ -37,7 +37,7 @@ def new(name, __entry__):
     """Create a new entry with the given name and attach it to this collection
 
 Usage examples :
-                axs work_collection , new unique_entry_name , save --hello=world
+                axs work_collection , new unique_entry_name , plant hello world , save
     """
 
     new_entry = __entry__.get_kernel().bypath( __entry__.get_path( name ), name=name ).attach( __entry__ ).save()

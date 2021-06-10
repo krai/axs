@@ -13,25 +13,25 @@ assert 'axs dig greek.2 --greek,=alpha,beta,gamma,delta' 'gamma'
 assert 'axs substitute "Hello, #{x}#" --x=mate' 'Hello, mate'
 assert_end on_the_fly_data_access
 
-axs bypath foo , save --greeting=Hello --address=mate --n=42
+axs bypath foo , plant greeting Hello , plant address mate , plant n 42 , save
 assert 'axs bypath foo , get n' 42
 assert 'axs bypath foo , substitute "#{greeting}#, #{address}#!"' 'Hello, mate!'
 rm -rf foo
 assert_end entry_creation_and_data_access
 
-asserts "axs mi: bypath missing , plant alpha 10 , plant beta 20 , plant formula --:='^^:substitute:#{alpha}#-#{beta}#' , own_data" "{'alpha': 10, 'beta': 20, 'formula': '10-20'}"
+assert "axs mi: bypath missing , plant alpha 10 , plant beta 20 , plant formula --:='^^:substitute:#{alpha}#-#{beta}#' , own_data" "{'alpha': 10, 'beta': 20, 'formula': '10-20'}"
 assert "axs mi: bypath missing , plant alpha 10 , plant beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , own_data" "{'alpha': 10, 'beta': 20, 'formula': ['^^', 'substitute', '#{alpha}#-#{beta}#']}"
 assert "axs mi: bypath missing , plant alpha 10 , plant beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula --alpha=30" "30-20"
-assert "axs mi: bypath missing , plant alpha 10 , plant beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula --alpha=30 , get mi , own_data" "{'alpha': 30, 'beta': 20, 'formula': ['^^', 'substitute', '#{alpha}#-#{beta}#']}"
+assert "axs mi: bypath missing , plant alpha 10 , plant beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula --alpha=30 , get mi , own_data" "{'alpha': 10, 'beta': 20, 'formula': ['^^', 'substitute', '#{alpha}#-#{beta}#']}"
 assert_end escaping_nested_calls_immediate_execution
 
-axs bypath grandma  , save --alpha=10 --beta=20  --gamma=30  --multisub^^substitute="#{alpha}#, #{beta}# and #{gamma}#"
-axs bypath mum      , save            --beta=200 --gamma=300 --_parent_entries,:=^:bypath:grandma
+axs bypath grandma  , plant alpha 10 , plant beta 20 , plant gamma 30 , plant multisub --:="AS^IS:^^:substitute:#{alpha}#, #{beta}# and #{gamma}#" , save
+axs bypath mum      , plant beta 200 , plant gamma 300 , plant _parent_entries --,:=AS^IS:^:bypath:grandma , save
 assert 'axs bypath mum , substitute "#{alpha}# and #{beta}#"' '10 and 200'
 assert 'axs bypath mum , get multisub --beta=2000' '10, 2000 and 300'
-axs bypath granddad , save --gamma=31 --delta=41  --epsilon=51  --zeta=60 --multisub2,:="^^:substitute:#{gamma}#-#{delta}#,^^:substitute:#{epsilon}#-#{zeta}#"
-axs bypath dad      , save            --delta=410 --epsilon=510 --_parent_entries,:=^:bypath:granddad
-axs bypath child    , save --lambda=7000 --mu=8000 --_parent_entries,:=^:bypath:dad,^:bypath:mum
+axs bypath granddad , plant gamma 31 , plant delta 41 , plant epsilon 51 , plant zeta 60 , plant multisub2 --,:="AS^IS:^^:substitute:#{gamma}#-#{delta}#,AS^IS:^^:substitute:#{epsilon}#-#{zeta}#" , save
+axs bypath dad      , plant delta 410 , plant epsilon 510 , plant _parent_entries --,:=AS^IS:^:bypath:granddad , save
+axs bypath child    , plant lambda 7000 , plant mu 8000 , plant _parent_entries --,:=AS^IS:^:bypath:dad,AS^IS:^:bypath:mum , save
 assert 'axs bypath child , substitute "#{alpha}#+#{beta}#, #{gamma}#-#{delta}#, #{epsilon}#*#{lambda}#"' '10+200, 31-410, 510*7000'
 assert 'axs bypath dad , get multisub2 --delta=411 --zeta=611' "['31-411', '510-611']"
 assert 'axs d: bypath dad , dig d.multisub2.1 --epsilon=3333' "3333-60"
@@ -49,7 +49,7 @@ axs byname counting_collection , pull
 axs byname counting_collection , remove
 assert_end git_cloning_collection_access_and_removal
 
-axs bypath examplepage_recipe , --url=http://example.com/ --entry_name=examplepage_downloaded --file_name=example.html --_parent_entries,:=^:byname:downloader save , attach
+axs bypath examplepage_recipe , plant url http://example.com/ , plant entry_name examplepage_downloaded , plant file_name example.html , plant _parent_entries --,:=AS^IS:^:byname:downloader , save , attach
 axs byname examplepage_recipe , download
 assert '$MD5CMD `axs byname examplepage_downloaded , get_path` | cut -f 1 -d" "' '84238dfc8092e5d9c0dac8ef93371a07'
 axs byname examplepage_downloaded , remove

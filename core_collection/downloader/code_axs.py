@@ -41,8 +41,9 @@ Usage examples:
         'producer':     [ "^", "byname", "downloader" ]
     }
 
-    work_collection = __entry__.get_kernel().work_collection()
-    target_path     = work_collection.bypath(entry_name).call('save', [], data).get_path(file_name)
+    ak = __entry__.get_kernel()
+    work_collection = ak.work_collection()
+    target_path     = ak.bypath( work_collection.get_path(entry_name), own_data=data).call('save').get_path(file_name)
 
     work_collection.call('add_entry_path', entry_name )
 
