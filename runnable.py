@@ -173,7 +173,7 @@ Usage examples :
 
 Usage examples :
                 axs mi: bypath missing , plant alpha 10 , plant beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula
-                axs mi: bypath missing , plant alpha 10 , plant beta 20 --formula:='^^:substitute:#{alpha}#-#{beta}#' , get formula , get mi , clear_cache , get formula --alpha=100
+                axs mi: bypath missing , plant alpha 10 , plant beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula , get mi , clear_cache , get formula --alpha=100
         """
         logging.debug(f"[{self.get_name()}]  Clearing the value cache.")
         self.value_cache = {}
@@ -277,6 +277,7 @@ Usage examples :
             Whenever a result returned by a function is NOT an Runnable, the execution resets back to the kernel object.
 
 Usage examples :
+                axs si: byname sysinfo , substitute '#{os}#--#{ar}#' --os:=^^:dig:si.osname --ar:=^^:dig:si.arch
                 axs si: byname sysinfo , os: dig si.osname , ar: dig si.arch , substitute '#{os}#--#{ar}#'
                 axs si: byname sysinfo , os: dig si.osname , ar: dig si.arch , rt_pipeline_entry , save
                 axs rt_pipeline_entry , old_dir: cd , si: byname sysinfo , os: dig si.osname , ar: dig si.arch , get si , run 'echo "Hello, world!" >README.txt' , rt_pipeline_entry , save
