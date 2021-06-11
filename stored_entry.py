@@ -202,10 +202,9 @@ Usage examples :
             Note2: only parameters get stored
 
 Usage examples :
-                axs bypath foo_entry , save --x=new_x_value --y=new_y_value
-                axs bypath new_collection , save ---contained_entries='{}' --_parent_entries,:=^:core_collection
+                axs bypath foo_entry , plant x new_x_value , plant y new_y_value , save
+                axs bypath new_collection , plant contained_entries '---={}' , plant _parent_entries --,:=AS^IS:^:core_collection , save
         """
-
         parameters_full_path    = self.get_parameters_path()
 
         # Autovivify the directories in between if necessary:
