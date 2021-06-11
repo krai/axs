@@ -168,15 +168,30 @@ Usage examples :
         return '\n'.join(help_buffer)
 
 
-    def clear_cache(self):
-        """Clear the value cache, so that nested_calls could be re-evaluated again.
+    def clear_cache(self, *param_names):
+        """Clear the value cache ( blanket or selectively ), so that nested_calls could be re-evaluated again.
+            If clearing selectively to re-evaluate an expression, bear in mind you'll have to clear both sides of a dependence
+            ( both alpha and formula in the example below ).
 
 Usage examples :
                 axs mi: bypath missing , plant alpha 10 , plant beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula
                 axs mi: bypath missing , plant alpha 10 , plant beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula , get mi , clear_cache , get formula --alpha=100
+                axs mi: bypath missing , plant alpha 10 , plant beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula , get mi , clear_cache alpha formula , get formula --alpha=100
         """
-        logging.debug(f"[{self.get_name()}]  Clearing the value cache.")
-        self.value_cache = {}
+        all_values = len(param_names)==0
+        logging.debug(f"[{self.get_name()}]  Clearing the value_cache for {'all values' if all_values else param_names}")
+        if all_values:
+            self.value_cache = {}
+        else:
+            for param_name in param_names:
+                if param_name in self.value_cache:
+                    logging.debug(f"[{self.get_name()}]  Deleting {param_name} from value_cache")
+                    del self.value_cache[param_name]
+                else:
+                    logging.debug(f"[{self.get_name()}]  {param_name} was not value_cached")
+
+        logging.debug(f"[{self.get_name()}]  value_cache now looks like this: {self.value_cache}")
+
         return self
 
 
