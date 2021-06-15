@@ -1,10 +1,10 @@
 {
     "_BEFORE_CODE_LOADING": [ "^^", "execute", [[
         ["get_kernel"],
-        ["byquery", "package_name=numpy"],
+        ["byquery", [ "package_name=numpy", [ ["byname", "pip"], ["install", "numpy"] ] ] ],
         ["use"],
         ["get_kernel"],
-        ["byquery", "package_name=scipy"],
+        ["byquery", [ "package_name=scipy", [ ["byname", "pip"], ["install", ["scipy", "1.5.1"], {"pip_options": ["no-deps"]} ] ] ] ],
         ["use"]
     ]] ]
 }

@@ -55,9 +55,12 @@ def byname(entry_name, __entry__):
     return None
 
 
-def byquery(query,  __entry__):
-    """Fetch an entry by query
+def byquery(query, failover_pipeline=None, __entry__=None):
+    """Fetch an entry by query.
+        If the query returns nothing on the first pass, but failover_pipeline is defined, run the pipeline and return its output.
     """
+    assert __entry__ != None, "__entry__ should be defined"
+
 
     def create_filter(key_path, fun, against=None):
         """ Finally, a useful real-life example of closures:
@@ -134,7 +137,13 @@ def byquery(query,  __entry__):
                     break
             if candidate_still_ok:
                 return candidate_entry
-    return None
+
+    if failover_pipeline:
+        logging.debug(f"[{__entry__.get_name()}] byquery({query}) did not find anything, trying to install {failover_pipeline}")
+        return __entry__.execute(failover_pipeline)
+    else:
+        logging.debug(f"[{__entry__.get_name()}] byquery({query}) did not find anything, and no failover_pipeline defined => returning None")
+        return None
 
 
 def add_entry_path(new_entry_path, new_entry_name=None, __entry__=None):

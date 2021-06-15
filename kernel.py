@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.83'   # TODO: update with every kernel change
+__version__ = '0.2.84'   # TODO: update with every kernel change
 
 import logging
 import os
@@ -107,17 +107,17 @@ Usage examples :
 
 
     def byname(self, entry_name):
-        """Fetch an entry by its name (delegated to core_collection)
+        """Fetch an entry by its name (delegated to work_collection)
         """
         logging.debug(f"[{self.name}] byname({entry_name})")
         return self.work_collection().call('byname', [entry_name])
 
 
-    def byquery(self, query):
-        """Fetch an entry by a query over its tags (delegated to core_collection)
+    def byquery(self, query, failover_pipeline=None):
+        """Fetch an entry by a query over its tags (delegated to work_collection)
         """
         logging.debug(f"[{self.name}] byquery({query})")
-        return self.work_collection().call('byquery', [query])
+        return self.work_collection().call('byquery', [query, failover_pipeline])
 
 
 #logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")
