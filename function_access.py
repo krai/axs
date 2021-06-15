@@ -128,6 +128,8 @@ if __name__ == '__main__':
 
     print('-'*40 + ' feed() calls: ' + '-'*40)
 
+    assert feed(four_param_example_func, (21, 43, 65, 87), None)==(21, 43, 65, 87), "Feed() call with all positional and all optional pretending to be optional"
+
     assert feed(four_param_example_func, (50, 60), {'delta':80})==(50, 60, 333, 80), "Feed() call with all positional and some optional args"
 
     assert feed(four_param_example_func, (500,), {'beta':600, 'gamma':700})==(500, 600, 700, 4444), "Feed() call with some positional, some named-positional and some optional args"
