@@ -83,7 +83,7 @@ class ParamSource:
         return self.runtime_stack_cache[0]
 
 
-    def getitem_generator(self, param_name):
+    def getitem_generator(self, param_name, parent_recursion=None):
         "Walk the potential sources of the parameter (runtime, own_data and the parents recursively)"
 
         logging.debug(f"[{self.get_name()}] Attempt to access parameter '{param_name}'...")
@@ -102,7 +102,9 @@ class ParamSource:
             logging.debug(f'[{self.get_name()}]  I have parameter "{param_name}", returning "{param_value}"')
             yield param_value
 
-        parent_recursion = param_name[0]!='_'       # A simple rule about parameter inheritability, encoded in parameter's name
+        if parent_recursion==None:                  # trust the value if was defined,
+            parent_recursion = param_name[0]!='_'   # otherwise the parameter's inheritability is encoded in its name
+
         if parent_recursion:
             for parent_object in self.parents_loaded():
                 logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}', fallback to the parent '{parent_object.get_name()}'")
@@ -122,17 +124,17 @@ Usage examples :
         return list( self.getitem_generator( str(param_name) ) )
 
 
-    def __getitem__(self, param_name):
+    def __getitem__(self, param_name, parent_recursion=None):
         "Lazy parameter access: returns the parameter value from self or the closest parent"
 
         try:
-            return next( self.getitem_generator( str(param_name) ) )
+            return next( self.getitem_generator( str(param_name), parent_recursion ) )
         except StopIteration:
             logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}', and neither do the parents - raising KeyError")
             raise KeyError(param_name)
 
 
-    def dig(self, key_path, safe=False):
+    def dig(self, key_path, safe=False, parent_recursion=None):
         """Traverse the given path of keys into a parameter's internal structure.
             --safe allows it not to fail when the path is not traversable
 
@@ -148,7 +150,7 @@ Usage examples :
         param_name = key_path[0]
 
         try:
-            struct_ptr  = self.__getitem__(param_name)
+            struct_ptr  = self.__getitem__(param_name, parent_recursion)
 
             for key_syllable in key_path[1:]:
                 if type(struct_ptr)==list:  # descend into lists with numeric indices

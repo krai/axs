@@ -195,7 +195,7 @@ Usage examples :
         return self
 
 
-    def __getitem__(self, param_name):
+    def __getitem__(self, param_name, parent_recursion=None):
         """Lazy parameter access: returns the parameter value from self or the closest parent,
             automatically executing nested_calls on the result.
         """
@@ -208,7 +208,7 @@ Usage examples :
             return cached_value
 
         try:
-            getitem_gen         = self.getitem_generator( str(param_name) )
+            getitem_gen         = self.getitem_generator( str(param_name), parent_recursion )
             unprocessed_value   = next(getitem_gen)
 
         except StopIteration:

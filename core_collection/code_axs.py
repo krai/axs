@@ -25,7 +25,9 @@ def walk(__entry__):
         logging.debug(f"collection({collection_own_name}): mapping {entry_name} to relative_entry_path={relative_entry_path}")
 
         contained_entry = ak.bypath(path=__entry__.get_path(relative_entry_path), name=entry_name, container=__entry__)
-        if contained_entry.can( 'walk' ):
+
+        # Have to resort to duck typing to avoid triggering dependencies by testing if contained_entry.can('walk'):
+        if 'contained_entries' in contained_entry.own_data():
             logging.debug(f"collection({collection_own_name}): recursively walking collection {entry_name}...")
             yield from walk(contained_entry)
         else:
@@ -55,12 +57,11 @@ def byname(entry_name, __entry__):
     return None
 
 
-def byquery(query, failover_pipeline=None, __entry__=None):
+def byquery(query, failover_pipeline=None, parent_recursion=False, __entry__=None):
     """Fetch an entry by query.
         If the query returns nothing on the first pass, but failover_pipeline is defined, run the pipeline and return its output.
     """
     assert __entry__ != None, "__entry__ should be defined"
-
 
     def create_filter(key_path, fun, against=None):
         """ Finally, a useful real-life example of closures:
@@ -69,7 +70,7 @@ def byquery(query, failover_pipeline=None, __entry__=None):
         split_key_path = key_path.split('.')    # computed only once during closure creation
 
         def filter_closure(entry):
-            return fun(entry.dig(split_key_path, safe=True), against)       # computed every time during filter application
+            return fun(entry.dig(split_key_path, safe=True, parent_recursion=parent_recursion), against)    # computed every time during filter application
 
         return filter_closure
 
