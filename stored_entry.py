@@ -36,8 +36,10 @@ Usage examples :
         if file_name:
             if file_name.startswith(os.path.sep):
                 return file_name
-            else:
+            elif self.entry_path:
                 return os.path.join(self.entry_path, file_name)
+            else:
+                raise(Exception("Entry's path is not defined, cannot join"))
         else:
             return self.entry_path
 
@@ -110,16 +112,19 @@ Usage examples :
         return prev_path
 
 
-    def attach(self, container=None):
+    def attach(self, rel_path=None, container=None):
         """Dispatch the request to register an entry in a container to the container.
 
 Usage examples :
-                axs bypath $HOME/work_collection/hebrew_letters , --letter_mapping,=aleph,beth,gimel,dalet --country=israel save , attach
+                axs empty , plant letter_mapping --,=aleph,beth,gimel,dalet , plant country israel , attach hebrew_letters
         """
         if container==None:
             container = self.get_kernel().work_collection()
         elif type(container)==str:
             container = self.get_kernel().byname(container)
+
+        if not self.get_path():
+            self.save( container.get_path( rel_path ) )
 
         container.call('add_entry_path', [self.get_path(), self.get_name()] )
 
@@ -202,8 +207,8 @@ Usage examples :
             Note2: only parameters get stored
 
 Usage examples :
-                axs bypath foo_entry , plant x new_x_value , plant y new_y_value , save
-                axs bypath new_collection , plant contained_entries '---={}' , plant _parent_entries --,:=AS^IS:^:core_collection , save
+                axs empty , plant x new_x_value , plant y new_y_value , save coordinates
+                axs empty , plant contained_entries '---={}' , plant _parent_entries --,:=AS^IS:^:core_collection , save new_collection
         """
         if new_path:
             self.get_kernel().cache_replace(self.parameters_path or self.entry_path, new_path, self)

@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.87'   # TODO: update with every kernel change
+__version__ = '0.2.88'   # TODO: update with every kernel change
 
 import logging
 import os
@@ -51,6 +51,16 @@ Usage examples :
 
     def introduce(self):
         print(f"I am {self.get_name()} version={self.version()} kernel_path={self.kernel_path()}")
+
+
+    def empty(self):
+        """Constructor for an empty Entry (no data, no code, no filesystem path).
+            It can be gradually populated with data and stored later.
+
+Usage examples :
+                axs empty , plant message "Hello, world" , save hello , attach
+        """
+        return Entry(name="Empty", own_data={}, own_functions=False, parent_objects=[], kernel=self)
 
 
     def bypath(self, path, name=None, container=None, own_data=None, parent_objects=None):
