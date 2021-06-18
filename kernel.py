@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.85'   # TODO: update with every kernel change
+__version__ = '0.2.86'   # TODO: update with every kernel change
 
 import logging
 import os
@@ -84,6 +84,17 @@ Usage examples :
             logging.debug(f"[{self.name}] bypath: successfully CACHED {cache_hit.get_name()} under path={path}")
 
         return cache_hit
+
+
+    def cache_replace(self, old_path, new_path, entry):
+        """Invalidate the entry under the old_path and cache the one under the new_path
+        """
+        if old_path and old_path in self.entry_cache:
+            del self.entry_cache[ old_path ]
+            logging.debug(f"[{self.name}] Uncaching {old_path}")
+
+        self.get_kernel().entry_cache[new_path] = self
+        logging.debug(f"[{self.name}] Caching {new_path}")
 
 
     def core_collection(self):

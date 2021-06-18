@@ -196,7 +196,7 @@ Usage examples :
         return self.own_functions_cache
 
 
-    def save(self):
+    def save(self, new_path=None):
         """Store [updated] own_data of the entry
             Note1: the entry didn't have to have existed prior to saving
             Note2: only parameters get stored
@@ -205,7 +205,14 @@ Usage examples :
                 axs bypath foo_entry , plant x new_x_value , plant y new_y_value , save
                 axs bypath new_collection , plant contained_entries '---={}' , plant _parent_entries --,:=AS^IS:^:core_collection , save
         """
-        parameters_full_path    = self.get_parameters_path()
+        if new_path:
+            self.get_kernel().cache_replace(self.parameters_path or self.entry_path, new_path, self)
+
+            self.entry_path         = new_path
+            self.parameters_path    = None
+            self.name               = None
+
+        parameters_full_path        = self.get_parameters_path()
 
         # Autovivify the directories in between if necessary:
         parameters_dirname      = os.path.dirname( parameters_full_path )
