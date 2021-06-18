@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.86'   # TODO: update with every kernel change
+__version__ = '0.2.87'   # TODO: update with every kernel change
 
 import logging
 import os
@@ -30,7 +30,7 @@ Usage examples :
     def __init__(self, entry_cache=None, **kwargs):
         self.entry_cache    = entry_cache or {}
         super().__init__(kernel=self, **kwargs)
-        logging.debug(f"[{self.name}] Initializing the MicroKernel with entry_cache={self.entry_cache}")
+        logging.debug(f"[{self.get_name()}] Initializing the MicroKernel with entry_cache={self.entry_cache}")
 
 
     def version(self):
@@ -50,7 +50,7 @@ Usage examples :
 
 
     def introduce(self):
-        print(f"I am {self.name} version={self.version()} kernel_path={self.kernel_path()}")
+        print(f"I am {self.get_name()} version={self.version()} kernel_path={self.kernel_path()}")
 
 
     def bypath(self, path, name=None, container=None, own_data=None, parent_objects=None):
@@ -69,9 +69,9 @@ Usage examples :
         cache_hit = self.entry_cache.get(path)
 
         if cache_hit:
-            logging.debug(f"[{self.name}] bypath: cache HIT for path={path}")
+            logging.debug(f"[{self.get_name()}] bypath: cache HIT for path={path}")
         else:
-            logging.debug(f"[{self.name}] bypath: cache MISS for path={path}")
+            logging.debug(f"[{self.get_name()}] bypath: cache MISS for path={path}")
             if path.endswith('.json'):
                 name = name or "AdHoc_data"
                 cache_hit = self.entry_cache[path] = Entry(name=name, parameters_path=path, own_functions=False, parent_objects=parent_objects or [], kernel=self)
@@ -81,7 +81,7 @@ Usage examples :
                 cache_hit = self.entry_cache[path] = Entry(name=name, own_data={}, entry_path='.', module_name=module_name, parent_objects=parent_objects or [], kernel=self)
             else:
                 cache_hit = self.entry_cache[path] = Entry(name=name, entry_path=path, own_data=own_data, container=container, parent_objects=parent_objects or None, kernel=self)
-            logging.debug(f"[{self.name}] bypath: successfully CACHED {cache_hit.get_name()} under path={path}")
+            logging.debug(f"[{self.get_name()}] bypath: successfully CACHED {cache_hit.get_name()} under path={path}")
 
         return cache_hit
 
@@ -91,10 +91,10 @@ Usage examples :
         """
         if old_path and old_path in self.entry_cache:
             del self.entry_cache[ old_path ]
-            logging.debug(f"[{self.name}] Uncaching {old_path}")
+            logging.debug(f"[{self.get_name()}] Uncaching {old_path}")
 
         self.get_kernel().entry_cache[new_path] = self
-        logging.debug(f"[{self.name}] Caching {new_path}")
+        logging.debug(f"[{self.get_name()}] Caching {new_path}")
 
 
     def core_collection(self):
@@ -120,7 +120,7 @@ Usage examples :
     def byname(self, entry_name):
         """Fetch an entry by its name (delegated to work_collection)
         """
-        logging.debug(f"[{self.name}] byname({entry_name})")
+        logging.debug(f"[{self.get_name()}] byname({entry_name})")
         return self.work_collection().call('byname', [entry_name])
 
 
@@ -132,7 +132,7 @@ Usage examples :
                 axs byquery person.,be!=Be
                 axs byquery person.,be!=Be --parent_recursion+ , get_path
         """
-        logging.debug(f"[{self.name}] byquery({query})")
+        logging.debug(f"[{self.get_name()}] byquery({query})")
         return self.work_collection().call('byquery', [query, failover_pipeline, parent_recursion])
 
 
