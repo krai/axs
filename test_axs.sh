@@ -57,9 +57,9 @@ axs byname examplepage_recipe , download
 echo '-------------'
 $MD5CMD `axs byname examplepage_downloaded , get_path`
 echo '+++++++++++++'
-$MD5CMD `axs byname examplepage_downloaded , get_path` | cut -f 1 -d " " | sed "s/\\//g"
+$MD5CMD `axs byname examplepage_downloaded , get_path` | cut -f 1 -d " " | sed "s/\\\\//g"
 echo '============='
-assert '$MD5CMD `axs byname examplepage_downloaded , get_path` | cut -f 1 -d " " | sed "s/\\//g"' '84238dfc8092e5d9c0dac8ef93371a07'
+assert '$MD5CMD `axs byname examplepage_downloaded , get_path` | cut -f 1 -d " " | sed "s/\\\\//g"' '84238dfc8092e5d9c0dac8ef93371a07'
 axs byname examplepage_downloaded , remove
 axs byname examplepage_recipe , remove
 assert_end url_downloading_recipe_activation_and_removal
