@@ -8,6 +8,9 @@ else
     MD5CMD="md5sum"
 fi
 
+assert 'echo "Hello, world!"' 'Hello, world!'
+assert_end testing_assert_itself
+
 assert 'axs get xyz --xyz=123' 123
 assert 'axs dig greek.2 --greek,=alpha,beta,gamma,delta' 'gamma'
 assert 'axs substitute "Hello, #{x}#" --x=mate' 'Hello, mate'
