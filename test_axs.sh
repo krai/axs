@@ -54,7 +54,7 @@ assert_end git_cloning_collection_access_and_removal
 
 axs empty , plant url http://example.com/ , plant entry_name examplepage_downloaded , plant file_name example.html , plant _parent_entries --,:=AS^IS:^:byname:downloader , attach examplepage_recipe
 axs byname examplepage_recipe , download
-assert '$MD5CMD `axs byname examplepage_downloaded , get_path` | cut -f 1 -d" "' '84238dfc8092e5d9c0dac8ef93371a07'
+assert '$MD5CMD `axs byname examplepage_downloaded , get_path` | cut -f 1 -d " "' '84238dfc8092e5d9c0dac8ef93371a07'
 axs byname examplepage_downloaded , remove
 axs byname examplepage_recipe , remove
 assert_end url_downloading_recipe_activation_and_removal
