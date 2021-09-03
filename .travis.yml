@@ -44,4 +44,5 @@ script:
     - ${PYTHON_EXE} param_source.py
     - ${PYTHON_EXE} runnable.py
     - ${PYTHON_EXE} stored_entry.py
+    - ${PYTHON_EXE} kernel.py
     - test_axs.sh

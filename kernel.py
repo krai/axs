@@ -116,7 +116,7 @@ Usage examples :
     def work_collection(self):
         """Fetch the work_collection entry
         """
-        work_collection_path = os.getenv('AXS_WORK_COLLECTION') or os.path.join(os.getenv('HOME'), 'work_collection')
+        work_collection_path = os.getenv('AXS_WORK_COLLECTION') or os.path.join(os.path.expanduser('~'), 'work_collection')
         if not os.path.exists(work_collection_path):
             print(f"Creating new empty work_collection at {work_collection_path}...")
             work_collection_data = {
