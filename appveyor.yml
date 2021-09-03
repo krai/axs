@@ -19,4 +19,5 @@ test_script:
     - runnable.py
     - stored_entry.py
     - kernel.py
-    - python3 axs version
+    - axs version
+    - bash test_axs.sh
