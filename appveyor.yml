@@ -1,0 +1,22 @@
+build: false
+
+environment:
+  matrix:
+    - PYTHON: C:\Python36-x64
+      PYTHON_VERSION: 3.6
+
+init:
+    - set PATH=%PYTHON%;%PYTHON%\\Scripts;%cd%;%PATH%
+
+install:
+    - mklink python3.exe %PYTHON%\\python.exe
+    - python3 --version
+#    - appveyor DownloadFile https://raw.github.com/lehmannro/assert.sh/master/assert.sh
+
+test_script:
+    - function_access.py
+    - param_source.py
+    - runnable.py
+    - stored_entry.py
+    - kernel.py
+    - python3 axs version
