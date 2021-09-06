@@ -60,7 +60,7 @@ Usage examples :
             axs byname downloader , download_to_path http://example.com exmpl.html
     """
     print('url = "{}", target_path = "{}"'.format(url, target_path))
-    return __entry__.call('wget', [url, target_path])
+    return __entry__.call('curl', [url, target_path])
 
 
 def wget(url, target_path, __entry__):
