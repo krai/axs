@@ -56,6 +56,8 @@ axs empty , plant url http://example.com/ , plant entry_name examplepage_downloa
 axs byname examplepage_recipe , download
 echo "-----------------"
 axs byname examplepage_downloaded , get_path
+echo "_-_-_-_-_-_-_-_-_"
+ls -l `axs byname examplepage_downloaded , get_path ''`
 echo "+++++++++++++++++"
 $MD5CMD `axs byname examplepage_downloaded , get_path` | cut -f 1 -d " "
 echo "_________________"
