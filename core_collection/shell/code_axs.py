@@ -4,6 +4,7 @@
     and optionally capture the output.
 """
 
+import os
 import subprocess
 
 def run(shell_cmd, env=None, capture_output=False, split_to_lines=False):
@@ -26,6 +27,20 @@ Usage examples:
         return output
     else:
         return completed_process.returncode
+
+
+def which(exec_name, env=None):
+    """OS-independent routine to search for an executable in the OS's executable path.
+
+Usage examples:
+            axs byname shell , which wget
+    """
+    exec_dirs = os.get_exec_path(env)
+    for exec_dir in exec_dirs:
+        candidate_full_path = os.path.join(exec_dir, exec_name)
+        if os.access(candidate_full_path, os.X_OK):
+            return candidate_full_path
+    return None
 
 
 if __name__ == '__main__':

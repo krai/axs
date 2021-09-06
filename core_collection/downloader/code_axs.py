@@ -54,13 +54,22 @@ Usage examples:
 
 
 def download_to_path(url, target_path, __entry__):
-    """Pick a specific method and download a url into target_path
+    """Pick a method available on this platform and download a url into target_path
 
 Usage examples :
             axs byname downloader , download_to_path http://example.com exmpl.html
     """
     print('url = "{}", target_path = "{}"'.format(url, target_path))
-    return __entry__.call('curl', [url, target_path])
+    for downloader_exec in ('wget', 'curl'):
+        downloader_tool_path = __entry__.call('which', [downloader_exec])
+        if downloader_tool_path:
+            print("Found a '{}' at '{}', using it for downloading".format(downloader_exec, downloader_tool_path))
+            return __entry__.call(downloader_exec, [url, target_path])
+        else:
+            print("Method '{}' is not available on this platform".format(downloader_exec))
+
+    print("Could not find a suitable downloader, so failed to download {}".format(url))
+    return None
 
 
 def wget(url, target_path, __entry__):
