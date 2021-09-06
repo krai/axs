@@ -11,7 +11,7 @@ init:
 install:
     - mklink python3.exe %PYTHON%\\python.exe
     - python3 --version
-#    - appveyor DownloadFile https://raw.github.com/lehmannro/assert.sh/master/assert.sh
+    - appveyor DownloadFile https://raw.github.com/lehmannro/assert.sh/master/assert.sh
 
 test_script:
     - function_access.py
