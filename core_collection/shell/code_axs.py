@@ -6,6 +6,7 @@
 
 import os
 import subprocess
+import sys
 
 def run(shell_cmd, env=None, capture_output=False, split_to_lines=False):
     """Run the given shell command in the given environment
@@ -29,17 +30,29 @@ Usage examples:
         return completed_process.returncode
 
 
+def under_win():
+    """Fast way to check if we are running under any of Windows-derived OS
+
+Usage examples:
+            axs byname shell , under_win
+    """
+    return sys.platform.startswith('win')
+
+
 def which(exec_name, env=None):
     """OS-independent routine to search for an executable in the OS's executable path.
 
 Usage examples:
             axs byname shell , which wget
     """
-    exec_dirs = os.get_exec_path(env)
+    exec_dirs   = os.get_exec_path(env)
+    suffixes    = ('', '.exe', '.bat', '.com') if under_win() else ('',)
+
     for exec_dir in exec_dirs:
-        candidate_full_path = os.path.join(exec_dir, exec_name)
-        if os.access(candidate_full_path, os.X_OK):
-            return candidate_full_path
+        for suffix in suffixes:
+            candidate_full_path = os.path.join(exec_dir, exec_name + suffix)
+            if os.access(candidate_full_path, os.X_OK):
+                return candidate_full_path
     return None
 
 
