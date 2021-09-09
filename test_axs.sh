@@ -52,11 +52,15 @@ axs byname counting_collection , pull
 axs byname counting_collection , remove
 assert_end git_cloning_collection_access_and_removal
 
+axs empty , plant _parent_entries --,:=AS^IS:^:byname:shell , plant tool_path --:=^^:which:wget , plant shell_cmd '--:=AS^IS:^^:substitute:#{tool_path}# -O #{target_path}# #{url}#' , plant shell_tool wget , plant implements --,=url_download , save wget_tool , attach
+axs empty , plant _parent_entries --,:=AS^IS:^:byname:shell , plant tool_path --:=^^:which:curl , plant shell_cmd '--:=AS^IS:^^:substitute:#{tool_path}# -o #{target_path}# #{url}#' , plant shell_tool curl , plant implements --,=url_download , save curl_tool , attach
 axs empty , plant url http://example.com/ , plant entry_name examplepage_downloaded , plant file_name example.html , plant _parent_entries --,:=AS^IS:^:byname:downloader , attach examplepage_recipe
 axs byname examplepage_recipe , download
 assert '$MD5CMD `axs byname examplepage_downloaded , get_path` | cut -f 1 -d " " | sed "s/\\\\//g"' '84238dfc8092e5d9c0dac8ef93371a07'
 axs byname examplepage_downloaded , remove
 axs byname examplepage_recipe , remove
+axs byname curl_tool , remove
+axs byname wget_tool , remove
 assert_end url_downloading_recipe_activation_and_removal
 
 echo "axs tests done"

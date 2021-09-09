@@ -1,3 +1,4 @@
 {
-    "_parent_entries": [ [ "^", "byname", "shell" ] ]
+    "_parent_entries": [ [ "^", "byname", "shell" ] ],
+    "url_download_tool": [ "^", "byquery", "shell_tool+,implements:url_download,tool_path." ]
 }

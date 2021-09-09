@@ -23,15 +23,18 @@ def download(url, entry_name, file_name, __entry__):
     """Create a new entry and download the url into it
 
 Usage examples:
-    Manual downloading into a new entry:
+    # Installing executable tools:
+            axs empty , plant _parent_entries --,:=AS^IS:^:byname:shell , plant tool_path --:=^^:which:wget , plant shell_cmd '--:=AS^IS:^^:substitute:#{tool_path}# -O #{target_path}# #{url}#' , plant shell_tool wget , plant implements --,=url_download , save wget_tool , attach
+            axs empty , plant _parent_entries --,:=AS^IS:^:byname:shell , plant tool_path --:=^^:which:curl , plant shell_cmd '--:=AS^IS:^^:substitute:#{tool_path}# -o #{target_path}# #{url}#' , plant shell_tool curl , plant implements --,=url_download , save curl_tool , attach
+    # Manual downloading into a new entry:
             axs byname downloader , download 'https://example.com' examplepage_downloaded example.html
-    Resulting entry path (counter-intuitively) :
+    # Resulting entry path (counter-intuitively) :
             axs byname examplepage_downloaded , get_path ''
-    Downloaded file path:
+    # Downloaded file path:
             axs byname examplepage_downloaded , get_path
-    Reaching to the original producer (this Entry):
+    # Reaching to the original producer (this Entry):
             axs byname examplepage_downloaded , get producer , get_path
-    Clean up:
+    # Clean up:
             axs byname examplepage_downloaded , remove
     """
     data = {
@@ -56,38 +59,15 @@ Usage examples:
 def download_to_path(url, target_path, __entry__):
     """Pick a method available on this platform and download a url into target_path
 
-Usage examples :
+Usage examples:
             axs byname downloader , download_to_path http://example.com exmpl.html
     """
     print('url = "{}", target_path = "{}"'.format(url, target_path))
-    for downloader_exec in ('wget', 'curl'):
-        downloader_tool_path = __entry__.call('which', [downloader_exec])
-        if downloader_tool_path:
-            print("Found a '{}' at '{}', using it for downloading".format(downloader_exec, downloader_tool_path))
-            return __entry__.call(downloader_exec, [url, target_path])
-        else:
-            print("Method '{}' is not available on this platform".format(downloader_exec))
+    dep_name    = 'url_download_tool'
+    tool_entry  = __entry__[dep_name]
+    tool_path   = tool_entry['tool_path']
+    print("Dependency '{}' resolved into entry '{}' with the tool '{}', it will be used for downloading".format(dep_name, tool_entry.get_path(), tool_path))
+    return tool_entry.call('run', [], {"url": url, "target_path": target_path})
 
     print("Could not find a suitable downloader, so failed to download {}".format(url))
     return None
-
-
-def wget(url, target_path, __entry__):
-    """Download a url into a file using wget
-
-Usage examples :
-            axs byname downloader , wget http://example.com exmpl.html
-    """
-    shell_cmd = 'wget -O {} {}'.format(target_path, url)
-    return __entry__.call('run', [shell_cmd])
-
-
-
-def curl(url, target_path, __entry__):
-    """Download a url into a file using curl
-
-Usage examples :
-            axs byname downloader , curl http://example.com exmpl.html
-    """
-    shell_cmd = 'curl -o {} {}'.format(target_path, url)
-    return __entry__.call('run', [shell_cmd])
