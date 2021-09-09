@@ -13,6 +13,14 @@ def run(shell_cmd, env=None, capture_output=False, split_to_lines=False):
 
 Usage examples:
             axs byname shell , run 'echo This is a test.'
+
+    # dynamically create a tool and use it:
+            axs empty , plant _parent_entries --,:=AS^IS:^:byname:shell , plant tool_path --:=^^:which:wget , plant shell_cmd '--:=AS^IS:^^:substitute:#{tool_path}# -O #{target_path}# #{url}#' , run --url=https://example.com --target_path=example.html
+
+    # first create a downloading tool, then use it:
+            axs empty , plant _parent_entries --,:=AS^IS:^:byname:shell , plant tool_path --:=^^:which:wget , plant shell_cmd '--:=AS^IS:^^:substitute:#{tool_path}# -O #{target_path}# #{url}#' , plant shell_tool wget , plant implements --,=url_download , save wget_tool
+            axs bypath wget_tool , run --url=https://example.com --target_path=example.html
+
     """
     env = env or {}
     if env:
