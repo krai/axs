@@ -234,6 +234,9 @@ Usage examples :
         param_name = str(param_name)
         self.own_data()[param_name] = param_value
 
+        if param_name==self.PARAMNAME_parent_entries:   # magic request to reload the parents
+            self.parent_objects = None
+
         return self
 
 
@@ -243,7 +246,8 @@ Usage examples :
             Fairly tolerant to short lists & missing values.
 
 Usage examples :
-                axs bypath foo , plant num.tens --,=10,20,30 , plant num.doubles --,=2,4,6,8 , own_data
+                axs empty , plant num.tens --,=10,20,30 , plant num.doubles --,=2,4,6,8 , own_data
+                axs empty , plant _parent_entries --,:=AS^IS:^:byname:shell , run 'echo hello, world'
         """
         if type(key_path)!=list:
             key_path = key_path.split('.')
@@ -267,6 +271,9 @@ Usage examples :
                 struct_ptr.pop(key_syllable)
             else:
                 struct_ptr[key_syllable] = value
+
+        if key_path == [ self.PARAMNAME_parent_entries ]:   # magic request to reload the parents
+            self.parent_objects = None
 
         return self
 
