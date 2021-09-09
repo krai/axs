@@ -78,8 +78,6 @@ def byquery(query, failover_pipeline=None, parent_recursion=False, __entry__=Non
     import re
     from function_access import to_num_or_not_to_num
 
-    positive_tags_set   = set()
-    negative_tags_set   = set()
     conditions          = query.split(',')
     filter_list         = []
 
@@ -107,37 +105,39 @@ def byquery(query, failover_pipeline=None, parent_recursion=False, __entry__=Non
             elif binary_op=='!:':
                 filter_list.append( create_filter(key_path, lambda x, y : type(x)==list and y not in x, test_val) )
         else:
-            unary_op_match = re.match('([\w\.]*\w)(\.|\?)$', condition)
+            unary_op_match = re.match('([\w\.]*\w)(\.|\?|\+|-)$', condition)
             if unary_op_match:
                 key_path    = unary_op_match.group(1)
                 unary_op    = unary_op_match.group(2)
-                if unary_op=='.':
+                if unary_op=='.':               # path exists
                     filter_list.append( create_filter(key_path, lambda x, y: x!=None) )
-                elif unary_op=='?':
+                elif unary_op in ('?', '+'):    # computes to True
                     filter_list.append( create_filter(key_path, lambda x, y: bool(x)) )
+                elif unary_op=='-':             # computes to False
+                    filter_list.append( create_filter(key_path, lambda x, y: not bool(x)) )
             else:
                 tag_match = re.match('([!^-])?(\w+)$', condition)
                 if tag_match:
+                    key_path    = 'tags'
+                    test_val    = tag_match.group(2)
                     if tag_match.group(1):
-                        negative_tags_set.add( tag_match.group(2) )
+                        filter_list.append( create_filter(key_path, lambda x, y : type(x)!=list or y not in x, test_val) )
                     else:
-                        positive_tags_set.add( tag_match.group(2) )
+                        filter_list.append( create_filter(key_path, lambda x, y : type(x)==list and y in x, test_val) )
                 else:
                     raise(SyntaxError("Could not parse the condition '{}'".format(condition)))
 
 
     # applying the query as a filter:
     for candidate_entry in walk(__entry__):
-        candidate_tags_set  = set(candidate_entry.get('tags') or [])
+        candidate_still_ok = True
+        for filter_function in filter_list:
+            if not filter_function(candidate_entry):
+                candidate_still_ok = False
+                break
+        if candidate_still_ok:
+            return candidate_entry
 
-        if (positive_tags_set <= candidate_tags_set) and negative_tags_set.isdisjoint(candidate_tags_set):
-            candidate_still_ok = True
-            for filter_function in filter_list:
-                if not filter_function(candidate_entry):
-                    candidate_still_ok = False
-                    break
-            if candidate_still_ok:
-                return candidate_entry
 
     if failover_pipeline:
         logging.debug(f"[{__entry__.get_name()}] byquery({query}) did not find anything, trying to install {failover_pipeline}")
