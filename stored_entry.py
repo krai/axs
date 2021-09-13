@@ -116,7 +116,7 @@ Usage examples :
         """Dispatch the request to register an entry in a container to the container.
 
 Usage examples :
-                axs empty , plant letter_mapping --,=aleph,beth,gimel,dalet , plant country israel , attach hebrew_letters
+                axs fresh , plant letter_mapping --,=aleph,beth,gimel,dalet , plant country israel , attach hebrew_letters
         """
         if container==None:
             container = self.get_kernel().work_collection()
@@ -207,8 +207,8 @@ Usage examples :
             Note2: only parameters get stored
 
 Usage examples :
-                axs empty , plant x new_x_value , plant y new_y_value , save coordinates
-                axs empty , plant contained_entries '---={}' , plant _parent_entries --,:=AS^IS:^:core_collection , save new_collection
+                axs fresh , plant x new_x_value , plant y new_y_value , save coordinates
+                axs fresh , plant contained_entries '---={}' , plant _parent_entries --,:=AS^IS:^:core_collection , save new_collection
         """
         if new_path:
             self.get_kernel().cache_replace(self.parameters_path or self.entry_path, new_path, self)

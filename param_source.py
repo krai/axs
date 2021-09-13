@@ -246,8 +246,8 @@ Usage examples :
             Fairly tolerant to short lists & missing values.
 
 Usage examples :
-                axs empty , plant num.tens --,=10,20,30 , plant num.doubles --,=2,4,6,8 , own_data
-                axs empty , plant _parent_entries --,:=AS^IS:^:byname:shell , run 'echo hello, world'
+                axs fresh , plant num.tens --,=10,20,30 , plant num.doubles --,=2,4,6,8 , own_data
+                axs fresh , plant _parent_entries --,:=AS^IS:^:byname:shell , run 'echo hello, world'
         """
         if type(key_path)!=list:
             key_path = key_path.split('.')

@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.90'   # TODO: update with every kernel change
+__version__ = '0.2.91'   # TODO: update with every kernel change
 
 import logging
 import os
@@ -53,14 +53,16 @@ Usage examples :
         print(f"I am {self.get_name()} version={self.version()} kernel_path={self.kernel_path()}")
 
 
-    def empty(self):
-        """Constructor for an empty Entry (no data, no code, no filesystem path).
-            It can be gradually populated with data and stored later.
+    def fresh(self, own_data=None):
+        """Constructor for a fresh Entry (optional data, no code, no filesystem path).
+            It can be gradually populated with (more) data and stored later.
 
 Usage examples :
-                axs empty , plant message "Hello, world" , save hello , attach
+                axs fresh , plant message "Hello, world" , save hello , attach
+                axs fresh ---own_data='{"greeting":"Hello", "name":"world", "_parent_entries":[["AS^IS", "^","byname","shell"]]}' , run ---='[["^^","substitute","echo #{greeting}#, #{name}#"]]'
         """
-        return Entry(name="Empty", own_data={}, own_functions=False, parent_objects=[], kernel=self)
+        own_data = own_data or {}
+        return Entry(name="Fresh", own_data=own_data, own_functions=False, kernel=self)
 
 
     def bypath(self, path, name=None, container=None, own_data=None, parent_objects=None):

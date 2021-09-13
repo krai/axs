@@ -4,7 +4,7 @@
     The resulting file may either become a collection or a regular entry.
 
 Creating a recipe entry:
-    axs empty , plant url http://example.com/ , plant entry_name examplepage_downloaded , plant file_name example.html , plant _parent_entries,:=^:byname:downloader , save examplepage_recipe , attach
+    axs fresh , plant url http://example.com/ , plant entry_name examplepage_downloaded , plant file_name example.html , plant _parent_entries,:=^:byname:downloader , save examplepage_recipe , attach
 
 Activating the recipe, performing the actual downloading:
     axs byname examplepage_recipe , download
@@ -24,8 +24,8 @@ def download(url, entry_name, file_name, __entry__):
 
 Usage examples:
     # Installing executable tools:
-            axs empty , plant _parent_entries --,:=AS^IS:^:byname:shell , plant tool_path --:=^^:which:wget , plant shell_cmd '--:=AS^IS:^^:substitute:#{tool_path}# -O #{target_path}# #{url}#' , plant shell_tool wget , plant implements --,=url_download , save wget_tool , attach
-            axs empty , plant _parent_entries --,:=AS^IS:^:byname:shell , plant tool_path --:=^^:which:curl , plant shell_cmd '--:=AS^IS:^^:substitute:#{tool_path}# -o #{target_path}# #{url}#' , plant shell_tool curl , plant implements --,=url_download , save curl_tool , attach
+            axs fresh , plant _parent_entries --,:=AS^IS:^:byname:shell , plant tool_path --:=^^:which:wget , plant shell_cmd '--:=AS^IS:^^:substitute:#{tool_path}# -O #{target_path}# #{url}#' , plant shell_tool wget , plant implements --,=url_download , save wget_tool , attach
+            axs fresh , plant _parent_entries --,:=AS^IS:^:byname:shell , plant tool_path --:=^^:which:curl , plant shell_cmd '--:=AS^IS:^^:substitute:#{tool_path}# -o #{target_path}# #{url}#' , plant shell_tool curl , plant implements --,=url_download , save curl_tool , attach
     # Manual downloading into a new entry:
             axs byname downloader , download 'https://example.com' examplepage_downloaded example.html
     # Resulting entry path (counter-intuitively) :
@@ -44,7 +44,7 @@ Usage examples:
         'producer':     [ "^", "byname", "downloader" ]
     }
 
-    ak = __entry__.get_kernel()
+    ak              = __entry__.get_kernel()
     work_collection = ak.work_collection()
     target_path     = ak.bypath( work_collection.get_path(entry_name), own_data=data).call('save').get_path(file_name)
 
