@@ -240,52 +240,63 @@ Usage examples :
         return self
 
 
-    def plant(self, key_path, value, pluck=False):
+    def plant(self, *keypath_value_pairs, pluck=False):
         """Traverse the given path of keys into a parameter's internal structure
             and change/add a value there.
             Fairly tolerant to short lists & missing values.
 
 Usage examples :
-                axs fresh , plant num.tens --,=10,20,30 , plant num.doubles --,=2,4,6,8 , own_data
+                axs fresh , plant num.tens --,=10,20,30 num.doubles --,=2,4,6,8 , own_data
                 axs fresh , plant _parent_entries --,:=AS^IS:^:byname:shell , run 'echo hello, world'
         """
-        if type(key_path)!=list:
-            key_path = key_path.split('.')
 
-        struct_ptr = self.own_data()
+        kvp_length  = len(keypath_value_pairs)
+        loop_step   = 1 if pluck else 2
 
-        last_idx = len(key_path)-1
-        for key_idx, key_syllable in enumerate(key_path):
-            if type(struct_ptr)==list:  # descend into lists with numeric indices
-                key_syllable = int(key_syllable)
-                padding_size = key_syllable-len(struct_ptr)+1
-                struct_ptr.extend([None]*(padding_size-1))  # explicit list vivification
-                if padding_size>0:
-                    struct_ptr.append({})
-            elif key_syllable not in struct_ptr:
-                struct_ptr[key_syllable] = {}               # explicit dict vivification
+        if int(kvp_length/loop_step)*loop_step != kvp_length:
+            raise AssertionError(f"keypath_value_pairs should contain an whole number of {loop_step}-tuples")
 
-            if key_idx<last_idx:
-                struct_ptr = struct_ptr[key_syllable]       # iterative descent
-            elif pluck:
-                struct_ptr.pop(key_syllable)
-            else:
-                struct_ptr[key_syllable] = value
+        for i in range(0, kvp_length, loop_step):
+            key_path    = keypath_value_pairs[i]
+            value       = None if pluck else keypath_value_pairs[i+1]
 
-        if key_path == [ self.PARAMNAME_parent_entries ]:   # magic request to reload the parents
-            self.parent_objects = None
+            if type(key_path)!=list:
+                key_path = key_path.split('.')
+
+            struct_ptr = self.own_data()
+
+            last_idx = len(key_path)-1
+            for key_idx, key_syllable in enumerate(key_path):
+                if type(struct_ptr)==list:  # descend into lists with numeric indices
+                    key_syllable = int(key_syllable)
+                    padding_size = key_syllable-len(struct_ptr)+1
+                    struct_ptr.extend([None]*(padding_size-1))  # explicit list vivification
+                    if padding_size>0:
+                        struct_ptr.append({})
+                elif key_syllable not in struct_ptr:
+                    struct_ptr[key_syllable] = {}               # explicit dict vivification
+
+                if key_idx<last_idx:
+                    struct_ptr = struct_ptr[key_syllable]       # iterative descent
+                elif pluck:
+                    struct_ptr.pop(key_syllable)
+                else:
+                    struct_ptr[key_syllable] = value
+
+            if key_path == [ self.PARAMNAME_parent_entries ]:   # magic request to reload the parents
+                self.parent_objects = None
 
         return self
 
 
-    def pluck(self, key_path):
+    def pluck(self, *key_paths):
         """Traverse the given path of keys into a parameter's internal structure
             and remove a key-value pair from there.
 
 Usage examples :
                 axs bypath foo , pluck foo.bar.baz , save
         """
-        return self.plant(key_path, None, pluck=True)
+        return self.plant(*key_paths, pluck=True)
 
 
 if __name__ == '__main__':
