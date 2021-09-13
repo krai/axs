@@ -37,37 +37,31 @@ Usage examples:
     # Clean up:
             axs byname examplepage_downloaded , remove
     """
-    data = {
-        'url':          url,
-        'file_name':    file_name,
-        'remark':       'downloaded via URL',
-        'producer':     [ "^", "byname", "downloader" ]
-    }
 
-    ak              = __entry__.get_kernel()
-    work_collection = ak.work_collection()
-    target_path     = ak.bypath( work_collection.get_path(entry_name), own_data=data).call('save').get_path(file_name)
+    dep_name        = 'url_download_tool'
+    tool_entry      = __entry__[dep_name]
+    tool_path       = tool_entry['tool_path']
 
-    work_collection.call('add_entry_path', entry_name )
+    if tool_path:
 
-    if __entry__.call('download_to_path', [url, target_path]) == 0:   # does not have to be the new entry, but needs to inherit from shell
-        return target_path
+        data = {
+            'url':          url,
+            'file_name':    file_name,
+            'tool_path':    tool_path
+        }
+
+        ak              = __entry__.get_kernel()
+        result_entry    = ak.fresh(own_data=data).save(ak.work_collection().get_path(entry_name)).attach()
+        target_path     = result_entry.get_path(file_name)
+
+        print(f"Dependency '{dep_name}' resolved into entry '{tool_entry.get_path()}' with the tool '{tool_path}', it will be used for downloading")
+        retval = tool_entry.call('run', [], {"url": url, "target_path": target_path})
+        if retval == 0:
+            return target_path
+        else:
+            print(f"Some problem occured when trying to download '{url}' into '{target_path}', bailing out")
+            result_entry.remove()
+            return None
     else:
+        print("Could not find a suitable downloader, so failed to download {}".format(url))
         return None
-
-
-def download_to_path(url, target_path, __entry__):
-    """Pick a method available on this platform and download a url into target_path
-
-Usage examples:
-            axs byname downloader , download_to_path http://example.com exmpl.html
-    """
-    print('url = "{}", target_path = "{}"'.format(url, target_path))
-    dep_name    = 'url_download_tool'
-    tool_entry  = __entry__[dep_name]
-    tool_path   = tool_entry['tool_path']
-    print("Dependency '{}' resolved into entry '{}' with the tool '{}', it will be used for downloading".format(dep_name, tool_entry.get_path(), tool_path))
-    return tool_entry.call('run', [], {"url": url, "target_path": target_path})
-
-    print("Could not find a suitable downloader, so failed to download {}".format(url))
-    return None
