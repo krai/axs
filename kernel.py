@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.92'   # TODO: update with every kernel change
+__version__ = '0.2.93'   # TODO: update with every kernel change
 
 import logging
 import os
@@ -35,16 +35,23 @@ Usage examples :
 
     def version(self):
         """Get the current kernel version
+
+Usage examples :
+                axs version
         """
         return __version__
 
 
-    def kernel_path(self, entry_path=None):
+    def kernel_path(self, rel_file_path=None):
         """Get the path where the kernel is currently installed
+
+Usage examples :
+                axs kernel_path
+                axs kernel_path core_collection
         """
         kernel_dir_path = os.path.dirname( os.path.realpath(__file__) )
-        if entry_path:
-            return os.path.join(kernel_dir_path, entry_path)
+        if rel_file_path:
+            return os.path.join(kernel_dir_path, rel_file_path)
         else:
             return kernel_dir_path
 
@@ -111,12 +118,19 @@ Usage examples :
 
     def core_collection(self):
         """Fetch the core_collection entry
+
+Usage examples :
+                axs core_collection , help
         """
         return self.bypath( self.kernel_path( 'core_collection' ) )
 
 
     def work_collection(self):
         """Fetch the work_collection entry
+
+Usage examples :
+                axs work_collection , get_path
+                AXS_WORK_COLLECTION=~/alt_wc axs work_collection , get_path
         """
         work_collection_path = os.getenv('AXS_WORK_COLLECTION') or os.path.join(os.path.expanduser('~'), 'work_collection')
         if not os.path.exists(work_collection_path):
@@ -131,6 +145,9 @@ Usage examples :
 
     def byname(self, entry_name):
         """Fetch an entry by its name (delegated to work_collection)
+
+Usage examples :
+                axs byname pip , help
         """
         logging.debug(f"[{self.get_name()}] byname({entry_name})")
         return self.work_collection().call('byname', [entry_name])
