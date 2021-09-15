@@ -44,14 +44,15 @@ Usage examples:
 
     if tool_path:
 
-        data = {
-            'url':          url,
-            'file_name':    file_name,
-            'tool_path':    tool_path
+        result_data = {
+            "url":          url,
+            "file_name":    file_name,
+            "tool_path":    tool_path,
+            "tags":         [ "downloaded" ],
         }
 
         ak              = __entry__.get_kernel()
-        result_entry    = ak.fresh(own_data=data).save(ak.work_collection().get_path(entry_name)).attach()
+        result_entry    = ak.fresh(own_data=result_data).save(ak.work_collection().get_path(entry_name)).attach()
         target_path     = result_entry.get_path(file_name)
 
         print(f"Dependency '{dep_name}' resolved into entry '{tool_entry.get_path()}' with the tool '{tool_path}', it will be used for downloading")

@@ -23,10 +23,10 @@ Usage examples :
 
     pip_entry_name = '_'.join( [package_name, package_version, 'pip'] ) if package_version else '_'.join( [package_name, 'pip'] )
     work_collection = ak.work_collection()
-    pip_entry = work_collection.call('new', pip_entry_name)
+    result_entry = work_collection.call('new', pip_entry_name)
 
     rel_install_dir         = 'install'
-    extra_python_site_dir   = pip_entry.get_path( rel_install_dir )
+    extra_python_site_dir   = result_entry.get_path( rel_install_dir )
     os.makedirs( os.path.join(extra_python_site_dir, 'lib') )
     os.symlink( 'lib', os.path.join(extra_python_site_dir, 'lib64') )
 
@@ -43,10 +43,11 @@ Usage examples :
 
     __entry__.call('run',  f"python3 -m pip install {package_name}{version_suffix} --prefix={extra_python_site_dir} --ignore-installed {pip_options}" )
 
-    pip_entry['rel_packages_dir']       = os.path.join( rel_install_dir, 'lib', f"python{sys.version_info.major}.{sys.version_info.minor}", 'site-packages' )
-    pip_entry['_parent_entries']        = [ [ "^", "byname", "generic_pip" ] ]
-    pip_entry['package_name']           = package_name
-    pip_entry['package_version']        = package_version if package_version!=None else 'UNKNOWN'
-    pip_entry.save()
+    result_entry['rel_packages_dir']    = os.path.join( rel_install_dir, 'lib', f"python{sys.version_info.major}.{sys.version_info.minor}", 'site-packages' )
+    result_entry['_parent_entries']     = [ [ "^", "byname", "generic_pip" ] ]
+    result_entry['package_name']        = package_name
+    result_entry['package_version']     = package_version if package_version!=None else 'UNKNOWN'
+    result_entry['tags']                = [ "python_package" ]
+    result_entry.save()
 
-    return pip_entry
+    return result_entry

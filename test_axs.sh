@@ -46,7 +46,7 @@ axs bypath dad      , remove
 axs bypath granddad , remove
 assert_end entry_creation_multiple_inheritance_and_removal
 
-axs byname git , pull counting_collection , attach
+axs byname git , pull counting_collection
 assert 'axs byname French , dig number_mapping.5' 'cinq'
 axs byname counting_collection , pull
 axs byname counting_collection , remove

@@ -12,7 +12,7 @@ def pull(name=None, url=None, __entry__=None):
         Note: it does not (yet) add the repository to any collection, it has to be done manually.
 
 Usage examples :
-            axs byname git , pull counting_collection , attach
+            axs byname git , pull counting_collection
 
             axs byname counting_collection , pull
 Clean-up:
@@ -41,7 +41,10 @@ Clean-up:
         work_collection = ak.work_collection()
         container_path  = work_collection.get_path('')
         __entry__.call('run', f"git -C {container_path} clone {url}" )
-        repo_entry      = work_collection.bypath(name)
+        repo_entry      = work_collection.call('new', name)
+        repo_entry['repo_name'] = name
+        repo_entry['tags']      = [ 'git_repo' ]
+        repo_entry.save()
     else:
         repo_entry      = __entry__
         repo_path       = repo_entry.get_path()
