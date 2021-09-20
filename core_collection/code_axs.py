@@ -59,7 +59,12 @@ def byname(entry_name, __entry__):
 
 def byquery(query, failover_pipeline=None, parent_recursion=False, __entry__=None):
     """Fetch an entry by query.
-        If the query returns nothing on the first pass, but failover_pipeline is defined, run the pipeline and return its output.
+        If the query returns nothing on the first pass, but failover_pipeline or matching producer_rules are defined,
+        run the failover_pipeline or the matching producer_rule and return its output.
+
+Usage examples :
+                axs byquery python_package,package_name=numpy , get_path
+                axs byquery python_package,package_name=numpy,package_version=1.16.4 , get_metadata --header_name=Version
     """
     assert __entry__ != None, "__entry__ should be defined"
 
@@ -78,8 +83,10 @@ def byquery(query, failover_pipeline=None, parent_recursion=False, __entry__=Non
     import re
     from function_access import to_num_or_not_to_num
 
-    conditions          = query.split(',')
-    filter_list         = []
+    conditions      = query.split(',')
+    filter_list     = []
+    posi_tag_set    = set()
+    posi_val_dict   = {}
 
     # parsing the query:
     for condition in conditions:
@@ -89,6 +96,7 @@ def byquery(query, failover_pipeline=None, parent_recursion=False, __entry__=Non
             binary_op   = binary_op_match.group(2)
             test_val    = to_num_or_not_to_num(binary_op_match.group(3))
             if binary_op in ('=', '=='):
+                posi_val_dict[key_path] = test_val
                 filter_list.append( create_filter(key_path, lambda x, y : x==y, test_val) )
             elif binary_op in ('!=', '<>'):
                 filter_list.append( create_filter(key_path, lambda x, y : x!=y, test_val) )
@@ -124,6 +132,7 @@ def byquery(query, failover_pipeline=None, parent_recursion=False, __entry__=Non
                         filter_list.append( create_filter(key_path, lambda x, y : type(x)!=list or y not in x, test_val) )
                     else:
                         filter_list.append( create_filter(key_path, lambda x, y : type(x)==list and y in x, test_val) )
+                        posi_tag_set.add( test_val )
                 else:
                     raise(SyntaxError("Could not parse the condition '{}'".format(condition)))
 
@@ -142,6 +151,22 @@ def byquery(query, failover_pipeline=None, parent_recursion=False, __entry__=Non
     if failover_pipeline:
         logging.debug(f"[{__entry__.get_name()}] byquery({query}) did not find anything, trying to install {failover_pipeline}")
         return __entry__.execute(failover_pipeline)
+    elif len(posi_tag_set):
+        logging.debug(f"[{__entry__.get_name()}] byquery({query}) did not find anything, but there are tags: {posi_tag_set} , trying to find a producer...")
+
+        for candidate_producer_entry in walk(__entry__):
+            producer_rules = candidate_producer_entry.get('producer_rules', {})
+            for producer_method in producer_rules.keys():
+                producer_tags_set = set(producer_rules[producer_method])
+                if producer_tags_set.issubset(posi_tag_set):
+                    print(f"Producer entry {candidate_producer_entry.get_name()} advertises method {producer_method} with matching tags {producer_tags_set} that may work with {posi_val_dict}")
+                    new_entry = candidate_producer_entry.call(producer_method, [], posi_val_dict)
+                    if new_entry:
+                        print("It worked!")
+                        return new_entry
+                    else:
+                        print("It didn't work, but maybe there is another method...")
+
     else:
         logging.debug(f"[{__entry__.get_name()}] byquery({query}) did not find anything, and no failover_pipeline defined => returning None")
         return None

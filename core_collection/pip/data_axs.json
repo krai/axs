@@ -2,7 +2,7 @@
     "_parent_entries": [
         [ "^", "byname", "shell" ]
     ],
-    "producer_of": {
-        "python_package": "install"
+    "producer_rules": {
+        "install":  [ "python_package" ]
     }
 }

@@ -1,7 +1,7 @@
 {
     "_parent_entries": [ [ "^", "byname", "shell" ] ],
     "url_download_tool": [ "^", "byquery", "shell_tool+,implements:url_download,tool_path." ],
-    "producer_of": {
-        "downloaded": "download"
+    "producer_rules": {
+        "download": [ "downloader" ]
     }
 }
