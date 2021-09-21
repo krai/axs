@@ -159,8 +159,9 @@ Usage examples :
             for producer_method in producer_rules.keys():
                 producer_tags_set = set(producer_rules[producer_method])
                 if producer_tags_set.issubset(posi_tag_set):
-                    print(f"Producer entry {candidate_producer_entry.get_name()} advertises method {producer_method} with matching tags {producer_tags_set} that may work with {posi_val_dict}")
+                    print(f"Producer entry '{candidate_producer_entry.get_name()}' advertises method {producer_method}() with matching tags {producer_tags_set} that may work with {posi_val_dict}")
                     new_entry = candidate_producer_entry.call(producer_method, [], posi_val_dict)
+                    candidate_producer_entry.clear_cache()  # do not cache the input data from the previous call (TODO: switch off caching for a particular call() ? )
                     if new_entry:
                         print("It worked!")
                         return new_entry

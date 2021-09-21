@@ -11,6 +11,7 @@
         "pip": "pip",
         "generic_pip": "generic_pip",
         "numpy_import_test": "numpy_import_test",
-        "python_script": "python_script"
+        "python_script": "python_script",
+        "torch_script_test": "torch_script_test"
     }
 }
