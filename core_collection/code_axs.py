@@ -57,10 +57,10 @@ def byname(entry_name, __entry__):
     return None
 
 
-def byquery(query, failover_pipeline=None, parent_recursion=False, __entry__=None):
+def byquery(query, produce_if_not_found=True, parent_recursion=False, __entry__=None):
     """Fetch an entry by query.
-        If the query returns nothing on the first pass, but failover_pipeline or matching producer_rules are defined,
-        run the failover_pipeline or the matching producer_rule and return its output.
+        If the query returns nothing on the first pass, but matching producer_rules are defined,
+        apply the matching producer_rule and return its output.
 
 Usage examples :
                 axs byquery python_package,package_name=numpy , get_path
@@ -148,10 +148,7 @@ Usage examples :
             return candidate_entry
 
 
-    if failover_pipeline:
-        logging.debug(f"[{__entry__.get_name()}] byquery({query}) did not find anything, trying to install {failover_pipeline}")
-        return __entry__.execute(failover_pipeline)
-    elif len(posi_tag_set):
+    if produce_if_not_found and len(posi_tag_set):
         logging.debug(f"[{__entry__.get_name()}] byquery({query}) did not find anything, but there are tags: {posi_tag_set} , trying to find a producer...")
 
         for candidate_producer_entry in walk(__entry__):
@@ -169,7 +166,7 @@ Usage examples :
                         print("It didn't work, but maybe there is another method...")
 
     else:
-        logging.debug(f"[{__entry__.get_name()}] byquery({query}) did not find anything, and no failover_pipeline defined => returning None")
+        logging.debug(f"[{__entry__.get_name()}] byquery({query}) did not find anything, and no matching producer_rules => returning None")
         return None
 
 

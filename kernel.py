@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.95'   # TODO: update with every kernel change
+__version__ = '0.2.96'   # TODO: update with every kernel change
 
 import logging
 import os
@@ -153,7 +153,7 @@ Usage examples :
         return self.work_collection().call('byname', [entry_name])
 
 
-    def byquery(self, query, failover_pipeline=None, parent_recursion=False):
+    def byquery(self, query, produce_if_not_found=True, parent_recursion=False):
         """Fetch an entry by a query over its tags (delegated to work_collection)
             Note parent_recursion is False by default, but can be switched on manually (beware of the avalanche though!).
 
@@ -162,7 +162,7 @@ Usage examples :
                 axs byquery person.,be!=Be --parent_recursion+ , get_path
         """
         logging.debug(f"[{self.get_name()}] byquery({query})")
-        return self.work_collection().call('byquery', [query, failover_pipeline, parent_recursion])
+        return self.work_collection().call('byquery', [query, produce_if_not_found, parent_recursion])
 
 
 #logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")
