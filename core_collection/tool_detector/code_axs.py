@@ -22,9 +22,10 @@ Usage examples :
 
         result_data = {
             "_parent_entries":  [ [ "^", "byname", "shell" ] ],
-            "shell_tool":       tool_name,
-            "tool_path":        tool_path,
-            "shell_cmd":        tool_path,  # likely to be overridden by tool_name2extra_params[tool_name]
+            "tool_name":    tool_name,
+            "tool_path":    tool_path,
+            "shell_cmd":    tool_path,  # likely to be overridden by tool_name2extra_params[tool_name]
+            "tags":         [ "shell_tool" ],
         }
         result_data.update( tool_name2extra_params.get(tool_name, {}) )
 

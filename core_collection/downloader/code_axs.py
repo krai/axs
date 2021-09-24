@@ -24,8 +24,8 @@ def download(url, entry_name, file_name, __entry__):
 
 Usage examples:
     # Installing executable tools:
-            axs fresh , plant _parent_entries --,:=AS^IS:^:byname:shell , plant tool_path --:=^^:which:wget , plant shell_cmd '--:=AS^IS:^^:substitute:#{tool_path}# -O #{target_path}# #{url}#' , plant shell_tool wget , plant implements --,=url_download , save wget_tool , attach
-            axs fresh , plant _parent_entries --,:=AS^IS:^:byname:shell , plant tool_path --:=^^:which:curl , plant shell_cmd '--:=AS^IS:^^:substitute:#{tool_path}# -o #{target_path}# #{url}#' , plant shell_tool curl , plant implements --,=url_download , save curl_tool , attach
+            axs fresh ---own_data='{"_parent_entries":[["AS^IS","^","byname","shell"]]}' , plant tool_name wget tool_path --:=^^:which:wget shell_cmd '--:=AS^IS:^^:substitute:#{tool_path}# -O #{target_path}# #{url}#' tags --,=shell_tool implements --,=url_download , save wget_tool , attach
+            axs byquery shell_tool,tool_name=curl
     # Manual downloading into a new entry:
             axs byname downloader , download 'https://example.com' examplepage_downloaded example.html
     # Resulting entry path (counter-intuitively) :

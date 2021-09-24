@@ -65,6 +65,7 @@ def byquery(query, produce_if_not_found=True, parent_recursion=False, __entry__=
 Usage examples :
                 axs byquery python_package,package_name=numpy , get_path
                 axs byquery python_package,package_name=numpy,package_version=1.16.4 , get_metadata --header_name=Version
+                axs byquery shell_tool,tool_name=wget
     """
     assert __entry__ != None, "__entry__ should be defined"
 

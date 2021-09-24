@@ -53,7 +53,7 @@ axs byname counting_collection , remove
 assert_end git_cloning_collection_access_and_removal
 
 cd `axs work_collection , get_path`
-axs fresh ---own_data='{"_parent_entries":[["AS^IS","^","byname","shell"]]}' , plant tool_path --:=^^:which:wget shell_cmd '--:=AS^IS:^^:substitute:#{tool_path}# -O #{target_path}# #{url}#' shell_tool wget implements --,=url_download , save wget_tool , attach
+axs fresh ---own_data='{"_parent_entries":[["AS^IS","^","byname","shell"]]}' , plant tool_name wget tool_path --:=^^:which:wget shell_cmd '--:=AS^IS:^^:substitute:#{tool_path}# -O #{target_path}# #{url}#' tags --,=shell_tool implements --,=url_download , save wget_tool , attach
 axs byname tool_detector , detect curl
 axs fresh , plant url http://example.com/ entry_name examplepage_downloaded file_name example.html _parent_entries --,:=AS^IS:^:byname:downloader , attach examplepage_recipe
 axs byname examplepage_recipe , download
