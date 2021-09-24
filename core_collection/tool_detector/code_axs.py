@@ -4,13 +4,13 @@
 """
 
 
-def detect(tool_name, tool_name2extra_params, __entry__=None):
+def detect(tool_name, shell_cmd=None, tags=None, __entry__=None):
     """Detect an installed shell tool and create an entry to point at it
 
 Usage examples :
-                axs byname tool_detector , detect wget
+                axs byname tool_detector , detect wget --tags,=shell_tool,can_download_url '--shell_cmd:=AS^IS:^^:substitute:#{tool_path}# -O #{target_path}# #{url}#'
 
-                axs byname tool_detector , detect curl
+                axs byname tool_detector , detect curl --tags,=shell_tool,can_download_url '--shell_cmd:=AS^IS:^^:substitute:#{tool_path}# -o #{target_path}# #{url}#'
     """
 
     assert __entry__ != None, "__entry__ should be defined"
@@ -18,16 +18,16 @@ Usage examples :
     tool_path   = __entry__.call('which', tool_name)
 
     if tool_path:
-        tool_name2extra_params  = tool_name2extra_params or {}
+        shell_cmd   = shell_cmd or tool_path
+        tags        = tags or []
 
         result_data = {
             "_parent_entries":  [ [ "^", "byname", "shell" ] ],
             "tool_name":    tool_name,
             "tool_path":    tool_path,
-            "shell_cmd":    tool_path,  # likely to be overridden by tool_name2extra_params[tool_name]
-            "tags":         [ "shell_tool" ],
+            "shell_cmd":    shell_cmd,
+            "tags":         tags or [ "shell_tool" ],
         }
-        result_data.update( tool_name2extra_params.get(tool_name, {}) )
 
         ak = __entry__.get_kernel()
         assert ak != None, "__entry__'s kernel should be defined"

@@ -2,7 +2,7 @@
     "_parent_entries": [ [ "^", "byname", "shell" ] ],
     "url_prefix": "https://github.com/ens-lg4",
     "url": [ "^^", "substitute", "#{url_prefix}#/#{name}#" ],
-    "producer_rules": {
-        "pull": [ "git_repo" ]
-    }
+    "producer_rules": [
+        [ [ "git_repo" ], "pull", {} ]
+    ]
 }

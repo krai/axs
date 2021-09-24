@@ -19,12 +19,12 @@ Cleaning up:
 
 """
 
-def download(url, entry_name, file_name, __entry__):
+def download(url, entry_name, file_name, tags=None, __entry__=None):
     """Create a new entry and download the url into it
 
 Usage examples:
     # Installing executable tools:
-            axs fresh ---own_data='{"_parent_entries":[["AS^IS","^","byname","shell"]]}' , plant tool_name wget tool_path --:=^^:which:wget shell_cmd '--:=AS^IS:^^:substitute:#{tool_path}# -O #{target_path}# #{url}#' tags --,=shell_tool implements --,=url_download , save wget_tool , attach
+            axs fresh ---own_data='{"_parent_entries":[["AS^IS","^","byname","shell"]]}' , plant tool_name wget tool_path --:=^^:which:wget shell_cmd '--:=AS^IS:^^:substitute:#{tool_path}# -O #{target_path}# #{url}#' tags --,=shell_tool,can_download_url , save wget_tool , attach
             axs byquery shell_tool,tool_name=curl
     # Manual downloading into a new entry:
             axs byname downloader , download 'https://example.com' examplepage_downloaded example.html
@@ -38,6 +38,8 @@ Usage examples:
             axs byname examplepage_downloaded , remove
     """
 
+    assert __entry__ != None, "__entry__ should be defined"
+
     dep_name        = 'url_download_tool'
     tool_entry      = __entry__[dep_name]
     tool_path       = tool_entry['tool_path']
@@ -48,7 +50,7 @@ Usage examples:
             "url":          url,
             "file_name":    file_name,
             "tool_path":    tool_path,
-            "tags":         [ "downloaded" ],
+            "tags":         tags or [ "downloaded" ],
         }
 
         ak              = __entry__.get_kernel()

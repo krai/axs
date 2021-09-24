@@ -3,6 +3,7 @@
 """ This entry knows how to make other entries.
 """
 
+from copy import deepcopy
 import logging
 import os
 
@@ -153,12 +154,14 @@ Usage examples :
         logging.debug(f"[{__entry__.get_name()}] byquery({query}) did not find anything, but there are tags: {posi_tag_set} , trying to find a producer...")
 
         for candidate_producer_entry in walk(__entry__):
-            producer_rules = candidate_producer_entry.get('producer_rules', {})
-            for producer_method in producer_rules.keys():
-                producer_tags_set = set(producer_rules[producer_method])
+            for producer_tags_list, producer_method, extra_params in candidate_producer_entry.get('producer_rules', []):
+                producer_tags_set = set(producer_tags_list)
                 if producer_tags_set.issubset(posi_tag_set):
-                    print(f"Producer entry '{candidate_producer_entry.get_name()}' advertises method {producer_method}() with matching tags {producer_tags_set} that may work with {posi_val_dict}")
-                    new_entry = candidate_producer_entry.call(producer_method, [], posi_val_dict)
+                    print(f"Producer entry '{candidate_producer_entry.get_name()}' advertises action {producer_method}({extra_params}) with matching tags {producer_tags_set} that may work with {posi_val_dict}")
+                    cumulative_params = deepcopy( extra_params )
+                    cumulative_params.update( posi_val_dict )
+                    cumulative_params["tags"] = list(posi_tag_set)
+                    new_entry = candidate_producer_entry.call(producer_method, [], cumulative_params)
                     candidate_producer_entry.clear_cache()  # do not cache the input data from the previous call (TODO: switch off caching for a particular call() ? )
                     if new_entry:
                         print("It worked!")

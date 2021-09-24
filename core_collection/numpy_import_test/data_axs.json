@@ -4,7 +4,7 @@
         ["byquery", "python_package,package_name=numpy,package_version=1.16.2" ],
         ["use"],
         ["get_kernel"],
-        ["byquery", "python_package,package_name=scipy,package_version=1.5.1" ],
+        ["byquery", "python_package,no_deps,package_name=scipy,package_version=1.5.1" ],
         ["use"]
     ]] ]
 }

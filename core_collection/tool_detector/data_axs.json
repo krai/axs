@@ -2,20 +2,9 @@
     "_parent_entries": [
         [ "^", "byname", "shell" ]
     ],
-    "producer_rules": {
-        "detect":  [ "shell_tool" ]
-    },
-    "tool_name2extra_params": {
-        "wget": {
-            "implements":   [ "url_download" ],
-            "shell_cmd":    [ "AS^IS", "^^", "substitute", "#{tool_path}# -O #{target_path}# #{url}#" ]
-        },
-        "curl": {
-            "implements":   [ "url_download" ],
-            "shell_cmd":    [ "AS^IS", "^^", "substitute", "#{tool_path}# -o #{target_path}# #{url}#" ]
-        },
-        "gcc": {
-            "implements":   [ "compile" ]
-        }
-    }
+    "producer_rules": [ "AS^IS",
+        [ [ "shell_tool", "can_download_url" ], "detect", { "tool_name": "wget", "shell_cmd": [ "AS^IS", "^^", "substitute", "#{tool_path}# -O #{target_path}# #{url}#" ] } ],
+        [ [ "shell_tool", "can_download_url" ], "detect", { "tool_name": "curl", "shell_cmd": [ "AS^IS", "^^", "substitute", "#{tool_path}# -o #{target_path}# #{url}#" ] } ],
+        [ [ "shell_tool", "can_compile" ], "detect", { "tool_name": "gcc" } ]
+    ]
 }

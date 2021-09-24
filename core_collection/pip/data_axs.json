@@ -2,7 +2,8 @@
     "_parent_entries": [
         [ "^", "byname", "shell" ]
     ],
-    "producer_rules": {
-        "install":  [ "python_package" ]
-    }
+    "producer_rules": [
+        [ [ "python_package", "no_deps" ], "install", {"pip_options": ["no-deps"]} ],
+        [ [ "python_package" ], "install", {} ]
+    ]
 }

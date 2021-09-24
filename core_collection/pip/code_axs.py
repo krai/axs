@@ -7,7 +7,7 @@ import os
 import sys
 
 
-def install(package_name, package_version=None, pip_options=None, __entry__=None):
+def install(package_name, package_version=None, pip_options=None, tags=None, __entry__=None):
     """Install a pip package into a separate entry, so that it could be easily use'd.
 
 Usage examples :
@@ -15,7 +15,7 @@ Usage examples :
 
                 axs byname pip , install numpy
 
-                axs byname pip , install scipy 1.5.1 --pip_options,=no-deps
+                axs byname pip , install scipy 1.5.1 --pip_options,=no-deps --tags,=python_package,no_deps
     """
     assert __entry__ != None, "__entry__ should be defined"
     ak = __entry__.get_kernel()
@@ -47,7 +47,7 @@ Usage examples :
     result_entry['_parent_entries']     = [ [ "^", "byname", "generic_pip" ] ]
     result_entry['package_name']        = package_name
     result_entry['package_version']     = package_version if package_version!=None else 'UNKNOWN'
-    result_entry['tags']                = [ "python_package" ]
+    result_entry['tags']                = tags or [ "python_package" ]
     result_entry.save()
 
     return result_entry
