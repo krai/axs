@@ -64,5 +64,5 @@ Usage examples:
             result_entry.remove()
             return None
     else:
-        print("Could not find a suitable downloader, so failed to download {}".format(url))
+        print(f"Could not find a suitable downloader, so failed to download {url}")
         return None

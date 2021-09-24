@@ -37,4 +37,5 @@ Usage examples :
 
         return result_entry
     else:
+        print(f"Could not detect the tool '{tool_name}'")
         return None
