@@ -10,6 +10,7 @@ def use(abs_packages_dir):
     """Make an entry that contains an installed pip package the preferred location to import the package from.
 
 Usage examples :
+                axs byname numpy_1.16.4_pip , use , python_api 'import numpy\nprint(numpy.__version__)'
                 axs np: byname numpy_1.16.4_pip , use , get np , ask_package_location
     """
     sys.path.insert(0, abs_packages_dir)
