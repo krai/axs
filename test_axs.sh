@@ -54,7 +54,7 @@ assert_end git_cloning_collection_access_and_removal
 
 cd `axs work_collection , get_path`
 axs fresh ---own_data='{"_parent_entries":[["AS^IS","^","byname","shell"]]}' , plant tool_path --:=^^:which:wget shell_cmd '--:=AS^IS:^^:substitute:#{tool_path}# -O #{target_path}# #{url}#' shell_tool wget implements --,=url_download , save wget_tool , attach
-axs fresh , plant _parent_entries --,:=AS^IS:^:byname:shell , plant tool_path --:=^^:which:curl shell_cmd '--:=AS^IS:^^:substitute:#{tool_path}# -o #{target_path}# #{url}#' shell_tool curl implements --,=url_download , save curl_tool , attach
+axs byname tool_detector , detect curl
 axs fresh , plant url http://example.com/ entry_name examplepage_downloaded file_name example.html _parent_entries --,:=AS^IS:^:byname:downloader , attach examplepage_recipe
 axs byname examplepage_recipe , download
 assert '$MD5CMD `axs byname examplepage_downloaded , get_path` | cut -f 1 -d " " | sed "s/\\\\//g"' '84238dfc8092e5d9c0dac8ef93371a07'

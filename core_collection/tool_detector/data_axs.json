@@ -1,0 +1,21 @@
+{
+    "_parent_entries": [
+        [ "^", "byname", "shell" ]
+    ],
+    "producer_rules": {
+        "detect":  [ "shell_tool" ]
+    },
+    "tool_name2extra_params": {
+        "wget": {
+            "implements":   [ "url_download" ],
+            "shell_cmd":    [ "AS^IS", "^^", "substitute", "#{tool_path}# -O #{target_path}# #{url}#" ]
+        },
+        "curl": {
+            "implements":   [ "url_download" ],
+            "shell_cmd":    [ "AS^IS", "^^", "substitute", "#{tool_path}# -o #{target_path}# #{url}#" ]
+        },
+        "gcc": {
+            "implements":   [ "compile" ]
+        }
+    }
+}
