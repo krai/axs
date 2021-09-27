@@ -23,9 +23,6 @@ def download(url, entry_name, file_name, tags=None, __entry__=None):
     """Create a new entry and download the url into it
 
 Usage examples:
-    # Installing executable tools:
-            axs fresh ---own_data='{"_parent_entries":[["AS^IS","^","byname","shell"]]}' , plant tool_name wget tool_path --:=^^:which:wget shell_cmd '--:=AS^IS:^^:substitute:#{tool_path}# -O #{target_path}# #{url}#' tags --,=shell_tool,can_download_url , save wget_tool , attach
-            axs byquery shell_tool,tool_name=curl
     # Manual downloading into a new entry:
             axs byname downloader , download 'https://example.com' examplepage_downloaded example.html
     # Resulting entry path (counter-intuitively) :

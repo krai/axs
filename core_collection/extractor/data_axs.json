@@ -1,0 +1,7 @@
+{
+    "_parent_entries": [ [ "^", "byname", "shell" ] ],
+    "extraction_tool": [ "^", "byquery", "shell_tool,can_extract_tar" ],
+    "producer_rules": [
+        [ [ "extracted" ], "extract", {} ]
+    ]
+}

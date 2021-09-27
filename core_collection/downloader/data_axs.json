@@ -2,6 +2,6 @@
     "_parent_entries": [ [ "^", "byname", "shell" ] ],
     "url_download_tool": [ "^", "byquery", "shell_tool,can_download_url" ],
     "producer_rules": [
-        [ [ "downloader" ], "download", {} ]
+        [ [ "downloaded" ], "download", {} ]
     ]
 }
