@@ -19,7 +19,7 @@ environment:
 
 init:
     - cmd: set PATH=%PYTHON%;%PYTHON%\\Scripts;%cd%;%PATH%
-    - sh: export PATH=.:$PATH
+    - sh: export PATH=$PWD:$PATH
 
 install:
     - cmd: mklink python3.exe %PYTHON%\\python.exe
