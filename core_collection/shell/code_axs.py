@@ -27,7 +27,7 @@ Usage examples:
     if env:
         shell_cmd = 'env ' + ' '.join([ f"{k}={env[k]}" for k in env]) + ' ' + shell_cmd
 
-    logging.warning("shell.run() about to execute:\n\t{shell_cmd}\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+    logging.warning(f"shell.run() about to execute:\n\t{shell_cmd}\n" + (' '*8 + '^'*len(shell_cmd)) )
     completed_process = subprocess.run(shell_cmd, shell = True, stdout=(subprocess.PIPE if capture_output else None) )
     if capture_output:
         output  = completed_process.stdout.decode('utf-8').rstrip()
