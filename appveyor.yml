@@ -19,7 +19,7 @@ environment:
 
 init:
     - cmd: set PATH=%PYTHON%;%PYTHON%\\Scripts;%cd%;%PATH%
-    - sh: export PATH=$PWD:$PATH
+    - sh: export PATH=$APPVEYOR_BUILD_FOLDER:$PATH
 
 install:
     - cmd: mklink python3.exe %PYTHON%\\python.exe
