@@ -1,17 +1,31 @@
 build: false
 
 environment:
+  ASSERT_URL: https://raw.github.com/lehmannro/assert.sh/master/assert.sh
   matrix:
-    - PYTHON: C:\Python36-x64
-      PYTHON_VERSION: 3.6
+    - job_name: Windows Py 3.6
+      appveyor_build_worker_image: Visual Studio 2015
+      PYTHON: C:\Python36-x64
+
+    - job_name: Windows Py 3.9
+      appveyor_build_worker_image: Visual Studio 2019
+      PYTHON: C:\Python39-x64
+
+    - job_name: MacOS
+      appveyor_build_worker_image: macos
+
+    - job_name: Linux
+      appveyor_build_worker_image: Ubuntu
 
 init:
-    - set PATH=%PYTHON%;%PYTHON%\\Scripts;%cd%;%PATH%
+    - cmd: set PATH=%PYTHON%;%PYTHON%\\Scripts;%cd%;%PATH%
+    - sh: export PATH=.:$PATH
 
 install:
-    - mklink python3.exe %PYTHON%\\python.exe
+    - cmd: mklink python3.exe %PYTHON%\\python.exe
     - python3 --version
-    - appveyor DownloadFile https://raw.github.com/lehmannro/assert.sh/master/assert.sh
+    - cmd: appveyor DownloadFile %ASSERT_URL%
+    - sh: appveyor DownloadFile $ASSERT_URL
 
 test_script:
     - function_access.py
@@ -20,4 +34,5 @@ test_script:
     - stored_entry.py
     - kernel.py
     - axs version
-    - bash test_axs.sh
+    - cmd: bash test_axs.sh
+    - sh: test_axs.sh
