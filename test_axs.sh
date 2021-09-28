@@ -50,11 +50,6 @@ cd `axs work_collection , get_path`
 axs fresh , plant url http://example.com/ entry_name examplepage_downloaded file_name example.html _parent_entries --,:=AS^IS:^:byname:downloader , attach examplepage_recipe
 axs byname examplepage_recipe , download
 axs byquery shell_tool,can_compute_md5 , own_data
-
-axs byname shell , which cut
-axs byname shell , which sed
-axs byname examplepage_downloaded , file_path: get_path , byquery shell_tool,can_compute_md5 , run
-
 assert 'axs byname examplepage_downloaded , file_path: get_path , byquery shell_tool,can_compute_md5 , run' '84238dfc8092e5d9c0dac8ef93371a07'
 axs byquery downloaded --- , remove
 axs byname examplepage_recipe , remove
