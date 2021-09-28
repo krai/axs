@@ -2,12 +2,6 @@
 
 source assert.sh
 
-if [ `uname` = 'Darwin' ]; then
-    MD5CMD="md5 -r"
-else
-    MD5CMD="md5sum"
-fi
-
 assert 'echo "Hello, world!"' 'Hello, world!'
 assert_end testing_assert_itself
 
@@ -55,7 +49,7 @@ assert_end git_cloning_collection_access_and_removal
 cd `axs work_collection , get_path`
 axs fresh , plant url http://example.com/ entry_name examplepage_downloaded file_name example.html _parent_entries --,:=AS^IS:^:byname:downloader , attach examplepage_recipe
 axs byname examplepage_recipe , download
-assert '$MD5CMD `axs byname examplepage_downloaded , get_path` | cut -f 1 -d " " | sed "s/\\\\//g"' '84238dfc8092e5d9c0dac8ef93371a07'
+assert 'axs byname examplepage_downloaded , file_path: get_path , byquery shell_tool,can_compute_md5 , run' '84238dfc8092e5d9c0dac8ef93371a07'
 axs byquery downloaded --- , remove
 axs byname examplepage_recipe , remove
 axs byquery shell_tool,can_download_url --- , remove

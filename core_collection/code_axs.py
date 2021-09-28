@@ -157,17 +157,17 @@ Usage examples :
             for producer_tags_list, producer_method, extra_params in candidate_producer_entry.get('producer_rules', []):
                 producer_tags_set = set(producer_tags_list)
                 if producer_tags_set.issubset(posi_tag_set):
-                    print(f"Producer entry '{candidate_producer_entry.get_name()}' advertises action {producer_method}({extra_params}) with matching tags {producer_tags_set} that may work with {posi_val_dict}")
+                    logging.warning(f"Producer entry '{candidate_producer_entry.get_name()}' advertises action {producer_method}({extra_params}) with matching tags {producer_tags_set} that may work with {posi_val_dict}")
                     cumulative_params = deepcopy( extra_params )
                     cumulative_params.update( posi_val_dict )
                     cumulative_params["tags"] = list(posi_tag_set)
                     new_entry = candidate_producer_entry.call(producer_method, [], cumulative_params)
                     candidate_producer_entry.clear_cache()  # do not cache the input data from the previous call (TODO: switch off caching for a particular call() ? )
                     if new_entry:
-                        print("It worked!")
+                        logging.warning("It worked!")
                         return new_entry
                     else:
-                        print("It didn't work, but maybe there is another method...")
+                        logging.warning("It didn't work, but maybe there is another method...")
 
     else:
         logging.debug(f"[{__entry__.get_name()}] byquery({query}) did not find anything, and no matching producer_rules => returning None")

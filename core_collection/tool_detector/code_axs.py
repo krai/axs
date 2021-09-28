@@ -3,8 +3,9 @@
 """ This entry knows how to detect and set up shell tools
 """
 
+import logging
 
-def detect(tool_name, shell_cmd=None, tags=None, __entry__=None):
+def detect(tool_name, shell_cmd=None, capture_output=None, tags=None, __entry__=None):
     """Detect an installed shell tool and create an entry to point at it
 
 Usage examples :
@@ -29,6 +30,11 @@ Usage examples :
             "tags":         tags or [ "shell_tool" ],
         }
 
+        if shell_cmd is not None:
+            result_data["shell_cmd"] = shell_cmd
+        if capture_output is not None:
+            result_data["capture_output"] = capture_output
+
         ak = __entry__.get_kernel()
         assert ak != None, "__entry__'s kernel should be defined"
 
@@ -37,5 +43,5 @@ Usage examples :
 
         return result_entry
     else:
-        print(f"Could not detect the tool '{tool_name}'")
+        logging.warning(f"Could not detect the tool '{tool_name}'")
         return None
