@@ -6,7 +6,7 @@
         [ [ "shell_tool", "can_download_url" ], "detect", { "tool_name": "wget", "shell_cmd": [ "AS^IS", "^^", "substitute", "#{tool_path}# -O #{target_path}# #{url}#" ] } ],
         [ [ "shell_tool", "can_download_url" ], "detect", { "tool_name": "curl", "shell_cmd": [ "AS^IS", "^^", "substitute", "#{tool_path}# -o #{target_path}# #{url}#" ] } ],
         [ [ "shell_tool", "can_extract_tar" ], "detect", { "tool_name": "tar", "shell_cmd": [ "AS^IS", "^^", "substitute", "#{tool_path}# -xvf #{archive_path}# -C #{target_path}#" ] } ],
-        [ [ "shell_tool", "can_compute_md5" ], "detect", { "tool_name": "md5sum.exe", "shell_cmd": [ "AS^IS", "^^", "substitute", "#{tool_path}# #{file_path}#'" ], "capture_output": true } ],
+        [ [ "shell_tool", "can_compute_md5" ], "detect", { "tool_name": "md5sum.exe", "shell_cmd": [ "AS^IS", "^^", "substitute", "'#{tool_path}#' '#{file_path}#'" ], "capture_output": true } ],
         [ [ "shell_tool", "can_compute_md5" ], "detect", { "tool_name": "md5sum", "shell_cmd": [ "AS^IS", "^^", "substitute", "#{tool_path}# #{file_path}# | cut -f 1 -d ' ' | sed 's/\\\\//g'" ], "capture_output": true } ],
         [ [ "shell_tool", "can_compute_md5" ], "detect", { "tool_name": "md5", "shell_cmd": [ "AS^IS", "^^", "substitute", "#{tool_path}# -r #{file_path}# | cut -f 1 -d ' '" ], "capture_output": true } ],
         [ [ "shell_tool", "can_compile" ], "detect", { "tool_name": "gcc" } ]
