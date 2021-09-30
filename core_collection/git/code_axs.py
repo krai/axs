@@ -41,14 +41,14 @@ Clean-up:
         work_collection = ak.work_collection()
         container_path  = work_collection.get_path('')
         __entry__.call('run', f"git -C {container_path} clone {url}" )
-        result_entry                = work_collection.call('new', name)
+        result_entry                = ak.bypath( work_collection.get_path(name) )
         result_entry['repo_name']   = name
         result_entry['tags']        = tags or [ 'git_repo' ]
-        result_entry.save()
+        result_entry.attach( work_collection ).save()
         repo_entry      = result_entry
     else:
         repo_entry      = __entry__
-        repo_path       = repo_entry.get_path()
+        repo_path       = repo_entry.get_path('')
         __entry__.call('run',  f"git -C {repo_path} pull --ff-only" )
 
     return repo_entry

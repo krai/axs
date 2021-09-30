@@ -35,11 +35,8 @@ Usage examples :
         if capture_output is not None:
             result_data["capture_output"] = capture_output
 
-        ak = __entry__.get_kernel()
-        assert ak != None, "__entry__'s kernel should be defined"
-
-        result_entry_name   = tool_name + '_tool'
-        result_entry        = ak.fresh(own_data=result_data).save(ak.work_collection().get_path(result_entry_name)).attach()
+        entry_name      = tool_name + '_tool'
+        result_entry    = __entry__.get_kernel().work_collection().call('attached_entry', [ 'AS^IS', entry_name, result_data ] ).save()
 
         return result_entry
     else:

@@ -36,16 +36,14 @@ def walk(__entry__):
             yield contained_entry
 
 
-def new(name, __entry__):
+def attached_entry(entry_path=None, own_data=None, __entry__=None):
     """Create a new entry with the given name and attach it to this collection
 
 Usage examples :
-                axs work_collection , new unique_entry_name , plant hello world , save
+                axs work_collection , attached_entry ultimate_answer ---='{"answer":42}' , save
     """
 
-    new_entry = __entry__.get_kernel().bypath( __entry__.get_path( name ), name=name ).attach( __entry__ ).save()
-
-    return new_entry
+    return __entry__.get_kernel().fresh_entry( entry_path=entry_path, own_data=own_data, container=__entry__)
 
 
 def byname(entry_name, __entry__):
@@ -181,10 +179,13 @@ def add_entry_path(new_entry_path, new_entry_name=None, __entry__=None):
 
     trimmed_new_entry_path  = __entry__.trim_path( new_entry_path )
     new_entry_name          = new_entry_name or os.path.basename( trimmed_new_entry_path )
-    existing_path           = __entry__.dig(['contained_entries', new_entry_name], safe=True)
+    existing_rel_path       = __entry__.dig(['contained_entries', new_entry_name], safe=True)
 
-    if existing_path:
-        raise(KeyError(f"There was already another entry named {new_entry_name} with path {existing_path}, remove it first"))
+    if existing_rel_path:
+        if existing_rel_path == trimmed_new_entry_path:
+            logging.warning(f"The entry {existing_rel_path} has already been attached to the {__entry__.get_name()} collection, skipping")
+        else:
+            raise(KeyError(f"There was already another entry named {new_entry_name} with path {existing_rel_path}, remove it first"))
     else:
         __entry__.plant(['contained_entries', new_entry_name], trimmed_new_entry_path)
         return __entry__.save()

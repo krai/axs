@@ -18,12 +18,10 @@ Usage examples :
                 axs byname pip , install scipy 1.5.1 --pip_options,=no-deps --tags,=python_package,no_deps
     """
     assert __entry__ != None, "__entry__ should be defined"
-    ak = __entry__.get_kernel()
-    assert ak != None, "__entry__'s kernel should be defined"
 
     pip_entry_name = '_'.join( [package_name, package_version, 'pip'] ) if package_version else '_'.join( [package_name, 'pip'] )
-    work_collection = ak.work_collection()
-    result_entry = work_collection.call('new', pip_entry_name)
+
+    result_entry    = __entry__.get_kernel().work_collection().call('attached_entry', [ pip_entry_name ]).save()
 
     rel_install_dir         = 'install'
     extra_python_site_dir   = result_entry.get_path( rel_install_dir )

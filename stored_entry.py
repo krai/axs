@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import shutil
+import uuid
 
 from runnable import Runnable
 
@@ -19,14 +20,40 @@ class Entry(Runnable):
     def __init__(self, entry_path=None, parameters_path=None, module_name=None, container=None, **kwargs):
         "Accept setting entry_path in addition to parent's parameters"
 
-        self.entry_path         = entry_path
+        self.container_object   = container
+        self.set_path(entry_path)
+
         self.parameters_path    = parameters_path
         self.module_name        = module_name or self.MODULENAME_functions
-        self.container_object   = container
-        if kwargs.get('name') is None and kwargs['kernel']:
-            kwargs['name'] = kwargs['kernel'].generate_name(self.PREFIX_gen_entryname)
         super().__init__(**kwargs)
+
         logging.debug(f"[{self.get_name()}] Initializing the Entry with entry_path={self.entry_path}, parameters_path={self.parameters_path}, module_name={self.module_name}")
+
+
+    def generate_name(self, prefix=''):
+        """Generates a unique name with a given prefix
+
+Usage examples :
+                axs generate_name
+                axs generate_name unnamed_entry_
+        """
+        return prefix + uuid.uuid4().hex
+
+
+    def set_path(self, new_path):
+
+        new_path = new_path or self.generate_name( self.PREFIX_gen_entryname )
+
+        if new_path.startswith(os.path.sep):    # absolute path
+            self.entry_path = new_path
+
+        elif self.container_object:             # relative to container
+            self.entry_path = os.path.join( self.container_object.get_path( new_path ) )
+
+        else:                                   # relative to cwd
+            self.entry_path = os.path.realpath( new_path )
+
+        return self.entry_path
 
 
     def get_path(self, file_name=None):
@@ -39,17 +66,10 @@ Usage examples :
         if file_name:
             if file_name.startswith(os.path.sep):
                 return file_name
-            elif self.entry_path:
-                return os.path.join(self.entry_path, file_name)
             else:
-                entry_name = self.get_name()
-                if entry_name:
-                    self.entry_path = entry_name
-                    return os.path.join(self.entry_path, file_name)
-                else:
-                    raise(Exception("Neither Entry's path nor name is defined, cannot join"))
+                return os.path.join(self.entry_path, file_name)
         else:
-            return self.entry_path or self.get_name()
+            return self.entry_path
 
 
     def get_path_dig(self, key_path):
@@ -120,36 +140,30 @@ Usage examples :
         return prev_path
 
 
-    def attach(self, rel_path=None, container=None):
+    def attach(self, container=None):
         """Dispatch the request to register an entry in a container to the container.
 
 Usage examples :
-                axs fresh , plant letter_mapping --,=aleph,beth,gimel,dalet , plant country israel , attach hebrew_letters
+                axs fresh_entry dynamically_attached , plant apple tree , attach --:=^:work_collection , save
         """
-        if container==None:
-            container = self.get_kernel().work_collection()
-        elif type(container)==str:
-            container = self.get_kernel().byname(container)
+        if container:
+            self.container_object = container
+        else:
+            container = self.get_container()
 
-        if not self.get_path():
-            self.save( container.get_path( rel_path ) )
-
-        container.call('add_entry_path', [self.get_path(), self.get_name()] )
-
-        self.container_object = container
+        if container:
+            container.call('add_entry_path', [self.get_path(''), self.get_name()] )
 
         return self
 
 
     def detach(self):
         """Dispatch the request to de-register an entry from a container to the container.
-
-Usage examples :
-                axs byname hebrew_letters , detach
         """
         container = self.get_container()
         if container:
             container.call("remove_entry_name", self.get_name() )
+            self.container_object = None
         else:
             logging.warning(f"[{self.get_name()}] was not attached to a container")
 
@@ -215,13 +229,13 @@ Usage examples :
             Note2: only parameters get stored
 
 Usage examples :
-                axs fresh , plant x new_x_value , plant y new_y_value , save coordinates
-                axs fresh , plant contained_entries '---={}' , plant _parent_entries --,:=AS^IS:^:core_collection , save new_collection
+                axs fresh_entry coordinates , plant x 10 y -5 , save
+                axs fresh_entry , plant contained_entries '---={}' _parent_entries --,:=AS^IS:^:core_collection , save new_collection
         """
         if new_path:
             self.get_kernel().cache_replace(self.parameters_path or self.entry_path, new_path, self)
 
-            self.entry_path         = new_path
+            self.set_path( new_path )
             self.parameters_path    = None
             self.name               = None
 
@@ -247,6 +261,8 @@ Usage examples :
 
         logging.warning(f"[{self.get_name()}] parameters {json_data} saved to '{parameters_full_path}'")
 
+        self.call('attach')
+
         return self
 
 
@@ -257,6 +273,7 @@ Usage examples :
                 axs byname hebrew_letters , remove
         """
         self.call('detach')
+
         entry_path = self.get_path('')
         if entry_path:
             shutil.rmtree(entry_path)

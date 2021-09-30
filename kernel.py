@@ -10,11 +10,10 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.100'   # TODO: update with every kernel change
+__version__ = '0.2.101'   # TODO: update with every kernel change
 
 import logging
 import os
-import uuid
 from runnable import Runnable
 from stored_entry import Entry
 
@@ -61,26 +60,19 @@ Usage examples :
         print(f"I am {self.get_name()} version={self.version()} kernel_path={self.kernel_path()}")
 
 
-    def generate_name(self, prefix=''):
-        """Generates a unique name with a given prefix
-
-Usage examples :
-                axs generate_name
-                axs generate_name unnamed_entry_
-        """
-        return prefix + uuid.uuid4().hex
-
-
-    def fresh(self, own_data=None):
-        """Constructor for a fresh Entry (optional data, no code, no filesystem path).
+    def fresh_entry(self, entry_path=None, own_data=None, container=None):
+        """Constructor for a fresh unstored Entry (optional data, no code, no filesystem path),
+            which is not attached to any container (collection).
             It can be gradually populated with (more) data and stored later.
 
 Usage examples :
-                axs fresh , plant message "Hello, world" , save hello , attach
-                axs fresh ---own_data='{"greeting":"Hello", "name":"world", "_parent_entries":[["AS^IS", "^","byname","shell"]]}' , run ---='[["^^","substitute","echo #{greeting}#, #{name}#"]]'
+                axs fresh_entry coordinates , plant x 10 y -5 , save
+                axs fresh_entry , plant message "Hello, world" , save hello
+                axs fresh_entry ---own_data='{"greeting":"Hello", "name":"world", "_parent_entries":[["AS^IS", "^","byname","shell"]]}' , run ---='[["^^","substitute","echo #{greeting}#, #{name}#"]]'
         """
+
         own_data = own_data or {}
-        return Entry(own_data=own_data, own_functions=False, kernel=self)
+        return Entry(entry_path=entry_path, own_data=own_data, own_functions=False, container=container, kernel=self)
 
 
     def bypath(self, path, name=None, container=None, own_data=None, parent_objects=None):
@@ -102,13 +94,11 @@ Usage examples :
             logging.debug(f"[{self.get_name()}] bypath: cache HIT for path={path}")
         else:
             logging.debug(f"[{self.get_name()}] bypath: cache MISS for path={path}")
-            if path.endswith('.json'):
-                name = name or "AdHoc_data"
+            if path.endswith('.json'):      # ad-hoc data entry from a .json file
                 cache_hit = self.entry_cache[path] = Entry(name=name, parameters_path=path, own_functions=False, parent_objects=parent_objects or [], kernel=self)
-            elif path.endswith('.py'):
+            elif path.endswith('.py'):      # ad-hoc functions entry from a .py file
                 module_name = path[:-len('.py')]
-                name = name or "AdHoc_functions"
-                cache_hit = self.entry_cache[path] = Entry(name=name, own_data={}, entry_path='.', module_name=module_name, parent_objects=parent_objects or [], kernel=self)
+                cache_hit = self.entry_cache[path] = Entry(name=name, own_data={}, module_name=module_name, parent_objects=parent_objects or [], kernel=self)
             else:
                 cache_hit = self.entry_cache[path] = Entry(name=name, entry_path=path, own_data=own_data, container=container, parent_objects=parent_objects or None, kernel=self)
             logging.debug(f"[{self.get_name()}] bypath: successfully CACHED {cache_hit.get_name()} under path={path}")
@@ -121,10 +111,10 @@ Usage examples :
         """
         if old_path and old_path in self.entry_cache:
             del self.entry_cache[ old_path ]
-            logging.debug(f"[{self.get_name()}] Uncaching {old_path}")
+            logging.debug(f"[{self.get_name()}] Uncaching from under {old_path}")
 
-        self.get_kernel().entry_cache[new_path] = self
-        logging.debug(f"[{self.get_name()}] Caching {new_path}")
+        self.entry_cache[ new_path ] = self
+        logging.debug(f"[{self.get_name()}] Caching under {new_path}")
 
 
     def core_collection(self):

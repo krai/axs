@@ -38,8 +38,7 @@ Usage examples:
             "tags":         tags or [ "extracted" ],
         }
 
-        ak              = __entry__.get_kernel()
-        result_entry    = ak.fresh(own_data=result_data).save(ak.work_collection().get_path(entry_name)).attach()
+        result_entry    = __entry__.get_kernel().work_collection().call('attached_entry', [ 'AS^IS', entry_name, result_data ] ).save()
         target_path     = result_entry.get_path(file_name)
 
         os.makedirs( target_path )

@@ -4,7 +4,7 @@
     The resulting file may either become a collection or a regular entry.
 
 Creating a recipe entry:
-    axs fresh , plant url http://example.com/ , plant entry_name examplepage_downloaded , plant file_name example.html , plant _parent_entries,:=^:byname:downloader , save examplepage_recipe , attach
+    axs work_collection , attached_entry examplepage_recipe , plant url http://example.com/  entry_name examplepage_downloaded  file_name example.html  _parent_entries,:=^:byname:downloader , save
 
 Activating the recipe, performing the actual downloading:
     axs byname examplepage_recipe , download
@@ -50,8 +50,7 @@ Usage examples:
             "tags":         tags or [ "downloaded" ],
         }
 
-        ak              = __entry__.get_kernel()
-        result_entry    = ak.fresh(own_data=result_data).save(ak.work_collection().get_path(entry_name)).attach()
+        result_entry    = __entry__.get_kernel().work_collection().call('attached_entry', [ 'AS^IS', entry_name, result_data ] ).save()
         target_path     = result_entry.get_path(file_name)
 
         print(f"Dependency '{dep_name}' resolved into entry '{tool_entry.get_path()}' with the tool '{tool_path}', it will be used for downloading")
