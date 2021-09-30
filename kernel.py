@@ -10,10 +10,11 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.99'   # TODO: update with every kernel change
+__version__ = '0.2.100'   # TODO: update with every kernel change
 
 import logging
 import os
+import uuid
 from runnable import Runnable
 from stored_entry import Entry
 
@@ -60,6 +61,16 @@ Usage examples :
         print(f"I am {self.get_name()} version={self.version()} kernel_path={self.kernel_path()}")
 
 
+    def generate_name(self, prefix=''):
+        """Generates a unique name with a given prefix
+
+Usage examples :
+                axs generate_name
+                axs generate_name unnamed_entry_
+        """
+        return prefix + uuid.uuid4().hex
+
+
     def fresh(self, own_data=None):
         """Constructor for a fresh Entry (optional data, no code, no filesystem path).
             It can be gradually populated with (more) data and stored later.
@@ -69,7 +80,7 @@ Usage examples :
                 axs fresh ---own_data='{"greeting":"Hello", "name":"world", "_parent_entries":[["AS^IS", "^","byname","shell"]]}' , run ---='[["^^","substitute","echo #{greeting}#, #{name}#"]]'
         """
         own_data = own_data or {}
-        return Entry(name="Fresh", own_data=own_data, own_functions=False, kernel=self)
+        return Entry(own_data=own_data, own_functions=False, kernel=self)
 
 
     def bypath(self, path, name=None, container=None, own_data=None, parent_objects=None):

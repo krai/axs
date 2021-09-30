@@ -303,6 +303,12 @@ if __name__ == '__main__':
 
     logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")
 
+    print('-'*20 + ' Dictionary-like data access: ' + '-'*20)
+
+    noname      = ParamSource(own_data={"alpha": 10, "beta": -3})
+
+    assert noname['alpha']+noname['beta']+noname.get('gamma', 1)==8, "Accessing own data"
+
     print('-'*20 + ' Access request delegation down the ParamSource hierarchy: ' + '-'*20)
 
     granddad    = ParamSource(name='granddad',  own_data={"seventh":"seitsmes", "nineth":"yheksas"})
