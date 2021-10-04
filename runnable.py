@@ -21,7 +21,7 @@ class Runnable(ParamSource):
 
         self.own_functions_cache    = own_functions
         self.kernel                 = kernel
-        self.value_cache            = {}
+        self.call_cache             = {}
 
         super().__init__(**kwargs)
         logging.debug(f"[{self.get_name()}] Initializing the Runnable with {self.list_own_functions() if self.own_functions_cache else 'no'} pre-loaded functions and kernel={self.kernel}")
@@ -168,44 +168,12 @@ Usage examples :
         return '\n'.join(help_buffer)
 
 
-    def clear_cache(self, *param_names):
-        """Clear the value cache ( blanket or selectively ), so that nested_calls could be re-evaluated again.
-            If clearing selectively to re-evaluate an expression, bear in mind you'll have to clear both sides of a dependence
-            ( both alpha and formula in the example below ).
-
-Usage examples :
-                axs mi: bypath missing , plant alpha 10 , plant beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula
-                axs mi: bypath missing , plant alpha 10 , plant beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula , get mi , clear_cache , get formula --alpha=100
-                axs mi: bypath missing , plant alpha 10 , plant beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula , get mi , clear_cache alpha formula , get formula --alpha=100
-        """
-        all_values = len(param_names)==0
-        logging.debug(f"[{self.get_name()}]  Clearing the value_cache for {'all values' if all_values else param_names}")
-        if all_values:
-            self.value_cache = {}
-        else:
-            for param_name in param_names:
-                if param_name in self.value_cache:
-                    logging.debug(f"[{self.get_name()}]  Deleting {param_name} from value_cache")
-                    del self.value_cache[param_name]
-                else:
-                    logging.debug(f"[{self.get_name()}]  {param_name} was not value_cached")
-
-        logging.debug(f"[{self.get_name()}]  value_cache now looks like this: {self.value_cache}")
-
-        return self
-
-
     def __getitem__(self, param_name, parent_recursion=None):
         """Lazy parameter access: returns the parameter value from self or the closest parent,
             automatically executing nested_calls on the result.
         """
         if param_name=='__entry__':
             return self
-
-        if param_name in self.value_cache:
-            cached_value = self.value_cache[param_name]
-            logging.debug(f"[{self.get_name()}]  Parameter '{param_name}' is cached as {cached_value}, returning.")
-            return cached_value
 
         try:
             getitem_gen         = self.getitem_generator( str(param_name), parent_recursion )
@@ -215,10 +183,10 @@ Usage examples :
             logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}', and neither do the parents - raising KeyError")
             raise KeyError(param_name)
 
-        cached_value = self.value_cache[param_name] = self.nested_calls(unprocessed_value)
-        logging.debug(f"[{self.get_name()}]  Caching '{param_name}' as {cached_value}")
+        param_value = self.nested_calls(unprocessed_value)
+        logging.debug(f"[{self.get_name()}]  Got {param_name}={param_value}")
 
-        return cached_value
+        return param_value
 
 
     def call(self, action_name, pos_params=None, override_dict=None):
@@ -226,8 +194,28 @@ Usage examples :
             with arguments from the current object optionally overridden by a given dictionary.
 
             The action can have a mix of positional args and named args with optional defaults.
+
+            Currently all calls are assumed to be deterministic, and their results are cached (subject to context):
+                axs mi: fresh_entry , plant alpha 10  beta 20  formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula
+                axs mi: fresh_entry , plant alpha 10  beta 20  formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula , get mi , get formula
+                axs mi: fresh_entry , plant alpha 10  beta 20  formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula , get mi , get formula --alpha=100
         """
-        logging.debug(f'[{self.get_name()}]  calling action {action_name} with "{pos_params}" ...')
+
+        def unidict(d):
+            "Unique dictionary representation, used for hashing"
+
+            return '{'+(','.join([ repr(k)+':'+repr(d[k]) for k in sorted(d.keys()) ]))+'}' if type(d)==dict else repr(d)
+
+
+        logging.debug(f'[{self.get_name()}]  calling action {action_name} with pos_params={pos_params} and override_dict={override_dict} ...')
+
+        cache_tail = '+'.join([unidict(s.own_data()) for s in self.runtime_stack()]) + '+' + unidict(override_dict)
+        cache_key = action_name + str(pos_params) + cache_tail
+
+        if cache_key in self.call_cache:
+            cached_value = self.call_cache[cache_key]
+            logging.debug(f"[{self.get_name()}]  Call '{cache_key}' is cached as {cached_value}, returning.")
+            return cached_value
 
         if not pos_params:
             pos_params = []                                 # allow pos_params to be missing
@@ -245,6 +233,7 @@ Usage examples :
         self.runtime_stack().pop()
 
         logging.debug(f'[{self.get_name()}]  called action {action_name} with "{pos_params}", got "{result}"')
+        self.call_cache[cache_key] = result
 
         return result
 
@@ -273,12 +262,16 @@ Usage examples :
                     side_effects_count += 1
                     return self.get_kernel().call( *input_structure[1:] )
                 elif head==self.ESCAPE_do_not_process:
-                    side_effects_count += 1                                                     # it is only a "side effect" for the purposes of our GC-facilitating decision making below
-                    return deepcopy( input_structure[1:] )                                      # drop the escape symbol, keeping the rest of the substructure intact
+                    side_effects_count += 1                                                         # it is only a "side effect" for the purposes of our GC-facilitating decision making below
+                    return deepcopy( input_structure[1:] )                                          # drop the escape symbol, keeping the rest of the substructure intact
                 else:
-                    return [ nested_calls_rec(elem) for elem in input_structure ]               # list elements are substituted
+                    return [ nested_calls_rec(elem) for elem in input_structure ]                   # list elements are substituted
             elif type(input_structure)==dict:
-                return { k : nested_calls_rec(input_structure[k]) for k in input_structure }    # only values are substituted
+                if self.ESCAPE_do_not_process in input_structure:
+                    side_effects_count += 1                                                         # it is only a "side effect" for the purposes of our GC-facilitating decision making below
+                    return deepcopy( input_structure[self.ESCAPE_do_not_process] )                  # follow just this one key (keeping the value intact), NB: all other keys of the dict are ignored
+                else:
+                    return { k : nested_calls_rec(input_structure[k]) for k in input_structure }    # only values are substituted
             else:
                 return input_structure
 

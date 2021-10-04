@@ -32,7 +32,7 @@ axs fresh_entry , plant lambda 7000 mu 8000 _parent_entries --,:=AS^IS:^:bypath:
 assert 'axs bypath child , substitute "#{alpha}#+#{beta}#, #{gamma}#-#{delta}#, #{epsilon}#*#{lambda}#"' '10+200, 31-410, 510*7000'
 assert 'axs bypath dad , get multisub2 --delta=411 --zeta=611' "['31-411', '510-611']"
 assert 'axs d: bypath dad , dig d.multisub2.1 --epsilon=3333' "3333-60"
-assert 'axs d: bypath dad , dig d.multisub2.1 --epsilon=3333 , get d , clear_cache , dig d.multisub2.1 --epsilon=4444' "4444-60"
+assert 'axs d: bypath dad , dig d.multisub2.1 --epsilon=3333 , get d , dig d.multisub2.1 --epsilon=4444' "4444-60"
 axs bypath child    , remove
 axs bypath mum      , remove
 axs bypath grandma  , remove

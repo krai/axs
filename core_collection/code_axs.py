@@ -160,7 +160,6 @@ Usage examples :
                     cumulative_params.update( posi_val_dict )
                     cumulative_params["tags"] = list(posi_tag_set)
                     new_entry = candidate_producer_entry.call(producer_method, [], cumulative_params)
-                    candidate_producer_entry.clear_cache()  # do not cache the input data from the previous call (TODO: switch off caching for a particular call() ? )
                     if new_entry:
                         logging.warning("It worked!")
                         return new_entry

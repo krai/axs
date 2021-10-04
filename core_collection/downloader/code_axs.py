@@ -29,8 +29,8 @@ Usage examples:
             axs byname examplepage_downloaded , get_path ''
     # Downloaded file path:
             axs byname examplepage_downloaded , get_path
-    # Reaching to the original producer (this Entry):
-            axs byname examplepage_downloaded , get producer , get_path
+    # Reaching to the original tool used for downloading:
+            axs byname examplepage_downloaded , get tool_path
     # Clean up:
             axs byname examplepage_downloaded , remove
     """
@@ -50,7 +50,7 @@ Usage examples:
             "tags":         tags or [ "downloaded" ],
         }
 
-        result_entry    = __entry__.get_kernel().work_collection().call('attached_entry', [ 'AS^IS', entry_name, result_data ] ).save()
+        result_entry    = __entry__.get_kernel().work_collection().call('attached_entry', [], { 'own_data': result_data } ).save( entry_name )
         target_path     = result_entry.get_path(file_name)
 
         print(f"Dependency '{dep_name}' resolved into entry '{tool_entry.get_path()}' with the tool '{tool_path}', it will be used for downloading")
