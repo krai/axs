@@ -20,10 +20,18 @@ Usage examples :
     assert __entry__ != None, "__entry__ should be defined"
 
     pip_entry_name = '_'.join( [package_name, package_version, 'pip'] ) if package_version else '_'.join( [package_name, 'pip'] )
-
-    result_entry    = __entry__.get_kernel().work_collection().call('attached_entry', [ pip_entry_name ]).save()
-
     rel_install_dir         = 'install'
+
+    result_data = {
+        "_parent_entries":  [ [ "^", "byname", "generic_pip" ] ],
+        "rel_packages_dir": os.path.join( rel_install_dir, 'lib', f"python{sys.version_info.major}.{sys.version_info.minor}", 'site-packages' ),
+        "package_name":     package_name,
+        "package_version":  package_version if package_version is not None else 'UNKNOWN',
+        "tags":             tags or [ "python_package" ],
+    }
+
+    result_entry    = __entry__.get_kernel().work_collection().call('attached_entry', deterministic=False).own_data( result_data ).save( pip_entry_name )
+
     extra_python_site_dir   = result_entry.get_path( rel_install_dir )
     os.makedirs( os.path.join(extra_python_site_dir, 'lib') )
     os.symlink( 'lib', os.path.join(extra_python_site_dir, 'lib64') )
@@ -40,12 +48,5 @@ Usage examples :
         pip_options=''
 
     __entry__.call('run',  f"python3 -m pip install {package_name}{version_suffix} --prefix={extra_python_site_dir} --ignore-installed {pip_options}" )
-
-    result_entry['rel_packages_dir']    = os.path.join( rel_install_dir, 'lib', f"python{sys.version_info.major}.{sys.version_info.minor}", 'site-packages' )
-    result_entry['_parent_entries']     = [ [ "^", "byname", "generic_pip" ] ]
-    result_entry['package_name']        = package_name
-    result_entry['package_version']     = package_version if package_version!=None else 'UNKNOWN'
-    result_entry['tags']                = tags or [ "python_package" ]
-    result_entry.save()
 
     return result_entry

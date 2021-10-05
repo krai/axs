@@ -36,7 +36,7 @@ Usage examples :
             result_data["capture_output"] = capture_output
 
         entry_name      = tool_name + '_tool'
-        result_entry    = __entry__.get_kernel().work_collection().call('attached_entry', [], { 'own_data': { 'AS^IS': result_data } } ).save( entry_name )
+        result_entry    = __entry__.get_kernel().work_collection().call('attached_entry', deterministic=False).own_data( result_data ).save( entry_name )
 
         return result_entry
     else:

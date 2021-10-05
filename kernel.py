@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.102'   # TODO: update with every kernel change
+__version__ = '0.2.103'   # TODO: update with every kernel change
 
 import logging
 import os
@@ -113,6 +113,7 @@ Usage examples :
             del self.entry_cache[ old_path ]
             logging.debug(f"[{self.get_name()}] Uncaching from under {old_path}")
 
+        new_path = os.path.realpath( new_path )
         self.entry_cache[ new_path ] = self
         logging.debug(f"[{self.get_name()}] Caching under {new_path}")
 

@@ -170,7 +170,7 @@ Usage examples :
         return self
 
 
-    def own_data(self):
+    def own_data(self, data_dict=None):
         """Lazy-load, cache and return own data from the file system
 
 Usage examples :
@@ -178,7 +178,12 @@ Usage examples :
                 axs byname derived_map , own_data
         """
 
-        if self.own_data_cache==None:   # lazy-loading condition
+        if data_dict is not None:
+            self.own_data_cache = data_dict
+            self.parent_objects = None  # magic request to reload the parents
+            return self
+
+        elif self.own_data_cache is None:   # lazy-loading condition
             parameters_path = self.get_parameters_path()
             if os.path.isfile( parameters_path ):
                 with open( parameters_path ) as json_fd:
@@ -232,6 +237,8 @@ Usage examples :
                 axs fresh_entry coordinates , plant x 10 y -5 , save
                 axs fresh_entry , plant contained_entries '---={}' _parent_entries --,:=AS^IS:^:core_collection , save new_collection
         """
+
+        # FIXME: cache_replace() should be called even if new_path not defined, but it's the first time the entry is saved
         if new_path:
             self.get_kernel().cache_replace(self.parameters_path or self.entry_path, new_path, self)
 

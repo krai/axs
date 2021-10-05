@@ -32,10 +32,14 @@ class ParamSource:
         return self.name
 
 
-    def own_data(self):
+    def own_data(self, data_dict=None):
         "Placeholder for lazy-loading parameters in subclasses that support it"
 
-        if self.own_data_cache == None:
+        if data_dict is not None:
+            self.own_data_cache = data_dict
+            return self
+
+        elif self.own_data_cache is None:
             self.own_data_cache = {}
 
         return self.own_data_cache

@@ -38,7 +38,7 @@ Usage examples:
             "tags":         tags or [ "extracted" ],
         }
 
-        result_entry    = __entry__.get_kernel().work_collection().call('attached_entry', [], { 'own_data': result_data } ).save( entry_name )
+        result_entry    = __entry__.get_kernel().work_collection().call('attached_entry', deterministic=False).own_data( result_data ).save( entry_name )
         target_path     = result_entry.get_path(file_name)
 
         os.makedirs( target_path )

@@ -189,7 +189,7 @@ Usage examples :
         return param_value
 
 
-    def call(self, action_name, pos_params=None, override_dict=None):
+    def call(self, action_name, pos_params=None, override_dict=None, deterministic=True):
         """Call a given function or method of a given entry and feed it
             with arguments from the current object optionally overridden by a given dictionary.
 
@@ -212,10 +212,12 @@ Usage examples :
         cache_tail = '+'.join([unidict(s.own_data()) for s in self.runtime_stack()]) + '+' + unidict(override_dict)
         cache_key = action_name + str(pos_params) + cache_tail
 
-        if cache_key in self.call_cache:
+        if deterministic and (cache_key in self.call_cache):
             cached_value = self.call_cache[cache_key]
-            logging.debug(f"[{self.get_name()}]  Call '{cache_key}' is cached as {cached_value}, returning.")
+            logging.debug(f"[{self.get_name()}]  Call '{cache_key}' is FOUND IN CACHE, returning {cached_value}")
             return cached_value
+        else:
+            logging.debug(f"[{self.get_name()}]  Call '{cache_key}' NOT TAKEN from cache, have to run...")
 
         if not pos_params:
             pos_params = []                                 # allow pos_params to be missing
