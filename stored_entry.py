@@ -72,12 +72,12 @@ Usage examples :
             return self.entry_path
 
 
-    def get_path_dig(self, key_path):
+    def get_path_from(self, key_path):
         """A frequently needed combination of fetching a relative path from an Entry's data
             and getting an absolute file path from that relative path.
 
 Usage examples :
-                axs byquery package_name=numpy , get_path_dig rel_packages_dir
+                axs byquery package_name=numpy , get_path_from rel_packages_dir
         """
         return self.get_path(self.dig(key_path))
 
