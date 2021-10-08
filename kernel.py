@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.104'   # TODO: update with every kernel change
+__version__ = '0.2.105'   # TODO: update with every kernel change
 
 import logging
 import os
@@ -60,7 +60,7 @@ Usage examples :
         print(f"I am {self.get_name()} version={self.version()} kernel_path={self.kernel_path()}")
 
 
-    def fresh_entry(self, entry_path=None, own_data=None, container=None):
+    def fresh_entry(self, entry_path=None, own_data=None, container=None, generated_name_prefix=None):
         """Constructor for a fresh unstored Entry (optional data, no code, no filesystem path),
             which is not attached to any container (collection).
             It can be gradually populated with (more) data and stored later.
@@ -72,7 +72,7 @@ Usage examples :
         """
 
         own_data = own_data or {}
-        return Entry(entry_path=entry_path, own_data=own_data, own_functions=False, container=container, kernel=self)
+        return Entry(entry_path=entry_path, own_data=own_data, own_functions=False, container=container, generated_name_prefix=generated_name_prefix, kernel=self)
 
 
     def bypath(self, path, name=None, container=None, own_data=None, parent_objects=None):

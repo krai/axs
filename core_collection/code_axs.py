@@ -36,14 +36,14 @@ def walk(__entry__):
             yield contained_entry
 
 
-def attached_entry(entry_path=None, own_data=None, __entry__=None):
+def attached_entry(entry_path=None, own_data=None, generated_name_prefix=None, __entry__=None):
     """Create a new entry with the given name and attach it to this collection
 
 Usage examples :
                 axs work_collection , attached_entry ultimate_answer ---='{"answer":42}' , save
     """
 
-    return __entry__.get_kernel().fresh_entry( entry_path=entry_path, own_data=own_data, container=__entry__)
+    return __entry__.get_kernel().fresh_entry(container=__entry__, entry_path=entry_path, own_data=own_data, generated_name_prefix=generated_name_prefix)
 
 
 def byname(entry_name, __entry__):

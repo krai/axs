@@ -17,17 +17,18 @@ class Entry(Runnable):
     MODULENAME_functions    = 'code_axs'     # the actual filename ends in .py
     PREFIX_gen_entryname    = 'generated_entry_'
 
-    def __init__(self, entry_path=None, parameters_path=None, module_name=None, container=None, **kwargs):
+    def __init__(self, entry_path=None, parameters_path=None, module_name=None, container=None, generated_name_prefix=None, **kwargs):
         "Accept setting entry_path in addition to parent's parameters"
 
-        self.container_object   = container
+        self.generated_name_prefix  = generated_name_prefix or self.PREFIX_gen_entryname
+        self.container_object       = container
         self.set_path(entry_path)
 
-        self.parameters_path    = parameters_path
-        self.module_name        = module_name or self.MODULENAME_functions
+        self.parameters_path        = parameters_path
+        self.module_name            = module_name or self.MODULENAME_functions
         super().__init__(**kwargs)
 
-        logging.debug(f"[{self.get_name()}] Initializing the Entry with entry_path={self.entry_path}, parameters_path={self.parameters_path}, module_name={self.module_name}")
+        logging.debug(f"[{self.get_name()}] Initializing the Entry with entry_path={self.entry_path}, parameters_path={self.parameters_path}, module_name={self.module_name}, generated_name_prefix={self.generated_name_prefix}")
 
 
     def generate_name(self, prefix=''):
@@ -42,7 +43,7 @@ Usage examples :
 
     def set_path(self, new_path):
 
-        new_path = new_path or self.generate_name( self.PREFIX_gen_entryname )
+        new_path = new_path or self.generate_name( self.generated_name_prefix )
 
         if new_path.startswith(os.path.sep):    # absolute path
             self.entry_path = new_path

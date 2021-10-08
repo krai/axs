@@ -46,7 +46,7 @@ Usage examples:
         "tags":         tags or [ "downloaded" ],
     }
 
-    result_entry    = __entry__.get_kernel().work_collection().call('attached_entry', deterministic=False).own_data( result_data ).save( entry_name )
+    result_entry    = __entry__.get_kernel().work_collection().call('attached_entry', [], {'generated_name_prefix': 'downloaded_'}, deterministic=False).own_data( result_data ).save( entry_name )
     target_path     = result_entry.get_path(file_name)
 
     print(f"The resolved tool_entry '{tool_entry.get_name()}' located at '{tool_entry.get_path()}' uses the shell tool '{tool_path}', which will be used for downloading")
