@@ -25,10 +25,15 @@ def expected_call_structure(action_object):
 
     if sys.version_info[0] < 3:
         supported_arg_names, varargs, varkw, defaults = inspect.getargspec(action_object)
+        kwonlyargs = tuple()
+        kwonlydefaults = {}
     else:
         supported_arg_names, varargs, varkw, defaults, kwonlyargs, kwonlydefaults, annotations = inspect.getfullargspec(action_object)
 
     defaults = defaults or tuple()
+    if varargs:
+        supported_arg_names += kwonlyargs
+        defaults += tuple(kwonlydefaults.values() if kwonlydefaults else [])
 
     if inspect.ismethod(action_object):
         supported_arg_names.pop(0)
@@ -45,7 +50,7 @@ def feed(action_object, given_arg_list, dict_like_object):
     """Call a given action_object and feed it with arguments from given list and dictionary-like object (must support []).
 
         The function can be declared as having named args and defaults.
-        Neither *varargs or **kwargs are supported.
+        *varargs are supported while **kwargs are not.
     """
 
     required_arg_names, optional_arg_names, defaults, varargs, varkw = expected_call_structure(action_object)
@@ -55,9 +60,10 @@ def feed(action_object, given_arg_list, dict_like_object):
     num_required                    = len(required_arg_names)
     if num_given<num_required:  # some that are required have not been given
         non_listed_required_arg_names   = required_arg_names[num_given:]
-    else:                       # all required have been given, the rest are encroaching into optionals
-        non_listed_required_arg_names   = []
-        optional_arg_names              = optional_arg_names[num_given-num_required:]
+    else:
+        non_listed_required_arg_names   = []    # all required have been given
+        if not varargs:
+            optional_arg_names          = optional_arg_names[num_given-num_required:]   # the rest are encroaching into optionals
 
     missing_arg_names = []
     non_listed_required_arg_values  = []
@@ -73,16 +79,17 @@ def feed(action_object, given_arg_list, dict_like_object):
         )
 
     else:
-        # Forming the list of values of optional arguments (taking either a provided value or a default in each case) :
-        optional_arg_values = []
+        # Forming the dictionary of values of optional arguments (taking either a provided value or a default in each case) :
+        optional_arg_dict   = {}
         for opt_idx, arg_name in enumerate(optional_arg_names):
             try:
-                optional_arg_values.append( dict_like_object[arg_name] )
+                optional_arg_dict[arg_name] = dict_like_object[arg_name]
             except KeyError:
-                optional_arg_values.append( defaults[opt_idx] )
+                optional_arg_dict[arg_name] = defaults[opt_idx]
 
-        logging.debug(f"About to call `{action_object.__name__}` with {*given_arg_list, *non_listed_required_arg_values, *optional_arg_values}")
-        ret_values = action_object(*given_arg_list, *non_listed_required_arg_values, *optional_arg_values)
+        logging.debug(f"About to call `{action_object.__name__}` with list={*given_arg_list, *non_listed_required_arg_values}, dict={optional_arg_dict}")
+        ret_values = action_object(*given_arg_list, *non_listed_required_arg_values, **optional_arg_dict)
+
         return ret_values
 
 
