@@ -61,8 +61,9 @@ def cli_parse(arglist):
 
                     if curr_link[0]==None:          # no action has been parsed yet
                         curr_link[0] = 'noop'
-                elif curr_link[0]==None and len(curr_link)<5 and re.match(r'^\w+:$', arglist[i]):       # a label
-                    curr_link.append( arglist[i][:-1] )
+                elif curr_link[0]==None and len(curr_link)<5 and re.match(r'^(\w*):(?:(\w*):)?$', arglist[i]):  # input and/or output label(s)
+                    matched = re.match(r'^(\w*):(?:(\w*):)?$', arglist[i])
+                    curr_link.extend( [ matched.group(1), matched.group(2) ] )
                 elif curr_link[0]==None and re.match(r'^\w+$', arglist[i]):                             # a normal action
                     curr_link[0] = arglist[i]
                 elif curr_link[0]:                                                                      # a positional argument

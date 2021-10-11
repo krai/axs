@@ -189,7 +189,7 @@ Usage examples :
         return param_value
 
 
-    def call(self, action_name, pos_params=None, override_dict=None, deterministic=True):
+    def call(self, action_name, pos_params=None, override_dict=None, deterministic=True, captured_mapping=None):
         """Call a given function or method of a given entry and feed it
             with arguments from the current object optionally overridden by a given dictionary.
 
@@ -230,7 +230,7 @@ Usage examples :
         self.runtime_stack().append( rt_call_specific )
 
         action_object   = self.reach_action(action_name)
-        result          = function_access.feed(action_object, pos_params, self)
+        result          = function_access.feed(action_object, pos_params, self, captured_mapping)
 
         self.runtime_stack().pop()
 
@@ -291,6 +291,7 @@ Usage examples :
                 axs si: byname sysinfo , os: dig si.osname , ar: dig si.arch , substitute '#{os}#--#{ar}#'
                 axs si: byname sysinfo , os: dig si.osname , ar: dig si.arch , rt_pipeline_entry , save
                 axs rt_pipeline_entry , old_dir: cd , si: byname sysinfo , os: dig si.osname , ar: dig si.arch , get si , run 'echo "Hello, world!" >README.txt' , rt_pipeline_entry , save
+                axs bypath only_code/iterative.py , out:inp: factorial 5 , fresh_entry , own_data --,=^^,get,inp , plant recorded_result --,=^^,get,out , save factorial_experiment
         """
         ak = self.get_kernel()
         rt_pipeline_wide = ak.bypath(path='rt_pipeline_wide', own_data={})
@@ -301,14 +302,21 @@ Usage examples :
 
             entry.runtime_stack().append( rt_pipeline_wide )
 
-            label = call_params.pop(3) if len(call_params)>3 else None
+            input_parameter_mapping = {}
 
-            result = entry.call(*call_params)
+            output_label    = call_params.pop(3) if len(call_params)>3 else None    # NB: the order is important!
+            input_label     = call_params.pop(3) if len(call_params)>3 else None
+
+            if input_label:
+                rt_pipeline_wide[input_label] = input_parameter_mapping
+
+            result = entry.call(*call_params, captured_mapping=input_parameter_mapping)
 
             entry.runtime_stack().pop()
 
-            if label:
-                rt_pipeline_wide[label] = result
+            if output_label:
+                rt_pipeline_wide[output_label] = result
+
         return result
 
 
