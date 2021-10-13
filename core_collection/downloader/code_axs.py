@@ -19,7 +19,7 @@ Cleaning up:
 
 """
 
-def download(url, file_name, tool_entry, tags=None, entry_name=None, __entry__=None):
+def download(url, file_name, tool_entry, tags=None, entry_name=None, __record_entry__=None):
     """Create a new entry and download the url into it
 
 Usage examples:
@@ -35,25 +35,15 @@ Usage examples:
             axs byquery downloaded,file_name=example.html , remove
     """
 
-    assert __entry__ != None, "__entry__ should be defined"
+    __record_entry__["tags"] = tags or ["downloaded"]
+    __record_entry__.save( entry_name )
+    target_path     = __record_entry__.get_path(file_name)
 
-    tool_path       = tool_entry['tool_path']
-
-    result_data = {
-        "url":          url,
-        "file_name":    file_name,
-        "tool_entry":   tool_entry,
-        "tags":         tags or [ "downloaded" ],
-    }
-
-    result_entry    = __entry__.get_kernel().work_collection().call('attached_entry', [], {'generated_name_prefix': 'downloaded_'}, deterministic=False).own_data( result_data ).save( entry_name )
-    target_path     = result_entry.get_path(file_name)
-
-    print(f"The resolved tool_entry '{tool_entry.get_name()}' located at '{tool_entry.get_path()}' uses the shell tool '{tool_path}', which will be used for downloading")
+    print(f"The resolved tool_entry '{tool_entry.get_name()}' located at '{tool_entry.get_path()}' uses the shell tool '{tool_entry['tool_path']}'")
     retval = tool_entry.call('run', [], {"url": url, "target_path": target_path})
     if retval == 0:
         return target_path
     else:
         print(f"A problem occured when trying to download '{url}' into '{target_path}', bailing out")
-        result_entry.remove()
+        __record_entry__.remove()
         return None

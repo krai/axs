@@ -174,6 +174,8 @@ Usage examples :
         """
         if param_name=='__entry__':
             return self
+        elif param_name=='__record_entry__':
+            return True     # a placeholder to be substituted later
 
         try:
             getitem_gen         = self.getitem_generator( str(param_name), parent_recursion )
@@ -189,7 +191,7 @@ Usage examples :
         return param_value
 
 
-    def call(self, action_name, pos_params=None, override_dict=None, deterministic=True, captured_mapping=None):
+    def call(self, action_name, pos_params=None, override_dict=None, deterministic=True, call_record_entry_ptr=None):
         """Call a given function or method of a given entry and feed it
             with arguments from the current object optionally overridden by a given dictionary.
 
@@ -226,13 +228,33 @@ Usage examples :
         else:
             pos_params = [ pos_params ]                     # simplified syntax for single positional parameter actions
 
-        rt_call_specific = ParamSource(name='rt_call_specific', own_data=override_dict or {})   # FIXME: overlapping entry names are not unique
+        rt_call_specific    = ParamSource(name='rt_call_specific', own_data=override_dict or {})   # FIXME: overlapping entry names are not unique
         self.runtime_stack().append( rt_call_specific )
 
-        action_object   = self.reach_action(action_name)
-        result          = function_access.feed(action_object, pos_params, self, captured_mapping)
+        action_object       = self.reach_action(action_name)
+        captured_mapping    = {}    # retain the pointer to perform modifications later
+        action_object, joint_arg_tuple, optional_arg_dict   = function_access.prep(action_object, pos_params, self, captured_mapping)
 
         self.runtime_stack().pop()
+
+        ak = self.get_kernel()
+        call_record_entry   = ak.fresh_entry(container=ak.work_collection(), own_data=captured_mapping, generated_name_prefix=f"generated_by_{action_name}_")
+        call_record_entry['__action_name__'] = action_name
+
+        if call_record_entry_ptr is not None:   # making it available to the pipeline
+            call_record_entry_ptr.append( call_record_entry )
+
+        if '__record_entry__' in optional_arg_dict:     # it's a placeholder which we have to substitute
+            if captured_mapping:
+                for a in ('__entry__', '__record_entry__'):
+                    if a in captured_mapping:
+                        del captured_mapping[a]
+
+            optional_arg_dict['__record_entry__'] = call_record_entry
+
+        result          = function_access.feed(action_object, joint_arg_tuple, optional_arg_dict)
+
+        call_record_entry['__result__'] = result    # only visible if save()d after execution (not all application cases)
 
         logging.debug(f'[{self.get_name()}]  called action {action_name} with "{pos_params}", got "{result}"')
         self.call_cache[cache_key] = result
@@ -291,7 +313,7 @@ Usage examples :
                 axs si: byname sysinfo , os: dig si.osname , ar: dig si.arch , substitute '#{os}#--#{ar}#'
                 axs si: byname sysinfo , os: dig si.osname , ar: dig si.arch , rt_pipeline_entry , save
                 axs rt_pipeline_entry , old_dir: cd , si: byname sysinfo , os: dig si.osname , ar: dig si.arch , get si , run 'echo "Hello, world!" >README.txt' , rt_pipeline_entry , save
-                axs bypath only_code/iterative.py , out:inp: factorial 5 , fresh_entry , own_data --,=^^,get,inp , plant recorded_result --,=^^,get,out , save factorial_experiment
+                axs bypath only_code/iterative.py , :rec: factorial 5 , get rec , save factorial_of_5
         """
         ak = self.get_kernel()
         rt_pipeline_wide = ak.bypath(path='rt_pipeline_wide', own_data={})
@@ -302,17 +324,16 @@ Usage examples :
 
             entry.runtime_stack().append( rt_pipeline_wide )
 
-            input_parameter_mapping = {}
-
             output_label    = call_params.pop(3) if len(call_params)>3 else None    # NB: the order is important!
             input_label     = call_params.pop(3) if len(call_params)>3 else None
 
-            if input_label:
-                rt_pipeline_wide[input_label] = input_parameter_mapping
-
-            result = entry.call(*call_params, captured_mapping=input_parameter_mapping)
+            call_record_entry_ptr = []  # the value of call_record_entry is returned via appending to this empty list
+            result = entry.call(*call_params, call_record_entry_ptr=call_record_entry_ptr)
 
             entry.runtime_stack().pop()
+
+            if input_label:
+                rt_pipeline_wide[input_label] = call_record_entry_ptr[0]
 
             if output_label:
                 rt_pipeline_wide[output_label] = result

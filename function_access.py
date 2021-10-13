@@ -46,8 +46,8 @@ def expected_call_structure(action_object):
     return required_arg_names, optional_arg_names, defaults, varargs, varkw
 
 
-def feed(action_object, given_arg_list, dict_like_object, mapping_used=None):
-    """Call a given action_object and feed it with arguments from given list and dictionary-like object (must support []).
+def prep(action_object, given_arg_list, dict_like_object, mapping_used=None):
+    """Prepare to call a given action_object and feed it with arguments from given list and dictionary-like object (must support []).
 
         The function can be declared as having named args and defaults.
         *varargs are supported while **kwargs are not.
@@ -95,17 +95,23 @@ def feed(action_object, given_arg_list, dict_like_object, mapping_used=None):
 
         joint_arg_tuple = (*given_arg_list, *non_listed_required_arg_values)
 
-        logging.debug(f"About to call `{action_object.__name__}` with tuple={joint_arg_tuple}, dict={optional_arg_dict}")
-        ret_values = action_object(*joint_arg_tuple, **optional_arg_dict)
-
         if mapping_used is not None:
-            required_arg_dict = dict(zip( (*required_arg_names, *listed_optional_names), joint_arg_tuple ))
-            mapping_used.update( required_arg_dict )
+
+            mapping_used.update( dict(zip( (*required_arg_names, *listed_optional_names), joint_arg_tuple)) )
             mapping_used.update( optional_arg_dict )
             if varargs:
                 mapping_used[varargs] = listed_vararg_values
 
-        return ret_values
+        logging.debug(f"Prepared to call `{action_object.__name__}` with tuple={joint_arg_tuple}, dict={optional_arg_dict}")
+
+        return action_object, joint_arg_tuple, optional_arg_dict
+
+
+def feed(action_object, joint_arg_tuple, optional_arg_dict):
+
+    ret_values = action_object(*joint_arg_tuple, **optional_arg_dict)
+
+    return ret_values
 
 
 def four_param_example_func(alpha, beta, gamma=333, delta=4444):
@@ -159,37 +165,37 @@ if __name__ == '__main__':
     print('-'*40 + ' feed() calls: ' + '-'*40)
 
     mapping_used = {}
-    assert feed(four_param_example_func, (21, 43, 65, 87), None, mapping_used)==(21, 43, 65, 87), "feed() call with all positional and all optional pretending to be optional"
+    assert feed(*prep(four_param_example_func, (21, 43, 65, 87), None, mapping_used))==(21, 43, 65, 87), "feed() call with all positional and all optional pretending to be optional"
     assert mapping_used=={'alpha': 21, 'beta': 43, 'gamma': 65, 'delta': 87}, "checking the corresponding mapping used"
 
     mapping_used = {}
-    assert feed(four_param_example_func, (50, 60), {'delta':80}, mapping_used)==(50, 60, 333, 80), "feed() call with all positional and some optional args"
+    assert feed(*prep(four_param_example_func, (50, 60), {'delta':80}, mapping_used))==(50, 60, 333, 80), "feed() call with all positional and some optional args"
     assert mapping_used=={'alpha': 50, 'beta': 60, 'gamma': 333, 'delta': 80}, "checking the corresponding mapping used"
 
     mapping_used = {}
-    assert feed(four_param_example_func, (500,), {'beta':600, 'gamma':700}, mapping_used)==(500, 600, 700, 4444), "feed() call with some positional, some named-positional and some optional args"
+    assert feed(*prep(four_param_example_func, (500,), {'beta':600, 'gamma':700}, mapping_used))==(500, 600, 700, 4444), "feed() call with some positional, some named-positional and some optional args"
     assert mapping_used=={'alpha': 500, 'beta': 600, 'gamma': 700, 'delta': 4444}, "checking the corresponding mapping used"
 
     mapping_used = {}
-    assert feed(four_param_example_func, (), {'alpha':5000, 'beta':6000, 'delta':8000}, mapping_used)==(5000, 6000, 333, 8000), "feed() call with all args posing as optional"
+    assert feed(*prep(four_param_example_func, (), {'alpha':5000, 'beta':6000, 'delta':8000}, mapping_used))==(5000, 6000, 333, 8000), "feed() call with all args posing as optional"
     assert mapping_used=={'alpha': 5000, 'beta': 6000, 'gamma': 333, 'delta': 8000}, "checking the corresponding mapping used"
 
     print('-'*40 + ' feed() calls with a *vararg-supporting function: ' + '-'*40)
 
     mapping_used = {}
-    assert feed(vararg_supporting_example_func, (21, 43, 65, 87), {}, mapping_used)==(21, 43, (65, 87), 333, 4444), "feed()ing a vararg func with an actual overflow"
+    assert feed(*prep(vararg_supporting_example_func, (21, 43, 65, 87), {}, mapping_used))==(21, 43, (65, 87), 333, 4444), "feed()ing a vararg func with an actual overflow"
     assert mapping_used=={'alpha': 21, 'beta': 43, 'gamma': 333, 'delta': 4444, 'others': (65, 87)}, "checking the corresponding mapping used"
 
     mapping_used = {}
-    assert feed(vararg_supporting_example_func, (21, 43, 65, 87), { 'delta': 800 }, mapping_used)==(21, 43, (65, 87), 333, 800), "feed()ing a vararg func with overflow and a dict"
+    assert feed(*prep(vararg_supporting_example_func, (21, 43, 65, 87), { 'delta': 800 }, mapping_used))==(21, 43, (65, 87), 333, 800), "feed()ing a vararg func with overflow and a dict"
     assert mapping_used=={'alpha': 21, 'beta': 43, 'gamma': 333, 'delta': 800, 'others': (65, 87)}, "checking the corresponding mapping used"
 
     mapping_used = {}
-    assert feed(vararg_supporting_example_func, (21, 43), { 'alpha': 210, 'gamma': 70 }, mapping_used)==(21, 43, (), 70, 4444), "feed()ing a vararg func flush"
+    assert feed(*prep(vararg_supporting_example_func, (21, 43), { 'alpha': 210, 'gamma': 70 }, mapping_used))==(21, 43, (), 70, 4444), "feed()ing a vararg func flush"
     assert mapping_used=={'alpha': 21, 'beta': 43, 'gamma': 70, 'delta': 4444, 'others': ()}, "checking the corresponding mapping used"
 
     mapping_used = {}
-    assert feed(vararg_supporting_example_func, (), { 'alpha': 2100, 'beta': 4300, 'delta': 8000 }, mapping_used)==(2100, 4300, (), 333, 8000), "feed()ing a vararg func with not enough list, compensated from a dict"
+    assert feed(*prep(vararg_supporting_example_func, (), { 'alpha': 2100, 'beta': 4300, 'delta': 8000 }, mapping_used))==(2100, 4300, (), 333, 8000), "feed()ing a vararg func with not enough list, compensated from a dict"
     assert mapping_used=={'alpha': 2100, 'beta': 4300, 'gamma': 333, 'delta': 8000, 'others': ()}, "checking the corresponding mapping used"
 
 
@@ -209,4 +215,4 @@ if __name__ == '__main__':
 
     print('-'*40 + ' list_function_names() calls: ' + '-'*40)
 
-    assert sorted(list_function_names(sys.modules[__name__]))==['expected_call_structure', 'feed', 'four_param_example_func', 'list_function_names', 'to_num_or_not_to_num', 'vararg_supporting_example_func'], "Functions defined in this module"
+    assert sorted(list_function_names(sys.modules[__name__]))==['expected_call_structure', 'feed', 'four_param_example_func', 'list_function_names', 'prep', 'to_num_or_not_to_num', 'vararg_supporting_example_func'], "Functions defined in this module"

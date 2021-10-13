@@ -5,7 +5,7 @@
 
 import os
 
-def extract(archive_path, tool_entry, tags=None, entry_name=None, __entry__=None):
+def extract(archive_path, tool_entry, file_name="extracted", tags=None, entry_name=None, __record_entry__=None):
     """Create a new entry and extract the archive into it
 
 Usage examples:
@@ -22,28 +22,17 @@ Usage examples:
             axs byquery downloaded,file_name=ILSVRC2012_img_val_500.tar --- , remove
     """
 
-    assert __entry__ != None, "__entry__ should be defined"
-
-    tool_path       = tool_entry['tool_path']
-    file_name       = 'extracted'
-
-    result_data = {
-        "archive_path": archive_path,
-        "file_name":    file_name,
-        "tool_entry":   tool_entry,
-        "tags":         tags or [ "extracted" ],
-    }
-
-    result_entry    = __entry__.get_kernel().work_collection().call('attached_entry', [], {'generated_name_prefix': 'extracted_'}, deterministic=False).own_data( result_data ).save( entry_name )
-    target_path     = result_entry.get_path(file_name)
+    __record_entry__["tags"] = tags or ["extracted"]
+    __record_entry__.save( entry_name )
+    target_path     = __record_entry__.get_path(file_name)
 
     os.makedirs( target_path )
 
-    print(f"The resolved tool_entry '{tool_entry.get_name()}' located at '{tool_entry.get_path()}' uses the shell tool '{tool_path}', which will be used for extracting")
+    print(f"The resolved tool_entry '{tool_entry.get_name()}' located at '{tool_entry.get_path()}' uses the shell tool '{tool_entry['tool_path']}'")
     retval = tool_entry.call('run', [], {"archive_path": archive_path, "target_path": target_path})
     if retval == 0:
         return target_path
     else:
         print(f"A problem occured when trying to extract '{archive_path}' into '{target_path}', bailing out")
-        result_entry.remove()
+        __record_entry__.remove()
         return None
