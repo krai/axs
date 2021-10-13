@@ -347,17 +347,17 @@ if __name__ == '__main__':
     assert dad.own_data()=={"third":"KOLMAS", "fifth":"viies", "seventh":"SEITSMES"}, "Modified dad's data"
     assert child.own_data()=={'first': 'esimene', 'second': 'teine'}, "Unmodified child's data"
 
-    from function_access import feed, four_param_example_func
+    from function_access import feed, prep, four_param_example_func
 
     print('-'*40 + ' feed() calls: ' + '-'*40)
 
     foo_param_parent = ParamSource(name='foo_param_parent', own_data={"alpha": 100, "beta": 200, "delta": 400, "epsilon": 600})
     foo_param_child  = ParamSource(name='foo_param_child',  own_data={"alpha": 10, "lambda": 7777},            parent_objects=[foo_param_parent])
 
-    assert feed(four_param_example_func, (), foo_param_child)==(10, 200, 333, 400), "feed() call with all parameters coming from ParamSource object"
+    assert feed(*prep(four_param_example_func, (), foo_param_child))==(10, 200, 333, 400), "feed() call with all parameters coming from ParamSource object"
 
     bar_params = ParamSource(name='bar_params', own_data={"mate": "world", "deep": {"hole": [10,20,30], "sea": "Red"} })
 
-    assert feed(bar_params.substitute, ("Hello, #{mate}#!",), bar_params)=="Hello, world!", "feed() call with both positional and optional parameters #1"
+    assert feed(*prep(bar_params.substitute, ("Hello, #{mate}#!",), bar_params))=="Hello, world!", "feed() call with both positional and optional parameters #1"
 
-    assert feed(bar_params.dig, ("deep.hole.2",), bar_params)==30, "feed() call with both positional and optional parameters #2"
+    assert feed(*prep(bar_params.dig, ("deep.hole.2",), bar_params))==30, "feed() call with both positional and optional parameters #2"
