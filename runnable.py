@@ -235,8 +235,6 @@ Usage examples :
         captured_mapping    = {}    # retain the pointer to perform modifications later
         action_object, joint_arg_tuple, optional_arg_dict   = function_access.prep(action_object, pos_params, self, captured_mapping)
 
-        self.runtime_stack().pop()
-
         ak = self.get_kernel()
         if ak:
             call_record_entry   = ak.fresh_entry(container=ak.record_container(), own_data=captured_mapping, generated_name_prefix=f"generated_by_{action_name}_")
@@ -255,6 +253,8 @@ Usage examples :
                 optional_arg_dict['__record_entry__'] = call_record_entry
 
         result          = function_access.feed(action_object, joint_arg_tuple, optional_arg_dict)
+
+        self.runtime_stack().pop()
 
         if ak:
             call_record_entry['__result__'] = result    # only visible if save()d after execution (not all application cases)
