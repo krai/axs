@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.109'   # TODO: update with every kernel change
+__version__ = '0.2.110'   # TODO: update with every kernel change
 
 import logging
 import os
@@ -28,7 +28,8 @@ Usage examples :
     """
 
     def __init__(self, entry_cache=None, **kwargs):
-        self.entry_cache    = entry_cache or {}
+        self.entry_cache            = entry_cache or {}
+        self.record_container_value = None
         super().__init__(kernel=self, **kwargs)
         logging.debug(f"[{self.get_name()}] Initializing the MicroKernel with entry_cache={self.entry_cache}")
 
@@ -127,6 +128,12 @@ Usage examples :
         return self.bypath( self.kernel_path( 'core_collection' ) )
 
 
+    def record_container(self, *given_values):
+        if len(given_values):
+            self.record_container_value = given_values[0]
+        return self.record_container_value
+
+
     def work_collection(self):
         """Fetch the work_collection entry
 
@@ -135,14 +142,18 @@ Usage examples :
                 AXS_WORK_COLLECTION=~/alt_wc axs work_collection , get_path
         """
         work_collection_path = os.getenv('AXS_WORK_COLLECTION') or os.path.join(os.path.expanduser('~'), 'work_collection')
-        if not os.path.exists(work_collection_path):
+        if os.path.exists(work_collection_path):
+            work_collection_object = self.bypath( work_collection_path )
+        else:
             print(f"Creating new empty work_collection at {work_collection_path}...")
             work_collection_data = {
                 self.PARAMNAME_parent_entries: [[ "^", "core_collection" ]],
             }
-            work_collection_object = Entry(name="work_collection", entry_path=work_collection_path, own_data=work_collection_data, kernel=self)
+            work_collection_object = self.bypath(work_collection_path, name="work_collection", own_data=work_collection_data)
             work_collection_object.call('add_entry_path', [ self.kernel_path( 'core_collection' ) ] )
-        return self.bypath( work_collection_path )
+
+        self.record_container( work_collection_object )     # to avoid infinite recursion
+        return work_collection_object
 
 
     def byname(self, entry_name):

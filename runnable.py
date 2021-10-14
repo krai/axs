@@ -239,7 +239,8 @@ Usage examples :
 
         ak = self.get_kernel()
         if ak:
-            call_record_entry   = ak.fresh_entry(container=ak.work_collection(), own_data=captured_mapping, generated_name_prefix=f"generated_by_{action_name}_")
+            call_record_entry   = ak.fresh_entry(container=ak.record_container(), own_data=captured_mapping, generated_name_prefix=f"generated_by_{action_name}_")
+
             call_record_entry['__action_name__'] = action_name
 
             if call_record_entry_ptr is not None:   # making it available to the pipeline
