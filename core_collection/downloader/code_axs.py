@@ -16,7 +16,6 @@ Cleaning up:
     axs byname examplepage_downloaded , remove
     axs byname examplepage_recipe , remove
 
-
 """
 
 
@@ -25,7 +24,9 @@ def download(url, file_name=None, tool_entry=None, tags=None, entry_name=None, _
 
 Usage examples:
     # Manual downloading into a new entry:
-            axs byname downloader , download 'https://example.com/' example.html --entry_name=examplepage_downloaded
+            axs byname downloader , download 'https://example.com/' example.html
+    # Replay of the same command at a later time, stored in a different entry:
+            axs byquery downloaded,file_name=example.html --- , call ---override_dict='{"entry_name":"generated_by_downloading_example.html__replay"}'
     # Resulting entry path (counter-intuitively) :
             axs byquery downloaded,file_name=example.html , get_path ''
     # Downloaded file path:

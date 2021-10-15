@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.111'   # TODO: update with every kernel change
+__version__ = '0.2.112'   # TODO: update with every kernel change
 
 import logging
 import os
@@ -99,7 +99,7 @@ Usage examples :
                 cache_hit = self.entry_cache[path] = Entry(name=name, parameters_path=path, own_functions=False, parent_objects=parent_objects or [], kernel=self)
             elif path.endswith('.py'):      # ad-hoc functions entry from a .py file
                 module_name = path[:-len('.py')]
-                cache_hit = self.entry_cache[path] = Entry(name=name, own_data={}, module_name=module_name, parent_objects=parent_objects or [], kernel=self)
+                cache_hit = self.entry_cache[path] = Entry(name=name, entry_path=path, own_data={}, module_name=module_name, parent_objects=parent_objects or [], kernel=self)
             else:
                 cache_hit = self.entry_cache[path] = Entry(name=name, entry_path=path, own_data=own_data, container=container, parent_objects=parent_objects or None, kernel=self)
             logging.debug(f"[{self.get_name()}] bypath: successfully CACHED {cache_hit.get_name()} under path={path}")

@@ -1,5 +1,6 @@
 {
     "_parent_entries": [ [ "^", "byname", "shell" ] ],
+    "action_name": "download",
     "tool_entry": [ "^", "byquery", "shell_tool,can_download_url" ],
     "producer_rules": [
         [ [ "downloaded" ], "download", {} ]

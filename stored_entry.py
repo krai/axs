@@ -116,6 +116,15 @@ Usage examples :
         return self.container_object
 
 
+    def pickle(self):
+        """Return a command that would (hopefully) load this entry at a later time. Used by save()
+        """
+        if self.get_container():
+            return [ "^", "byname", self.get_name()]
+        else:
+            return [ "^", "bypath", self.get_path()]
+
+
     def bypath(self, path, name=None):
         """A parameterization of MicroKernel.bypath() that is always relative to the "current" entry,
             mainly used by collections.
@@ -261,7 +270,13 @@ Usage examples :
         for k in own_data:
             v = own_data[k]
             if isinstance(v, Entry):
-                own_data[k] = [ "^", "byname", v.get_name()]
+                own_data[k] = v.pickle()
+            elif type(v)==list:
+                for i in range(len(v)):
+                    old_elem = v[i]
+                    if isinstance(old_elem, Entry):
+                        own_data[k][i] = old_elem.pickle()
+                        self.parent_objects = None
 
         json_data               = json.dumps(own_data, indent=4)
         with open(parameters_full_path, "w") as json_fd:

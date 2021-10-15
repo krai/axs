@@ -239,7 +239,10 @@ Usage examples :
         if ak:
             call_record_entry   = ak.fresh_entry(container=ak.record_container(), own_data=captured_mapping, generated_name_prefix=f"generated_by_{action_name}_")
 
-            call_record_entry['__action_name__'] = action_name
+            call_record_entry["_parent_entries"] = [ self ]
+
+            if call_record_entry.get("action_name") != action_name:
+                call_record_entry["action_name"] = action_name
 
             if call_record_entry_ptr is not None:   # making it available to the pipeline
                 call_record_entry_ptr.append( call_record_entry )
@@ -317,6 +320,11 @@ Usage examples :
                 axs si: byname sysinfo , os: dig si.osname , ar: dig si.arch , rt_pipeline_entry , save
                 axs rt_pipeline_entry , old_dir: cd , si: byname sysinfo , os: dig si.osname , ar: dig si.arch , get si , run 'echo "Hello, world!" >README.txt' , rt_pipeline_entry , save
                 axs bypath only_code/iterative.py , :rec: factorial 5 , get rec , save factorial_of_5
+
+            # Record a call:
+                axs bypath only_code/iterative.py , :rec: factorial 5 , get rec , save factorial_of_5
+            # Replay:
+                axs bypath factorial_of_5 , call
         """
         ak = self.get_kernel()
         rt_pipeline_wide = ak.bypath(path='rt_pipeline_wide', own_data={})

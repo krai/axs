@@ -47,7 +47,7 @@ axs byname counting_collection , remove
 assert_end git_cloning_collection_access_and_removal
 
 axs work_collection , attached_entry examplepage_recipe , plant url http://example.com/ entry_name examplepage_downloaded file_name example.html _parent_entries --,:=AS^IS:^:byname:downloader , save
-axs byname examplepage_recipe , download
+axs byname examplepage_recipe , call
 assert 'axs byquery downloaded,file_name=example.html , file_path: get_path , byquery shell_tool,can_compute_md5 , run' '84238dfc8092e5d9c0dac8ef93371a07'
 axs byquery shell_tool,can_compute_md5 --- , remove
 axs byquery downloaded,file_name=example.html --- , remove
