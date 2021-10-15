@@ -19,7 +19,8 @@ Cleaning up:
 
 """
 
-def download(url, file_name, tool_entry, tags=None, entry_name=None, __record_entry__=None):
+
+def download(url, file_name=None, tool_entry=None, tags=None, entry_name=None, __record_entry__=None):
     """Create a new entry and download the url into it
 
 Usage examples:
@@ -34,6 +35,16 @@ Usage examples:
     # Clean up:
             axs byquery downloaded,file_name=example.html , remove
     """
+
+    if not file_name:
+        import os
+        file_name = os.path.basename(url)
+        __record_entry__["file_name"] = file_name
+
+    if not entry_name:
+        entry_name = 'generated_by_downloading_' + file_name
+
+    del __record_entry__.own_data()["entry_name"]   # FIXME: we may need to define __delitem__() in ParamSource
 
     __record_entry__["tags"] = tags or ["downloaded"]
     __record_entry__.save( entry_name )
