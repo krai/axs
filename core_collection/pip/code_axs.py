@@ -7,7 +7,7 @@ import os
 import sys
 
 
-def install(package_name, package_version=None, pip_options=None, tags=None, __entry__=None):
+def install(package_name, package_version=None, pip_options=None, tool_entry=None, tags=None, entry_name=None, __record_entry__=None, __entry__=None):
     """Install a pip package into a separate entry, so that it could be easily use'd.
 
 Usage examples :
@@ -17,22 +17,22 @@ Usage examples :
 
                 axs byname pip , install scipy 1.5.1 --pip_options,=no-deps --tags,=python_package,no_deps
     """
-    assert __entry__ != None, "__entry__ should be defined"
 
-    pip_entry_name = '_'.join( [package_name, package_version, 'pip'] ) if package_version else '_'.join( [package_name, 'pip'] )
-    rel_install_dir         = 'install'
+    rel_install_dir = 'install'
+    print(f"The resolved tool_entry '{tool_entry.get_name()}' located at '{tool_entry.get_path()}' uses the shell tool '{tool_entry['tool_path']}'")
+    version_label   = tool_entry.call('run', [], { "shell_cmd": [ "^^", "substitute", "#{tool_path}# -c 'import sys;print(f\"python{sys.version_info.major}.{sys.version_info.minor}\")'"], "capture_output": True } )
 
-    result_data = {
-        "_parent_entries":  [ [ "^", "byname", "generic_pip" ] ],
-        "rel_packages_dir": os.path.join( rel_install_dir, 'lib', f"python{sys.version_info.major}.{sys.version_info.minor}", 'site-packages' ),
-        "package_name":     package_name,
-        "package_version":  package_version if package_version is not None else 'UNKNOWN',
-        "tags":             tags or [ "python_package" ],
-    }
+    if not entry_name:
+        entry_name = '_'.join( [package_name, package_version, 'pip'] ) if package_version else '_'.join( [package_name, 'pip'] )
 
-    result_entry    = __entry__.get_kernel().work_collection().call('attached_entry', deterministic=False).own_data( result_data ).save( pip_entry_name )
+    del __record_entry__.own_data()["entry_name"]   # FIXME: we may need to define __delitem__() in ParamSource
 
-    extra_python_site_dir   = result_entry.get_path( rel_install_dir )
+    __record_entry__["tags"]                = tags or ["python_package"]
+    __record_entry__["_parent_entries"]     = [ __entry__.pickle_one(), [ "^", "byname", "generic_pip" ] ]
+    __record_entry__["rel_packages_dir"]    = os.path.join( rel_install_dir, 'lib', version_label, 'site-packages' )
+    __record_entry__.save( entry_name )
+
+    extra_python_site_dir   = __record_entry__.get_path( rel_install_dir )
     os.makedirs( os.path.join(extra_python_site_dir, 'lib') )
     os.symlink( 'lib', os.path.join(extra_python_site_dir, 'lib64') )
 
@@ -47,6 +47,12 @@ Usage examples :
     else:
         pip_options=''
 
-    __entry__.call('run',  f"python3 -m pip install {package_name}{version_suffix} --prefix={extra_python_site_dir} --ignore-installed {pip_options}" )
+    tool_entry.call('run', [], { "shell_cmd": [ "^^", "substitute", "#{tool_path}#"+f" -m pip install {package_name}{version_suffix} --prefix={extra_python_site_dir} --ignore-installed {pip_options}" ], "capture_output": False} )
 
-    return result_entry
+    # Recovering package_version from metadata and adding it to the Entry:
+    __record_entry__.parent_objects = None
+    version_from_metadata = __record_entry__.call('get_metadata', [], {'header_name': 'Version'})[0]
+    __record_entry__["package_version"] = version_from_metadata
+    __record_entry__.save( entry_name )
+
+    return __record_entry__
