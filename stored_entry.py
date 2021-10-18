@@ -116,15 +116,6 @@ Usage examples :
         return self.container_object
 
 
-    def pickle(self):
-        """Return a command that would (hopefully) load this entry at a later time. Used by save()
-        """
-        if self.get_container():
-            return [ "^", "byname", self.get_name()]
-        else:
-            return [ "^", "bypath", self.get_path()]
-
-
     def bypath(self, path, name=None):
         """A parameterization of MicroKernel.bypath() that is always relative to the "current" entry,
             mainly used by collections.
@@ -238,6 +229,28 @@ Usage examples :
         return self.own_functions_cache
 
 
+    def pickle_one(self):
+        """Return a command that would (hopefully) load *this* entry at a later time. Used recursively by pickle_struct()
+        """
+        if self.get_container():
+            return [ "^", "byname", self.get_name()]
+        else:
+            return [ "^", "bypath", self.get_path()]
+
+
+    def pickle_struct(self, input_structure):
+        """Recursively pickle a data structure that may have some Entry objects as leaves. Used by save()
+        """
+        if type(input_structure)==list:
+            return [self.pickle_struct(e) for e in input_structure]                         # all list elements are pickled
+        elif type(input_structure)==dict:
+            return { k : self.pickle_struct(input_structure[k]) for k in input_structure }  # only values are pickled
+        elif isinstance(input_structure, Entry):
+            return input_structure.pickle_one()                                             # ground step
+        else:
+            return input_structure                                                          # basement step
+
+
     def save(self, new_path=None):
         """Store [updated] own_data of the entry
             Note1: the entry didn't have to have existed prior to saving
@@ -263,22 +276,7 @@ Usage examples :
         if parameters_dirname and not os.path.exists(parameters_dirname):
             os.makedirs(parameters_dirname)
 
-        # Store the [potentially updated] own_data:
-        own_data                = self.own_data()
-
-        # Replace instances of Entry by delayed calls to fetch them by name (stub)
-        for k in own_data:
-            v = own_data[k]
-            if isinstance(v, Entry):
-                own_data[k] = v.pickle()
-            elif type(v)==list:
-                for i in range(len(v)):
-                    old_elem = v[i]
-                    if isinstance(old_elem, Entry):
-                        own_data[k][i] = old_elem.pickle()
-                        self.parent_objects = None
-
-        json_data               = json.dumps(own_data, indent=4)
+        json_data   = json.dumps( self.pickle_struct(self.own_data()) , indent=4)
         with open(parameters_full_path, "w") as json_fd:
             json_fd.write( json_data+"\n" )
 
