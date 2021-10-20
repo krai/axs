@@ -57,6 +57,9 @@ Usage examples :
         "errorize_output": True,
     } )
 
+    if sys.platform.startswith('win'):
+        os.system(f'tree /f "{__record_entry__.get_path()}"')
+
     # Recovering package_version from metadata and adding it to the Entry:
     __record_entry__.parent_objects = None
     version_from_metadata = __record_entry__.call('get_metadata', [], {'header_name': 'Version'})[0]
