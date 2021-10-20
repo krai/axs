@@ -3,8 +3,8 @@
 import os
 
 imagenet_dir    = os.getenv('IMAGENET_DIR', '/datasets/dataset-imagenet-ilsvrc2012-val')
-filepattern     = os.path.join( imagenet_dir, 'ILSVRC2012_val_000{:05d}.JPEG')
-model_name      ='resnet50'
+file_pattern    = 'ILSVRC2012_val_000{:05d}.JPEG'
+model_name      = 'resnet50'
 
 # sample execution (requires torchvision)
 from PIL import Image
@@ -26,7 +26,8 @@ preprocess = transforms.Compose([
 
 pre_batch = []
 for i in range(1,21):
-    input_image = Image.open(filepattern.format(i))
+    file_name   = os.path.join( imagenet_dir, file_pattern.format(i) )
+    input_image = Image.open( file_name )
     input_tensor = preprocess(input_image)
     pre_batch.append(input_tensor)
 
