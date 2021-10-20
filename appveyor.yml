@@ -27,7 +27,7 @@ install:
     - sh: |
         if [[ "$CI_LINUX" == "true" ]]; then
             appveyor DownloadFile "https://bootstrap.pypa.io/get-pip.py"
-            sudo python3 get-pip.py
+            sudo python3 get-pip.py "pip==19.3.1"
         fi
     - python3 -m pip --version
     - cmd: appveyor DownloadFile %ASSERT_URL%
