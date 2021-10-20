@@ -24,7 +24,7 @@ init:
 install:
     - cmd: mklink python3.exe %PYTHON%\\python.exe
     - python3 --version
-    - sh: [ "$CI_LINUX" == "true" ] && sudo apt update && sudo apt install -y python3-pip
+    - sh: if [[ "$CI_LINUX" == "true" ]]; then sudo apt update && sudo apt install -y python3-pip ; fi
     - python3 -m pip --version
     - cmd: appveyor DownloadFile %ASSERT_URL%
     - sh: appveyor DownloadFile $ASSERT_URL
