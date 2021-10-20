@@ -2,9 +2,9 @@
     "_parent_entries": [ [ "^", "byname", "shell" ] ],
 
     "tool_entry": [ "^", "byquery", "shell_tool,can_python" ],
-
     "abs_script_path": [ "^^", "get_path_from", "rel_script_path" ],
-    "shell_cmd": [ "^^", "substitute", "#{tool_entry.tool_path}# #{abs_script_path}#" ],
 
-    "env": [ "^^", "ext_use_python_deps" ]
+    "shell_cmd": [ "^^", "substitute", "#{tool_entry.tool_path}# #{abs_script_path}#" ],
+    "env": [ "^^", "ext_use_python_deps" ],
+    "capture_output": true
 }
