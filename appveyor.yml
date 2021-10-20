@@ -24,7 +24,11 @@ init:
 install:
     - cmd: mklink python3.exe %PYTHON%\\python.exe
     - python3 --version
-    - sh: if [[ "$CI_LINUX" == "true" ]]; then sudo apt update && sudo apt install -y python3-pip ; fi
+    - sh: |
+        if [[ "$CI_LINUX" == "true" ]]; then
+            appveyor DownloadFile "https://bootstrap.pypa.io/get-pip.py"
+            sudo python3 get-pip.py
+        fi
     - python3 -m pip --version
     - cmd: appveyor DownloadFile %ASSERT_URL%
     - sh: appveyor DownloadFile $ASSERT_URL
