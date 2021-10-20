@@ -3,9 +3,9 @@ build: false
 environment:
   ASSERT_URL: https://raw.github.com/lehmannro/assert.sh/master/assert.sh
   matrix:
-    - job_name: Windows Py 3.6
-      appveyor_build_worker_image: Visual Studio 2015
-      PYTHON: C:\Python36-x64
+    - job_name: Windows Py 3.7
+      appveyor_build_worker_image: Visual Studio 2017
+      PYTHON: C:\Python37-x64
 
     - job_name: Windows Py 3.9
       appveyor_build_worker_image: Visual Studio 2019
