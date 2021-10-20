@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import sys
 
 imagenet_dir    = os.getenv('IMAGENET_DIR', '/datasets/dataset-imagenet-ilsvrc2012-val')
 file_pattern    = 'ILSVRC2012_val_000{:05d}.JPEG'
@@ -27,6 +28,7 @@ preprocess = transforms.Compose([
 pre_batch = []
 for i in range(1,21):
     file_name   = os.path.join( imagenet_dir, file_pattern.format(i) )
+    print(f"About to open file number='{i}' file_name='{file_name}'", file=sys.stderr)
     input_image = Image.open( file_name )
     input_tensor = preprocess(input_image)
     pre_batch.append(input_tensor)
