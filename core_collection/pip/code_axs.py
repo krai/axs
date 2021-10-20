@@ -21,7 +21,7 @@ Usage examples :
 
     rel_install_dir = 'install'
     logging.warning(f"The resolved tool_entry '{tool_entry.get_name()}' located at '{tool_entry.get_path()}' uses the shell tool '{tool_entry['tool_path']}'")
-    version_label   = tool_entry.call('run', [], { "shell_cmd": [ "^^", "substitute", "#{tool_path}# -c 'import sys;print(f\"python{sys.version_info.major}.{sys.version_info.minor}\")'"], "capture_output": True } )
+    version_label   = tool_entry.call('run', [], { "shell_cmd": [ "^^", "substitute", "#{tool_path}# -c \"import sys;print(f'python{sys.version_info.major}.{sys.version_info.minor}')\""], "capture_output": True } )
 
     if not entry_name:
         entry_name = '_'.join( [package_name, package_version, 'pip'] ) if package_version else '_'.join( [package_name, 'pip'] )
