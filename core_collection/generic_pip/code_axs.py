@@ -40,7 +40,8 @@ Usage examples:
         if package_name.lower() in (toplevel.lower(), distinfo_name.lower()):
             return os.path.join( distinfo_path, metadata_filename )
 
-    assert False, f"Could not find METADATA for package {package_name}"
+    print(list(glob( os.path.join( abs_packages_dir, '*' ))))
+    assert False, f"Could not find METADATA for package={package_name} when rel_packages_dir={rel_packages_dir} and abs_packages_dir={abs_packages_dir}"
     return None
 
 
