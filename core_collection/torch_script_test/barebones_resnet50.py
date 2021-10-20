@@ -12,7 +12,7 @@ import torch
 import torchvision
 from torchvision import transforms
 
-torchvision_version = ':v' + torchvision.__version__
+torchvision_version = ':v' + torchvision.__version__.split('+')[0]
 
 model = torch.hub.load('pytorch/vision' + torchvision_version, model_name, pretrained=True)
 model.eval()
