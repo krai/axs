@@ -9,7 +9,7 @@ import os
 import subprocess
 import sys
 
-def run(shell_cmd, env=None, capture_output=False, split_to_lines=False):
+def run(shell_cmd, env=None, capture_output=False, errorize_output=False, split_to_lines=False):
     """Run the given shell command in the given environment
 
 Usage examples:
@@ -28,7 +28,15 @@ Usage examples:
         shell_cmd = 'env ' + ' '.join([ f"{k}={env[k]}" for k in env]) + ' ' + shell_cmd
 
     logging.warning(f"shell.run() about to execute:\n\t{shell_cmd}\n" + (' '*8 + '^'*len(shell_cmd)) )
-    completed_process = subprocess.run(shell_cmd, shell = True, stdout=(subprocess.PIPE if capture_output else None) )
+
+    if capture_output:
+        stdout_target = subprocess.PIPE
+    elif errorize_output:
+        stdout_target = sys.stderr.buffer
+    else:
+        stdout_target = None
+
+    completed_process = subprocess.run(shell_cmd, shell = True, stdout=stdout_target)
     if capture_output:
         output  = completed_process.stdout.decode('utf-8').rstrip()
 

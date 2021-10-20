@@ -3,6 +3,7 @@
 """ This entry knows how to install pip packages into generated entries.
 """
 
+import logging
 import os
 import sys
 
@@ -19,7 +20,7 @@ Usage examples :
     """
 
     rel_install_dir = 'install'
-    print(f"The resolved tool_entry '{tool_entry.get_name()}' located at '{tool_entry.get_path()}' uses the shell tool '{tool_entry['tool_path']}'")
+    logging.warning(f"The resolved tool_entry '{tool_entry.get_name()}' located at '{tool_entry.get_path()}' uses the shell tool '{tool_entry['tool_path']}'")
     version_label   = tool_entry.call('run', [], { "shell_cmd": [ "^^", "substitute", "#{tool_path}# -c 'import sys;print(f\"python{sys.version_info.major}.{sys.version_info.minor}\")'"], "capture_output": True } )
 
     if not entry_name:
@@ -47,7 +48,11 @@ Usage examples :
     else:
         pip_options=''
 
-    tool_entry.call('run', [], { "shell_cmd": [ "^^", "substitute", "#{tool_path}#"+f" -m pip install {package_name}{version_suffix} --prefix={extra_python_site_dir} --ignore-installed {pip_options}" ], "capture_output": False} )
+    tool_entry.call('run', [], {
+        "shell_cmd": [ "^^", "substitute", "#{tool_path}#"+f" -m pip install {package_name}{version_suffix} --prefix={extra_python_site_dir} --ignore-installed {pip_options}" ],
+        "capture_output": False,
+        "errorize_output": True,
+    } )
 
     # Recovering package_version from metadata and adding it to the Entry:
     __record_entry__.parent_objects = None

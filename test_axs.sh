@@ -55,5 +55,12 @@ axs byname examplepage_recipe , remove
 axs byquery shell_tool,can_download_url --- , remove
 assert_end url_downloading_recipe_activation_and_removal
 
+assert 'axs byname numpy_import_test , deps_versions' 'numpy==1.16.2, scipy==1.5.1'
+assert 'axs byname numpy_import_test , multiply 1 2 3 4 5 6' '[17, 39]'
+axs byquery python_package,package_name=scipy --- , remove
+axs byquery python_package,package_name=numpy --- , remove
+axs byquery shell_tool,can_python --- , remove
+assert_end dependency_installation_and_resolution_for_internal_code
+
 echo "axs tests done"
 

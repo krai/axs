@@ -18,6 +18,8 @@ Cleaning up:
 
 """
 
+import logging
+
 
 def download(url, file_name=None, tool_entry=None, tags=None, entry_name=None, __record_entry__=None):
     """Create a new entry and download the url into it
@@ -53,11 +55,11 @@ Usage examples:
     __record_entry__.save( entry_name )
     target_path     = __record_entry__.get_path(file_name)
 
-    print(f"The resolved tool_entry '{tool_entry.get_name()}' located at '{tool_entry.get_path()}' uses the shell tool '{tool_entry['tool_path']}'")
+    logging.warning(f"The resolved tool_entry '{tool_entry.get_name()}' located at '{tool_entry.get_path()}' uses the shell tool '{tool_entry['tool_path']}'")
     retval = tool_entry.call('run', [], {"url": url, "target_path": target_path})
     if retval == 0:
         return target_path
     else:
-        print(f"A problem occured when trying to download '{url}' into '{target_path}', bailing out")
+        logging.error(f"A problem occured when trying to download '{url}' into '{target_path}', bailing out")
         __record_entry__.remove()
         return None
