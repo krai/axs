@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 
-filename='/datasets/dataset-imagenet-ilsvrc2012-val/ILSVRC2012_val_000{:05d}.JPEG'
-TORCHVISION_MODEL_NAME='resnet50'
+import os
+
+imagenet_dir    = os.getenv('IMAGENET_DIR', '/datasets/dataset-imagenet-ilsvrc2012-val')
+filepattern     = os.path.join( imagenet_dir, 'ILSVRC2012_val_000{:05d}.JPEG')
+model_name      ='resnet50'
 
 # sample execution (requires torchvision)
 from PIL import Image
@@ -11,7 +14,7 @@ from torchvision import transforms
 
 torchvision_version = ':v' + torchvision.__version__
 
-model = torch.hub.load('pytorch/vision' + torchvision_version, TORCHVISION_MODEL_NAME, pretrained=True)
+model = torch.hub.load('pytorch/vision' + torchvision_version, model_name, pretrained=True)
 model.eval()
 
 preprocess = transforms.Compose([
@@ -23,7 +26,7 @@ preprocess = transforms.Compose([
 
 pre_batch = []
 for i in range(1,21):
-    input_image = Image.open(filename.format(i))
+    input_image = Image.open(filepattern.format(i))
     input_tensor = preprocess(input_image)
     pre_batch.append(input_tensor)
 

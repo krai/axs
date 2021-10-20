@@ -62,8 +62,12 @@ axs byquery python_package,package_name=numpy --- , remove
 axs byquery shell_tool,can_python --- , remove
 assert_end dependency_installation_and_resolution_for_internal_code
 
+axs byname downloader , download "http://cKnowledge.org/ai/data/ILSVRC2012_img_val_500.tar"
+export IMAGENET_DIR=`axs byquery downloaded,file_name=ILSVRC2012_img_val_500.tar , archive_path: get_path , byname extractor , extract`
 axs byname torch_script_test , run
 assert 'axs byname torch_script_test , run' '[65, 795, 230, 809, 520, 65, 334, 852, 674, 332, 109, 286, 370, 757, 595, 147, 327, 23, 478, 517]'
+axs byquery extracted,archive_name=ILSVRC2012_img_val_500.tar , remove
+axs byquery downloaded,file_name=ILSVRC2012_img_val_500.tar , remove
 axs byquery python_package,package_name=torchvision --- , remove
 axs byquery shell_tool,tool_name=python3 --- , remove
 assert_end dependency_installation_and_resolution_for_external_python_script
