@@ -24,6 +24,7 @@ init:
 install:
     - cmd: mklink python3.exe %PYTHON%\\python.exe
     - python3 --version
+    - python3 -m pip --version
     - cmd: appveyor DownloadFile %ASSERT_URL%
     - sh: appveyor DownloadFile $ASSERT_URL
 
