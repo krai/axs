@@ -21,10 +21,12 @@ Usage examples :
 
     rel_install_dir = 'install'
     logging.warning(f"The resolved tool_entry '{tool_entry.get_name()}' located at '{tool_entry.get_path()}' uses the shell tool '{tool_entry['tool_path']}'")
-    version_label       = tool_entry.call('run', [], { "shell_cmd": [ "^^", "substitute", "#{tool_path}# -c \"import sys;print(f'python{sys.version_info.major}.{sys.version_info.minor}')\""], "capture_output": True } )
-    rel_packages_dir    = os.path.join( rel_install_dir, 'lib', version_label, 'site-packages' )
 
-    logging.warning(f"version_label={version_label} , rel_packages_dir={rel_packages_dir}")
+    if sys.platform.startswith('win'):
+        rel_packages_dir    = os.path.join( rel_install_dir, 'lib', 'site-packages' )
+    else:
+        version_label       = tool_entry.call('run', [], { "shell_cmd": [ "^^", "substitute", "#{tool_path}# -c \"import sys;print(f'python{sys.version_info.major}.{sys.version_info.minor}')\""], "capture_output": True } )
+        rel_packages_dir    = os.path.join( rel_install_dir, 'lib', version_label, 'site-packages' )
 
     if not entry_name:
         entry_name = '_'.join( [package_name, package_version, 'pip'] ) if package_version else '_'.join( [package_name, 'pip'] )
@@ -56,9 +58,6 @@ Usage examples :
         "capture_output": False,
         "errorize_output": True,
     } )
-
-    if sys.platform.startswith('win'):
-        os.system(f'tree /f "{__record_entry__.get_path()}"')
 
     # Recovering package_version from metadata and adding it to the Entry:
     __record_entry__.parent_objects = None
