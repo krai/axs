@@ -21,7 +21,7 @@ Cleaning up:
 import logging
 
 
-def download(url, file_name=None, tool_entry=None, tags=None, entry_name=None, __record_entry__=None):
+def download(url, file_name=None, md5=None, tool_entry=None, md5_tool_entry=None, tags=None, entry_name=None, __record_entry__=None):
     """Create a new entry and download the url into it
 
 Usage examples:
@@ -58,6 +58,16 @@ Usage examples:
     logging.warning(f"The resolved tool_entry '{tool_entry.get_name()}' located at '{tool_entry.get_path()}' uses the shell tool '{tool_entry['tool_path']}'")
     retval = tool_entry.call('run', [], {"url": url, "target_path": target_path})
     if retval == 0:
+        if md5 is not None:
+            logging.warning(f"The resolved md5_tool_entry '{md5_tool_entry.get_name()}' located at '{md5_tool_entry.get_path()}' uses the shell tool '{md5_tool_entry['tool_path']}'")
+            computed_md5 = md5_tool_entry.call('run', [], {"file_path": target_path})
+            if computed_md5 != md5:
+                logging.error(f"The computed md5 sum '{computed_md5}' is different from the expected '{md5}', bailing out")
+                __record_entry__.remove()
+                return None
+            else:
+                logging.warning(f"The computed md5 sum '{computed_md5}' matched the expected one.")
+
         return target_path
     else:
         logging.error(f"A problem occured when trying to download '{url}' into '{target_path}', bailing out")
