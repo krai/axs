@@ -41,7 +41,7 @@ Usage examples:
     os.makedirs( target_path )
 
     logging.warning(f"The resolved tool_entry '{tool_entry.get_name()}' located at '{tool_entry.get_path()}' uses the shell tool '{tool_entry['tool_path']}'")
-    retval = tool_entry.call('run', [], {"archive_path": archive_path, "target_path": target_path})
+    retval = tool_entry.call('run', [], {"archive_path": archive_path, "target_path": target_path, "errorize_output": True})
     if retval == 0:
         return target_path
     else:
