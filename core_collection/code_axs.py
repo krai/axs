@@ -90,7 +90,7 @@ Usage examples :
 
     # parsing the query:
     for condition in conditions:
-        binary_op_match = re.match('([\w\.]*\w)(=|==|!=|<>|<|>|<=|>=|:|!:)(-?[\w\.]+)$', condition)
+        binary_op_match = re.match('([\w\.]*\w)(==|=|!=|<>|<=|>=|<|>|:|!:)(.+)$', condition)
         if binary_op_match:
             key_path    = binary_op_match.group(1)
             binary_op   = binary_op_match.group(2)
