@@ -4,6 +4,35 @@
 """
 
 import logging
+import os
+import sys
+
+
+def under_win():
+    """Fast way to check if we are running under any of Windows-derived OS
+
+Usage examples:
+            axs byname tool_detector , under_win
+    """
+    return sys.platform.startswith('win')
+
+
+def which(exec_name, env=None):
+    """OS-independent routine to search for an executable in the OS's executable path.
+
+Usage examples:
+            axs byname tool_detector , which wget
+    """
+    exec_dirs   = os.get_exec_path(env)
+    suffixes    = ('', '.exe', '.bat', '.com') if under_win() else ('',)
+
+    for exec_dir in exec_dirs:
+        for suffix in suffixes:
+            candidate_full_path = os.path.join(exec_dir, exec_name + suffix)
+            if os.access(candidate_full_path, os.X_OK):
+                return candidate_full_path
+    return None
+
 
 def detect(tool_name, shell_cmd=None, capture_output=None, tags=None, __entry__=None):
     """Detect an installed shell tool and create an entry to point at it
@@ -16,7 +45,7 @@ Usage examples :
 
     assert __entry__ != None, "__entry__ should be defined"
 
-    tool_path   = __entry__.call('which', tool_name)
+    tool_path   = which(tool_name)
 
     if tool_path:
         shell_cmd   = shell_cmd or tool_path
