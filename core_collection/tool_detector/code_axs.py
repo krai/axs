@@ -34,7 +34,7 @@ Usage examples:
     return None
 
 
-def detect(tool_name, shell_cmd=None, capture_output=None, tags=None, entry_name=None, __record_entry__=None, __entry__=None):
+def detect(tool_name, shell_cmd=None, capture_output=None, tags=None, entry_name=None, __record_entry__=None):
     """Detect an installed shell tool and create an entry to point at it
 
 Usage examples :
@@ -49,7 +49,8 @@ Usage examples :
 
     if tool_path:
         __record_entry__["tool_path"]       = tool_path
-        __record_entry__["_parent_entries"] = [ __entry__.pickle_one(), [ "^", "byname", "shell" ] ]
+        __record_entry__["_parent_entries"].insert(0, [ "^", "byname", "shell" ] )
+        __record_entry__.parent_objects     = None      # reload parents
 
         if not entry_name:
             entry_name      = tool_name + '_tool'

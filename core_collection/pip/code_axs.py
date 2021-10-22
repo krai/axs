@@ -8,7 +8,7 @@ import os
 import sys
 
 
-def install(package_name, package_version=None, pip_options=None, tool_entry=None, tags=None, entry_name=None, __record_entry__=None, __entry__=None):
+def install(package_name, package_version=None, pip_options=None, tool_entry=None, tags=None, entry_name=None, __record_entry__=None):
     """Install a pip package into a separate entry, so that it could be easily use'd.
 
 Usage examples :
@@ -34,7 +34,9 @@ Usage examples :
     del __record_entry__.own_data()["entry_name"]   # FIXME: we may need to define __delitem__() in ParamSource
 
     __record_entry__["tags"]                = tags or ["python_package"]
-    __record_entry__["_parent_entries"]     = [ __entry__.pickle_one(), [ "^", "byname", "generic_pip" ] ]
+    __record_entry__["_parent_entries"].insert(0, [ "^", "byname", "generic_pip" ] )
+    __record_entry__.parent_objects         = None      # reload parents
+
     __record_entry__["rel_packages_dir"]    = rel_packages_dir
     __record_entry__.save( entry_name )
 
