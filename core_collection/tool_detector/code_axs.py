@@ -34,40 +34,32 @@ Usage examples:
     return None
 
 
-def detect(tool_name, shell_cmd=None, capture_output=None, tags=None, __entry__=None):
+def detect(tool_name, shell_cmd=None, capture_output=None, tags=None, entry_name=None, __record_entry__=None, __entry__=None):
     """Detect an installed shell tool and create an entry to point at it
 
 Usage examples :
                 axs byname tool_detector , detect wget --tags,=shell_tool,can_download_url '--shell_cmd:=AS^IS:^^:substitute:#{tool_path}# -O #{target_path}# #{url}#'
 
                 axs byname tool_detector , detect curl --tags,=shell_tool,can_download_url '--shell_cmd:=AS^IS:^^:substitute:#{tool_path}# -o #{target_path}# #{url}#'
-    """
 
-    assert __entry__ != None, "__entry__ should be defined"
+                axs byquery shell_tool,can_download_url , run --url=https://example.com/ --target_path=example.html
+    """
 
     tool_path   = which(tool_name)
 
     if tool_path:
-        shell_cmd   = shell_cmd or tool_path
-        tags        = tags or []
+        __record_entry__["tool_path"]       = tool_path
+        __record_entry__["_parent_entries"] = [ __entry__.pickle_one(), [ "^", "byname", "shell" ] ]
 
-        result_data = {
-            "_parent_entries":  [ [ "^", "byname", "shell" ] ],
-            "tool_name":    tool_name,
-            "tool_path":    tool_path,
-            "shell_cmd":    shell_cmd,
-            "tags":         tags or [ "shell_tool" ],
-        }
+        if not entry_name:
+            entry_name      = tool_name + '_tool'
 
-        if shell_cmd is not None:
-            result_data["shell_cmd"] = shell_cmd
-        if capture_output is not None:
-            result_data["capture_output"] = capture_output
+        del __record_entry__.own_data()["entry_name"]   # FIXME: we may need to define __delitem__() in ParamSource
 
-        entry_name      = tool_name + '_tool'
-        result_entry    = __entry__.get_kernel().work_collection().call('attached_entry', deterministic=False).own_data( result_data ).save( entry_name )
+        __record_entry__["tags"] = tags or ["shell_tool"]
+        __record_entry__.save( entry_name )
 
-        return result_entry
+        return __record_entry__
     else:
         logging.warning(f"Could not detect the tool '{tool_name}'")
         return None
