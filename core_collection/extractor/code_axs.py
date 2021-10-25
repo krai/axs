@@ -14,7 +14,7 @@ Usage examples:
     # Downloading the archive tarball:
             axs byname downloader , download 'http://cKnowledge.org/ai/data/ILSVRC2012_img_val_500.tar'
         # or
-            axs byname downloader , call '--pos_params,=http://cKnowledge.org/ai/data/ILSVRC2012_img_val_500.tar'
+            axs byname downloader , call "--url=http://cKnowledge.org/ai/data/ILSVRC2012_img_val_500.tar"
     # Extracting the archive from one entry into another entry:
             axs byquery downloaded,file_name=ILSVRC2012_img_val_500.tar , archive_path: get_path , byname extractor , extract
     # Resulting entry path (counter-intuitively) :
