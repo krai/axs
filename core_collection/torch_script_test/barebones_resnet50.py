@@ -3,7 +3,7 @@
 import os
 import sys
 
-imagenet_dir    = os.environ['IMAGENET_DIR']
+imagenet_dir    = sys.argv[1]
 file_pattern    = 'ILSVRC2012_val_000{:05d}.JPEG'
 model_name      = 'resnet50'
 
