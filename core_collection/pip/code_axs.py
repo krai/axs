@@ -31,7 +31,7 @@ Usage examples :
     if not entry_name:
         entry_name = '_'.join( [package_name, package_version, 'pip'] ) if package_version else '_'.join( [package_name, 'pip'] )
 
-    del __record_entry__.own_data()["entry_name"]   # FIXME: we may need to define __delitem__() in ParamSource
+    __record_entry__.pluck("entry_name")
 
     __record_entry__["tags"]                = tags or ["python_package"]
     __record_entry__["_parent_entries"].insert(0, [ "^", "byname", "generic_pip" ] )

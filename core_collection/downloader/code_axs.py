@@ -49,7 +49,7 @@ Usage examples:
     if not entry_name:
         entry_name = 'generated_by_downloading_' + file_name
 
-    del __record_entry__.own_data()["entry_name"]   # FIXME: we may need to define __delitem__() in ParamSource
+    __record_entry__.pluck("entry_name")
 
     __record_entry__["tags"] = tags or ["downloaded"]
     __record_entry__.save( entry_name )
