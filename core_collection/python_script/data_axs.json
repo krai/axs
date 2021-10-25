@@ -4,7 +4,9 @@
     "tool_entry": [ "^", "byquery", "shell_tool,can_python" ],
     "abs_script_path": [ "^^", "get_path_from", "rel_script_path" ],
 
-    "shell_cmd": [ "^^", "substitute", "#{tool_entry.tool_path}# #{abs_script_path}#" ],
+    "script_extra_params": "",
+
+    "shell_cmd": [ "^^", "substitute", "#{tool_entry.tool_path}# #{abs_script_path}# #{script_extra_params}#" ],
     "env": [ "^^", "ext_use_python_deps" ],
     "capture_output": true
 }
