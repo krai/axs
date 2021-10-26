@@ -31,7 +31,9 @@ def cli_parse(arglist):
             --gamma=                        # scalar empty string
             --delta=1234                    # scalar number
             --epsilon=hello                 # scalar string
-            --zeta,=tag1,tag2,tag3          # list (can be split on a comma, a colon: or a space )
+            --zeta,=tag1,tag2,tag3          # 1D list (can be split on a comma, a colon: or a space )
+            --zeta_2d,:=x:10,y:20,z:30      # 2D list (first delimiter between 1D lists, second delimiter within 1D lists)
+            --zeta_dict,::=x:10,y:20,z:30   # full dictionary (first delimiter between pairs, second delimiter between a key and a value)
             --eta.theta                     # dictionary boolean True value
             --iota.kappa-                   # dictionary boolean False value
             --lambda.mu=                    # dictionary empty string value
@@ -80,16 +82,18 @@ def cli_parse(arglist):
                     call_param_json     = matched.group(6)
                     call_param_value    = json.loads( call_param_json )
                 else:
-                    matched = re.match(r'^--(([\w\.]*)((\^{1,2})(\w+))?)([\ ,;:/]{0,2})=(.*)$', arglist[i])     # list or scalar value
+                    matched = re.match(r'^--(([\w\.]*)((\^{1,2})(\w+))?)([\ ,;:/]{0,3})=(.*)$', arglist[i])     # list or scalar value
                     if matched:
                         delimiters          = list(matched.group(6))
                         call_param_value    = matched.group(7)
 
-                        if len(delimiters)==2:
+                        if len(delimiters)==3 and delimiters[1]==delimiters[2]:     # a dictionary
+                            call_param_value    = dict([ [ to_num_or_not_to_num(elem) for elem in group.split(delimiters[1]) ] for group in call_param_value.split(delimiters[0]) ])
+                        elif len(delimiters)==2:                                    # a 2D list
                             call_param_value    = [ [ to_num_or_not_to_num(elem) for elem in group.split(delimiters[1]) ] for group in call_param_value.split(delimiters[0]) ]
-                        elif len(delimiters)==1:
+                        elif len(delimiters)==1:                                    # a 1D list
                             call_param_value    =   [ to_num_or_not_to_num(elem) for elem in call_param_value.split(delimiters[0]) ]
-                        else:
+                        else:                                                       # a scalar
                             call_param_value    =     to_num_or_not_to_num(call_param_value)
                     else:
                         matched = re.match(r'^--(([\w\.]*)((\^{1,2})(\w+))?)([,+-]?)$', arglist[i])     # empty list or bool value
