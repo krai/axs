@@ -8,7 +8,10 @@ import logging
 import re
 import sys
 
+#logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")   # put this BEFORE IMPORTING the kernel to see logging from the kernel
+
 from function_access import to_num_or_not_to_num
+from kernel import default_kernel as ak
 
 def cli_parse(arglist):
     """Parse the command pipeline representing a chain of calls
@@ -113,12 +116,8 @@ def cli_parse(arglist):
 
 
 def main():
-    #logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")   # put this BEFORE IMPORTING the kernel to see logging from the kernel
-
-    from kernel import default_kernel as ak
-
     pipeline = cli_parse(sys.argv[1:])
     return ak.execute(pipeline)
 
 if __name__ == '__main__':
-    print(main())
+    print(ak.pickle_struct(main()))

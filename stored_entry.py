@@ -238,19 +238,6 @@ Usage examples :
             return [ "^", "bypath", self.get_path()]
 
 
-    def pickle_struct(self, input_structure):
-        """Recursively pickle a data structure that may have some Entry objects as leaves. Used by save()
-        """
-        if type(input_structure)==list:
-            return [self.pickle_struct(e) for e in input_structure]                         # all list elements are pickled
-        elif type(input_structure)==dict:
-            return { k : self.pickle_struct(input_structure[k]) for k in input_structure }  # only values are pickled
-        elif isinstance(input_structure, Entry):
-            return input_structure.pickle_one()                                             # ground step
-        else:
-            return input_structure                                                          # basement step
-
-
     def save(self, new_path=None):
         """Store [updated] own_data of the entry
             Note1: the entry didn't have to have existed prior to saving

@@ -369,6 +369,19 @@ Usage examples :
         return locals().get('_')
 
 
+    def pickle_struct(self, input_structure):
+        """Recursively pickle a data structure that may have some Entry objects as leaves. Used by save()
+        """
+        if type(input_structure)==list:
+            return [self.pickle_struct(e) for e in input_structure]                         # all list elements are pickled
+        elif type(input_structure)==dict:
+            return { k : self.pickle_struct(input_structure[k]) for k in input_structure }  # only values are pickled
+        elif hasattr(input_structure, 'pickle_one'):
+            return input_structure.pickle_one()                                             # ground step
+        else:
+            return input_structure                                                          # basement step
+
+
 if __name__ == '__main__':
 
     logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")
