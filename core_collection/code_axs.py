@@ -65,6 +65,9 @@ Usage examples :
                 axs byquery python_package,package_name=numpy , get_path
                 axs byquery python_package,package_name=numpy,package_version=1.16.4 , get_metadata --header_name=Version
                 axs byquery shell_tool,tool_name=wget
+            # the query given as an explicit list of conditions
+                axs byquery axs byquery --:=count:romance:^french
+                axs byquery "--,=count,romance,language!=French"
     """
     assert __entry__ != None, "__entry__ should be defined"
 
@@ -83,7 +86,7 @@ Usage examples :
     import re
     from function_access import to_num_or_not_to_num
 
-    conditions      = query.split(',')
+    conditions      = query if type(query)==list else query.split(',')
     filter_list     = []
     posi_tag_set    = set()
     posi_val_dict   = {}

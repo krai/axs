@@ -57,9 +57,9 @@ assert_end url_downloading_recipe_activation_and_removal
 
 axs byname numpy_import_test , deps_versions
 assert 'axs byname numpy_import_test , multiply 1 2 3 4 5 6' '[17, 39]'
-axs byquery python_package,package_name=scipy --- , remove
-axs byquery python_package,package_name=numpy --- , remove
-axs byquery shell_tool,can_python --- , remove
+axs byquery --,=python_package,package_name=scipy --- , remove
+axs byquery --:=python_package:package_name=numpy --- , remove
+axs byquery --/=shell_tool/can_python --- , remove
 assert_end dependency_installation_and_resolution_for_internal_code
 
 axs byquery downloaded,url=http://cKnowledge.org/ai/data/ILSVRC2012_img_val_500.tar,md5=8627befdd8c2bcf305729020e9db354e
