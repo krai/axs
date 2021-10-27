@@ -178,15 +178,22 @@ Usage examples :
             return True     # a placeholder to be substituted later
 
         try:
-            getitem_gen         = self.getitem_generator( str(param_name), parent_recursion )
-            unprocessed_value   = next(getitem_gen)
+            getitem_gen                             = self.getitem_generator( str(param_name), parent_recursion )
+            value_source_entry, unprocessed_value   = next(getitem_gen)
 
         except StopIteration:
             logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}', and neither do the parents - raising KeyError")
             raise KeyError(param_name)
 
-        param_value = self.nested_calls(unprocessed_value)
+        value_source_entry.blocked_param_set.add( param_name )
+        try:
+            param_value = self.nested_calls(unprocessed_value)
+        except Exception as e:
+            value_source_entry.blocked_param_set.remove( param_name )
+            raise e
+
         logging.debug(f"[{self.get_name()}]  Got {param_name}={param_value}")
+        value_source_entry.blocked_param_set.remove( param_name )
 
         return param_value
 

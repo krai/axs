@@ -2,5 +2,6 @@
     "first"             : "erste",
     "second"            : "zweite",
     "third"             : "dritte",
+    "over"              : 10,
     "_uninheritable"    : "base"
 }

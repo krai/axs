@@ -19,6 +19,7 @@ class ParamSource:
         self.own_data_cache         = own_data
         self.parent_objects         = parent_objects
         self.runtime_stack_cache    = []
+        self.blocked_param_set      = set()
 
         logging.debug(f"[{self.get_name()}] Initializing the ParamSource with own_data={self.own_data_cache}, inheriting from {'some parents' or 'no parents'}")
 # FIXME: The following would cause infinite recursion (expecting cached entries before they actually end up in cache)
@@ -87,29 +88,31 @@ class ParamSource:
         return self.runtime_stack_cache[0]
 
 
+    def get_own_value_generator(self, param_name):
+        "Common part of accessing a parameter"
+
+        own_data = self.own_data()
+        if param_name in own_data and param_name not in self.blocked_param_set:
+            param_value = own_data[param_name]
+            logging.debug(f"[{self.get_name()}]  {self.get_name()} has parameter '{param_name}', returning '{param_value}'")
+            yield (self, param_value)
+        else:
+            logging.debug(f"[{self.get_name()}]  {self.get_name()} does not have parameter '{param_name}', skipping further")
+
+
     def getitem_generator(self, param_name, parent_recursion=None):
         "Walk the potential sources of the parameter (runtime, own_data and the parents recursively)"
 
         logging.debug(f"[{self.get_name()}] Attempt to access parameter '{param_name}'...")
 
         for runtime_entry in self.runtime_stack()[::-1]:
-            if runtime_entry:
-                runtime_data = runtime_entry.own_data()
-                if param_name in runtime_data:
-                    param_value = runtime_data[param_name]
-                    logging.debug(f'[{self.get_name()}]  Runtime entry {runtime_entry.get_name()} has parameter "{param_name}", returning "{param_value}"')
-                    yield param_value
+            yield from runtime_entry.get_own_value_generator( param_name )
 
-        own_data = self.own_data()
-        if param_name in own_data:
-            param_value = own_data[param_name]
-            logging.debug(f'[{self.get_name()}]  I have parameter "{param_name}", returning "{param_value}"')
-            yield param_value
+        yield from self.get_own_value_generator( param_name )
 
-        if parent_recursion==None:                  # trust the value if was defined,
-            parent_recursion = param_name[0]!='_'   # otherwise the parameter's inheritability is encoded in its name
-
-        if parent_recursion:
+        # trust the boolean value if it was defined,
+        # otherwise the parameter's inheritability is encoded in its name:
+        if parent_recursion if parent_recursion is not None else param_name[0]!='_':
             for parent_object in self.parents_loaded():
                 logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}', fallback to the parent '{parent_object.get_name()}'")
                 try:
@@ -117,6 +120,8 @@ class ParamSource:
                 except StopIteration:
                     logging.debug(f"[{self.get_name()}]  My parent '{parent_object.get_name()}'' did not know about '{param_name}'")
                     pass
+        else:
+            logging.debug(f"[{self.get_name()}]  No parent recursion for '{param_name}', skipping further")
 
 
     def get_data_pile(self, param_name):
@@ -125,14 +130,14 @@ class ParamSource:
 Usage examples :
                 axs byname dont_be_like , get_data_pile be
         """
-        return list( self.getitem_generator( str(param_name) ) )
+        return [ value for source, value in self.getitem_generator( str(param_name) ) ]
 
 
     def __getitem__(self, param_name, parent_recursion=None):
         "Lazy parameter access: returns the parameter value from self or the closest parent"
 
         try:
-            return next( self.getitem_generator( str(param_name), parent_recursion ) )
+            return next( self.getitem_generator( str(param_name), parent_recursion ) )[1]
         except StopIteration:
             logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}', and neither do the parents - raising KeyError")
             raise KeyError(param_name)

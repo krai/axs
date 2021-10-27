@@ -1,5 +1,6 @@
 {
     "fourth"    : "vierte",
     "fifth"     : "fuenfte",
+    "over"      : [ "^^", "substitute", "#{over}# and #{over}#" ],
     "_parent_entries": [ [ "^", "byname", "base_map" ] ]
 }
