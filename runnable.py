@@ -198,7 +198,7 @@ Usage examples :
         return param_value
 
 
-    def call(self, action_name, pos_params=None, override_dict=None, deterministic=True, call_record_entry_ptr=None):
+    def call(self, action_name, pos_params=None, edit_dict=None, deterministic=True, call_record_entry_ptr=None):
         """Call a given function or method of a given entry and feed it
             with arguments from the current object optionally overridden by a given dictionary.
 
@@ -216,9 +216,9 @@ Usage examples :
             return '{'+(','.join([ repr(k)+':'+repr(d[k]) for k in sorted(d.keys()) ]))+'}' if type(d)==dict else repr(d)
 
 
-        logging.debug(f'[{self.get_name()}]  calling action {action_name} with pos_params={pos_params} and override_dict={override_dict} ...')
+        logging.debug(f'[{self.get_name()}]  calling action {action_name} with pos_params={pos_params} and edit_dict={edit_dict} ...')
 
-        cache_tail = '+'.join([unidict(s.own_data()) for s in self.runtime_stack()]) + '+' + unidict(override_dict)
+        cache_tail = '+'.join([unidict(s.own_data()) for s in self.runtime_stack()]) + '+' + unidict(edit_dict)
         cache_key = action_name + str(pos_params) + cache_tail
 
         if deterministic and (cache_key in self.call_cache):
@@ -235,7 +235,21 @@ Usage examples :
         else:
             pos_params = [ pos_params ]                     # simplified syntax for single positional parameter actions
 
+        # pre-initializing each deep override from its full underlying stack value
+        edit_dict       = edit_dict or {}
+        override_dict   = {}
+        for edit_path in edit_dict:
+            dot_pos = edit_path.find('.')
+            if dot_pos>-1:
+                edit_key = edit_path[:dot_pos]
+                override_dict[edit_key] = deepcopy( self[edit_key] )
+
         rt_call_specific    = ParamSource(name='rt_call_specific', own_data=override_dict or {})   # FIXME: overlapping entry names are not unique
+
+        # now planting all the edits into the new object:
+        for edit_path in edit_dict:
+            rt_call_specific.plant(edit_path, edit_dict[edit_path])
+
         self.runtime_stack().append( rt_call_specific )
 
         action_object       = self.reach_action(action_name)
@@ -439,7 +453,7 @@ if __name__ == '__main__':
     print('-'*40 + ' Testing call(): ' + '-'*40)
 
     assert child.call('double', [20])==40, "call() for dad's function, positional args"
-    assert child.call('triple', override_dict={'number': 11})==33, "call() for dad's function, named args"
+    assert child.call('triple', [], {'number': 11})==33, "call() for dad's function, named args"
 
     dad['x']=100
 
