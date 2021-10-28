@@ -40,6 +40,11 @@ def cli_parse(arglist):
             --nu.xi=omicron                 # dictionary scalar value (number or string)
             --pi.rho,=tag1,tag2,tag3        # dictionary that contains a list
             ---xyz='[{"pq":"rs"},123]'      # parsed JSON
+
+        Named parameters (using the syntax for optional) can be "augmented" in different ways, depending on the type of original data:
+            --alpha+=10                     # numeric: addition; list: append
+            --beta.gamma+,=20,30            # list: extend
+            --delta.epsilon+,::=x:40,y:50   # dictionary: merge
     """
 
 
@@ -77,12 +82,12 @@ def cli_parse(arglist):
                     raise(Exception("Parsing error - cannot understand non-option '{}' before an action".format(arglist[i])))
 
             else:
-                matched = re.match(r'^---(([\w\.]*)((\^{1,2})(\w+))?)=(.*)$', arglist[i])               # verbatim JSON value
+                matched = re.match(r'^---(([\w\.]*\+?)((\^{1,2})(\w+))?)=(.*)$', arglist[i])                    # verbatim JSON value
                 if matched:
                     call_param_json     = matched.group(6)
                     call_param_value    = json.loads( call_param_json )
                 else:
-                    matched = re.match(r'^--(([\w\.]*)((\^{1,2})(\w+))?)([\ ,;:/]{0,3})=(.*)$', arglist[i])     # list or scalar value
+                    matched = re.match(r'^--(([\w\.]*\+?)((\^{1,2})(\w+))?)([\ ,;:/]{0,3})=(.*)$', arglist[i])  # scalar value, list, list-of-lists or dictionary
                     if matched:
                         delimiters          = list(matched.group(6))
                         call_param_value    = matched.group(7)

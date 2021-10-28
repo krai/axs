@@ -257,6 +257,10 @@ Usage examples :
 Usage examples :
                 axs fresh_entry , plant num.tens --,=10,20,30 num.doubles --,=2,4,6,8 , own_data
                 axs fresh_entry , plant _parent_entries --,:=AS^IS:^:byname:shell , run 'echo hello, world'
+                axs bypath only_data/carbon.json , plant weight+ 0.5 , own_data
+                axs bypath only_data/carbon.json , plant isotopes+ 15 , own_data
+                axs bypath only_data/carbon.json , plant isotopes+ --,=15,16 , own_data
+                axs bypath only_data/carbon.json , plant iso_dict --,::=medium:13.5,superheavy:15.5 , own_data
         """
 
         kvp_length  = len(keypath_value_pairs)
@@ -276,6 +280,10 @@ Usage examples :
 
             last_idx = len(key_path)-1
             for key_idx, key_syllable in enumerate(key_path):
+                augment = key_syllable.endswith('+')
+                if augment:
+                    key_syllable = key_syllable[:-1]
+
                 if type(struct_ptr)==list:  # descend into lists with numeric indices
                     key_syllable = int(key_syllable)
                     padding_size = key_syllable-len(struct_ptr)+1
@@ -289,8 +297,18 @@ Usage examples :
                     struct_ptr = struct_ptr[key_syllable]       # iterative descent
                 elif pluck:
                     struct_ptr.pop(key_syllable)
+                elif augment:
+                    orig_value = struct_ptr[key_syllable]
+
+                    if type(orig_value)==dict:
+                        struct_ptr[key_syllable].update(value)
+                    elif type(orig_value)==list and type(value)!=list:
+                        struct_ptr[key_syllable] += [ value ]
+                    else:
+                        struct_ptr[key_syllable] += value
                 else:
                     struct_ptr[key_syllable] = value
+
 
             if key_path == [ self.PARAMNAME_parent_entries ]:   # magic request to reload the parents
                 self.parent_objects = None

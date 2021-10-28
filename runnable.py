@@ -239,9 +239,14 @@ Usage examples :
         edit_dict       = edit_dict or {}
         override_dict   = {}
         for edit_path in edit_dict:
-            dot_pos = edit_path.find('.')
-            if dot_pos>-1:
-                edit_key = edit_path[:dot_pos]
+            dot_pos     = edit_path.find('.')
+            augment     = edit_path.endswith('+')
+            if dot_pos>-1 or augment:   # if both are True, dot should be found to the left of plus
+                if dot_pos>-1:
+                    edit_key = edit_path[:dot_pos]
+                elif augment:
+                    edit_key = edit_path[:-1]
+
                 override_dict[edit_key] = deepcopy( self[edit_key] )
 
         rt_call_specific    = ParamSource(name='rt_call_specific', own_data=override_dict or {})   # FIXME: overlapping entry names are not unique
