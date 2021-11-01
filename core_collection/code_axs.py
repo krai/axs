@@ -162,7 +162,7 @@ Usage examples :
                     cumulative_params = deepcopy( extra_params )
                     cumulative_params.update( posi_val_dict )
                     cumulative_params["tags"] = list(posi_tag_set)
-                    new_entry = candidate_producer_entry.call(producer_method, [], cumulative_params)
+                    new_entry = candidate_producer_entry.call(producer_method, [], {'AS^IS':cumulative_params})
                     if new_entry:
                         logging.warning("It worked!")
                         return new_entry

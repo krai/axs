@@ -168,7 +168,7 @@ Usage examples :
         return '\n'.join(help_buffer)
 
 
-    def __getitem__(self, param_name, parent_recursion=None):
+    def __getitem__(self, param_name, parent_recursion=None, perform_nested_calls=True):
         """Lazy parameter access: returns the parameter value from self or the closest parent,
             automatically executing nested_calls on the result.
         """
@@ -185,15 +185,18 @@ Usage examples :
             logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}', and neither do the parents - raising KeyError")
             raise KeyError(param_name)
 
-        value_source_entry.blocked_param_set.add( param_name )
-        try:
-            param_value = self.nested_calls(unprocessed_value)
-        except Exception as e:
+        if perform_nested_calls:
+            value_source_entry.blocked_param_set.add( param_name )
+            try:
+                param_value = self.nested_calls(unprocessed_value)
+            except Exception as e:
+                value_source_entry.blocked_param_set.remove( param_name )
+                raise e
             value_source_entry.blocked_param_set.remove( param_name )
-            raise e
+        else:
+                param_value = unprocessed_value
 
         logging.debug(f"[{self.get_name()}]  Got {param_name}={param_value}")
-        value_source_entry.blocked_param_set.remove( param_name )
 
         return param_value
 
@@ -247,15 +250,17 @@ Usage examples :
                 elif augment:
                     edit_key = edit_path[:-1]
 
-                override_dict[edit_key] = deepcopy( self[edit_key] )
+                override_dict[edit_key] = deepcopy( self.__getitem__(edit_key, perform_nested_calls=False) )    # delay the interpretation to be able to edit expressions first
 
         rt_call_specific    = ParamSource(name='rt_call_specific', own_data=override_dict or {})   # FIXME: overlapping entry names are not unique
 
-        # now planting all the edits into the new object:
+        # now planting all the edits into the new object (potentially editing expressions):
         merged_edits = (x for p in edit_dict for x in (p, edit_dict[p]))
         rt_call_specific.plant( *merged_edits )
 
         self.runtime_stack().append( rt_call_specific )
+
+        rt_call_specific.own_data( self.nested_calls( rt_call_specific.own_data() ) )   # perform the delayed interpretation of expressions
 
         action_object       = self.reach_action(action_name)
         captured_mapping    = {}    # retain the pointer to perform modifications later
