@@ -8,17 +8,17 @@ Usage examples:
                 axs byname numpy_import_test , multiply 1 2 3 4 5 6
 
     # an extra condition is dynamically added during script's loading:
-                axs byname numpy_import_test , deps_versions --scipy_query+=,package_version=1.2.3      # string extension syntax
-                axs byname numpy_import_test , deps_versions --scipy_query+,=package_version=1.2.1      # list extension syntax
+                axs byname numpy_import_test , deps_versions --pillow_query+=,package_version=8.1.2     # string extension syntax
+                axs byname numpy_import_test , deps_versions --pillow_query+,=package_version=8.2.0     # list extension syntax
 """
 
 import numpy as np
-import scipy
+import PIL
 
 def deps_versions():
     """Reports the versions of currently used python dependencies.
     """
-    return f"numpy=={np.__version__}, scipy=={scipy.__version__}"
+    return f"numpy=={np.__version__}, pillow=={PIL.__version__}"
 
 
 def multiply(a, b, c, d, e, f):
