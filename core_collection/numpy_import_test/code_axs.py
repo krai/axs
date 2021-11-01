@@ -1,5 +1,17 @@
 #!/usr/bin/env python3
 
+"""An example of a script that can automatically import its documented dependencies before execution.
+
+Usage examples:
+    # without any dependency modifications:
+                axs byname numpy_import_test , deps_versions
+                axs byname numpy_import_test , multiply 1 2 3 4 5 6
+
+    # an extra condition is dynamically added during script's loading:
+                axs byname numpy_import_test , deps_versions --scipy_query+=,package_version=1.2.3      # string extension syntax
+                axs byname numpy_import_test , deps_versions --scipy_query+,=package_version=1.2.1      # list extension syntax
+"""
+
 import numpy as np
 import scipy
 
