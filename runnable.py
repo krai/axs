@@ -252,8 +252,8 @@ Usage examples :
         rt_call_specific    = ParamSource(name='rt_call_specific', own_data=override_dict or {})   # FIXME: overlapping entry names are not unique
 
         # now planting all the edits into the new object:
-        for edit_path in edit_dict:
-            rt_call_specific.plant(edit_path, edit_dict[edit_path])
+        merged_edits = (x for p in edit_dict for x in (p, edit_dict[p]))
+        rt_call_specific.plant( *merged_edits )
 
         self.runtime_stack().append( rt_call_specific )
 
