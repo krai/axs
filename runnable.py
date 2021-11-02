@@ -201,7 +201,7 @@ Usage examples :
         return param_value
 
 
-    def call(self, action_name, pos_params=None, edit_dict=None, deterministic=True, call_record_entry_ptr=None):
+    def call(self, action_name, pos_params=None, edit_dict=None, deterministic=True, call_record_entry_ptr=None, nested_context=None):
         """Call a given function or method of a given entry and feed it
             with arguments from the current object optionally overridden by a given dictionary.
 
@@ -231,10 +231,12 @@ Usage examples :
         else:
             logging.debug(f"[{self.get_name()}]  Call '{cache_key}' NOT TAKEN from cache, have to run...")
 
+        nested_context = nested_context or self
+
         if not pos_params:
             pos_params = []                                 # allow pos_params to be missing
         elif type(pos_params)==list:
-            pos_params = self.nested_calls(pos_params)      # perform all nested calls if there are any
+            pos_params = nested_context.nested_calls(pos_params)      # perform all nested calls if there are any
         else:
             pos_params = [ pos_params ]                     # simplified syntax for single positional parameter actions
 
@@ -260,7 +262,7 @@ Usage examples :
 
         self.runtime_stack().append( rt_call_specific )
 
-        rt_call_specific.own_data( self.nested_calls( rt_call_specific.own_data() ) )   # perform the delayed interpretation of expressions
+        rt_call_specific.own_data( nested_context.nested_calls( rt_call_specific.own_data() ) )   # perform the delayed interpretation of expressions
 
         action_object       = self.reach_action(action_name)
         captured_mapping    = {}    # retain the pointer to perform modifications later
@@ -321,7 +323,7 @@ Usage examples :
                     return self.call( *input_structure[1:] )
                 elif head=='^':
                     side_effects_count += 1
-                    return self.get_kernel().call( *input_structure[1:] )
+                    return self.get_kernel().call( *input_structure[1:], nested_context=self )      # need to keep the context if we want to nest Entry-based expressions into a Kernel-based expression
                 elif head==self.ESCAPE_do_not_process:
                     side_effects_count += 1                                                         # it is only a "side effect" for the purposes of our GC-facilitating decision making below
                     return deepcopy( input_structure[1:] )                                          # drop the escape symbol, keeping the rest of the substructure intact
