@@ -1,8 +1,5 @@
 {
     "_parent_entries": [ [ "^", "byname", "shell" ] ],
     "action_name": "extract",
-    "tool_entry": [ "^", "byquery", "shell_tool,can_extract_tar" ],
-    "producer_rules": [
-        [ [ "extracted" ], "extract", {} ]
-    ]
+    "tool_entry": [ "^", "byquery", "shell_tool,can_extract_tar" ]
 }

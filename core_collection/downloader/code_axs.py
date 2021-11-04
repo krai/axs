@@ -26,7 +26,7 @@ def download(url, file_name=None, md5=None, tool_entry=None, md5_tool_entry=None
 
 Usage examples:
     # Manual downloading into a new entry:
-            axs byname downloader , download 'https://example.com/' example.html
+            axs byname downloader , download 'https://example.com/' example.html --tags,=downloaded,example
     # Replay of the same command at a later time, stored in a different entry:
             axs byquery downloaded,file_name=example.html --- , call ---override_dict='{"entry_name":"generated_by_downloading_example.html__replay"}'
         # or (assuming double-stack)
@@ -68,7 +68,7 @@ Usage examples:
             else:
                 logging.warning(f"The computed md5 sum '{computed_md5}' matched the expected one.")
 
-        return target_path
+        return __record_entry__
     else:
         logging.error(f"A problem occured when trying to download '{url}' into '{target_path}', bailing out")
         __record_entry__.remove()

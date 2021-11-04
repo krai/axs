@@ -43,7 +43,7 @@ Usage examples:
     logging.warning(f"The resolved tool_entry '{tool_entry.get_name()}' located at '{tool_entry.get_path()}' uses the shell tool '{tool_entry['tool_path']}'")
     retval = tool_entry.call('run', [], {"archive_path": archive_path, "target_path": target_path, "errorize_output": True})
     if retval == 0:
-        return target_path
+        return __record_entry__
     else:
         logging.error(f"A problem occured when trying to extract '{archive_path}' into '{target_path}', bailing out")
         __record_entry__.remove()
