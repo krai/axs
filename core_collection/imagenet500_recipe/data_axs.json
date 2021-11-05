@@ -6,6 +6,8 @@
 
     "url": "http://cKnowledge.org/ai/data/ILSVRC2012_img_val_500.tar",
     "md5": "8627befdd8c2bcf305729020e9db354e",
+
+    "archive_format": "tar",
     "archive_path": [ "^", "execute", [[
         [ "byquery", [[ "^^", "substitute", "downloaded,imagenet500,url=#{url}#,md5=#{md5}#"]] ],
         [ "get_path" ]
@@ -13,6 +15,6 @@
 
     "_producer_rules": [
         [ [ "downloaded", "imagenet500" ], "download", {} ],
-        [ [ "extracted", "imagenet500" ], "extract", {} ]
+        [ [ "extracted",  "imagenet500" ], "extract",  {} ]
     ]
 }

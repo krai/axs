@@ -1,0 +1,20 @@
+{
+    "_parent_entries": [
+        [ "^", "byname", "downloader" ],
+        [ "^", "byname", "extractor" ]
+    ],
+
+    "url": "https://www.dropbox.com/s/92n2fyej3lzy3s3/caffe_ilsvrc12.tar.gz",
+    "md5": "ee346d67141e476df9c1a3f813552503",
+
+    "archive_format": "tgz",
+    "archive_path": [ "^", "execute", [[
+        [ "byquery", [[ "^^", "substitute", "downloaded,imagenet_aux,url=#{url}#,md5=#{md5}#" ]] ],
+        [ "get_path" ]
+    ]] ],
+
+    "_producer_rules": [
+        [ [ "downloaded", "imagenet_aux" ], "download", {} ],
+        [ [ "extracted",  "imagenet_aux" ], "extract",  {} ]
+    ]
+}

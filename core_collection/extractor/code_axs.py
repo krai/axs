@@ -7,7 +7,7 @@ import logging
 import os
 
 
-def extract(archive_path, extraction_tool_entry, file_name="extracted", tags=None, entry_name=None, __record_entry__=None):
+def extract(archive_path, archive_format, extraction_tool_entry, file_name="extracted", tags=None, entry_name=None, __record_entry__=None):
     """Create a new entry and extract the archive into it
 
 Usage examples:
@@ -16,7 +16,7 @@ Usage examples:
         # or
             axs byname downloader , call "--url=http://cKnowledge.org/ai/data/ILSVRC2012_img_val_500.tar"
     # Extracting the archive from one entry into another entry:
-            axs byquery downloaded,file_name=ILSVRC2012_img_val_500.tar , archive_path: get_path , byname extractor , extract
+            axs byquery downloaded,file_name=ILSVRC2012_img_val_500.tar , archive_path: get_path , byname extractor , extract tar
     # Resulting entry path (counter-intuitively) :
             axs byquery extracted,archive_name=ILSVRC2012_img_val_500.tar , get_path ''
     # Path to the directory with the extracted archive:
@@ -41,7 +41,7 @@ Usage examples:
     os.makedirs( target_path )
 
     logging.warning(f"The resolved extraction_tool_entry '{extraction_tool_entry.get_name()}' located at '{extraction_tool_entry.get_path()}' uses the shell tool '{extraction_tool_entry['tool_path']}'")
-    retval = extraction_tool_entry.call('run', [], {"archive_path": archive_path, "target_path": target_path, "errorize_output": True})
+    retval = extraction_tool_entry.call('run', [], {"archive_path": archive_path, "target_path": target_path, "errorize_output": True, "archive_format": archive_format})
     if retval == 0:
         return __record_entry__
     else:

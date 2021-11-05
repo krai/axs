@@ -15,6 +15,7 @@
         "torch_script_test": "torch_script_test",
         "tool_detector": "tool_detector",
         "extractor": "extractor",
-        "imagenet500_recipe": "imagenet500_recipe"
+        "imagenet500_recipe": "imagenet500_recipe",
+        "imagenet_aux_recipe": "imagenet_aux_recipe"
     }
 }
