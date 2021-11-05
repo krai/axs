@@ -1,8 +1,18 @@
 {
-    "_parent_entries": [ [ "^", "byname", "extractor" ] ],
+    "_parent_entries": [
+        [ "^", "byname", "downloader" ],
+        [ "^", "byname", "extractor" ]
+    ],
+
+    "url": "http://cKnowledge.org/ai/data/ILSVRC2012_img_val_500.tar",
+    "md5": "8627befdd8c2bcf305729020e9db354e",
     "archive_path": [ "^", "execute", [[
-        [ "byquery", "downloaded,imagenet500,url=http://cKnowledge.org/ai/data/ILSVRC2012_img_val_500.tar,md5=8627befdd8c2bcf305729020e9db354e" ],
+        [ "byquery", [[ "^^", "substitute", "downloaded,imagenet500,url=#{url}#,md5=#{md5}#"]] ],
         [ "get_path" ]
     ]] ],
-    "producer_rules": [ [ [ "extracted", "imagenet500" ], "extract", {} ] ]
+
+    "producer_rules": [
+        [ [ "downloaded", "imagenet500" ], "download", {} ],
+        [ [ "extracted", "imagenet500" ], "extract", {} ]
+    ]
 }

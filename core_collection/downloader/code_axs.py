@@ -21,7 +21,7 @@ Cleaning up:
 import logging
 
 
-def download(url, file_name=None, md5=None, tool_entry=None, md5_tool_entry=None, tags=None, entry_name=None, __record_entry__=None):
+def download(url, file_name=None, md5=None, downloading_tool_entry=None, md5_tool_entry=None, tags=None, entry_name=None, __record_entry__=None):
     """Create a new entry and download the url into it
 
 Usage examples:
@@ -36,7 +36,7 @@ Usage examples:
     # Downloaded file path:
             axs byquery downloaded,file_name=example.html , get_path
     # Reaching to the original tool used for downloading:
-            axs byquery downloaded,file_name=example.html , get tool_entry , get tool_path
+            axs byquery downloaded,file_name=example.html , get downloading_tool_entry , get tool_path
     # Clean up:
             axs byquery downloaded,file_name=example.html , remove
     """
@@ -55,8 +55,8 @@ Usage examples:
     __record_entry__.save( entry_name )
     target_path     = __record_entry__.get_path(file_name)
 
-    logging.warning(f"The resolved tool_entry '{tool_entry.get_name()}' located at '{tool_entry.get_path()}' uses the shell tool '{tool_entry['tool_path']}'")
-    retval = tool_entry.call('run', [], {"url": url, "target_path": target_path})
+    logging.warning(f"The resolved downloading_tool_entry '{downloading_tool_entry.get_name()}' located at '{downloading_tool_entry.get_path()}' uses the shell tool '{downloading_tool_entry['tool_path']}'")
+    retval = downloading_tool_entry.call('run', [], {"url": url, "target_path": target_path})
     if retval == 0:
         if md5 is not None:
             logging.warning(f"The resolved md5_tool_entry '{md5_tool_entry.get_name()}' located at '{md5_tool_entry.get_path()}' uses the shell tool '{md5_tool_entry['tool_path']}'")

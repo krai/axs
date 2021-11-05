@@ -7,7 +7,7 @@ import logging
 import os
 
 
-def extract(archive_path, tool_entry, file_name="extracted", tags=None, entry_name=None, __record_entry__=None):
+def extract(archive_path, extraction_tool_entry, file_name="extracted", tags=None, entry_name=None, __record_entry__=None):
     """Create a new entry and extract the archive into it
 
 Usage examples:
@@ -40,8 +40,8 @@ Usage examples:
 
     os.makedirs( target_path )
 
-    logging.warning(f"The resolved tool_entry '{tool_entry.get_name()}' located at '{tool_entry.get_path()}' uses the shell tool '{tool_entry['tool_path']}'")
-    retval = tool_entry.call('run', [], {"archive_path": archive_path, "target_path": target_path, "errorize_output": True})
+    logging.warning(f"The resolved extraction_tool_entry '{extraction_tool_entry.get_name()}' located at '{extraction_tool_entry.get_path()}' uses the shell tool '{extraction_tool_entry['tool_path']}'")
+    retval = extraction_tool_entry.call('run', [], {"archive_path": archive_path, "target_path": target_path, "errorize_output": True})
     if retval == 0:
         return __record_entry__
     else:

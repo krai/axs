@@ -62,7 +62,6 @@ axs byquery --:=python_package:package_name=numpy --- , remove
 axs byquery --/=shell_tool/can_python --- , remove
 assert_end dependency_installation_and_resolution_for_internal_code
 
-axs byquery downloaded,imagenet500,url=http://cKnowledge.org/ai/data/ILSVRC2012_img_val_500.tar,md5=8627befdd8c2bcf305729020e9db354e , archive_path: get_path , byname extractor , extract --tags,=extracted,imagenet500
 export INFERENCE_OUTPUT=`axs byname torch_script_test , run --torchvision_query+=package_version=0.10.1`
 assert "echo $INFERENCE_OUTPUT" '[65, 795, 230, 809, 520, 65, 334, 852, 674, 332, 109, 286, 370, 757, 595, 147, 327, 23, 478, 517]'
 axs byquery extracted,archive_name=ILSVRC2012_img_val_500.tar --- , remove
