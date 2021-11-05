@@ -326,6 +326,25 @@ Usage examples :
         return self.plant(*key_paths, pluck=True)
 
 
+    def case(self, question, *answer_value_pairs, default_value=None):
+        """An ordered key-to-value mapper, used for decision-making.
+
+Usage examples :
+                axs plant number 20 , case --,=^^,get,number 10 ten 20 twenty 30 thirty
+                axs plant number 15 , case --,=^^,get,number 0 zero --,=1,2,3,4,5,6,7,8,9 single_digit --,=10,20,30,40,50,60,70,80,90 tens --default_value=anything_else
+        """
+
+        avp_length  = len(answer_value_pairs)
+        for i in range(0, avp_length, 2):
+            answer  = answer_value_pairs[i]
+            value   = answer_value_pairs[i+1]
+
+            if (type(question)==type(answer) and question==answer) or (type(answer)==list and question in answer):
+                    return value
+
+        return default_value
+
+
 if __name__ == '__main__':
 
     logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")
