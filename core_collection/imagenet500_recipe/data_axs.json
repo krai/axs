@@ -11,7 +11,7 @@
         [ "get_path" ]
     ]] ],
 
-    "producer_rules": [
+    "_producer_rules": [
         [ [ "downloaded", "imagenet500" ], "download", {} ],
         [ [ "extracted", "imagenet500" ], "extract", {} ]
     ]

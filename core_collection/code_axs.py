@@ -58,7 +58,7 @@ def byname(entry_name, __entry__):
 
 def byquery(query, produce_if_not_found=True, parent_recursion=False, __entry__=None):
     """Fetch an entry by query.
-        If the query returns nothing on the first pass, but matching producer_rules are defined,
+        If the query returns nothing on the first pass, but matching _producer_rules are defined,
         apply the matching producer_rule and return its output.
 
 Usage examples :
@@ -155,7 +155,7 @@ Usage examples :
         logging.debug(f"[{__entry__.get_name()}] byquery({query}) did not find anything, but there are tags: {posi_tag_set} , trying to find a producer...")
 
         for candidate_producer_entry in walk(__entry__):
-            for producer_tags_list, producer_method, extra_params in candidate_producer_entry.get('producer_rules', []):
+            for producer_tags_list, producer_method, extra_params in candidate_producer_entry.get('_producer_rules', []):
                 producer_tags_set = set(producer_tags_list)
                 if producer_tags_set.issubset(posi_tag_set):
                     logging.warning(f"Producer entry '{candidate_producer_entry.get_name()}' advertises action {producer_method}({extra_params}) with matching tags {producer_tags_set} that may work with {posi_val_dict}")
@@ -170,7 +170,7 @@ Usage examples :
                         logging.warning("It didn't work, but maybe there is another method...")
 
     else:
-        logging.debug(f"[{__entry__.get_name()}] byquery({query}) did not find anything, and no matching producer_rules => returning None")
+        logging.debug(f"[{__entry__.get_name()}] byquery({query}) did not find anything, and no matching _producer_rules => returning None")
         return None
 
 

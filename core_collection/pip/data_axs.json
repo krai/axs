@@ -3,7 +3,7 @@
         [ "^", "byname", "shell" ]
     ],
     "tool_entry": [ "^", "byquery", "shell_tool,can_python" ],
-    "producer_rules": [
+    "_producer_rules": [
         [ [ "python_package", "no_deps" ], "install", {"pip_options": ["no-deps"]} ],
         [ [ "python_package" ], "install", {} ]
     ]

@@ -2,7 +2,7 @@
     "_parent_entries": [
         [ "^", "byname", "shell" ]
     ],
-    "producer_rules": [ "AS^IS",
+    "_producer_rules": [ "AS^IS",
         [ [ "shell_tool", "can_download_url" ], "detect", { "tool_name": "wget", "shell_cmd": [ "AS^IS", "^^", "substitute", "\"#{tool_path}#\" -O #{target_path}# #{url}#" ] } ],
         [ [ "shell_tool", "can_download_url" ], "detect", { "tool_name": "curl", "shell_cmd": [ "AS^IS", "^^", "substitute", "\"#{tool_path}#\" -o #{target_path}# #{url}#" ] } ],
         [ [ "shell_tool", "can_extract_tar" ], "detect", { "tool_name": "tar.exe", "shell_cmd": [ "AS^IS", "^^", "substitute", "\"#{tool_path}#\" -xvf \"#{archive_path}#\" -C \"#{target_path}#\"" ] } ],
