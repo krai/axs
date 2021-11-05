@@ -35,7 +35,7 @@ Usage examples:
     else:
         stdout_target = None
 
-    completed_process = subprocess.run(shell_cmd, shell = True, stdout=stdout_target)
+    completed_process = subprocess.run(shell_cmd, shell = (type(shell_cmd)!=list), stdout=stdout_target)
     if capture_output:
         output  = completed_process.stdout.decode('utf-8').rstrip()
 
