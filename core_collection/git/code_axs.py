@@ -6,7 +6,7 @@
 
 import os
 
-def pull(name=None, url=None, tags=None, __entry__=None):
+def pull(name=None, url=None, git_tool_entry=None, tags=None, __entry__=None):
     """Either clone a git repository if it didn't exist locally,
         or pull a git repository if it did exit.
         Note: it does not (yet) add the repository to any collection, it has to be done manually.
@@ -40,7 +40,7 @@ Clean-up:
     if clone:
         work_collection = ak.work_collection()
         container_path  = work_collection.get_path('')
-        __entry__.call('run', f"git -C {container_path} clone {url}" )
+        git_tool_entry.call('run', [[ "^^", "substitute", f"git -C {container_path} clone {url}" ]] )
         result_entry                = ak.bypath( work_collection.get_path(name) )
         result_entry['repo_name']   = name
         result_entry['tags']        = tags or [ 'git_repo' ]
@@ -49,6 +49,6 @@ Clean-up:
     else:
         repo_entry      = __entry__
         repo_path       = repo_entry.get_path('')
-        __entry__.call('run',  f"git -C {repo_path} pull --ff-only" )
+        git_tool_entry.call('run', [[ "^^", "substitute", f"#{tool_path}# -C \"{repo_path}\" pull --ff-only" ]] )
 
     return repo_entry

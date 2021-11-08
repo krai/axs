@@ -18,6 +18,11 @@
         [ [ "shell_tool", "can_compute_md5" ], "detect", { "tool_name": "md5", "shell_cmd": [ "AS^IS", "^^", "substitute", "'#{tool_path}#' -r '#{file_path}#' | cut -f 1 -d ' '" ], "capture_output": true } ],
 
         [ [ "shell_tool", "can_python" ], "detect", { "tool_name": "python.exe", "shell_cmd": [ "AS^IS", "^^", "substitute", "\"#{tool_path}#\" --version" ], "capture_output": true } ],
-        [ [ "shell_tool", "can_python" ], "detect", { "tool_name": "python3", "shell_cmd": [ "AS^IS", "^^", "substitute", "\"#{tool_path}#\" --version" ], "capture_output": true } ]
+        [ [ "shell_tool", "can_python" ], "detect", { "tool_name": "python3", "shell_cmd": [ "AS^IS", "^^", "substitute", "\"#{tool_path}#\" --version" ], "capture_output": true } ],
+
+        [ [ "shell_tool", "can_git"], "detect", { "tool_name": "git", "shell_cmd": [ "AS^IS", "^^", "substitute", [[
+            "#{tool_path}#",
+            "--version"
+        ]] ], "capture_output": true } ]
     ]
 }
