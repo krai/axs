@@ -7,16 +7,19 @@ import logging
 import os
 
 
-def extract(archive_path, archive_format, extraction_tool_entry, file_name="extracted", tags=None, entry_name=None, __record_entry__=None):
+def extract(archive_path, archive_format=None, file_name="extracted", extraction_tool_entry=None, tags=None, entry_name=None, __record_entry__=None):
     """Create a new entry and extract the archive into it
 
 Usage examples:
+    # Extracting an arbitrary tarball (zipped or otherwise) into an Entry:
+            axs byname extractor , extract two_points.tar
+
     # Downloading the archive tarball:
             axs byname downloader , download 'http://cKnowledge.org/ai/data/ILSVRC2012_img_val_500.tar'
         # or
             axs byname downloader , call "--url=http://cKnowledge.org/ai/data/ILSVRC2012_img_val_500.tar"
     # Extracting the archive from one entry into another entry:
-            axs byquery downloaded,file_name=ILSVRC2012_img_val_500.tar , archive_path: get_path , byname extractor , extract tar
+            axs byquery downloaded,file_name=ILSVRC2012_img_val_500.tar , archive_path: get_path , byname extractor , extract
     # Resulting entry path (counter-intuitively) :
             axs byquery extracted,archive_name=ILSVRC2012_img_val_500.tar , get_path ''
     # Path to the directory with the extracted archive:
@@ -29,8 +32,16 @@ Usage examples:
     __record_entry__["tags"] = tags or ["extracted"]
 
     import os
+
     archive_name    = os.path.basename(archive_path)
     __record_entry__["archive_name"] = archive_name
+
+    if archive_format is None:      # perform some reasonable guesswork
+        if archive_path.lower().endswith('.tar'):
+            archive_format = 'tar'
+        elif archive_path.lower().endswith( ('.tgz','.tar.gz') ):
+            archive_format = 'tgz'
+        __record_entry__["archive_format"] = archive_format
 
     if not entry_name:
         entry_name = 'generated_by_extracting_' + archive_name
