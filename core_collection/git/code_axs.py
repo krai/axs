@@ -6,49 +6,63 @@
 
 import os
 
-def pull(name=None, url=None, git_tool_entry=None, tags=None, __entry__=None):
-    """Either clone a git repository if it didn't exist locally,
-        or pull a git repository if it did exit.
-        Note: it does not (yet) add the repository to any collection, it has to be done manually.
+
+def url_2_repo_name(url=None):
+    """Cut the repo_name out of the URL, if given.
 
 Usage examples :
-            axs byname git , pull counting_collection
+                axs byname git , get name --url=https://hello.world/repo/long_name.git
+                axs byname git , get url --name=short_name
+    """
+    if url:
+        name = os.path.basename( url )
+        if name.endswith('.git'):
+            name = name[:-4]        # trim it off
 
-            axs byname counting_collection , pull
+        return name
+    else:
+        return None
+
+
+def clone(name=None, url=None, git_tool_entry=None, tags=None, __entry__=None):
+    """Clone a git repository into an Entry,
+
+Usage examples :
+                axs byname git , clone --name=counting_collection
+            # or
+                axs byname git , clone --url=https://github.com/user_x/counting_collection
+            # or
+                axs byquery git_repo,name=counting_collection
 Clean-up:
-            axs byname counting_collection , remove
+                axs byname counting_collection , remove
     """
 
     assert __entry__ != None, "__entry__ should be defined"
     ak = __entry__.get_kernel()
     assert ak != None, "__entry__'s kernel should be defined"
 
-    if url:
-        if name==None:
-            name = os.path.basename( url )
-            if name.endswith('.git'):
-                name = name[:-4]        # trim it off
-        clone = True
-    elif name:
-        __entry__["name"] = name
-        url = __entry__["url"]          # use this Entry's substitution mechanism
-        clone = True
-    else:
-        clone = False
+    work_collection = ak.work_collection()
+    container_path  = work_collection.get_path('')
+    tool_path       = git_tool_entry["tool_path"]
+    git_tool_entry.call('run', f"\"{tool_path}\" -C \"{container_path}\" clone {url} {name}" )
+    result_entry            = ak.bypath( work_collection.get_path(name) )
+    result_entry['name']    = name
+    result_entry['tags']    = tags or [ 'git_repo' ]
+    result_entry.attach( work_collection ).save()
+
+    return result_entry
 
 
-    if clone:
-        work_collection = ak.work_collection()
-        container_path  = work_collection.get_path('')
-        git_tool_entry.call('run', [[ "^^", "substitute", f"git -C {container_path} clone {url}" ]] )
-        result_entry                = ak.bypath( work_collection.get_path(name) )
-        result_entry['repo_name']   = name
-        result_entry['tags']        = tags or [ 'git_repo' ]
-        result_entry.attach( work_collection ).save()
-        repo_entry      = result_entry
-    else:
-        repo_entry      = __entry__
-        repo_path       = repo_entry.get_path('')
-        git_tool_entry.call('run', [[ "^^", "substitute", f"#{tool_path}# -C \"{repo_path}\" pull --ff-only" ]] )
 
-    return repo_entry
+def pull(git_tool_entry, __entry__):
+    """Pull the repository contained in an entry.
+
+Usage examples :
+                axs byname counting_collection , pull
+    """
+
+    repo_path       = __entry__.get_path('')
+    tool_path       = git_tool_entry["tool_path"]
+    git_tool_entry.call('run', f"\"{tool_path}\" -C \"{repo_path}\" pull --ff-only" )
+
+    return __entry__

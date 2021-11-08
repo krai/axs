@@ -1,10 +1,12 @@
 {
     "_parent_entries": [ [ "^", "byname", "shell" ] ],
+
     "url_prefix": "https://github.com/ens-lg4",
-    "url": [ "^^", "substitute", "#{url_prefix}#/#{name}#" ],
+    "url":  [ "^^", "substitute", "#{url_prefix}#/#{name}#" ],
+    "name": [ "^^", "url_2_repo_name" ],
 
     "git_tool_entry": [ "^", "byquery", "shell_tool,can_git" ],
     "_producer_rules": [
-        [ [ "git_repo" ], "pull", {} ]
+        [ [ "git_repo" ], "clone", {} ]
     ]
 }

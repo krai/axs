@@ -40,10 +40,11 @@ axs bypath dad      , remove
 axs bypath granddad , remove
 assert_end entry_creation_multiple_inheritance_and_removal
 
-axs byname git , pull counting_collection
+axs byquery git_repo,name=counting_collection
 assert 'axs byname French , dig number_mapping.5' 'cinq'
-axs byname counting_collection , pull
+axs byquery git_repo,name=counting_collection , pull
 axs byname counting_collection , remove
+axs byquery shell_tool,can_git --- , remove
 assert_end git_cloning_collection_access_and_removal
 
 axs work_collection , attached_entry examplepage_recipe , plant url http://example.com/ entry_name examplepage_downloaded file_name example.html _parent_entries --,:=AS^IS:^:byname:downloader , save
