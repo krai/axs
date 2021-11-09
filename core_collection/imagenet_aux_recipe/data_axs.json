@@ -4,6 +4,11 @@
         [ "^", "byname", "extractor" ]
     ],
 
+    "_producer_rules": [
+        [ [ "downloaded", "imagenet_aux" ], "download", {} ],
+        [ [ "extracted",  "imagenet_aux" ], "extract",  {} ]
+    ],
+
     "url": "https://www.dropbox.com/s/92n2fyej3lzy3s3/caffe_ilsvrc12.tar.gz",
     "md5": "ee346d67141e476df9c1a3f813552503",
 
@@ -12,8 +17,17 @@
         [ "get_path" ]
     ]] ],
 
-    "_producer_rules": [
-        [ [ "downloaded", "imagenet_aux" ], "download", {} ],
-        [ [ "extracted",  "imagenet_aux" ], "extract",  {} ]
-    ]
+    "ground_truth_path": [ "^", "execute", [[
+        [ "byquery", "extracted,imagenet_aux" ],
+        [ "get_path", "extracted/val.txt" ]
+    ]] ],
+
+    "class_names_path": [ "^", "execute", [[
+        [ "byquery", "extracted,imagenet_aux" ],
+        [ "get_path", "extracted/synset_words.txt" ]
+    ]] ],
+
+    "ground_truth": [ "^^", "load_ground_truth" ],
+
+    "class_names": [ "^^", "load_class_names" ]
 }
