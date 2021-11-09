@@ -4,8 +4,10 @@ import os
 import sys
 
 imagenet_dir    = sys.argv[1]
+num_of_images   = int(sys.argv[2])
+model_name      = sys.argv[3]
+full_output     = bool(int(sys.argv[4]))
 file_pattern    = 'ILSVRC2012_val_000{:05d}.JPEG'
-model_name      = 'resnet50'
 
 # sample execution (requires torchvision)
 from PIL import Image
@@ -25,11 +27,14 @@ preprocess = transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])
 
-pre_batch = []
-for i in range(1,21):
-    file_name   = os.path.join( imagenet_dir, file_pattern.format(i) )
-    input_image = Image.open( file_name )
+file_names  = []
+pre_batch   = []
+for i in range(num_of_images):
+    file_name = file_pattern.format(i+1)
+    file_path   = os.path.join( imagenet_dir, file_name )
+    input_image = Image.open( file_path )
     input_tensor = preprocess(input_image)
+    file_names.append( file_name )
     pre_batch.append(input_tensor)
 
 input_batch = torch.stack(pre_batch, dim=0)
@@ -46,4 +51,10 @@ with torch.no_grad():
 # The output has unnormalized scores. To get probabilities, you can run a softmax on it.
 #print(torch.nn.functional.softmax(output[0], dim=0))
 
-print(torch.argmax(output, dim=1).tolist())
+class_numbers = torch.argmax(output, dim=1).tolist()
+
+if full_output:
+    for file_name, class_number in zip(file_names, class_numbers):
+        print(file_name, class_number)
+else:
+    print(class_numbers)

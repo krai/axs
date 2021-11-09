@@ -5,8 +5,11 @@
         [ "byquery", "extracted,imagenet500" ],
         [ "get_path" ]
     ]] ],
+    "num_of_images": 20,
+    "model_name": "resnet50",
+    "full_output": 1,
 
-    "script_extra_params": [ "^^", "substitute", "#{imagenet_directory}#" ],
+    "script_extra_params": [ "^^", "substitute", "#{imagenet_directory}# #{num_of_images}# #{model_name}# #{full_output}#" ],
 
     "rel_script_path": "barebones_resnet50.py",
 
