@@ -2,7 +2,7 @@
 
 """This entry knows where to download the ImageNet metadata (ground truth, class labels, etc) from, how to unpack it and how to interpret it.
 
-Usage examples:
+Usage examples :
                 axs byname imagenet_aux_recipe , get ground_truth_path
                 axs byname imagenet_aux_recipe , get class_names_path
                 axs byname imagenet_aux_recipe , dig class_mapping.1000
@@ -36,7 +36,7 @@ def show_table(ground_truth, class_names, n_from=1, n_to=20):
         NB: image indices are 1-based (1-50000), class labels are 0-based (0-999).
         Returns the number of lines printed.
 
- Usage examples :
+Usage examples :
                 axs byname imagenet_aux_recipe , show_table
                 axs byname imagenet_aux_recipe , show_table --n_from=21 --n_to=40
     """
