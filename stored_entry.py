@@ -22,10 +22,15 @@ class Entry(Runnable):
 
         self.generated_name_prefix  = generated_name_prefix or self.PREFIX_gen_entryname
         self.container_object       = container
-        self.set_path(entry_path)
+
+        if entry_path:
+            self.set_path(entry_path)
+        else:
+            self.entry_path         = None  # an obligatory placeholder
 
         self.parameters_path        = parameters_path
         self.module_name            = module_name or self.MODULENAME_functions
+
         super().__init__(**kwargs)
 
         logging.debug(f"[{self.get_name()}] Initializing the Entry with entry_path={self.entry_path}, parameters_path={self.parameters_path}, module_name={self.module_name}, generated_name_prefix={self.generated_name_prefix}")
@@ -64,13 +69,20 @@ Usage examples :
                 axs byname base_map , get_path
                 axs byname derived_map , get_path README.md
         """
+        def ensure_path():
+
+            if self.entry_path is None:
+                self.set_path(None)
+
+            return self.entry_path
+
         if file_name:
             if file_name.startswith(os.path.sep):
                 return file_name
             else:
-                return os.path.join(self.entry_path, file_name)
+                return os.path.join(ensure_path(), file_name)
         else:
-            return self.entry_path
+            return ensure_path()
 
 
     def get_path_from(self, key_path):
@@ -232,10 +244,19 @@ Usage examples :
     def pickle_one(self):
         """Return a command that would (hopefully) load *this* entry at a later time. Used recursively by pickle_struct()
         """
-        if self.get_container():
-            return [ "^", "byname", self.get_name()]
+
+        if self.parameters_path:
+            return [ "^", "bypath", self.parameters_path ]
+        elif self.entry_path:
+            if self.get_container():
+                return [ "^", "byname", self.get_name()]
+            else:
+                return [ "^", "bypath", self.get_path()]
         else:
-            return [ "^", "bypath", self.get_path()]
+            fresh_entry_opt_args = { "own_data": self.pickle_struct(self.own_data()) }
+            if self.container_object:
+                fresh_entry_opt_args["container"] = self.container_object.pickle_one()
+            return [ "^", "fresh_entry", [], fresh_entry_opt_args ]
 
 
     def save(self, new_path=None):
@@ -288,6 +309,8 @@ Usage examples :
             logging.warning(f"[{self.get_name()}] {entry_path} removed from the filesystem")
         else:
             logging.warning(f"[{self.get_name()}] was not saved to the file system, so cannot be removed")
+
+        self.entry_path     = None
 
         return self
 
