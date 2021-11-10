@@ -21,7 +21,7 @@
             "script_output", [ "AS^IS", "AS^IS", "^^", "load_json", [[ "^^", "get_path_from", "output_file_name" ]] ],
             "accuracy", [ "AS^IS", "AS^IS", "^^", "execute", [[
                 [ "get_kernel" ],
-                [ "byname", "imagenet_aux_recipe" ],
+                [ "byname", "imagenet_meta" ],
                 [ "measure_accuracy", [[ "^^", "dig", "script_output.predictions" ]] ]
             ]] ]
         ]] ] ],

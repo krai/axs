@@ -3,10 +3,10 @@
 """This entry knows where to download the ImageNet metadata (ground truth, class labels, etc) from, how to unpack it and how to interpret it.
 
 Usage examples :
-                axs byname imagenet_aux_recipe , get ground_truth_path
-                axs byname imagenet_aux_recipe , get class_names_path
-                axs byname imagenet_aux_recipe , dig class_mapping.1000
-                axs byname imagenet_aux_recipe , dig '---=["class_names",["^^","dig",[["ground_truth","ILSVRC2012_val_00050000.JPEG"]]]]'
+                axs byname imagenet_meta , get ground_truth_path
+                axs byname imagenet_meta , get class_names_path
+                axs byname imagenet_meta , dig class_mapping.1000
+                axs byname imagenet_meta , dig '---=["class_names",["^^","dig",[["ground_truth","ILSVRC2012_val_00050000.JPEG"]]]]'
 """
 
 def load_ground_truth(ground_truth_path):
@@ -50,8 +50,8 @@ def show_table(ground_truth, class_names, n_from=1, n_to=20):
         Returns the number of lines printed.
 
 Usage examples :
-                axs byname imagenet_aux_recipe , show_table
-                axs byname imagenet_aux_recipe , show_table --n_from=21 --n_to=40
+                axs byname imagenet_meta , show_table
+                axs byname imagenet_meta , show_table --n_from=21 --n_to=40
     """
     for i, file_name in enumerate(sorted( ground_truth.keys() )):
         n = i+1
