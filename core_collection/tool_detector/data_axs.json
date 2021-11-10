@@ -4,7 +4,7 @@
     ],
     "_producer_rules": [ "AS^IS",
         [ [ "shell_tool", "can_download_url" ], "detect", { "tool_name": "wget", "shell_cmd": [ "AS^IS", "^^", "substitute", "\"#{tool_path}#\" -O #{target_path}# #{url}#" ] } ],
-        [ [ "shell_tool", "can_download_url" ], "detect", { "tool_name": "curl", "shell_cmd": [ "AS^IS", "^^", "substitute", "\"#{tool_path}#\" -o #{target_path}# #{url}#" ] } ],
+        [ [ "shell_tool", "can_download_url" ], "detect", { "tool_name": "curl", "shell_cmd": [ "AS^IS", "^^", "substitute", "\"#{tool_path}#\" -L -o #{target_path}# #{url}#" ] } ],
 
         [ [ "shell_tool", "can_extract_tar" ], "detect", { "tool_name": "tar", "shell_cmd": [ "AS^IS", "^^", "substitute", [[
             "#{tool_path}#",
