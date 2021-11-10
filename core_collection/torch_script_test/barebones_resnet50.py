@@ -33,7 +33,7 @@ pre_batch   = []
 for i in range(num_of_images):
     file_name = file_pattern.format(i+1)
     file_path   = os.path.join( imagenet_dir, file_name )
-    input_image = Image.open( file_path )
+    input_image = Image.open( file_path ).convert('RGB')
     input_tensor = preprocess(input_image)
     file_names.append( file_name )
     pre_batch.append(input_tensor)
