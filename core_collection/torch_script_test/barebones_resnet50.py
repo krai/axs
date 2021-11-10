@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 
+import json
 import os
 import sys
 
-imagenet_dir    = sys.argv[1]
-num_of_images   = int(sys.argv[2])
-model_name      = sys.argv[3]
-full_output     = bool(int(sys.argv[4]))
-file_pattern    = 'ILSVRC2012_val_000{:05d}.JPEG'
+imagenet_dir        = sys.argv[1]
+num_of_images       = int(sys.argv[2])
+model_name          = sys.argv[3]
+output_file_path    = sys.argv[4]       # if empty, recording of the output will be skipped
+file_pattern        = 'ILSVRC2012_val_000{:05d}.JPEG'
 
 # sample execution (requires torchvision)
 from PIL import Image
@@ -53,8 +54,13 @@ with torch.no_grad():
 
 class_numbers = torch.argmax(output, dim=1).tolist()
 
-if full_output:
-    for file_name, class_number in zip(file_names, class_numbers):
-        print(file_name, class_number)
+if output_file_path:
+    output_dict = {
+        "predictions": dict( zip(file_names, class_numbers) )
+    }
+    json_string = json.dumps( output_dict , indent=4)
+    with open(output_file_path, "w") as json_fd:
+        json_fd.write( json_string+"\n" )
+    print(f'Predictions for {num_of_images} images written into "{output_file_path}"')
 else:
     print(class_numbers)
