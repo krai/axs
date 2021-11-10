@@ -31,6 +31,19 @@ def load_class_names(class_names_path):
     return class_names
 
 
+def measure_accuracy(predictions, ground_truth):
+    """Compare how many times a value in predictions maps to the same value in ground_truth.
+    """
+    correct_count = 0.0
+    total_count   = 0.0
+    for file_name in predictions:
+        if predictions[file_name]==ground_truth[file_name]:
+            correct_count += 1.0
+        total_count += 1.0
+
+    return correct_count/total_count if total_count else None
+
+
 def show_table(ground_truth, class_names, n_from=1, n_to=20):
     """Print a human-readable ordered slice of ground_truth table.
         NB: image indices are 1-based (1-50000), class labels are 0-based (0-999).

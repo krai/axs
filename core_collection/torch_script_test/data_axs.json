@@ -18,7 +18,12 @@
             "num_of_images", "#{num_of_images}#",
             "model_name", "#{model_name}#",
             "output_file_name", "#{output_file_name}#",
-            "script_output", [ "AS^IS", "AS^IS", "^^", "load_json", [[ "^^", "get_path_from", "output_file_name" ]] ]
+            "script_output", [ "AS^IS", "AS^IS", "^^", "load_json", [[ "^^", "get_path_from", "output_file_name" ]] ],
+            "accuracy", [ "AS^IS", "AS^IS", "^^", "execute", [[
+                [ "get_kernel" ],
+                [ "byname", "imagenet_aux_recipe" ],
+                [ "measure_accuracy", [[ "^^", "dig", "script_output.predictions" ]] ]
+            ]] ]
         ]] ] ],
         [ "save" ],
         [ "get_path_from", "output_file_name" ]
