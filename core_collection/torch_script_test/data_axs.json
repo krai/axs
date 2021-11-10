@@ -7,14 +7,21 @@
     ]] ],
     "num_of_images": 20,
     "model_name": "resnet50",
+    "output_file_name": "script_output.json",
 
     "output_file_path": [ "^^", "execute", [[
         [ "get_kernel" ],
         [ "work_collection" ],
         [ "attached_entry", [], { "generated_name_prefix": "torch_script_output_" } ] ,
-        [ "plant", [ "^^", "substitute", [[ "tags", [ "script_output" ], "num_of_images", "#{num_of_images}#", "model_name", "#{model_name}#" ]] ] ],
+        [ "plant", [ "^^", "substitute", [[
+            "tags", [ "script_output" ],
+            "num_of_images", "#{num_of_images}#",
+            "model_name", "#{model_name}#",
+            "output_file_name", "#{output_file_name}#",
+            "script_output", [ "AS^IS", "AS^IS", "^^", "load_json", [[ "^^", "get_path_from", "output_file_name" ]] ]
+        ]] ] ],
         [ "save" ],
-        [ "get_path", "script_output.json" ]
+        [ "get_path_from", "output_file_name" ]
     ]] ],
 
     "script_extra_params": [ "^^", "substitute", "\"#{imagenet_directory}#\" #{num_of_images}# #{model_name}# \"#{output_file_path}#\"" ],
