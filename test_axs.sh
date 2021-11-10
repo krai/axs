@@ -68,7 +68,9 @@ assert_end dependency_installation_and_resolution_for_internal_code
 export INFERENCE_OUTPUT=`axs byname torch_script_test , run --torchvision_query+=package_version=0.10.1 --output_file_path=`
 assert "echo $INFERENCE_OUTPUT" '[65, 795, 230, 809, 520, 65, 334, 852, 674, 332, 109, 286, 370, 757, 595, 147, 327, 23, 478, 517]'
 axs byname torch_script_test , run --num_of_images=32
-assert 'axs byquery script_output , get accuracy' '0.71875'
+export ACCURACY_OUTPUT=`axs byquery script_output , get accuracy`
+echo "Accuracy: $ACCURACY_OUTPUT"
+assert "echo $ACCURACY_OUTPUT" '0.71875'
 
 axs byquery script_output --- , remove
 axs byquery imagenet_aux,extracted --- , remove
