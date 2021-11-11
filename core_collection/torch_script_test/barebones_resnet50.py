@@ -13,6 +13,7 @@ file_pattern        = 'ILSVRC2012_val_000{:05d}.JPEG'
 
 # sample execution (requires torchvision)
 from PIL import Image
+from time import time
 import torch
 import torchvision
 from torchvision import transforms
@@ -20,9 +21,13 @@ from torchvision import transforms
 execution_device    = execution_device or ('cuda' if torch.cuda.is_available() else 'cpu')  # autodetection
 torchvision_version = ':v' + torchvision.__version__.split('+')[0]
 
+ts_before_model_loading = time()
+
 model = torch.hub.load('pytorch/vision' + torchvision_version, model_name, pretrained=True)
 model.eval()
 model.to( execution_device )
+
+ts_before_data_loading  = time()
 
 preprocess = transforms.Compose([
     transforms.Resize(256),
@@ -44,6 +49,8 @@ for i in range(num_of_images):
 input_batch = torch.stack(pre_batch, dim=0)
 input_batch = input_batch.to( execution_device )
 
+ts_before_inference     = time()
+
 with torch.no_grad():
     output = model(input_batch)
 
@@ -52,9 +59,18 @@ with torch.no_grad():
 
 class_numbers = torch.argmax(output, dim=1).tolist()
 
+ts_before_reporting     = time()
+
 if output_file_path:
     output_dict = {
         "execution_device": execution_device,
+        "time": {
+            "model_loading_s":  ts_before_data_loading - ts_before_model_loading,
+            "data_loading_s":   ts_before_inference - ts_before_data_loading,
+            "all_inference_s":  ts_before_reporting - ts_before_inference,
+            "per_inference_s":  (ts_before_reporting - ts_before_inference) / num_of_images,
+            "fps":              num_of_images / (ts_before_reporting - ts_before_inference),
+        },
         "predictions": dict( zip(file_names, class_numbers) )
     }
     json_string = json.dumps( output_dict , indent=4)
