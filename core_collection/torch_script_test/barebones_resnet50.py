@@ -8,6 +8,7 @@ imagenet_dir        = sys.argv[1]
 num_of_images       = int(sys.argv[2])
 model_name          = sys.argv[3]
 output_file_path    = sys.argv[4]       # if empty, recording of the output will be skipped
+execution_device    = sys.argv[5]       # if empty, it will be autodetected
 file_pattern        = 'ILSVRC2012_val_000{:05d}.JPEG'
 
 # sample execution (requires torchvision)
@@ -16,10 +17,12 @@ import torch
 import torchvision
 from torchvision import transforms
 
+execution_device    = execution_device or ('cuda' if torch.cuda.is_available() else 'cpu')  # autodetection
 torchvision_version = ':v' + torchvision.__version__.split('+')[0]
 
 model = torch.hub.load('pytorch/vision' + torchvision_version, model_name, pretrained=True)
 model.eval()
+model.to( execution_device )
 
 preprocess = transforms.Compose([
     transforms.Resize(256),
@@ -39,12 +42,7 @@ for i in range(num_of_images):
     pre_batch.append(input_tensor)
 
 input_batch = torch.stack(pre_batch, dim=0)
-#print(input_batch.size())
-
-# move the input and model to GPU for speed if available
-if torch.cuda.is_available():
-    input_batch = input_batch.to('cuda')
-    model.to('cuda')
+input_batch = input_batch.to( execution_device )
 
 with torch.no_grad():
     output = model(input_batch)
@@ -56,6 +54,7 @@ class_numbers = torch.argmax(output, dim=1).tolist()
 
 if output_file_path:
     output_dict = {
+        "execution_device": execution_device,
         "predictions": dict( zip(file_names, class_numbers) )
     }
     json_string = json.dumps( output_dict , indent=4)
