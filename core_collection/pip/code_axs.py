@@ -17,6 +17,8 @@ Usage examples :
                 axs byname pip , install numpy
 
                 axs byname pip , install scipy 1.5.1 --pip_options,=no-deps --tags,=python_package,no_deps
+
+                axs byname pip , install --package_name=torchvision --package_version=0.11.1+cu113 --pip_options="torch==1.10.0+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html"
     """
 
     rel_install_dir = 'install'

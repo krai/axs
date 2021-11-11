@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
 
+"""An example Python script that is given its data, necessary Python environment and the output path by wrapping it into an Entry.
+
+Usage examples :
+                axs byname torch_script_test , run --execution_device=cpu --num_of_images=100
+
+                axs byname torch_script_test , run --torchvision_query+=with_cuda --num_of_images=500
+"""
+
 import json
 import os
 import sys
