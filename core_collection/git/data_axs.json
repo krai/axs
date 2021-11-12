@@ -7,6 +7,6 @@
 
     "git_tool_entry": [ "^", "byquery", "shell_tool,can_git" ],
     "_producer_rules": [
-        [ [ "git_repo" ], "clone", {} ]
+        [ [ "git_repo" ], [ "^^", "get", "__entry__" ], "clone", {} ]
     ]
 }

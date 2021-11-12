@@ -4,8 +4,8 @@
     ],
     "tool_entry": [ "^", "byquery", "shell_tool,can_python" ],
     "_producer_rules": [
-        [ [ "python_package", "with_cuda" ], "install", { "python_version": "0.11.1+cu113", "pip_options": "torch==1.10.0+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html"} ],
-        [ [ "python_package", "no_deps" ], "install", { "pip_options": [ "no-deps" ] } ],
-        [ [ "python_package" ], "install", {} ]
+        [ [ "python_package", "with_cuda" ], [ "^^", "get", "__entry__" ], "install", { "python_version": "0.11.1+cu113", "pip_options": "torch==1.10.0+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html"} ],
+        [ [ "python_package", "no_deps" ], [ "^^", "get", "__entry__" ], "install", { "pip_options": [ "no-deps" ] } ],
+        [ [ "python_package" ], [ "^^", "get", "__entry__" ], "install", {} ]
     ]
 }

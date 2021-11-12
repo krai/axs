@@ -1,12 +1,7 @@
 {
-    "_parent_entries": [
-        [ "^", "byname", "downloader" ],
-        [ "^", "byname", "extractor" ]
-    ],
-
     "_producer_rules": [
-        [ [ "downloaded", "imagenet_aux" ], "download", {} ],
-        [ [ "extracted",  "imagenet_aux" ], "extract",  {} ]
+        [ [ "downloaded", "imagenet_aux" ], [ "^", "byname", "downloader" ], "download", {} ],
+        [ [ "extracted",  "imagenet_aux" ], [ "^", "byname", "extractor" ], "extract",  {} ]
     ],
 
     "url": "https://www.dropbox.com/s/92n2fyej3lzy3s3/caffe_ilsvrc12.tar.gz",
