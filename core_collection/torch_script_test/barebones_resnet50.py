@@ -6,6 +6,14 @@ Usage examples :
                 axs byname torch_script_test , run --execution_device=cpu --num_of_images=100
 
                 axs byname torch_script_test , run --torchvision_query+=with_cuda --num_of_images=500
+
+                    # assuming 50k Imagenet in a tarball
+                axs byname extractor , extract --archive_path=/datasets/dataset-imagenet-ilsvrc2012-val.tar --tags,=extracted,imagenet50k --strip_components=1
+                axs byname torch_script_test , run --torchvision_query+=with_cuda --imagenet_query,=extracted,imagenet50k --num_of_images=1000
+
+                    # assuming 50k Imagenet in a directory
+                axs byname torch_script_test , run --torchvision_query+=with_cuda --imagenet_directory=/datasets/imagenet/imagenet --num_of_images=800
+
 """
 
 import json
