@@ -26,6 +26,9 @@ Usage examples:
     if env:
         shell_cmd = 'env ' + ' '.join([ f"{k}={env[k]}" for k in env]) + ' ' + shell_cmd
 
+    if type(shell_cmd)==list:   # making sure all components are strings
+        shell_cmd = [str(x) for x in shell_cmd]
+
     logging.warning(f"shell.run() about to execute:\n\t{shell_cmd}\n" + (' '*8 + '^'*len(shell_cmd)) )
 
     if capture_output:
