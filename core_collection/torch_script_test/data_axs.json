@@ -1,8 +1,10 @@
 {
     "_parent_entries": [ [ "^", "byname", "python_script" ] ],
 
+    "imagenet_query": [ "extracted", "imagenet500" ],
+
     "imagenet_directory": [ "^", "execute", [[
-        [ "byquery", "extracted,imagenet500" ],
+        [ "byquery", [[ "^^", "get", "imagenet_query" ]] ],
         [ "get_path" ]
     ]] ],
     "num_of_images": 20,
