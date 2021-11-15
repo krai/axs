@@ -10,7 +10,8 @@
             "#{tool_path}#",
             ["^^", "case", [ ["^^", "get", "archive_format"], "tar", "-xvf", "tgz", "-zxvf" ] ],
             "#{archive_path}#",
-            "-C", "#{target_path}#"
+            "-C", "#{target_path}#",
+            "--strip-components", "#{strip_components}#"
         ]] ] } ],
 
         [ [ "shell_tool", "can_compute_md5" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "md5sum.exe", "shell_cmd": [ "AS^IS", "AS^IS", "^^", "substitute", "\"#{tool_path}#\" \"#{file_path}#\" | cut -f 1 -d \" \" | sed \"s/\\\\\\\\//g\"" ], "capture_output": true } ],

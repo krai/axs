@@ -7,12 +7,13 @@ import logging
 import os
 
 
-def extract(archive_path, archive_format=None, file_name="extracted", extraction_tool_entry=None, tags=None, entry_name=None, __record_entry__=None):
+def extract(archive_path, archive_format=None, file_name="extracted", extraction_tool_entry=None, strip_components=0, tags=None, entry_name=None, __record_entry__=None):
     """Create a new entry and extract the archive into it
 
 Usage examples:
     # Extracting an arbitrary tarball (zipped or otherwise) into an Entry:
             axs byname extractor , extract two_points.tar
+            axs byname extractor , extract --archive_path=/datasets/dataset-imagenet-ilsvrc2012-val.tar --tags,=extracted,imagenet50k --strip_components=1
 
     # Downloading the archive tarball:
             axs byname downloader , download 'http://cKnowledge.org/ai/data/ILSVRC2012_img_val_500.tar'
@@ -52,7 +53,7 @@ Usage examples:
     os.makedirs( target_path )
 
     logging.warning(f"The resolved extraction_tool_entry '{extraction_tool_entry.get_name()}' located at '{extraction_tool_entry.get_path()}' uses the shell tool '{extraction_tool_entry['tool_path']}'")
-    retval = extraction_tool_entry.call('run', [], {"archive_path": archive_path, "target_path": target_path, "errorize_output": True, "archive_format": archive_format})
+    retval = extraction_tool_entry.call('run', [], {"archive_path": archive_path, "target_path": target_path, "errorize_output": True, "archive_format": archive_format, "strip_components": strip_components})
     if retval == 0:
         return __record_entry__
     else:
