@@ -106,6 +106,35 @@ Usage examples :
             return False
 
 
+    def possible_actions(self):
+        """Support for bash autocompletion.
+
+# Add this to your .bash_profile (or .bash_login , or .bashrc) :
+# ------------------------------- >8 >8 >8 -----------------------------
+_axs_comp()
+{
+    cur="${COMP_WORDS[COMP_CWORD]}"     # the so-far-typed part of the (first) action
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    if [[ $COMP_CWORD -eq 1 ]] ; then   # if we just started, it should be the kernel
+        COMPREPLY=($(compgen -W "$(axs possible_actions)" -- "$cur" ))
+    elif [[ "$prev" == "," ]] ; then    # hoping this assumption is more frequently right than wrong!
+        COMPREPLY=($(compgen -W "$(axs fresh_entry , possible_actions)" -- "$cur" ))
+    else
+        COMPREPLY=()
+    fi
+}
+complete -o bashdefault -o default -F _axs_comp axs
+# ------------------------------- 8< 8< 8< -----------------------------
+
+Usage examples :
+                axs byname extractor , possible_actions
+                axs <tab><tab>
+                axs fresh_entry , <tab><tab>
+
+        """
+        return ' '.join( function_access.list_function_names( self.__class__ ) + self.list_own_functions() )
+
+
     def help(self, action_name=None):
         """Reach for a Runnable's function or method and examine its DocString and calling signature.
 
