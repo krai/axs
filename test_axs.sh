@@ -65,7 +65,7 @@ assert_end dependency_installation_and_resolution_for_internal_code
 
 # The following line is split into two to provide more insight into what is going on.
 # Otherwise assert() blocks all the error output and the command looks "stuck" for quite a while.
-export INFERENCE_OUTPUT=`axs byname torch_script_test , run --torchvision_query+=package_version=0.10.1 --capture_output+ --output_file_path=`
+export INFERENCE_OUTPUT=`axs byname torch_script_test , run --torchvision_query+=package_version=0.10.1 ---capture_output=true --output_file_path=`
 assert "echo $INFERENCE_OUTPUT" '1..20: [65, 795, 230, 809, 520, 65, 334, 852, 674, 332, 109, 286, 370, 757, 595, 147, 327, 23, 478, 517]'
 axs byname torch_script_test , run --num_of_images=32
 export ACCURACY_OUTPUT=`axs byquery script_output , get accuracy`
