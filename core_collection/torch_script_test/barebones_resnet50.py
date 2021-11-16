@@ -105,10 +105,8 @@ for batch_start in range(0, num_of_images, max_batch_size):
     sum_loading_s   += batch_loading_s
     sum_inference_s += batch_inference_s
 
-    if output_file_path:
-        print(f"[{batch_start+1}..{batch_open_end}] ", end='')
-    else:
-        print(f"{batch_start+1}..{batch_open_end}: {class_numbers}")
+    print(f"{batch_start+1}..{batch_open_end}: {class_numbers}")
+
 
 if output_file_path:
     output_dict = {
