@@ -22,14 +22,10 @@ Usage examples:
             axs bypath wget_tool , run --url=https://example.com --target_path=example.html
 
     """
-    env = env or {}
-    if env:
-        shell_cmd = 'env ' + ' '.join([ f"{k}={env[k]}" for k in env]) + ' ' + shell_cmd
-
     if type(shell_cmd)==list:   # making sure all components are strings
         shell_cmd = [str(x) for x in shell_cmd]
 
-    logging.warning(f"shell.run() about to execute:\n\t{shell_cmd}\n" + (' '*8 + '^'*len(shell_cmd)) )
+    logging.warning(f"shell.run() about to execute (with env={env}, capture_output={capture_output}, errorize_output={errorize_output}, split_to_lines={split_to_lines}):\n\t{shell_cmd}\n" + (' '*8 + '^'*len(shell_cmd)) )
 
     if capture_output:
         stdout_target = subprocess.PIPE
@@ -38,7 +34,7 @@ Usage examples:
     else:
         stdout_target = None
 
-    completed_process = subprocess.run(shell_cmd, shell = (type(shell_cmd)!=list), stdout=stdout_target)
+    completed_process = subprocess.run(shell_cmd, shell = (type(shell_cmd)!=list), env=env, stdout=stdout_target)
     if capture_output:
         output  = completed_process.stdout.decode('utf-8').rstrip()
 
