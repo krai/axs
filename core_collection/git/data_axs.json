@@ -1,6 +1,4 @@
 {
-    "_parent_entries": [ [ "^", "byname", "shell" ] ],
-
     "url_prefix": "https://github.com/ens-lg4",
     "url":  [ "^^", "substitute", "#{url_prefix}#/#{name}#" ],
     "name": [ "^^", "url_2_repo_name" ],
