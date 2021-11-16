@@ -54,14 +54,14 @@ Clean-up:
 
 
 
-def pull(git_tool_entry, __entry__):
+def pull(repo_path, git_tool_entry, __entry__=None):
     """Pull the repository contained in an entry.
 
 Usage examples :
                 axs byname counting_collection , pull
-    """
 
-    repo_path       = __entry__.get_path('')
+                axs byname git , pull `axs core_collection , get_path`
+    """
     tool_path       = git_tool_entry["tool_path"]
     git_tool_entry.call('run', f"\"{tool_path}\" -C \"{repo_path}\" pull --ff-only" )
 
