@@ -155,7 +155,8 @@ Usage examples :
         logging.debug(f"[{__entry__.get_name()}] byquery({query}) did not find anything, but there are tags: {posi_tag_set} , trying to find a producer...")
 
         for advertising_entry in walk(__entry__):
-            for rule_conditions, producer_entry, producer_method, extra_params in advertising_entry.get('_producer_rules', []):
+            for rule_index, unprocessed_rule in enumerate( advertising_entry.own_data().get('_producer_rules', []) ):   # block processing the params until they are really needed
+                rule_conditions = unprocessed_rule[0]
 
                 rule_tags_set       = set()
                 rule_filter_list    = []
@@ -192,6 +193,8 @@ Usage examples :
                             raise SyntaxError(f"Could not parse the condition '{condition}' in Entry {advertising_entry.get_name()}")
 
                     if rule_conditions_ok:
+                        rule_conditions, producer_entry, producer_method, extra_params = advertising_entry['_producer_rules'][rule_index]
+
                         logging.warning(f"Entry '{advertising_entry.get_name()}' advertises producer '{producer_entry.get_name()}' with action {producer_method}({extra_params}) and matching tags {rule_tags_set} that may work with {posi_val_dict}")
                         cumulative_params = deepcopy( extra_params )
                         cumulative_params.update( posi_val_dict )
