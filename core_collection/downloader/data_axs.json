@@ -1,5 +1,4 @@
 {
-    "_parent_entries": [ [ "^", "byname", "shell" ] ],
     "action_name": "download",
     "downloading_tool_entry": [ "^", "byquery", "shell_tool,can_download_url" ],
     "md5_tool_entry": [ "^", "byquery", "shell_tool,can_compute_md5" ]

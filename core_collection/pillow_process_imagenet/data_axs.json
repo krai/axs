@@ -3,8 +3,6 @@
         [ [ "preprocessed", "imagenet" ], [ "^^", "get", "__entry__" ], "preprocess", {} ]
     ],
 
-    "_parent_entries": [ [ "^", "byname", "python_script" ] ],
-
     "numpy_query": [ "python_package", "package_name=numpy" ],
     "pillow_query": [ "python_package", "package_name=pillow" ],
 

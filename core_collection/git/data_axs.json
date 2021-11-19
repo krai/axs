@@ -1,4 +1,8 @@
 {
+    "_producer_rules": [
+        [ [ "git_repo" ], [ "^^", "get", "__entry__" ], "clone", {} ]
+    ],
+
     "url_prefix": "https://github.com/ens-lg4",
     "url":  [ "^^", "substitute", "#{url_prefix}#/#{name}#" ],
     "name": [ "^^", "url_2_repo_name" ],
@@ -6,9 +10,5 @@
     "repo_path": [ "^^", "get_path", "" ],
 
     "git_tool_entry":   [ "^", "byquery", "shell_tool,can_git" ],
-    "container_entry":  [ "^", "work_collection" ],
-
-    "_producer_rules": [
-        [ [ "git_repo" ], [ "^^", "get", "__entry__" ], "clone", {} ]
-    ]
+    "container_entry":  [ "^", "work_collection" ]
 }

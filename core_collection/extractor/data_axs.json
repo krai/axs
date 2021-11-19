@@ -1,5 +1,4 @@
 {
-    "_parent_entries": [ [ "^", "byname", "shell" ] ],
     "action_name": "extract",
     "extraction_tool_entry": [ "^", "byquery", [[ "^^", "substitute", "shell_tool,can_extract_tar" ]] ]
 }
