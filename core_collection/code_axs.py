@@ -71,134 +71,148 @@ Usage examples :
     """
     assert __entry__ != None, "__entry__ should be defined"
 
-    def query_filter(key_path, fun, against=None):
-        """ Finally, a useful real-life example of closures:
-            captures both *fun* and *against* in the internal function.
-        """
-        split_key_path = key_path.split('.')    # computed only once during closure creation
-
-        def filter_closure(entry):
-            return fun(entry.dig(split_key_path, safe=True, parent_recursion=parent_recursion), against)    # computed every time during filter application
-
-        return filter_closure
-
-
     import re
     from function_access import to_num_or_not_to_num
 
-    query_conditions    = query if type(query)==list else query.split(',')
-    query_filter_list   = []
-    posi_tag_set        = set()
-    posi_val_dict       = {}
+    def parse_condition(condition, context):
 
-    # parsing the query:
-    for condition in query_conditions:
         binary_op_match = re.match('([\w\.]*\w)(==|=|!=|<>|<=|>=|<|>|:|!:)(.+)$', condition)
         if binary_op_match:
             key_path    = binary_op_match.group(1)
-            binary_op   = binary_op_match.group(2)
-            test_val    = to_num_or_not_to_num(binary_op_match.group(3))
-            if binary_op in ('=', '=='):
-                posi_val_dict[key_path] = test_val
-                query_filter_list.append( query_filter(key_path, lambda x, y : x==y, test_val) )
-            elif binary_op in ('!=', '<>'):
-                query_filter_list.append( query_filter(key_path, lambda x, y : x!=y, test_val) )
-            elif binary_op=='<':
-                query_filter_list.append( query_filter(key_path, lambda x, y : x!=None and x<y, test_val) )
-            elif binary_op=='>':
-                query_filter_list.append( query_filter(key_path, lambda x, y : x!=None and x>y, test_val) )
-            elif binary_op=='<=':
-                query_filter_list.append( query_filter(key_path, lambda x, y : x!=None and x<=y, test_val) )
-            elif binary_op=='>=':
-                query_filter_list.append( query_filter(key_path, lambda x, y : x!=None and x>=y, test_val) )
-            elif binary_op==':':
-                query_filter_list.append( query_filter(key_path, lambda x, y : type(x)==list and y in x, test_val) )
-            elif binary_op=='!:':
-                query_filter_list.append( query_filter(key_path, lambda x, y : type(x)==list and y not in x, test_val) )
+            op          = binary_op_match.group(2)
+            val         = to_num_or_not_to_num(binary_op_match.group(3))
+
+            if op in ('=', '=='):
+                op = '='
+                comparison_lambda   = lambda x, y : x==y
+            elif op in ('!=', '<>'):
+                comparison_lambda   = lambda x, y : x!=y
+            elif op=='<':
+                comparison_lambda   = lambda x, y : x!=None and x<y
+            elif op=='>':
+                comparison_lambda   = lambda x, y : x!=None and x>y
+            elif op=='<=':
+                comparison_lambda   = lambda x, y : x!=None and x<=y
+            elif op=='>=':
+                comparison_lambda   = lambda x, y : x!=None and x>=y
+            elif op==':':
+                comparison_lambda   = lambda x, y : type(x)==list and y in x
+            elif op=='!:':
+                comparison_lambda   = lambda x, y : type(x)==list and y not in x
+            else:
+                raise SyntaxError(f"Could not parse the condition '{condition}' in {context}")
         else:
             unary_op_match = re.match('([\w\.]*\w)(\.|\?|\+|-)$', condition)
             if unary_op_match:
                 key_path    = unary_op_match.group(1)
-                unary_op    = unary_op_match.group(2)
-                if unary_op=='.':               # path exists
-                    query_filter_list.append( query_filter(key_path, lambda x, y: x!=None) )
-                elif unary_op in ('?', '+'):    # computes to True
-                    query_filter_list.append( query_filter(key_path, lambda x, y: bool(x)) )
-                elif unary_op=='-':             # computes to False
-                    query_filter_list.append( query_filter(key_path, lambda x, y: not bool(x)) )
+                op          = unary_op_match.group(2)
+                val         = None
+                if op=='.':               # path exists
+                    comparison_lambda   = lambda x, y: x!=None
+                elif op in ('?', '+'):    # computes to True
+                    comparison_lambda   = lambda x, y: bool(x)
+                elif op=='-':             # computes to False
+                    comparison_lambda   = lambda x, y: not bool(x)
+                else:
+                    raise SyntaxError(f"Could not parse the condition '{condition}' in {context}")
             else:
                 tag_match = re.match('([!^-])?(\w+)$', condition)
                 if tag_match:
                     key_path    = 'tags'
-                    test_val    = tag_match.group(2)
+                    val         = tag_match.group(2)
                     if tag_match.group(1):
-                        query_filter_list.append( query_filter(key_path, lambda x, y : type(x)!=list or y not in x, test_val) )
+                        op = "tag-"
+                        comparison_lambda   = lambda x, y : type(x)!=list or y not in x
                     else:
-                        query_filter_list.append( query_filter(key_path, lambda x, y : type(x)==list and y in x, test_val) )
-                        posi_tag_set.add( test_val )
+                        op = "tag+"
+                        comparison_lambda   = lambda x, y : type(x)==list and y in x
                 else:
-                    raise SyntaxError(f"Could not parse the condition '{condition}'")
+                    raise SyntaxError(f"Could not parse the condition '{condition}' in {context}")
+
+        return key_path, op, val, comparison_lambda
 
 
-    # applying the query as a filter:
+    query_conditions    = query if type(query)==list else query.split(',')
+    query_posi_tag_set  = set()
+    query_posi_val_dict = {}
+    query_mentioned_set = set()
+    query_filter_list   = []
+
+    # parsing the Query:
+    for condition in query_conditions:
+        key_path, op, val, query_comparison_lambda = parse_condition( condition, "Query" )
+        query_mentioned_set.add( key_path )
+
+        if op=='=':
+            query_posi_val_dict[key_path] = val
+        elif op=='tag+':
+            query_posi_tag_set.add( val )
+
+        query_filter_list.append( (key_path, op, val, query_comparison_lambda, key_path.split('.')) )
+
+    # trying to match the Query in turn against each existing and walkable entry:
     for candidate_entry in walk(__entry__):
         candidate_still_ok = True
-        for filter_function in query_filter_list:
-            if not filter_function(candidate_entry):
+        for key_path, op, val, query_comparison_lambda, split_key_path in query_filter_list:
+            if not query_comparison_lambda( candidate_entry.dig(split_key_path, safe=True, parent_recursion=parent_recursion), val ):
                 candidate_still_ok = False
                 break
         if candidate_still_ok:
             return candidate_entry
 
-
-    if produce_if_not_found and len(posi_tag_set):
-        logging.debug(f"[{__entry__.get_name()}] byquery({query}) did not find anything, but there are tags: {posi_tag_set} , trying to find a producer...")
+    # if a matching entry does not exist, see if we can produce it with a matching Rule
+    if produce_if_not_found and len(query_posi_tag_set):
+        logging.warning(f"[{__entry__.get_name()}] byquery({query}) did not find anything, but there are tags: {query_posi_tag_set} , trying to find a producer...")
 
         for advertising_entry in walk(__entry__):
             for rule_index, unprocessed_rule in enumerate( advertising_entry.own_data().get('_producer_rules', []) ):   # block processing the params until they are really needed
                 rule_conditions = unprocessed_rule[0]
 
-                rule_tags_set       = set()
+                rule_posi_tag_set   = set()
+                rule_posi_val_dict  = {}
                 rule_filter_list    = []
+
+                # parsing the Rule
                 for condition in rule_conditions:
-                    if re.match('^\w+$', condition):
-                        rule_tags_set.add( condition )
-                    else:
-                        rule_filter_list.append( condition )
+                    key_path, op, val, rule_comparison_lambda = parse_condition( condition, f"Entry: {advertising_entry.get_name()}" )
 
-                if rule_tags_set.issubset(posi_tag_set):
-                    rule_conditions_ok  = True
-                    for condition in rule_filter_list:
-                        binary_op_match = re.match('^(\w+)(==|=|!=|<>)(.+)$', condition)
-                        if binary_op_match:
-                            rule_val    = posi_val_dict.get( binary_op_match.group(1) )
-                            binary_op   = binary_op_match.group(2)
-                            test_val    = to_num_or_not_to_num(binary_op_match.group(3))
-                            if binary_op in ('=', '=='):
-                                rule_conditions_ok = rule_val==test_val
-                            elif binary_op in ('!=', '<>'):
-                                rule_conditions_ok = rule_val!=test_val
-                            elif binary_op == '<':
-                                rule_conditions_ok = (rule_val is not None) and (rule_val<test_val)
-                            elif binary_op == '<=':
-                                rule_conditions_ok = (rule_val is not None) and (rule_val<=test_val)
-                            elif binary_op == '>':
-                                rule_conditions_ok = (rule_val is not None) and (rule_val>test_val)
-                            elif binary_op == '>=':
-                                rule_conditions_ok = (rule_val is not None) and (rule_val>=test_val)
+                    if op=='=':
+                        rule_posi_val_dict[key_path] = val
+                    elif op=='tag+':
+                        rule_posi_tag_set.add( val )
 
-                            if not rule_conditions_ok: break
+                    rule_filter_list.append( (key_path, op, val, rule_comparison_lambda) )
 
-                        else:
-                            raise SyntaxError(f"Could not parse the condition '{condition}' in Entry {advertising_entry.get_name()}")
+                if rule_posi_tag_set.issubset(query_posi_tag_set):  # FIXME:  rule_posi_tag_set should include it
+                    qr_conditions_ok  = True
 
-                    if rule_conditions_ok:
+                    # first matching rule's conditions against query's values:
+                    for key_path, op, rule_val, rule_comparison_lambda in rule_filter_list:
+
+                        if op=='tag+': continue     # we have matched them directly above
+
+                        # we allow (only) equalities on the rule side not to have a match on the query side
+                        qr_conditions_ok = rule_comparison_lambda( query_posi_val_dict[key_path], rule_val ) if (key_path in query_posi_val_dict) else ((op=='=') and (key_path in query_mentioned_set))
+                        if not qr_conditions_ok: break
+
+                    if qr_conditions_ok:
+                        # then matching query's conditions against rule's values:
+                        for key_path, op, query_val, query_comparison_lambda, split_key_path in query_filter_list:
+
+                            if op=='tag+': continue     # we have matched them directly above
+
+                            # we allow (only) equalities on the query side not to have a match on the rule side
+                            qr_conditions_ok = query_comparison_lambda( rule_posi_val_dict[key_path], query_val ) if (key_path in rule_posi_val_dict) else (op=='=')
+                            if not qr_conditions_ok: break
+
+                    if qr_conditions_ok:
                         rule_conditions, producer_entry, producer_method, extra_params = advertising_entry['_producer_rules'][rule_index]
 
-                        logging.warning(f"Entry '{advertising_entry.get_name()}' advertises producer '{producer_entry.get_name()}' with action {producer_method}({extra_params}) and matching tags {rule_tags_set} that may work with {posi_val_dict}")
-                        cumulative_params = deepcopy( extra_params )
-                        cumulative_params.update( posi_val_dict )
-                        cumulative_params["tags"] = list(posi_tag_set)
+                        logging.warning(f"Entry '{advertising_entry.get_name()}' advertises producer '{producer_entry.get_name()}' with action {producer_method}({extra_params}) and matching tags {rule_posi_tag_set} that may work with {query_posi_val_dict}")
+                        cumulative_params = deepcopy( extra_params )    # defaults first
+                        cumulative_params.update( rule_posi_val_dict )  # rules on top (may override some defaults)
+                        cumulative_params.update( query_posi_val_dict ) # query on top (may override some defaults)
+                        cumulative_params["tags"] = list(query_posi_tag_set)    # FIXME:  rule_posi_tag_set should include it
                         producer_entry.runtime_stack().append( advertising_entry )
                         new_entry = producer_entry.call(producer_method, [], {'AS^IS':cumulative_params})
                         producer_entry.runtime_stack().pop()

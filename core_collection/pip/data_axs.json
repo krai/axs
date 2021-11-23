@@ -2,7 +2,7 @@
     "_producer_rules": [
         [ [ "python_package", "package_name==torchvision", "with_cuda" ], [ "^^", "get", "__entry__" ], "install", { "python_version": "0.11.1+cu113", "pip_options": "torch==1.10.0+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html"} ],
         [ [ "python_package", "no_deps" ], [ "^^", "get", "__entry__" ], "install", { "pip_options": [ "no-deps" ] } ],
-        [ [ "python_package", "special", "broken-rule" ], [ "^^", "get", "__entry__" ], "install", {} ],
+        [ [ "python_package", "special", "broken_rule" ], [ "^^", "get", "__entry__" ], "install", {} ],
         [ [ "python_package" ], [ "^^", "get", "__entry__" ], "install", {} ]
     ],
 
