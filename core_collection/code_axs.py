@@ -165,7 +165,7 @@ Usage examples :
         logging.warning(f"[{__entry__.get_name()}] byquery({query}) did not find anything, but there are tags: {query_posi_tag_set} , trying to find a producer...")
 
         for advertising_entry in walk(__entry__):
-            for rule_index, unprocessed_rule in enumerate( advertising_entry.own_data().get('_producer_rules', []) ):   # block processing the params until they are really needed
+            for rule_index, unprocessed_rule in enumerate( advertising_entry.own_data().get('_producer_rules', []) ):   # block processing some params until they are really needed
                 rule_conditions = unprocessed_rule[0]
 
                 rule_posi_tag_set   = set()
@@ -206,7 +206,8 @@ Usage examples :
                             if not qr_conditions_ok: break
 
                     if qr_conditions_ok:
-                        rule_conditions, producer_entry, producer_method, extra_params = advertising_entry['_producer_rules'][rule_index]
+                        _, producer_entry, producer_method, _ = advertising_entry['_producer_rules'][rule_index]
+                        extra_params    = advertising_entry.nested_calls( unprocessed_rule[3] )
 
                         logging.warning(f"Entry '{advertising_entry.get_name()}' advertises producer '{producer_entry.get_name()}' with action {producer_method}({extra_params}) and matching tags {rule_posi_tag_set} that may work with {query_posi_val_dict}")
                         cumulative_params = deepcopy( extra_params )    # defaults first
