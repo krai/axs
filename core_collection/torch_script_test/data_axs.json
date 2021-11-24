@@ -1,7 +1,7 @@
 {
     "_parent_entries": [ [ "^", "byname", "python_script" ] ],
 
-    "imagenet_query": [ "extracted", "imagenet500" ],
+    "imagenet_query": [ "extracted", "imagenet" ],
 
     "imagenet_directory": [ "^", "execute", [[
         [ "byquery", [[ "^^", "get", "imagenet_query" ]] ],
