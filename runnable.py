@@ -301,6 +301,11 @@ Usage examples :
         if ak:
             call_record_entry   = ak.fresh_entry(container=ak.record_container(), own_data=captured_mapping, generated_name_prefix=f"generated_by_{action_name}_")
 
+            # adding all key-value pairs that were mentioned in the edit_dict, but not needed by the call(), to make sure they also get recorded
+            missing_filter_keys = set(rt_call_specific.own_data()) - set(captured_mapping.keys())
+            for mfk in missing_filter_keys:
+                call_record_entry[mfk] = rt_call_specific[mfk]
+
             call_record_entry["_parent_entries"] = [ self ]
 
             if call_record_entry.get("action_name") != action_name:
