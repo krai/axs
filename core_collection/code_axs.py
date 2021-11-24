@@ -206,8 +206,12 @@ Usage examples :
                             if not qr_conditions_ok: break
 
                     if qr_conditions_ok:
-                        _, producer_entry, producer_method, _ = advertising_entry['_producer_rules'][rule_index]
-                        extra_params    = advertising_entry.nested_calls( unprocessed_rule[3] )
+                        all_processed_rules = advertising_entry.get('_producer_rules')
+                        if type(all_processed_rules)!=list:
+                            raise(KeyError(f"{advertising_entry.get_name()}'s _producer_rules[] is incomplete, please check all substitutions work"))
+
+                        _, producer_entry, producer_method, extra_params = all_processed_rules[rule_index]
+                        #extra_params    = advertising_entry.nested_calls( unprocessed_rule[3] )
 
                         logging.warning(f"Entry '{advertising_entry.get_name()}' advertises producer '{producer_entry.get_name()}' with action {producer_method}({extra_params}) and matching tags {rule_posi_tag_set} that may work with {query_posi_val_dict}")
                         cumulative_params = deepcopy( extra_params )    # defaults first

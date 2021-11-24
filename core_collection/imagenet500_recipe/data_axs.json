@@ -7,13 +7,13 @@
         } ],
 
         [ [ "extracted",  "imagenet" ], [ "^", "byname", "extractor" ],  "extract",  {
-            "dataset_size": [ "^^", "substitute", "#{dataset_size}#" ],
-            "archive_path": [ "^", "execute", [[
-                [ "byquery", [[ "^^", "substitute", "downloaded,imagenet,dataset_size=#{dataset_size}#" ]] ],
-                [ "get_path" ]
-            ]] ]
+            "dataset_size": [ "^^", "substitute", "#{dataset_size}#" ]
         } ]
     ],
 
-    "dataset_size": 500
+    "dataset_size": 500,
+    "archive_path": [ "^", "execute", [[
+        [ "byquery", [[ "^^", "substitute", "downloaded,imagenet,dataset_size=#{dataset_size}#" ]] ],
+        [ "get_path" ]
+    ]] ]
 }
