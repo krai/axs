@@ -3,17 +3,24 @@
 """An example Python script that is given its data, necessary Python environment and the output path by wrapping it into an Entry.
 
 Usage examples :
+                    # as a side-effect, automatically downloads and extracts Imagenet500:
                 axs byname torch_script_test , run --execution_device=cpu --num_of_images=100
 
+                    # reuses the Imagenet500 already downloaded & extracted:
                 axs byname torch_script_test , run --torchvision_query+=with_cuda --num_of_images=500
 
-                    # assuming 50k Imagenet in a tarball
-                axs byname extractor , extract --archive_path=/datasets/dataset-imagenet-ilsvrc2012-val.tar --tags,=extracted,imagenet50k --strip_components=1
-                axs byname torch_script_test , run --torchvision_query+=with_cuda --imagenet_query,=extracted,imagenet50k --num_of_images=1000
+                    # quick removal of Imagenet500:
+                axs byquery extracted,imagenet,dataset_size=500 , remove
 
-                    # assuming 50k Imagenet in a directory
-                axs byname torch_script_test , run --torchvision_query+=with_cuda --imagenet_directory=/datasets/imagenet/imagenet --num_of_images=800
+                    # assuming Imagenet50k in a directory:
+                axs byname torch_script_test , run --torchvision_query+=with_cuda --imagenet_directory=/datasets/imagenet/imagenet --num_of_images=800 --dataset_size=50000
 
+                    # assuming Imagenet50k in a tarball:
+                axs byname extractor , extract --archive_path=/datasets/dataset-imagenet-ilsvrc2012-val.tar --tags,=extracted,imagenet --strip_components=1 --dataset_size=50000
+                axs byname torch_script_test , run --torchvision_query+=with_cuda --num_of_images=1000
+
+                    # assuming Imagenet50k is already installed from a tarball, but still wanting to use Imagenet500:
+                axs byname torch_script_test , run --torchvision_query+=with_cuda --imagenet_query+=dataset_size=500 --num_of_images=350
 """
 
 import json
@@ -117,11 +124,11 @@ if output_file_path:
 
             "sum_loading_s":            sum_loading_s,
             "sum_inference_s":          sum_inference_s,
-            "list_batch_loading_s":     list_batch_loading_s,
-            "list_batch_inference_s":   list_batch_inference_s,
-
             "per_inference_s":          sum_inference_s / num_of_images,
             "fps":                      num_of_images / sum_inference_s,
+
+            "list_batch_loading_s":     list_batch_loading_s,
+            "list_batch_inference_s":   list_batch_inference_s,
         },
         "predictions": predictions,
     }
