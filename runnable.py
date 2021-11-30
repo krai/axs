@@ -248,7 +248,7 @@ Usage examples :
             return '{'+(','.join([ repr(k)+':'+repr(d[k]) for k in sorted(d.keys()) ]))+'}' if type(d)==dict else repr(d)
 
 
-        logging.debug(f'[{self.get_name()}]  calling action {action_name} with pos_params={pos_params} and edit_dict={edit_dict} ...')
+        logging.debug(f'[{self.get_name()}]  calling action "{action_name}" with pos_params={pos_params} and edit_dict={edit_dict} ...')
 
         cache_tail = '+'.join([unidict(s.own_data()) for s in self.runtime_stack()]) + '+' + unidict(edit_dict)
         cache_key = action_name + str(pos_params) + cache_tail
@@ -259,15 +259,6 @@ Usage examples :
             return cached_value
         else:
             logging.debug(f"[{self.get_name()}]  Call '{cache_key}' NOT TAKEN from cache, have to run...")
-
-        nested_context = nested_context or self
-
-        if not pos_params:
-            pos_params = []                                 # allow pos_params to be missing
-        elif type(pos_params)==list:
-            pos_params = nested_context.nested_calls(pos_params)      # perform all nested calls if there are any
-        else:
-            pos_params = [ pos_params ]                     # simplified syntax for single positional parameter actions
 
         # pre-initializing each deep override from its full underlying stack value
         edit_dict       = edit_dict or {}
@@ -283,13 +274,22 @@ Usage examples :
 
                 override_dict[edit_key] = deepcopy( self.__getitem__(edit_key, perform_nested_calls=False) )    # delay the interpretation to be able to edit expressions first
 
-        rt_call_specific    = ParamSource(name='rt_call_specific', own_data=override_dict or {})   # FIXME: overlapping entry names are not unique
+        rt_call_specific    = ParamSource(name='rt_call_specific_'+action_name, own_data=override_dict or {})   # FIXME: overlapping entry names are not unique
 
         # now planting all the edits into the new object (potentially editing expressions):
         merged_edits = (x for p in edit_dict for x in (p, edit_dict[p]))
         rt_call_specific.plant( *merged_edits )
 
         self.runtime_stack().append( rt_call_specific )
+
+        nested_context = nested_context or self
+
+        if not pos_params:
+            pos_params = []                                 # allow pos_params to be missing
+        elif type(pos_params)==list:
+            pos_params = nested_context.nested_calls(pos_params)      # perform all nested calls if there are any
+        else:
+            pos_params = [ pos_params ]                     # simplified syntax for single positional parameter actions
 
         rt_call_specific.own_data( nested_context.nested_calls( rt_call_specific.own_data() ) )   # perform the delayed interpretation of expressions
 
@@ -299,6 +299,10 @@ Usage examples :
 
         ak = self.get_kernel()
         if ak:
+            for a in ('__entry__', '__record_entry__'):
+                if a in captured_mapping:
+                    del captured_mapping[a]
+
             call_record_entry   = ak.fresh_entry(container=ak.record_container(), own_data=captured_mapping, generated_name_prefix=f"generated_by_{action_name}_")
 
             # adding all key-value pairs that were mentioned in the edit_dict, but not needed by the call(), to make sure they also get recorded
@@ -311,15 +315,10 @@ Usage examples :
             if call_record_entry.get("action_name") != action_name:
                 call_record_entry["action_name"] = action_name
 
-            if call_record_entry_ptr is not None:   # making it available to the pipeline
+            if call_record_entry_ptr is not None:           # making it available to the pipeline
                 call_record_entry_ptr.append( call_record_entry )
 
-            if '__record_entry__' in optional_arg_dict:     # it's a placeholder which we have to substitute
-                if captured_mapping:
-                    for a in ('__entry__', '__record_entry__'):
-                        if a in captured_mapping:
-                            del captured_mapping[a]
-
+            if '__record_entry__' in optional_arg_dict:     # substututing the placeholder with the real deal
                 optional_arg_dict['__record_entry__'] = call_record_entry
 
         result          = function_access.feed(action_object, joint_arg_tuple, optional_arg_dict)
@@ -329,7 +328,7 @@ Usage examples :
         if ak:
             call_record_entry['__result__'] = result    # only visible if save()d after execution (not all application cases)
 
-        logging.debug(f'[{self.get_name()}]  called action {action_name} with "{pos_params}", got "{result}"')
+        logging.debug(f'[{self.get_name()}]  called action "{action_name}" with {pos_params}, got {result}')
         self.call_cache[cache_key] = result
 
         return result
@@ -398,9 +397,14 @@ Usage examples :
 
         result = self
         for call_params in pipeline:
+
+            if hasattr(result, 'call') and result!=self:    # FIXME: the stack should become a single entity, temporarily accessible via affected Entries
+                result.runtime_stack_cache = self.runtime_stack_cache
+                result.runtime_stack().insert(0, self )
+
             entry = result if hasattr(result, 'call') else self
 
-            entry.runtime_stack().append( rt_pipeline_wide )
+            entry.runtime_stack().append( rt_pipeline_wide )    # the "service" pipeline-wide entry
 
             output_label    = call_params.pop(3) if len(call_params)>3 else None    # NB: the order is important!
             input_label     = call_params.pop(3) if len(call_params)>3 else None

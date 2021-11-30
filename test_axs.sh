@@ -22,6 +22,16 @@ assert "axs mi: bypath missing , plant alpha 10 beta 20 , plant formula --:='AS^
 assert "axs mi: bypath missing , plant alpha 10 beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula --alpha=30 , get mi , own_data" "{'alpha': 10, 'beta': 20, 'formula': ['^^', 'substitute', '#{alpha}#-#{beta}#']}"
 assert_end escaping_nested_calls_immediate_execution
 
+axs fresh_entry ---own_data='{ "n": 5, "_subs1": [ "AS^IS", "AS^IS", "^^", "substitute", "N: #{n}#" ], "_subs2": [ "AS^IS", "AS^IS", "^^", "execute", [[ [ "substitute", "N: #{n}#" ] ]] ], "_subs3": [ "AS^IS", "AS^IS", "^^", "execute", [[ [ "get_kernel" ], [ "substitute", "N: #{n}#" ] ]] ] }' , save varisubs
+assert 'axs bypath varisubs , get _subs1' 'N: 5'
+assert 'axs bypath varisubs , get _subs2' 'N: 5'
+assert 'axs bypath varisubs , get _subs3' 'N: 5'
+assert 'axs bypath varisubs , get _subs1 --n=1' 'N: 1'
+assert 'axs bypath varisubs , get _subs2 --n=2' 'N: 2'
+assert 'axs bypath varisubs , get _subs3 --n=3' 'N: 3'
+axs bypath varisubs , remove
+assert_end overriding_formula_variables
+
 axs fresh_entry , plant alpha 10 beta 20 gamma 30 multisub --:="AS^IS:^^:substitute:#{alpha}#, #{beta}# and #{gamma}#" , save grandma
 axs fresh_entry , plant beta 200 gamma 300 _parent_entries --,:=AS^IS:^:bypath:grandma , save mum
 assert 'axs bypath mum , substitute "#{alpha}# and #{beta}#"' '10 and 200'
