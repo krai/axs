@@ -68,8 +68,10 @@ def prep(action_object, given_arg_list, dict_like_object, mapping_used=None):
         if varargs:
             listed_vararg_values        = given_arg_list[num_required:]
         else:
-            listed_optional_names       = optional_arg_names[:num_given-num_required]   # these are encroaching into optionals
-            optional_arg_names          = optional_arg_names[num_given-num_required:]   # the rest, still to be taken from the dict-like
+            encroached_number           = num_given-num_required
+            listed_optional_names       = optional_arg_names[:encroached_number]    # these are encroaching into optionals
+            defaults                    = defaults[encroached_number:]
+            optional_arg_names          = optional_arg_names[encroached_number:]    # the rest, still to be taken from the dict-like
 
     missing_arg_names = []
     non_listed_required_arg_values  = []
@@ -163,6 +165,10 @@ if __name__ == '__main__':
     assert four_param_example_func(1000, 2000, delta=4000)==(1000, 2000, 333, 4000), "Direct call with all positional and some optional args"
 
     print('-'*40 + ' feed() calls: ' + '-'*40)
+
+    mapping_used = {}
+    assert feed(*prep(four_param_example_func, (10, 20, 30), {}, mapping_used))==(10, 20, 30, 4444), "feed() call with some optionals fed from positionals"
+    assert mapping_used=={'alpha': 10, 'beta': 20, 'gamma': 30, 'delta': 4444}, "checking the corresponding mapping used"
 
     mapping_used = {}
     assert feed(*prep(four_param_example_func, (21, 43, 65, 87), None, mapping_used))==(21, 43, 65, 87), "feed() call with all positional and all optional pretending to be optional"
