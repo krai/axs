@@ -61,10 +61,15 @@ axs work_collection , attached_entry examplepage_recipe , plant url http://examp
 axs byname examplepage_recipe , call
 assert 'axs byquery downloaded,file_name=example.html , file_path: get_path , byquery shell_tool,can_compute_md5 , run' '84238dfc8092e5d9c0dac8ef93371a07'
 axs byquery shell_tool,can_compute_md5 --- , remove
+
+axs byquery downloaded,file_name=example.html , get _replay --entry_name=replay_examplepage_downloaded
+assert 'diff -r examplepage_downloaded replay_examplepage_downloaded' ''
+axs byname replay_examplepage_downloaded , remove
+
 axs byquery downloaded,file_name=example.html --- , remove
 axs byname examplepage_recipe , remove
 axs byquery shell_tool,can_download_url --- , remove
-assert_end url_downloading_recipe_activation_and_removal
+assert_end url_downloading_recipe_activation_replay_and_removal
 
 assert 'axs byname numpy_import_test , deps_versions --pillow_query+,=package_version=8.1.2' 'numpy==1.19.4, pillow==8.1.2'
 assert 'axs byname numpy_import_test , multiply 1 2 3 4 5 6' '[17, 39]'

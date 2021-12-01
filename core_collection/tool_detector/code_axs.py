@@ -40,7 +40,7 @@ def detect(tool_name, shell_cmd=None, capture_output=None, tags=None, entry_name
 Usage examples :
                 axs byname tool_detector , detect wget --tags,=shell_tool,can_download_url '--shell_cmd:=AS^IS:^^:substitute:#{tool_path}# -O #{target_path}# #{url}#'
 
-                axs byname tool_detector , detect curl --tags,=shell_tool,can_download_url '--shell_cmd:=AS^IS:^^:substitute:#{tool_path}# -o #{target_path}# #{url}#'
+                axs byname tool_detector , detect curl --tags,=shell_tool,can_download_url '--shell_cmd:=AS^IS:^^:substitute:#{tool_path}# -L -o #{target_path}# #{url}#'
 
                 axs byquery shell_tool,can_download_url , run --url=https://example.com/ --target_path=example.html
     """
@@ -49,7 +49,7 @@ Usage examples :
 
     if tool_path:
         __record_entry__["tool_path"]       = tool_path
-        __record_entry__["_parent_entries"].insert(0, [ "^", "byname", "shell" ] )
+        __record_entry__["_parent_entries"] = [ [ "^", "byname", "shell" ] ]
         __record_entry__.parent_objects     = None      # reload parents
 
         if not entry_name:

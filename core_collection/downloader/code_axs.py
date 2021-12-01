@@ -28,9 +28,7 @@ Usage examples:
     # Manual downloading into a new entry:
             axs byname downloader , download 'https://example.com/' example.html --tags,=downloaded,example
     # Replay of the same command at a later time, stored in a different entry:
-            axs byquery downloaded,file_name=example.html --- , call ---override_dict='{"entry_name":"generated_by_downloading_example.html__replay"}'
-        # or (assuming double-stack)
-            axs byquery downloaded,file_name=example.html --- , call --entry_name=generated_by_downloading_example.html__replay
+            axs byquery downloaded,file_name=example.html , get _replay --entry_name=replay_downloading_example.html
     # Resulting entry path (counter-intuitively) :
             axs byquery downloaded,file_name=example.html , get_path ''
     # Downloaded file path:

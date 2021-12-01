@@ -232,7 +232,7 @@ Usage examples :
 
     def call(self, action_name, pos_params=None, edit_dict=None, deterministic=True, call_record_entry_ptr=None, nested_context=None):
         """Call a given function or method of a given entry and feed it
-            with arguments from the current object optionally overridden by a given dictionary.
+            with arguments from the current object optionally overridden by a given edit_dict
 
             The action can have a mix of positional args and named args with optional defaults.
 
@@ -310,10 +310,11 @@ Usage examples :
             for mfk in missing_filter_keys:
                 call_record_entry[mfk] = rt_call_specific[mfk]
 
-            call_record_entry["_parent_entries"] = [ self ]
-
-            if call_record_entry.get("action_name") != action_name:
-                call_record_entry["action_name"] = action_name
+            call_record_entry["_replay"] = [ "^^", "execute", [
+                [ [ "get_kernel" ] ] +
+                ( [ self.pickle_one()[1:] ] if hasattr(self, 'pickle_one') else [] ) +
+                [ [ action_name ] ]     # assuming all parameters have been properly recorded (scattered around) call_record_entry and are thus available
+            ] ]
 
             if call_record_entry_ptr is not None:           # making it available to the pipeline
                 call_record_entry_ptr.append( call_record_entry )
@@ -390,7 +391,7 @@ Usage examples :
             # Record a call:
                 axs bypath only_code/iterative.py , :rec: factorial 5 , get rec , save factorial_of_5
             # Replay:
-                axs bypath factorial_of_5 , call
+                axs bypath factorial_of_5 , get _replay
         """
         ak = self.get_kernel()
         rt_pipeline_wide = ak.bypath(path='rt_pipeline_wide', own_data={})
