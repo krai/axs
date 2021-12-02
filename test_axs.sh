@@ -22,14 +22,22 @@ assert "axs mi: bypath missing , plant alpha 10 beta 20 , plant formula --:='AS^
 assert "axs mi: bypath missing , plant alpha 10 beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula --alpha=30 , get mi , own_data" "{'alpha': 10, 'beta': 20, 'formula': ['^^', 'substitute', '#{alpha}#-#{beta}#']}"
 assert_end escaping_nested_calls_immediate_execution
 
-axs fresh_entry ---own_data='{ "n": 5, "_subs1": [ "AS^IS", "AS^IS", "^^", "substitute", "N: #{n}#" ], "_subs2": [ "AS^IS", "AS^IS", "^^", "execute", [[ [ "substitute", "N: #{n}#" ] ]] ], "_subs3": [ "AS^IS", "AS^IS", "^^", "execute", [[ [ "get_kernel" ], [ "substitute", "N: #{n}#" ] ]] ] }' , save varisubs
-assert 'axs bypath varisubs , get _subs1' 'N: 5'
-assert 'axs bypath varisubs , get _subs2' 'N: 5'
-assert 'axs bypath varisubs , get _subs3' 'N: 5'
-assert 'axs bypath varisubs , get _subs1 --n=1' 'N: 1'
-assert 'axs bypath varisubs , get _subs2 --n=2' 'N: 2'
-assert 'axs bypath varisubs , get _subs3 --n=3' 'N: 3'
-axs bypath varisubs , remove
+axs fresh_entry ---own_data='{ "n": 5, "_subs1": [ "AS^IS", "AS^IS", "^^", "substitute", "N: #{n}#" ], "_subs2": [ "AS^IS", "AS^IS", "^^", "execute", [[ [ "substitute", "N: #{n}#" ] ]] ], "_subs3": [ "AS^IS", "AS^IS", "^^", "execute", [[ [ "get_kernel" ], [ "substitute", "N: #{n}#" ] ]] ] }' , save varisubs2
+assert 'axs bypath varisubs2 , get _subs1' 'N: 5'
+assert 'axs bypath varisubs2 , get _subs2' 'N: 5'
+assert 'axs bypath varisubs2 , get _subs3' 'N: 5'
+assert 'axs bypath varisubs2 , get _subs1 --n=1' 'N: 1'
+assert 'axs bypath varisubs2 , get _subs2 --n=2' 'N: 2'
+assert 'axs bypath varisubs2 , get _subs3 --n=3' 'N: 3'
+axs bypath varisubs2 , remove
+axs fresh_entry ---own_data='{ "n": 5, "_subs1": [ "AS^IS", "AS^IS", "^", "substitute", "N: #{n}#" ], "_subs2": [ "AS^IS", "AS^IS", "^", "execute", [[ [ "substitute", "N: #{n}#" ] ]] ], "_subs3": [ "AS^IS", "AS^IS", "^", "execute", [[ [ "get_kernel" ], [ "substitute", "N: #{n}#" ] ]] ] }' , save varisubs1
+assert 'axs bypath varisubs1 , get _subs1' 'None'
+assert 'axs bypath varisubs1 , get _subs2' 'None'
+assert 'axs bypath varisubs1 , get _subs3' 'None'
+assert 'axs bypath varisubs1 , get _subs1 --n=1' 'N: 1'
+assert 'axs bypath varisubs1 , get _subs2 --n=2' 'N: 2'
+assert 'axs bypath varisubs1 , get _subs3 --n=3' 'N: 3'
+axs bypath varisubs1 , remove
 assert_end overriding_formula_variables
 
 axs fresh_entry , plant alpha 10 beta 20 gamma 30 multisub --:="AS^IS:^^:substitute:#{alpha}#, #{beta}# and #{gamma}#" , save grandma
