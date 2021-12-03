@@ -1,5 +1,7 @@
 {
     "action_name": "download",
+    "uncompress_format": "",
     "downloading_tool_entry": [ "^", "byquery", "shell_tool,can_download_url" ],
-    "md5_tool_entry": [ "^", "byquery", "shell_tool,can_compute_md5" ]
+    "md5_tool_entry": [ "^", "byquery", "shell_tool,can_compute_md5" ],
+    "uncompress_tool_entry": [ "^", "byquery", [[ "^^", "substitute", "shell_tool,can_uncompress_#{uncompress_format}#" ]] ]
 }

@@ -21,7 +21,7 @@ Cleaning up:
 import logging
 
 
-def download(url, file_name=None, md5=None, downloading_tool_entry=None, md5_tool_entry=None, tags=None, entry_name=None, __record_entry__=None):
+def download(url, file_name=None, md5=None, downloading_tool_entry=None, md5_tool_entry=None, uncompress_format=None, uncompress_tool_entry=None, tags=None, entry_name=None, __record_entry__=None):
     """Create a new entry and download the url into it
 
 Usage examples:
@@ -65,6 +65,21 @@ Usage examples:
                 return None
             else:
                 logging.warning(f"The computed md5 sum '{computed_md5}' matched the expected one.")
+
+        if uncompress_tool_entry:
+            logging.warning(f"Uncompression from {uncompress_format} requested")
+            retval = uncompress_tool_entry.call('run', [], {"target_path": target_path})
+            if retval == 0:
+                __record_entry__["file_name"] = file_name.rsplit('.', 1)[0]
+                __record_entry__.save( entry_name )
+            else:
+                logging.error(f"could not uncompress {target_path}, bailing out")
+                __record_entry__.remove()
+                return None
+        elif uncompress_format:
+            logging.error(f"Uncompression from {uncompress_format} requested, but failed to detect such tool")
+        else:
+            logging.warning(f"Uncompression not requested")
 
         return __record_entry__
     else:
