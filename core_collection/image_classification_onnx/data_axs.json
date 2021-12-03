@@ -1,0 +1,36 @@
+{
+    "_parent_entries": [ [ "^", "byname", "python_script" ] ],
+
+    "onnxruntime_query":    [ "python_package", "package_name=onnxruntime" ],
+    "pillow_query":         [ "python_package", "package_name=pillow" ],
+    "python_deps": [
+        [ "^", "byquery", [ [ "^^", "get", "onnxruntime_query" ] ] ],
+        [ "^", "byquery", [ [ "^^", "get", "pillow_query" ] ] ]
+    ],
+
+    "model_path": [ "^", "execute", [[
+        [ "byquery", [ "downloaded", "onnx_model" ] ],
+        [ "get_path" ]
+    ]] ],
+
+    "imagenet_query": [ "extracted", "imagenet" ],
+    "imagenet_dir": [ "^", "execute", [[
+        [ "byquery", [[ "^^", "get", "imagenet_query" ]] ],
+        [ "get_path" ]
+    ]] ],
+
+    "num_of_images": 20,
+
+    "max_batch_size": 8,
+
+    "class_names_path": [ "^", "execute", [[
+        [ "byname", "imagenet_meta" ],
+        [ "get", "class_names_path" ]
+    ]] ],
+
+    "cpu_threads": 0,
+
+    "rel_script_path": "onnx_classify.py",
+
+    "script_extra_params": [ "^^", "substitute", "\"#{model_path}#\" \"#{imagenet_dir}#\" #{num_of_images}# #{max_batch_size}# #{class_names_path}# #{cpu_threads}#" ]
+}
