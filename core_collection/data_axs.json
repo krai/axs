@@ -18,6 +18,7 @@
         "imagenet500_recipe": "imagenet500_recipe",
         "imagenet_meta": "imagenet_meta",
         "pillow_process_imagenet": "pillow_process_imagenet",
-        "rule_matching_demonstrator": "rule_matching_demonstrator"
+        "rule_matching_demonstrator": "rule_matching_demonstrator",
+        "model_onnx_resnet50_recipe": "model_onnx_resnet50_recipe"
     }
 }
