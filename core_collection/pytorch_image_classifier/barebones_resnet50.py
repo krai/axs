@@ -4,23 +4,23 @@
 
 Usage examples :
                     # as a side-effect, automatically downloads and extracts Imagenet500:
-                axs byname torch_script_test , run --execution_device=cpu --num_of_images=100
+                axs byname pytorch_image_classifier , run --execution_device=cpu --num_of_images=100
 
                     # reuses the Imagenet500 already downloaded & extracted:
-                axs byname torch_script_test , run --torchvision_query+=with_cuda --num_of_images=500
+                axs byname pytorch_image_classifier , run --torchvision_query+=with_cuda --num_of_images=500
 
                     # quick removal of Imagenet500:
                 axs byquery extracted,imagenet,dataset_size=500 , remove
 
                     # assuming Imagenet50k in a directory:
-                axs byname torch_script_test , run --torchvision_query+=with_cuda --imagenet_directory=/datasets/imagenet/imagenet --num_of_images=800 --dataset_size=50000
+                axs byname pytorch_image_classifier , run --torchvision_query+=with_cuda --imagenet_directory=/datasets/imagenet/imagenet --num_of_images=800 --dataset_size=50000
 
                     # assuming Imagenet50k in a tarball:
                 axs byname extractor , extract --archive_path=/datasets/dataset-imagenet-ilsvrc2012-val.tar --tags,=extracted,imagenet --strip_components=1 --dataset_size=50000
-                axs byname torch_script_test , run --torchvision_query+=with_cuda --num_of_images=1000
+                axs byname pytorch_image_classifier , run --torchvision_query+=with_cuda --num_of_images=1000
 
                     # assuming Imagenet50k is already installed from a tarball, but still wanting to use Imagenet500:
-                axs byname torch_script_test , run --torchvision_query+=with_cuda --imagenet_query+=dataset_size=500 --num_of_images=350
+                axs byname pytorch_image_classifier , run --torchvision_query+=with_cuda --imagenet_query+=dataset_size=500 --num_of_images=350
 """
 
 import json
