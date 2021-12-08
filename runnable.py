@@ -203,8 +203,6 @@ Usage examples :
         """
         if param_name=='__entry__':
             return self
-        elif param_name=='__record_entry__':
-            return True     # a placeholder to be substituted later
 
         try:
             getitem_gen                             = self.getitem_generator( str(param_name), parent_recursion )
@@ -274,7 +272,7 @@ Usage examples :
 
                 override_dict[edit_key] = deepcopy( self.__getitem__(edit_key, perform_nested_calls=False) )    # delay the interpretation to be able to edit expressions first
 
-        rt_call_specific    = ParamSource(name='rt_call_specific_'+action_name, own_data=override_dict or {})   # FIXME: overlapping entry names are not unique
+        rt_call_specific    = ParamSource(name='rt_call_specific_'+action_name, own_data=override_dict)         # FIXME: overlapping entry names are not unique
 
         # now planting all the edits into the new object (potentially editing expressions):
         merged_edits = (x for p in edit_dict for x in (p, edit_dict[p]))
@@ -284,6 +282,14 @@ Usage examples :
 
         nested_context = nested_context or self
 
+        rt_call_specific.own_data( nested_context.nested_calls( rt_call_specific.own_data() ) )   # perform the delayed interpretation of expressions
+
+        captured_mapping    = {}    # retain the pointer to perform modifications later
+        ak = self.get_kernel()
+        if ak:
+            call_record_entry   = ak.fresh_entry(container=ak.record_container(), own_data=captured_mapping, generated_name_prefix=f"generated_by_{action_name}_")
+            rt_call_specific['__record_entry__'] = call_record_entry    # the order is important: first nester_calls() (potentially blocked by {"AS^IS": {}}  then add __record_entry__
+
         if not pos_params:
             pos_params = []                                 # allow pos_params to be missing
         elif type(pos_params)==list:
@@ -291,24 +297,18 @@ Usage examples :
         else:
             pos_params = [ pos_params ]                     # simplified syntax for single positional parameter actions
 
-        rt_call_specific.own_data( nested_context.nested_calls( rt_call_specific.own_data() ) )   # perform the delayed interpretation of expressions
-
         action_object       = self.reach_action(action_name)
-        captured_mapping    = {}    # retain the pointer to perform modifications later
         action_object, joint_arg_tuple, optional_arg_dict   = function_access.prep(action_object, pos_params, self, captured_mapping)
 
-        ak = self.get_kernel()
         if ak:
-            for a in ('__entry__', '__record_entry__'):
-                if a in captured_mapping:
-                    del captured_mapping[a]
-
-            call_record_entry   = ak.fresh_entry(container=ak.record_container(), own_data=captured_mapping, generated_name_prefix=f"generated_by_{action_name}_")
-
             # adding all key-value pairs that were mentioned in the edit_dict, but not needed by the call(), to make sure they also get recorded
             missing_filter_keys = set(rt_call_specific.own_data()) - set(captured_mapping.keys())
             for mfk in missing_filter_keys:
                 call_record_entry[mfk] = rt_call_specific[mfk]
+
+            for a in ('__entry__', '__record_entry__'):
+                if a in captured_mapping:
+                    del captured_mapping[a]
 
             call_record_entry["_replay"] = [ "^^", "execute", [
                 [ [ "get_kernel" ] ] +
@@ -319,8 +319,6 @@ Usage examples :
             if call_record_entry_ptr is not None:           # making it available to the pipeline
                 call_record_entry_ptr.append( call_record_entry )
 
-            if '__record_entry__' in optional_arg_dict:     # substututing the placeholder with the real deal
-                optional_arg_dict['__record_entry__'] = call_record_entry
 
         result          = function_access.feed(action_object, joint_arg_tuple, optional_arg_dict)
 

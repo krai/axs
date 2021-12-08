@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.141'     # TODO: update with every kernel change
+__version__ = '0.2.142'     # TODO: update with every kernel change
 
 import logging
 import os
@@ -72,7 +72,8 @@ Usage examples :
                 axs fresh_entry ---own_data='{"greeting":"Hello", "name":"world", "_parent_entries":[["AS^IS", "^","byname","shell"]]}' , run ---='[["^^","substitute","echo #{greeting}#, #{name}#"]]'
         """
 
-        own_data = own_data or {}
+        if own_data is None:    # sic: retain the same empty dictionary if given
+            own_data = {}
         return Entry(entry_path=entry_path, own_data=own_data, own_functions=False, container=container, generated_name_prefix=generated_name_prefix, kernel=self)
 
 
