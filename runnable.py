@@ -288,7 +288,7 @@ Usage examples :
         ak = self.get_kernel()
         if ak:
             call_record_entry   = ak.fresh_entry(container=ak.record_container(), own_data=captured_mapping, generated_name_prefix=f"generated_by_{action_name}_")
-            rt_call_specific['__record_entry__'] = call_record_entry    # the order is important: first nester_calls() (potentially blocked by {"AS^IS": {}}  then add __record_entry__
+            rt_call_specific['__record_entry__'] = call_record_entry    # the order is important: first nested_calls() (potentially blocked by {"AS^IS": {}}  then add __record_entry__
 
         if not pos_params:
             pos_params = []                                 # allow pos_params to be missing
