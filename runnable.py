@@ -324,7 +324,7 @@ Usage examples :
 
         self.runtime_stack().pop()
 
-        if ak:
+        if ak and result!=call_record_entry :
             call_record_entry['__result__'] = result    # only visible if save()d after execution (not all application cases)
 
         logging.debug(f'[{self.get_name()}]  called action "{action_name}" with {pos_params}, got {result}')
