@@ -31,9 +31,9 @@ assert 'axs bypath varisubs2 , get _subs2 --n=2' 'N: 2'
 assert 'axs bypath varisubs2 , get _subs3 --n=3' 'N: 3'
 axs bypath varisubs2 , remove
 axs fresh_entry ---own_data='{ "n": 5, "_subs1": [ "AS^IS", "AS^IS", "^", "substitute", "N: #{n}#" ], "_subs2": [ "AS^IS", "AS^IS", "^", "execute", [[ [ "substitute", "N: #{n}#" ] ]] ], "_subs3": [ "AS^IS", "AS^IS", "^", "execute", [[ [ "get_kernel" ], [ "substitute", "N: #{n}#" ] ]] ] }' , save varisubs1
-assert 'axs bypath varisubs1 , get _subs1' 'None'
-assert 'axs bypath varisubs1 , get _subs2' 'None'
-assert 'axs bypath varisubs1 , get _subs3' 'None'
+assert 'axs bypath varisubs1 , get _subs1' 'N: 5'
+assert 'axs bypath varisubs1 , get _subs2' 'N: 5'
+assert 'axs bypath varisubs1 , get _subs3' 'N: 5'
 assert 'axs bypath varisubs1 , get _subs1 --n=1' 'N: 1'
 assert 'axs bypath varisubs1 , get _subs2 --n=2' 'N: 2'
 assert 'axs bypath varisubs1 , get _subs3 --n=3' 'N: 3'
@@ -58,6 +58,7 @@ axs bypath dad      , remove
 axs bypath granddad , remove
 assert_end entry_creation_multiple_inheritance_and_removal
 
+#axs byname git , clone --name=counting_collection
 axs byquery git_repo,name=counting_collection
 assert 'axs byname French , dig number_mapping.5' 'cinq'
 axs byquery git_repo,name=counting_collection , pull
@@ -66,12 +67,14 @@ axs byquery shell_tool,can_git --- , remove
 assert_end git_cloning_collection_access_and_removal
 
 axs work_collection , attached_entry examplepage_recipe , plant url http://example.com/ entry_name examplepage_downloaded file_name example.html _parent_entries --,:=AS^IS:^:byname:downloader , save
-axs byname examplepage_recipe , call
+axs byname examplepage_recipe , download
 assert 'axs byquery downloaded,file_name=example.html , file_path: get_path , byquery shell_tool,can_compute_md5 , run' '84238dfc8092e5d9c0dac8ef93371a07'
 axs byquery shell_tool,can_compute_md5 --- , remove
 
 axs byquery downloaded,file_name=example.html , get _replay --entry_name=replay_examplepage_downloaded
-assert 'diff -r examplepage_downloaded replay_examplepage_downloaded' ''
+#assert 'diff -r examplepage_downloaded replay_examplepage_downloaded' ''
+assert 'diff examplepage_downloaded/example.html replay_examplepage_downloaded/example.html' ''
+
 axs byname replay_examplepage_downloaded , remove
 
 axs byquery downloaded,file_name=example.html --- , remove

@@ -218,9 +218,7 @@ Usage examples :
                         cumulative_params.update( rule_posi_val_dict )  # rules on top (may override some defaults)
                         cumulative_params.update( query_posi_val_dict ) # query on top (may override some defaults)
                         cumulative_params["tags"] = list(query_posi_tag_set)    # FIXME:  rule_posi_tag_set should include it
-                        producer_entry.runtime_stack().append( advertising_entry )
-                        new_entry = producer_entry.call(producer_method, [], {'AS^IS':cumulative_params})
-                        producer_entry.runtime_stack().pop()
+                        new_entry = producer_entry.call(producer_method, [], {'AS^IS':cumulative_params}, nested_context=[ advertising_entry ])
                         if new_entry:
                             logging.warning("The rule selected produced an entry.")
                             return new_entry

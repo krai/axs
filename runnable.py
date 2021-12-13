@@ -280,9 +280,10 @@ Usage examples :
 
         self.runtime_stack().append( rt_call_specific )
 
-        nested_context = nested_context or self
+        if nested_context:
+            self.runtime_stack().extend( nested_context )
 
-        rt_call_specific.own_data( nested_context.nested_calls( rt_call_specific.own_data() ) )   # perform the delayed interpretation of expressions
+        rt_call_specific.own_data( self.nested_calls( rt_call_specific.own_data() ) )   # perform the delayed interpretation of expressions
 
         captured_mapping    = {}    # retain the pointer to perform modifications later
         ak = self.get_kernel()
@@ -293,7 +294,7 @@ Usage examples :
         if not pos_params:
             pos_params = []                                 # allow pos_params to be missing
         elif type(pos_params)==list:
-            pos_params = nested_context.nested_calls(pos_params)      # perform all nested calls if there are any
+            pos_params = self.nested_calls(pos_params)      # perform all nested calls if there are any
         else:
             pos_params = [ pos_params ]                     # simplified syntax for single positional parameter actions
 
@@ -321,6 +322,10 @@ Usage examples :
 
 
         result          = function_access.feed(action_object, joint_arg_tuple, optional_arg_dict)
+
+        if nested_context:
+            for i in range(len( nested_context )):
+                self.runtime_stack().pop()
 
         self.runtime_stack().pop()
 
@@ -355,7 +360,7 @@ Usage examples :
                     return self.call( *input_structure[1:] )
                 elif head=='^':
                     side_effects_count += 1
-                    return self.get_kernel().call( *input_structure[1:], nested_context=self )      # need to keep the context if we want to nest Entry-based expressions into a Kernel-based expression
+                    return self.get_kernel().call( *input_structure[1:], nested_context=[ self ] )  # need to keep the context if we want to nest Entry-based expressions into a Kernel-based expression
                 elif head==self.ESCAPE_do_not_process:
                     side_effects_count += 1                                                         # it is only a "side effect" for the purposes of our GC-facilitating decision making below
                     return deepcopy( input_structure[1:] )                                          # drop the escape symbol, keeping the rest of the substructure intact
@@ -391,27 +396,25 @@ Usage examples :
             # Replay:
                 axs bypath factorial_of_5 , get _replay
         """
-        ak = self.get_kernel()
-        rt_pipeline_wide = ak.bypath(path='rt_pipeline_wide', own_data={})
+        rt_pipeline_wide    = self.get_kernel().bypath(path='rt_pipeline_wide', own_data={})  # the "service" pipeline-wide entry
 
-        result = self
+        inherited_context   = self.runtime_stack()
+        local_context       = [ rt_pipeline_wide ]
+        result              = entry = self
+
         for call_params in pipeline:
 
-            if hasattr(result, 'call') and result!=self:    # FIXME: the stack should become a single entity, temporarily accessible via affected Entries
-                result.runtime_stack_cache = self.runtime_stack_cache
-                result.runtime_stack().insert(0, self )
+            if hasattr(result, 'call') and result!=entry:
+                result.runtime_stack_cache = inherited_context
+                local_context.append( entry )
 
             entry = result if hasattr(result, 'call') else self
-
-            entry.runtime_stack().append( rt_pipeline_wide )    # the "service" pipeline-wide entry
 
             output_label    = call_params.pop(3) if len(call_params)>3 else None    # NB: the order is important!
             input_label     = call_params.pop(3) if len(call_params)>3 else None
 
             call_record_entry_ptr = []  # the value of call_record_entry is returned via appending to this empty list
-            result = entry.call(*call_params, call_record_entry_ptr=call_record_entry_ptr)
-
-            entry.runtime_stack().pop()
+            result = entry.call(*call_params, call_record_entry_ptr=call_record_entry_ptr, nested_context=local_context)
 
             if input_label:
                 rt_pipeline_wide[input_label] = call_record_entry_ptr[0]

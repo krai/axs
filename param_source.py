@@ -105,7 +105,7 @@ class ParamSource:
 
         logging.debug(f"[{self.get_name()}] Attempt to access parameter '{param_name}'...")
 
-        for runtime_entry in self.runtime_stack()[::-1]:
+        for runtime_entry in self.runtime_stack():
             yield from runtime_entry.get_own_value_generator( param_name )
 
         yield from self.get_own_value_generator( param_name )
@@ -191,13 +191,13 @@ Usage examples :
             full_match = re.match(full_pattern, input_template)
             if full_match:                          # input_template is made of exactly one anchor
                 key_path = full_match.group(1)
-                return self.dig( key_path )         # output type is determined by the value
+                return self.dig( key_path, safe=True )         # output type is determined by the value
             else:
                 output_string = input_template
 
                 for sub_match in re.finditer(sub_pattern, input_template):  # input_template may contain 0 or more anchors
                     expression, key_path = sub_match.group(1), sub_match.group(2)
-                    param_value  = self.dig( key_path )
+                    param_value  = self.dig( key_path, safe=True )
                     output_string = output_string.replace(expression, str(param_value) )    # fit the output into a string
 
                 return output_string
