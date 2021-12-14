@@ -93,12 +93,12 @@ assert_end dependency_installation_and_resolution_for_internal_code
 # Otherwise assert() blocks all the error output and the command looks "stuck" for quite a while.
 export INFERENCE_OUTPUT=`axs byname pytorch_image_classifier , run --torchvision_query+=package_version=0.10.1 ---capture_output=true --output_file_path=`
 assert "echo $INFERENCE_OUTPUT" '1..20: [65, 795, 230, 809, 520, 65, 334, 852, 674, 332, 109, 286, 370, 757, 595, 147, 327, 23, 478, 517]'
-axs byname pytorch_image_classifier , run --num_of_images=32
-export ACCURACY_OUTPUT=`axs byquery script_output , get accuracy`
+axs byquery script_output,classified_imagenet,num_of_images=32
+export ACCURACY_OUTPUT=`axs byquery script_output,classified_imagenet,num_of_images=32 , get accuracy`
 echo "Accuracy: $ACCURACY_OUTPUT"
 assert "echo $ACCURACY_OUTPUT" '0.71875'
 
-axs byquery script_output --- , remove
+axs byquery script_output,classified_imagenet --- , remove
 axs byquery imagenet_aux,extracted --- , remove
 axs byquery imagenet_aux,downloaded --- , remove
 

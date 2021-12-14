@@ -1,6 +1,10 @@
 {
     "_parent_entries": [ [ "^", "byname", "python_script" ] ],
 
+    "_producer_rules": [
+        [ [ "script_output", "classified_imagenet" ], [ "^^", "get", "__entry__" ], "run", { "return_saved_record_entry": true } ]
+    ],
+
     "imagenet_query": [ "extracted", "imagenet" ],
 
     "imagenet_directory": [ "^", "execute", [[
@@ -17,7 +21,7 @@
         [ "get", "__record_entry__" ],
         [ "attach", [ "^", "work_collection" ] ],
         [ "plant", [ "^^", "substitute", [[
-            "tags", [ "script_output" ],
+            "tags", [ "script_output", "classified_imagenet" ],
             "num_of_images", "#{num_of_images}#",
             "model_name", "#{model_name}#",
             "output_file_name", "#{output_file_name}#",

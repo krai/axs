@@ -8,7 +8,7 @@ import logging
 import subprocess
 import sys
 
-def run(shell_cmd, env=None, capture_output=False, errorize_output=False, split_to_lines=False):
+def run(shell_cmd, env=None, capture_output=False, errorize_output=False, split_to_lines=False, return_saved_record_entry=False, __record_entry__=None):
     """Run the given shell command in the given environment
 
 Usage examples:
@@ -35,6 +35,7 @@ Usage examples:
         stdout_target = None
 
     completed_process = subprocess.run(shell_cmd, shell = (type(shell_cmd)!=list), env=env, stdout=stdout_target)
+
     if capture_output:
         output  = completed_process.stdout.decode('utf-8').rstrip()
 
@@ -42,6 +43,8 @@ Usage examples:
             output = output.split('\n')
 
         return output
+    elif return_saved_record_entry:
+        return __record_entry__.save()
     else:
         return completed_process.returncode
 
