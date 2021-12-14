@@ -14,9 +14,8 @@
     "max_batch_size": 25,
 
     "output_file_path": [ "^^", "execute", [[
-        [ "get_kernel" ],
-        [ "work_collection" ],
-        [ "attached_entry", [], { "generated_name_prefix": "torch_script_output_" } ] ,
+        [ "get", "__record_entry__" ],
+        [ "attach", [ "^", "work_collection" ] ],
         [ "plant", [ "^^", "substitute", [[
             "tags", [ "script_output" ],
             "num_of_images", "#{num_of_images}#",
