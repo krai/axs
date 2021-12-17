@@ -248,8 +248,8 @@ Usage examples :
 
         logging.debug(f'[{self.get_name()}]  calling action "{action_name}" with pos_params={pos_params} and edit_dict={edit_dict} ...')
 
-        cache_tail = '+'.join([unidict(s.own_data()) for s in self.runtime_stack()]) + '+' + unidict(edit_dict)
-        cache_key = action_name + str(pos_params) + cache_tail
+        cache_tail = '\n\t+'.join([repr(s) for s in self.runtime_stack()])
+        cache_key = f"{action_name}.{pos_params}/{unidict(edit_dict)}\n\t+{cache_tail}"
 
         if deterministic and (cache_key in self.call_cache):
             cached_value = self.call_cache[cache_key]
@@ -257,6 +257,7 @@ Usage examples :
             return cached_value
         else:
             logging.debug(f"[{self.get_name()}]  Call '{cache_key}' NOT TAKEN from cache, have to run...")
+
 
         # pre-initializing each deep override from its full underlying stack value
         edit_dict       = edit_dict or {}
@@ -272,7 +273,7 @@ Usage examples :
 
                 override_dict[edit_key] = deepcopy( self.__getitem__(edit_key, perform_nested_calls=False) )    # delay the interpretation to be able to edit expressions first
 
-        rt_call_specific    = ParamSource(name='rt_call_specific_'+action_name, own_data=override_dict)         # FIXME: overlapping entry names are not unique
+        rt_call_specific    = ParamSource(name='rt_call_specific_'+action_name+'/'+str(pos_params), own_data=override_dict)     # FIXME: overlapping entry names are not unique
 
         # now planting all the edits into the new object (potentially editing expressions):
         merged_edits = (x for p in edit_dict for x in (p, edit_dict[p]))
@@ -284,6 +285,7 @@ Usage examples :
             self.runtime_stack().extend( nested_context )
 
         rt_call_specific.own_data( self.nested_calls( rt_call_specific.own_data() ) )   # perform the delayed interpretation of expressions
+
 
         captured_mapping    = {}    # retain the pointer to perform modifications later
         ak = self.get_kernel()

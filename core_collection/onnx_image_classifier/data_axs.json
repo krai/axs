@@ -8,7 +8,13 @@
         [ "^", "byquery", [ [ "^^", "get", "pillow_query" ] ] ]
     ],
 
+    "model_query": [ "downloaded", "onnx_model" ],
     "model_path": [ "^", "execute", [[
+        [ "byquery", [[ "^^", "get", "model_query" ]] ],
+        [ "get_path" ]
+    ]] ],
+
+    "BUG_model_path": [ "^", "execute", [[
         [ "byquery", [ "downloaded", "onnx_model" ] ],
         [ "get_path" ]
     ]] ],

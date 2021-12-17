@@ -26,6 +26,12 @@ class ParamSource:
 #        logging.debug(f"[{self.get_name()}] Initializing the ParamSource with own_data={self.own_data_cache}, inheriting from {self.get_parents_names() or 'no parents'}")
 
 
+    def __repr__(self):
+        "Not callable via commandline (FIXME)"
+
+        own_data = self.own_data()
+        return (self.get_name() or 'Anonymous') + '{'+(','.join([ repr(k)+':'+('self' if own_data[k]==self else repr(own_data[k])) for k in sorted(own_data.keys()) ]))+'}'
+
 
     def get_name(self):
         "Read-only access to the name"
