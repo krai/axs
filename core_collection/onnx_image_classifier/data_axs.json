@@ -14,11 +14,6 @@
         [ "get_path" ]
     ]] ],
 
-    "BUG_model_path": [ "^", "execute", [[
-        [ "byquery", [ "downloaded", "onnx_model" ] ],
-        [ "get_path" ]
-    ]] ],
-
     "imagenet_query": [ "extracted", "imagenet" ],
     "imagenet_dir": [ "^", "execute", [[
         [ "byquery", [[ "^^", "get", "imagenet_query" ]] ],
