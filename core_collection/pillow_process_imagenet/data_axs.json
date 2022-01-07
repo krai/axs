@@ -15,12 +15,12 @@
         ["use"]
     ]] ],
 
-    "imagenet_query": [ "extracted", "imagenet500" ],
-
+    "imagenet_query": [ "extracted", "imagenet" ],
     "imagenet_directory": [ "^", "execute", [[
         [ "byquery", [[ "^^", "get", "imagenet_query" ]] ],
-        [ "get_path" ]
+        [ "get_path", "extracted" ]
     ]] ],
+
     "square_size":          224,
     "supported_extensions": ["jpeg", "jpg", "gif", "png"],
     "crop_percentage":      87.5,
