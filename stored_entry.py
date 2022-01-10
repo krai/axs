@@ -48,7 +48,7 @@ Usage examples :
 
     def set_path(self, new_path):
 
-        new_path = new_path or self.generate_name( self.generated_name_prefix )
+        new_path = new_path or self.name or self.generate_name( self.generated_name_prefix )
 
         if new_path.startswith(os.path.sep):    # absolute path
             self.entry_path = new_path
