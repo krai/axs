@@ -8,8 +8,11 @@ env:        PYTHON_EXE=python
 matrix:
   fast_finish: true
   allow_failures:
-    - arch: ppc64le
-    - arch: s390x
+    - os: windows       # tar confused by colon in C:\... names - see https://steve-parker.org/linux/tar-colon-filename/
+    - os: freebsd       # missing bash
+    - arch: ppc64le     # missing torchvision 0.10.1
+    - arch: s390x       # missing torchvision 0.10.1
+
   include:
     - python: 3.6
     - python: 3.7
@@ -21,17 +24,33 @@ matrix:
       osx_image: xcode11.2  # Python 3.7, but may change with time
       language: shell       # 'language: python' is an error on Travis CI macOS
       env: PYTHON_EXE=python3
+
     - name: "Python 3.6 on FreeBSD"
       os: freebsd
       language: python
       python: 3.6
       env: PYTHON_EXE=python
+      before_install:
+        - pkg install bash
+
+    - name: "Python 3.8.0 on Windows"
+      os: windows           # Windows 10.0.17134 N/A Build 17134
+      language: shell       # 'language: python' is an error on Travis CI Windows
+      before_install:
+        - choco install python --version 3.8.0
+        - python -m pip install --upgrade pip
+        - ln -s `which python.exe` python3
+      env:
+        - PATH=/c/Python38:/c/Python38/Scripts:$PATH
+        - PYTHON_EXE=python.exe
+
     - name: "Python 3.8 on IBM Power"
       arch: ppc64le
       os: linux
       language: python
       python: 3.8
       env: PYTHON_EXE=python
+
     - name: "Python 3.8 on IBM Z"
       arch: s390x
       os: linux
@@ -41,16 +60,6 @@ matrix:
       before_install:
         # work around cache dir owned by root (see https://travis-ci.community/t/7822/6)
         - sudo chown -fR $USER:$GROUP ~/.cache/pip/wheels
-    # - name: "Python 3.8.0 on Windows"
-    #   os: windows           # Windows 10.0.17134 N/A Build 17134
-    #   language: shell       # 'language: python' is an error on Travis CI Windows
-    #   before_install:
-    #     - choco install python --version 3.8.0
-    #     - python -m pip install --upgrade pip
-    #     - ln -s `which python.exe` python3
-    #   env:
-    #     - PATH=/c/Python38:/c/Python38/Scripts:$PATH
-    #     - PYTHON_EXE=python.exe
 
 install:
     - CWD=`pwd`
@@ -68,4 +77,4 @@ script:
     - ${PYTHON_EXE} runnable.py
     - ${PYTHON_EXE} stored_entry.py
     - ${PYTHON_EXE} kernel.py
-    - test_axs.sh
+    - bash test_axs.sh
