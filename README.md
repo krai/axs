@@ -1,7 +1,7 @@
 axs (pronounced like "access")
 ==============================
 
-[![Travis Build Status](https://app.travis-ci.com/ens-lg4/ce-kernel.svg?branch=dev_02)](https://app.travis-ci.com/ens-lg4/ce-kernel)
+[![Travis Build Status](https://api.travis-ci.com/krai/axs.svg?branch=master&status=passed)](https://app.travis-ci.com/github/krai/axs)
 [![Appveyor Build status](https://ci.appveyor.com/api/projects/status/lrfwjca630klbku3/branch/master?svg=true)](https://ci.appveyor.com/project/ens-lg4/axs/branch/master)
 
 Following the success of [CK (Collective Knowledge) framework](https://github.com/ctuning/ck)
