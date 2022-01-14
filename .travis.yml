@@ -31,7 +31,7 @@ matrix:
       python: 3.6
       env: PYTHON_EXE=python
       before_install:
-        - pkg install bash
+        - sudo pkg install bash
 
     - name: "Python 3.8.0 on Windows"
       os: windows           # Windows 10.0.17134 N/A Build 17134
