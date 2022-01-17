@@ -44,18 +44,18 @@ matrix:
         - PATH=/c/Python38:/c/Python38/Scripts:$PATH
         - PYTHON_EXE=python.exe
 
-    - name: "Python 3.8 on IBM Power"
+    - name: "Python 3.6 on IBM Power"
       arch: ppc64le
       os: linux
       language: python
-      python: 3.8
+      python: 3.6
       env: PYTHON_EXE=python
 
-    - name: "Python 3.8 on IBM Z"
+    - name: "Python 3.6 on IBM Z"
       arch: s390x
       os: linux
       language: python
-      python: 3.8
+      python: 3.6
       env: PYTHON_EXE=python
       before_install:
         # work around cache dir owned by root (see https://travis-ci.community/t/7822/6)
