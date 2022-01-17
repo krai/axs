@@ -76,6 +76,8 @@ install:
     - echo "CWD=${CWD}, THIS_REPO_NAME=${THIS_REPO_NAME}, PATH=${PATH}"
     - which ${PYTHON_EXE}
     - ${PYTHON_EXE} --version
+    - which git
+    - git --version
     - wget https://raw.github.com/lehmannro/assert.sh/master/assert.sh
 
 script:
