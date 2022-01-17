@@ -82,13 +82,13 @@ axs byname examplepage_recipe , remove
 axs byquery shell_tool,can_download_url --- , remove
 assert_end url_downloading_recipe_activation_replay_and_removal
 
-assert 'axs byname numpy_import_test , deps_versions --pillow_query+,=package_version=8.1.2' 'numpy==1.19.4, pillow==8.1.2'
+export DEPS_INSTALLATION_OUTPUT=`axs byname numpy_import_test , deps_versions --pillow_query+,=package_version=8.1.2`
+assert "echo $DEPS_INSTALLATION_OUTPUT" 'numpy==1.19.4, pillow==8.1.2'
 assert 'axs byname numpy_import_test , multiply 1 2 3 4 5 6' '[17, 39]'
 axs byquery --,=python_package,package_name=pillow --- , remove
 axs byquery --:=python_package:package_name=numpy --- , remove
 axs byquery --/=shell_tool/can_python --- , remove
 assert_end dependency_installation_and_resolution_for_internal_code
-
 
 if [ -n "$NO_PYTORCH" ]; then
 
