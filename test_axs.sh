@@ -89,31 +89,33 @@ axs byquery --:=python_package:package_name=numpy --- , remove
 axs byquery --/=shell_tool/can_python --- , remove
 assert_end dependency_installation_and_resolution_for_internal_code
 
-# Conditionally set TORCH_VISION_VERSION
-export TORCH_VISION_VERSION=0.10.1 && [ "$TRAVIS_PYTHON_VERSION" == "3.6" ] && export TORCH_VISION_VERSION=0.2.2
 
-# The following line is split into two to provide more insight into what is going on.
-# Otherwise assert() blocks all the error output and the command looks "stuck" for quite a while.
-export INFERENCE_OUTPUT=`axs byname pytorch_image_classifier , run --torchvision_query+=package_version=$TORCH_VISION_VERSION ---capture_output=true --output_file_path=`
-assert "echo $INFERENCE_OUTPUT" '1..20: [65, 795, 230, 809, 520, 65, 334, 852, 674, 332, 109, 286, 370, 757, 595, 147, 327, 23, 478, 517]'
-axs byquery script_output,classified_imagenet,num_of_images=32
-export ACCURACY_OUTPUT=`axs byquery script_output,classified_imagenet,num_of_images=32 , get accuracy`
-echo "Accuracy: $ACCURACY_OUTPUT"
-assert "echo $ACCURACY_OUTPUT" '0.71875'
+if [ -n "$NO_PYTORCH" ]; then
+    # The following line is split into two to provide more insight into what is going on.
+    # Otherwise assert() blocks all the error output and the command looks "stuck" for quite a while.
+    export INFERENCE_OUTPUT=`axs byname pytorch_image_classifier , run --torchvision_query+=package_version=0.10.1 ---capture_output=true --output_file_path=`
+    assert "echo $INFERENCE_OUTPUT" '1..20: [65, 795, 230, 809, 520, 65, 334, 852, 674, 332, 109, 286, 370, 757, 595, 147, 327, 23, 478, 517]'
+    axs byquery script_output,classified_imagenet,num_of_images=32
+    export ACCURACY_OUTPUT=`axs byquery script_output,classified_imagenet,num_of_images=32 , get accuracy`
+    echo "Accuracy: $ACCURACY_OUTPUT"
+    assert "echo $ACCURACY_OUTPUT" '0.71875'
 
-axs byquery script_output,classified_imagenet --- , remove
-axs byquery imagenet_aux,extracted --- , remove
-axs byquery imagenet_aux,downloaded --- , remove
+    axs byquery script_output,classified_imagenet --- , remove
+    axs byquery imagenet_aux,extracted --- , remove
+    axs byquery imagenet_aux,downloaded --- , remove
 
-axs byquery extracted,archive_name=ILSVRC2012_img_val_500.tar --- , remove
-axs byquery shell_tool,can_extract_tar --- , remove
+    axs byquery extracted,archive_name=ILSVRC2012_img_val_500.tar --- , remove
+    axs byquery shell_tool,can_extract_tar --- , remove
 
-axs byquery downloaded,file_name=ILSVRC2012_img_val_500.tar --- , remove
-axs byquery shell_tool,can_compute_md5 --- , remove
-axs byquery shell_tool,can_download_url --- , remove
+    axs byquery downloaded,file_name=ILSVRC2012_img_val_500.tar --- , remove
+    axs byquery shell_tool,can_compute_md5 --- , remove
+    axs byquery shell_tool,can_download_url --- , remove
 
-axs byquery python_package,package_name=torchvision --- , remove
-axs byquery shell_tool,can_python --- , remove
-assert_end dependency_installation_and_resolution_for_external_python_script
+    axs byquery python_package,package_name=torchvision --- , remove
+    axs byquery shell_tool,can_python --- , remove
+    assert_end dependency_installation_and_resolution_for_external_python_script
+else
+    echo "Skipping the dependency_installation_and_resolution_for_external_python_script"
+fi
 
 echo "axs tests done"
