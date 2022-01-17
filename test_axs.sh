@@ -91,6 +91,10 @@ assert_end dependency_installation_and_resolution_for_internal_code
 
 
 if [ -n "$NO_PYTORCH" ]; then
+
+    echo "Skipping the dependency_installation_and_resolution_for_external_python_script"
+
+else
     # The following line is split into two to provide more insight into what is going on.
     # Otherwise assert() blocks all the error output and the command looks "stuck" for quite a while.
     export INFERENCE_OUTPUT=`axs byname pytorch_image_classifier , run --torchvision_query+=package_version=0.10.1 ---capture_output=true --output_file_path=`
@@ -114,8 +118,6 @@ if [ -n "$NO_PYTORCH" ]; then
     axs byquery python_package,package_name=torchvision --- , remove
     axs byquery shell_tool,can_python --- , remove
     assert_end dependency_installation_and_resolution_for_external_python_script
-else
-    echo "Skipping the dependency_installation_and_resolution_for_external_python_script"
 fi
 
 echo "axs tests done"
