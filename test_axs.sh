@@ -94,7 +94,7 @@ export TORCH_VISION_VERSION=0.10.1 && [ "$TRAVIS_PYTHON_VERSION" == "3.6" ] && e
 
 # The following line is split into two to provide more insight into what is going on.
 # Otherwise assert() blocks all the error output and the command looks "stuck" for quite a while.
-export INFERENCE_OUTPUT=`axs byname pytorch_image_classifier , run --torchvision_query+=package_version=$TRAVIS_PYTHON_VERSION ---capture_output=true --output_file_path=`
+export INFERENCE_OUTPUT=`axs byname pytorch_image_classifier , run --torchvision_query+=package_version=$TORCH_VISION_VERSION ---capture_output=true --output_file_path=`
 assert "echo $INFERENCE_OUTPUT" '1..20: [65, 795, 230, 809, 520, 65, 334, 852, 674, 332, 109, 286, 370, 757, 595, 147, 327, 23, 478, 517]'
 axs byquery script_output,classified_imagenet,num_of_images=32
 export ACCURACY_OUTPUT=`axs byquery script_output,classified_imagenet,num_of_images=32 , get accuracy`
