@@ -26,6 +26,7 @@ Usage examples :
 import json
 import os
 import sys
+import time
 
 imagenet_dir        = sys.argv[1]
 num_of_images       = int(sys.argv[2])
@@ -34,6 +35,8 @@ output_file_path    = sys.argv[4]       # if empty, recording of the output will
 execution_device    = sys.argv[5]       # if empty, it will be autodetected
 max_batch_size      = int(sys.argv[6])
 file_pattern        = 'ILSVRC2012_val_000{:05d}.JPEG'
+max_attempts        = 3
+retry_in_seconds    = 20
 
 # sample execution (requires torchvision)
 from PIL import Image
@@ -62,7 +65,19 @@ def load_one_batch(indices):
 
 ts_before_model_loading = time()
 
-model = torch.hub.load('pytorch/vision' + torchvision_version, model_name, pretrained=True)
+for retry in range(max_attempts):
+    try:
+        if retry>0:
+            print("Retry #{retry} in {retry_in_seconds} seconds", file=sys.stderr)
+            time.sleep(retry_in_seconds)
+            print("Retrying now", file=sys.stderr)
+
+        model = torch.hub.load('pytorch/vision' + torchvision_version, model_name, pretrained=True)
+        break
+    except HTTPError as e:
+        print(str(e), file=sys.stderr)
+
+
 model.eval()
 model.to( execution_device )
 
