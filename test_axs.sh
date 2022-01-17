@@ -60,7 +60,8 @@ assert_end entry_creation_multiple_inheritance_and_removal
 
 #axs byname git , clone --name=counting_collection
 axs byquery git_repo,name=counting_collection
-assert 'axs byname French , dig number_mapping.5' 'cinq'
+export REPO_DIG_OUTPUT=`axs byname French , dig number_mapping.5`
+assert "echo $REPO_DIG_OUTPUT" 'cinq'
 axs byquery git_repo,name=counting_collection , pull
 axs byname counting_collection , remove
 axs byquery shell_tool,can_git --- , remove
@@ -82,8 +83,7 @@ axs byname examplepage_recipe , remove
 axs byquery shell_tool,can_download_url --- , remove
 assert_end url_downloading_recipe_activation_replay_and_removal
 
-export DEPS_INSTALLATION_OUTPUT=`axs byname numpy_import_test , deps_versions --pillow_query+,=package_version=8.1.2`
-assert "echo $DEPS_INSTALLATION_OUTPUT" 'numpy==1.19.4, pillow==8.1.2'
+assert 'axs byname numpy_import_test , deps_versions --pillow_query+,=package_version=8.1.2' 'numpy==1.19.4, pillow==8.1.2'
 assert 'axs byname numpy_import_test , multiply 1 2 3 4 5 6' '[17, 39]'
 axs byquery --,=python_package,package_name=pillow --- , remove
 axs byquery --:=python_package:package_name=numpy --- , remove
