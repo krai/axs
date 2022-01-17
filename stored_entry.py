@@ -186,7 +186,7 @@ Usage examples :
     def load_json(self, json_file_path):
         """Load a data structure from given JSON file.
         """
-        with open( json_file_path ) as json_fd:
+        with open( json_file_path, encoding='utf-8' ) as json_fd:
             return json.load(json_fd)
 
 
