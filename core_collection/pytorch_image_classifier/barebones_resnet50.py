@@ -27,6 +27,7 @@ import json
 import os
 import sys
 import time
+from urllib.error import HTTPError
 
 imagenet_dir        = sys.argv[1]
 num_of_images       = int(sys.argv[2])
