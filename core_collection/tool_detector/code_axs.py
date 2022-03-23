@@ -34,7 +34,7 @@ Usage examples:
     return None
 
 
-def detect(tool_name, shell_cmd=None, capture_output=None, tags=None, entry_name=None, __record_entry__=None):
+def detect(tool_name, tags=None, entry_name=None, __record_entry__=None):
     """Detect an installed shell tool and create an entry to point at it
 
 Usage examples :
