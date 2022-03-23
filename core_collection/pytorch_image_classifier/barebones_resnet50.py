@@ -26,7 +26,7 @@ Usage examples :
 import json
 import os
 import sys
-import time
+from time import time, sleep
 from urllib.error import HTTPError
 
 imagenet_dir        = sys.argv[1]
@@ -41,7 +41,6 @@ retry_in_seconds    = 20
 
 # sample execution (requires torchvision)
 from PIL import Image
-from time import time
 import torch
 import torchvision
 from torchvision import transforms
@@ -69,8 +68,8 @@ ts_before_model_loading = time()
 for retry in range(max_attempts):
     try:
         if retry>0:
-            print("Retry #{retry} in {retry_in_seconds} seconds", file=sys.stderr)
-            time.sleep(retry_in_seconds)
+            print(f"Retry #{retry} in {retry_in_seconds} seconds", file=sys.stderr)
+            sleep(retry_in_seconds)
             print("Retrying now", file=sys.stderr)
 
         model = torch.hub.load('pytorch/vision' + torchvision_version, model_name, pretrained=True)
