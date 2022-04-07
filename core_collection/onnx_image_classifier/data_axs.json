@@ -21,6 +21,8 @@
     ]] ],
 
     "num_of_images": 20,
+    "output_file_name": "script_output.json",
+
 
     "max_batch_size": 8,
 
@@ -31,7 +33,25 @@
 
     "cpu_threads": 0,
 
+    "output_file_path": [ "^^", "execute", [[
+        [ "get", "__record_entry__" ],
+        [ "attach", [ "^", "work_collection" ] ],
+        [ "plant", [ "^^", "substitute", [[
+            "tags", [ "script_output", "classified_imagenet" ],
+            "num_of_images", "#{num_of_images}#",
+            "output_file_name", "#{output_file_name}#",
+            "script_output", [ "AS^IS", "AS^IS", "^^", "load_json", [[ "^^", "get_path_from", "output_file_name" ]] ],
+            "accuracy", [ "AS^IS", "AS^IS", "^^", "execute", [[
+                [ "get_kernel" ],
+                [ "byname", "imagenet_meta" ],
+                [ "measure_accuracy", [[ "^^", "dig", "script_output.predictions" ]] ]
+             ]] ]
+         ]] ] ],
+         [ "save" ],
+         [ "get_path_from", "output_file_name" ]
+      ]] ],
+
     "rel_script_path": "onnx_classify.py",
 
-    "script_extra_params": [ "^^", "substitute", "\"#{model_path}#\" \"#{imagenet_dir}#\" #{num_of_images}# #{max_batch_size}# #{class_names_path}# #{cpu_threads}#" ]
+    "script_extra_params": [ "^^", "substitute", "\"#{model_path}#\" \"#{imagenet_dir}#\" #{num_of_images}# #{max_batch_size}# #{class_names_path}# #{cpu_threads}# \"#{output_file_path}#\"" ]
 }
