@@ -105,6 +105,8 @@ sum_loading_s           = 0
 sum_inference_s         = 0
 list_batch_loading_s    = []
 list_batch_inference_s  = []
+weight_id          = {}
+top_n_predictions        = {}
 
 for batch_start in range(0, num_of_images, max_batch_size):
     batch_open_end = min(batch_start+max_batch_size, num_of_images)
@@ -131,17 +133,16 @@ for batch_start in range(0, num_of_images, max_batch_size):
     sum_loading_s   += batch_loading_s
     sum_inference_s += batch_inference_s
     #print(class_numbers)
-
     for i in range(batch_open_end-batch_start):
         softmax_vector      = batch_predictions[i][-1000:]
-        top5_indices        = list(reversed(softmax_vector.argsort()))[:5]
+        top10_indices        = list(reversed(softmax_vector.argsort()))[:10]
         #predictions[ batch_filenames[i] ] = top5_indices[0]
+        print(batch_filenames[i] + ':',f"\t{top10_indices[0]}\t{class_names[top10_indices[0]]}")
 
-        print(batch_filenames[i] + ' :')
-        for class_idx in top5_indices:
-            print(f"\t{softmax_vector[class_idx]}\t{class_idx}\t{class_names[class_idx]}")
-
-    print("-"*64 + "\n")
+        for class_idx in top10_indices:
+            weight_id[str(class_idx)] = str(softmax_vector[class_idx])
+        top_n_predictions[batch_filenames[i]] = weight_id
+        weight_id = {}
 
 if output_file_path:
         output_dict = {
@@ -158,6 +159,7 @@ if output_file_path:
                 "list_batch_inference_s":   list_batch_inference_s,
             },
             "predictions": predictions,
+            "top_n": top_n_predictions
         }
         json_string = json.dumps( output_dict , indent=4)
         with open(output_file_path, "w") as json_fd:
