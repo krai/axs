@@ -45,7 +45,12 @@
                 [ "get_kernel" ],
                 [ "byname", "imagenet_meta" ],
                 [ "measure_accuracy", [[ "^^", "dig", "script_output.predictions" ]] ]
-             ]] ]
+             ]] ],
+            "print_top_n_predictions", [ "AS^IS", "AS^IS", "^^", "execute", [[
+                [ "get_kernel" ],
+                [ "byname", "imagenet_meta" ],
+                [ "full_print_predictions", [[ "^^", "dig", "script_output.top_n" ]] ]
+            ]] ]
          ]] ] ],
          [ "save" ],
          [ "get_path_from", "output_file_name" ]

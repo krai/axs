@@ -59,3 +59,23 @@ Usage examples :
             print(f"{n:>5}    {file_name}    {ground_truth[file_name]:>3}    {class_names[ground_truth[file_name]]}")
 
     return n_to - n_from + 1
+
+
+def full_print_predictions(top_n, class_names, ground_truth, top_number=1):
+ #   """Print a human-readable ordered slice of top_number predictions from output_file_path file.
+  #      NB: image indices are 1-based (1-50000), class labels are 0-based (0-999).
+  #      Returns the number of lines printed.
+
+#Usage examples :
+#                axs byname imagenet_meta , full_print
+#                axs byname imagenet_meta , full_print --top_number=5
+#   """
+    count = 0
+    for file_name in top_n.keys():
+        list_keys = list(top_n[file_name].keys())
+        print(f"\t{file_name + ':'}\t{ground_truth[file_name]}\t{class_names[ground_truth[file_name]]}")
+        for i in range(0,min(top_number, len(list_keys))):
+            print(f"\t{top_n[file_name][list_keys[i]]}\t{list_keys[i]}\t{class_names[int(list_keys[i])]} ")
+            count = count + 1
+        print("")
+    return count
