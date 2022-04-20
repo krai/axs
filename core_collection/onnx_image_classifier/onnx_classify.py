@@ -8,6 +8,7 @@ from PIL import Image
 import onnxruntime as rt
 from time import time
 import json
+import math
 
 
 model_path          = sys.argv[1]
@@ -17,6 +18,7 @@ max_batch_size      = int(sys.argv[4])
 class_names_path    = sys.argv[5]
 cpu_threads         = int(sys.argv[6])
 output_file_path    = sys.argv[7]
+batch_count         = math.ceil(num_of_images / max_batch_size)
 
 file_pattern        = 'ILSVRC2012_val_000{:05d}.JPEG'
 normalize_data_bool = False
@@ -105,10 +107,13 @@ sum_loading_s           = 0
 sum_inference_s         = 0
 list_batch_loading_s    = []
 list_batch_inference_s  = []
-weight_id          = {}
-top_n_predictions        = {}
+weight_id               = {}
+top_n_predictions       = {}
+batch_num               = 0
 
 for batch_start in range(0, num_of_images, max_batch_size):
+    batch_num = batch_num + 1
+    print(f"------------------- batch {batch_num}/{batch_count} -------------------")
     batch_open_end = min(batch_start+max_batch_size, num_of_images)
 
     ts_before_data_loading  = time()
@@ -132,7 +137,7 @@ for batch_start in range(0, num_of_images, max_batch_size):
     list_batch_inference_s.append( batch_inference_s )
     sum_loading_s   += batch_loading_s
     sum_inference_s += batch_inference_s
-    #print(class_numbers)
+
     for i in range(batch_open_end-batch_start):
         softmax_vector      = batch_predictions[i][-1000:]
         top10_indices        = list(reversed(softmax_vector.argsort()))[:10]
