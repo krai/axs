@@ -26,6 +26,7 @@ Usage examples :
 import json
 import os
 import sys
+import math
 from time import time, sleep
 from urllib.error import HTTPError
 
@@ -40,6 +41,7 @@ top_n_max           = int(sys.argv[8])
 file_pattern        = 'ILSVRC2012_val_000{:05d}.JPEG'
 max_attempts        = 3
 retry_in_seconds    = 20
+batch_count         = math.ceil(num_of_images / max_batch_size)
 
 # sample execution (requires torchvision)
 from PIL import Image
@@ -111,7 +113,7 @@ batch_num = 0
 
 for batch_start in range(0,num_of_images, max_batch_size):
     batch_num = batch_num + 1
-    print("-------------------",batch_num,"-------------------")
+    print(f"------------------- batch {batch_num}/{batch_count} -------------------")
     batch_open_end = min(batch_start+max_batch_size, num_of_images)
     ts_before_data_loading  = time()
 
