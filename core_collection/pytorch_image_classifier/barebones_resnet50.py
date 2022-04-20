@@ -106,10 +106,8 @@ sum_loading_s           = 0
 sum_inference_s         = 0
 list_batch_loading_s    = []
 list_batch_inference_s  = []
-weight_id               = {}
 top_n_predictions       = {}
 batch_num = 0
-weight_norm_1000 = []
 
 for batch_start in range(0,num_of_images, max_batch_size):
     batch_num = batch_num + 1
@@ -144,16 +142,15 @@ for batch_start in range(0,num_of_images, max_batch_size):
     sum_loading_s   += batch_loading_s
     sum_inference_s += batch_inference_s
 
-    top_weight_1000, top_classId_1000 = torch.topk(output, 1000, dim=1)
+    weight_norm_batch = torch.nn.functional.softmax(output, dim=1)
+    top_weight_1000, top_classId_1000 = torch.topk(weight_norm_batch, top_n_max, dim=1)
+    top_weight_1000 = top_weight_1000.cpu().tolist()
+    top_classId_1000 = top_classId_1000.cpu().tolist()
 
     for i in range(batch_open_end-batch_start):
         print(batch_file_names[i]+ ':', f"\t{class_numbers[i]}\t{class_names[class_numbers[i]]}")
-        weight_norm_1000.append(torch.nn.functional.softmax(top_weight_1000[i], dim=0))
-        for j in range(0,top_n_max):
-            weight_id[str(((top_classId_1000[i][j]).cpu()).numpy())] = str(((weight_norm_1000[i][j]).cpu()).numpy())
+        top_n_predictions[batch_file_names[i]] = dict(zip(top_classId_1000[i], top_weight_1000[i]))
 
-        top_n_predictions[batch_file_names[i]] = weight_id
-        weight_id = {}
 
 if output_file_path:
     output_dict = {
