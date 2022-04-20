@@ -7,7 +7,7 @@
 
     "imagenet_query": [ "extracted", "imagenet" ],
 
-    "imagenet_directory": [ "^", "execute", [[
+    "imagenet_dir": [ "^", "execute", [[
         [ "byquery", [[ "^^", "get", "imagenet_query" ]] ],
         [ "get_path" ]
     ]] ],
@@ -16,6 +16,12 @@
     "output_file_name": "script_output.json",
     "execution_device": "",
     "max_batch_size": 25,
+    "top_n_max": 10,
+
+    "class_names_path": [ "^", "execute", [[
+            [ "byname", "imagenet_meta" ],
+            [ "get", "class_names_path" ]
+    ]] ],
 
     "output_file_path": [ "^^", "execute", [[
         [ "get", "__record_entry__" ],
@@ -30,13 +36,18 @@
                 [ "get_kernel" ],
                 [ "byname", "imagenet_meta" ],
                 [ "measure_accuracy", [[ "^^", "dig", "script_output.predictions" ]] ]
-            ]] ]
+            ]] ],
+            "print_top_n_predictions", [ "AS^IS", "AS^IS", "^^", "execute", [[
+                [ "get_kernel" ],
+                [ "byname", "imagenet_meta" ],
+                [ "full_print_predictions", [[ "^^", "dig", "script_output.top_n" ]] ]
+            ]] ]                                              
         ]] ] ],
         [ "save" ],
         [ "get_path_from", "output_file_name" ]
     ]] ],
 
-    "script_extra_params": [ "^^", "substitute", "\"#{imagenet_directory}#\" #{num_of_images}# #{model_name}# \"#{output_file_path}#\" \"#{execution_device}#\" #{max_batch_size}#" ],
+    "script_extra_params": [ "^^", "substitute", "\"#{imagenet_dir}#\" #{num_of_images}# #{model_name}# \"#{output_file_path}#\" \"#{execution_device}#\" #{max_batch_size}# #{class_names_path}# \"#{top_n_max}#\"" ],
 
     "rel_script_path": "barebones_resnet50.py",
 

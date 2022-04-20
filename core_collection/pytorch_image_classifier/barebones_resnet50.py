@@ -35,6 +35,8 @@ model_name          = sys.argv[3]
 output_file_path    = sys.argv[4]       # if empty, recording of the output will be skipped
 execution_device    = sys.argv[5]       # if empty, it will be autodetected
 max_batch_size      = int(sys.argv[6])
+class_names_path    = sys.argv[7]
+top_n_max           = int(sys.argv[8])
 file_pattern        = 'ILSVRC2012_val_000{:05d}.JPEG'
 max_attempts        = 3
 retry_in_seconds    = 20
@@ -48,6 +50,14 @@ from torchvision import transforms
 execution_device    = execution_device or ('cuda' if torch.cuda.is_available() else 'cpu')  # autodetection
 torchvision_version = ':v' + torchvision.__version__.split('+')[0]
 
+def load_class_names(class_names_path):
+    class_names = []
+    with open( class_names_path ) as class_names_fd:
+        for line in class_names_fd:
+            label, class_name = line.rstrip().split(' ', 1)
+            class_names.append( class_name )
+
+    return class_names
 
 def load_one_batch(indices):
     file_names  = []
@@ -62,6 +72,7 @@ def load_one_batch(indices):
 
     return file_names, pre_batch
 
+class_names = load_class_names(class_names_path)
 
 ts_before_model_loading = time()
 
@@ -95,7 +106,14 @@ sum_loading_s           = 0
 sum_inference_s         = 0
 list_batch_loading_s    = []
 list_batch_inference_s  = []
-for batch_start in range(0, num_of_images, max_batch_size):
+weight_id               = {}
+top_n_predictions       = {}
+batch_num = 0
+weight_norm_1000 = []
+
+for batch_start in range(0,num_of_images, max_batch_size):
+    batch_num = batch_num + 1
+    print("-------------------",batch_num,"-------------------")
     batch_open_end = min(batch_start+max_batch_size, num_of_images)
     ts_before_data_loading  = time()
 
@@ -111,13 +129,12 @@ for batch_start in range(0, num_of_images, max_batch_size):
 
     # The output has unnormalized scores. To get probabilities, you can run a softmax on it.
     #print(torch.nn.functional.softmax(output[0], dim=0))
-
+    
     class_numbers = torch.argmax(output, dim=1).tolist()
-
     ts_after_inference      = time()
 
     predictions.update( dict(zip(batch_file_names, class_numbers)) )
-
+    
     batch_loading_s     = ts_before_inference - ts_before_data_loading
     batch_inference_s   = ts_after_inference - ts_before_inference
 
@@ -127,8 +144,16 @@ for batch_start in range(0, num_of_images, max_batch_size):
     sum_loading_s   += batch_loading_s
     sum_inference_s += batch_inference_s
 
-    print(f"{batch_start+1}..{batch_open_end}: {class_numbers}")
+    top_weight_1000, top_classId_1000 = torch.topk(output, 1000, dim=1)
 
+    for i in range(batch_open_end-batch_start):
+        print(batch_file_names[i]+ ':', f"\t{class_numbers[i]}\t{class_names[class_numbers[i]]}")
+        weight_norm_1000.append(torch.nn.functional.softmax(top_weight_1000[i], dim=0))
+        for j in range(0,top_n_max):
+            weight_id[str(((top_classId_1000[i][j]).cpu()).numpy())] = str(((weight_norm_1000[i][j]).cpu()).numpy())
+
+        top_n_predictions[batch_file_names[i]] = weight_id
+        weight_id = {}
 
 if output_file_path:
     output_dict = {
@@ -146,6 +171,7 @@ if output_file_path:
             "list_batch_inference_s":   list_batch_inference_s,
         },
         "predictions": predictions,
+        "top_n": top_n_predictions
     }
     json_string = json.dumps( output_dict , indent=4)
     with open(output_file_path, "w") as json_fd:
