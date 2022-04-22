@@ -1,6 +1,6 @@
 {
     "_producer_rules": [
-        [ [ "downloaded", "onnx_model" ], [ "^", "byname", "downloader" ], "download", {
+        [ [ "downloaded", "onnx_model", "resnet50" ], [ "^", "byname", "downloader" ], "download", {
             "url": "https://www.dropbox.com/s/moedbv6u9cwlhbv/resnet50_v1_softmax.onnx.gz",
             "md5": "e359b2a014ac6c09ae5fba0751fd3482",
             "uncompress_format": "gz"

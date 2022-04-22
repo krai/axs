@@ -20,6 +20,7 @@
         "pillow_process_imagenet": "pillow_process_imagenet",
         "rule_matching_demonstrator": "rule_matching_demonstrator",
         "model_onnx_resnet50_recipe": "model_onnx_resnet50_recipe",
-        "onnx_image_classifier": "onnx_image_classifier"
+        "onnx_image_classifier": "onnx_image_classifier",
+        "model_onnx_mobilenet_recipe": "model_onnx_mobilenet_recipe"
     }
 }

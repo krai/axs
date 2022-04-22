@@ -18,13 +18,21 @@ max_batch_size      = int(sys.argv[4])
 class_names_path    = sys.argv[5]
 cpu_threads         = int(sys.argv[6])
 output_file_path    = sys.argv[7]
+model_name          = sys.argv[8]
 batch_count         = math.ceil(num_of_images / max_batch_size)
 
 file_pattern        = 'ILSVRC2012_val_000{:05d}.JPEG'
-normalize_data_bool = False
-subtract_mean_bool  = True
+
 data_layout         = "NCHW"
-given_channel_means = [123.68, 116.78, 103.94]
+if model_name == "resnet50":
+    normalize_data_bool = False
+    subtract_mean_bool  = True
+    given_channel_means = [123.68, 116.78, 103.94]
+else:
+    if model_name == "mobilenet":
+        normalize_data_bool = True
+        subtract_mean_bool  = False
+        given_channel_means = []
 
 sess_options = rt.SessionOptions()
 if cpu_threads > 0:
@@ -152,6 +160,8 @@ for batch_start in range(0, num_of_images, max_batch_size):
 if output_file_path:
         output_dict = {
             #"execution_device": execution_device,
+            "model_name": model_name,
+            "framework": "onnx",
             "max_batch_size":   max_batch_size,
             "times": {
                 "model_loading_s":          model_loading_s,

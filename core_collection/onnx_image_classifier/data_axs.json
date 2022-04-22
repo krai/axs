@@ -7,8 +7,8 @@
         [ "^", "byquery", [ [ "^^", "get", "onnxruntime_query" ] ] ],
         [ "^", "byquery", [ [ "^^", "get", "pillow_query" ] ] ]
     ],
-
-    "model_query": [ "downloaded", "onnx_model" ],
+    "model_name": "resnet50",
+    "model_query": [ "downloaded", "onnx_model", [ "^^", "get", "model_name" ] ],
     "model_path": [ "^", "execute", [[
         [ "byquery", [[ "^^", "get", "model_query" ]] ],
         [ "get_path" ]
@@ -22,6 +22,7 @@
 
     "num_of_images": 20,
     "output_file_name": "script_output.json",
+    "framework": "onnx",
 
 
     "max_batch_size": 8,
@@ -37,8 +38,10 @@
         [ "get", "__record_entry__" ],
         [ "attach", [ "^", "work_collection" ] ],
         [ "plant", [ "^^", "substitute", [[
-            "tags", [ "script_output", "classified_imagenet" ],
+            "tags", [ "script_output", "classified_imagenet", "onnx_model" ],
             "num_of_images", "#{num_of_images}#",
+            "model_name", "#{model_name}#",
+            "framework", "#{framework}#",
             "output_file_name", "#{output_file_name}#",
             "script_output", [ "AS^IS", "AS^IS", "^^", "load_json", [[ "^^", "get_path_from", "output_file_name" ]] ],
             "accuracy", [ "AS^IS", "AS^IS", "^^", "execute", [[
@@ -58,5 +61,5 @@
 
     "rel_script_path": "onnx_classify.py",
 
-    "script_extra_params": [ "^^", "substitute", "\"#{model_path}#\" \"#{imagenet_dir}#\" #{num_of_images}# #{max_batch_size}# #{class_names_path}# #{cpu_threads}# \"#{output_file_path}#\"" ]
+    "script_extra_params": [ "^^", "substitute", "\"#{model_path}#\" \"#{imagenet_dir}#\" #{num_of_images}# #{max_batch_size}# #{class_names_path}# #{cpu_threads}# \"#{output_file_path}#\" #{model_name}#" ]
 }

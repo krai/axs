@@ -1,0 +1,8 @@
+{
+    "_producer_rules": [
+        [ [ "downloaded", "onnx_model", "mobilenet" ], [ "^", "byname", "downloader" ], "download", {
+            "url": "https://zenodo.org/record/3157894/files/mobilenet_v1_1.0_224.onnx",
+            "md5": "5173c0ccbae0d4fe2acd514e8b847f0d"
+        } ]
+    ]
+}
