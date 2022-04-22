@@ -76,28 +76,29 @@ Usage examples :
 
     def parse_condition(condition, context):
 
-        binary_op_match = re.match('([\w\.]*\w)(==|=|!=|<>|<=|>=|<|>|:|!:)(.+)$', condition)
+        binary_op_match = re.match('([\w\.]*\w)(==|=|!=|<>|<=|>=|<|>|:|!:)(.*)$', condition)
         if binary_op_match:
             key_path    = binary_op_match.group(1)
             op          = binary_op_match.group(2)
-            val         = to_num_or_not_to_num(binary_op_match.group(3))
+            pre_val     = binary_op_match.group(3)
+            val         = to_num_or_not_to_num(pre_val)
 
             if op in ('=', '=='):
                 op = '='
                 comparison_lambda   = lambda x, y : x==y
             elif op in ('!=', '<>'):
                 comparison_lambda   = lambda x, y : x!=y
-            elif op=='<':
+            elif op=='<' and len(pre_val)>0:
                 comparison_lambda   = lambda x, y : x!=None and x<y
-            elif op=='>':
+            elif op=='>' and len(pre_val)>0:
                 comparison_lambda   = lambda x, y : x!=None and x>y
-            elif op=='<=':
+            elif op=='<=' and len(pre_val)>0:
                 comparison_lambda   = lambda x, y : x!=None and x<=y
-            elif op=='>=':
+            elif op=='>=' and len(pre_val)>0:
                 comparison_lambda   = lambda x, y : x!=None and x>=y
-            elif op==':':
+            elif op==':' and len(pre_val)>0:
                 comparison_lambda   = lambda x, y : type(x)==list and y in x
-            elif op=='!:':
+            elif op=='!:' and len(pre_val)>0:
                 comparison_lambda   = lambda x, y : type(x)==list and y not in x
             else:
                 raise SyntaxError(f"Could not parse the condition '{condition}' in {context}")
