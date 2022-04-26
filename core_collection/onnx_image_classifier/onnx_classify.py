@@ -19,20 +19,15 @@ class_names_path    = sys.argv[5]
 cpu_threads         = int(sys.argv[6])
 output_file_path    = sys.argv[7]
 model_name          = sys.argv[8]
+
+normalize_data_bool = eval(sys.argv[9])     # FIXME: currently we are passing a stringified form of a data structure,
+subtract_mean_bool  = eval(sys.argv[10])    # it would be more flexible to encode/decode through JSON instead.
+given_channel_means = eval(sys.argv[11])
+
 batch_count         = math.ceil(num_of_images / max_batch_size)
 
 file_pattern        = 'ILSVRC2012_val_000{:05d}.JPEG'
-
 data_layout         = "NCHW"
-if model_name == "resnet50":
-    normalize_data_bool = False
-    subtract_mean_bool  = True
-    given_channel_means = [123.68, 116.78, 103.94]
-else:
-    if model_name == "mobilenet":
-        normalize_data_bool = True
-        subtract_mean_bool  = False
-        given_channel_means = []
 
 sess_options = rt.SessionOptions()
 if cpu_threads > 0:

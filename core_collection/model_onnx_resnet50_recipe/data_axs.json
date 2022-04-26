@@ -3,7 +3,10 @@
         [ [ "downloaded", "onnx_model", "model_name=resnet50" ], [ "^", "byname", "downloader" ], "download", {
             "url": "https://www.dropbox.com/s/moedbv6u9cwlhbv/resnet50_v1_softmax.onnx.gz",
             "md5": "e359b2a014ac6c09ae5fba0751fd3482",
-            "uncompress_format": "gz"
+            "uncompress_format": "gz",
+            "normalize_data_bool": "False",
+            "subtract_mean_bool": "True",
+            "given_channel_means": "[123.68, 116.78, 103.94]"
         } ]
     ]
 }
