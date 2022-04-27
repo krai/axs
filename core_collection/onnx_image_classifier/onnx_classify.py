@@ -90,19 +90,6 @@ def load_a_batch(batch_filenames):
 
     return batch_data
 
-
-def load_class_names(class_names_path):
-    class_names = []
-    with open( class_names_path ) as class_names_fd:
-        for line in class_names_fd:
-            label, class_name = line.rstrip().split(' ', 1)
-            class_names.append( class_name )
-
-    return class_names
-
-
-class_names = load_class_names(class_names_path)
-
 model_loading_s = time() - ts_before_model_loading
 
 predictions             = {}
@@ -116,7 +103,6 @@ batch_num               = 0
 
 for batch_start in range(0, num_of_images, max_batch_size):
     batch_num = batch_num + 1
-    print(f"------------------- batch {batch_num}/{batch_count} -------------------")
     batch_open_end = min(batch_start+max_batch_size, num_of_images)
 
     ts_before_data_loading  = time()
@@ -141,11 +127,12 @@ for batch_start in range(0, num_of_images, max_batch_size):
     sum_loading_s   += batch_loading_s
     sum_inference_s += batch_inference_s
 
+    print(f"batch {batch_num}/{batch_count}: ({batch_start+1}..{batch_open_end}) {class_numbers}")
+
     for i in range(batch_open_end-batch_start):
         softmax_vector      = batch_predictions[i][-1000:]
         top10_indices        = list(reversed(softmax_vector.argsort()))[:10]
         #predictions[ batch_filenames[i] ] = top5_indices[0]
-        print(batch_filenames[i] + ':',f"\t{top10_indices[0]}\t{class_names[top10_indices[0]]}")
 
         for class_idx in top10_indices:
             weight_id[str(class_idx)] = str(softmax_vector[class_idx])
