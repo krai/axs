@@ -13,7 +13,7 @@ Usage examples :
                 axs byquery extracted,imagenet,dataset_size=500 , remove
 
                     # assuming Imagenet50k in a directory:
-                axs byname pytorch_image_classifier , run --torchvision_query+=with_cuda --imagenet_directory=/datasets/imagenet/imagenet --num_of_images=800 --dataset_size=50000
+                axs byname pytorch_image_classifier , run --torchvision_query+=with_cuda --imagenet_dir=/datasets/imagenet/imagenet --num_of_images=800 --dataset_size=50000
 
                     # assuming Imagenet50k in a tarball:
                 axs byname extractor , extract --archive_path=/datasets/dataset-imagenet-ilsvrc2012-val.tar --tags,=extracted,imagenet --strip_components=1 --dataset_size=50000
