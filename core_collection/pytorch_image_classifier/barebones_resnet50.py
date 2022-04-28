@@ -113,7 +113,6 @@ batch_num = 0
 
 for batch_start in range(0,num_of_images, max_batch_size):
     batch_num = batch_num + 1
-    print(f"------------------- batch {batch_num}/{batch_count} -------------------")
     batch_open_end = min(batch_start+max_batch_size, num_of_images)
     ts_before_data_loading  = time()
 
@@ -149,14 +148,17 @@ for batch_start in range(0,num_of_images, max_batch_size):
     top_weight_1000 = top_weight_1000.cpu().tolist()
     top_classId_1000 = top_classId_1000.cpu().tolist()
 
+    print(f"batch {batch_num}/{batch_count}: ({batch_start+1}..{batch_open_end}) {class_numbers}")
+
     for i in range(batch_open_end-batch_start):
-        print(batch_file_names[i]+ ':', f"\t{class_numbers[i]}\t{class_names[class_numbers[i]]}")
         top_n_predictions[batch_file_names[i]] = dict(zip(top_classId_1000[i], top_weight_1000[i]))
 
 
 if output_file_path:
     output_dict = {
         "execution_device": execution_device,
+        "model_name": model_name,
+        "framework": "pytorch",
         "max_batch_size":   max_batch_size,
         "times": {
             "model_loading_s":          model_loading_s,
