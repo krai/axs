@@ -18,11 +18,6 @@
     "max_batch_size": 25,
     "top_n_max": 10,
 
-    "class_names_path": [ "^", "execute", [[
-            [ "byname", "imagenet_meta" ],
-            [ "get", "class_names_path" ]
-    ]] ],
-
     "output_file_path": [ "^^", "execute", [[
         [ "get", "__record_entry__" ],
         [ "attach", [ "^", "work_collection" ] ],
@@ -47,7 +42,7 @@
         [ "get_path_from", "output_file_name" ]
     ]] ],
 
-    "script_extra_params": [ "^^", "substitute", "\"#{imagenet_dir}#\" #{num_of_images}# #{model_name}# \"#{output_file_path}#\" \"#{execution_device}#\" #{max_batch_size}# #{class_names_path}# \"#{top_n_max}#\"" ],
+    "script_extra_params": [ "^^", "substitute", "\"#{imagenet_dir}#\" #{num_of_images}# #{model_name}# \"#{output_file_path}#\" \"#{execution_device}#\" #{max_batch_size}# #{top_n_max}#" ],
 
     "rel_script_path": "barebones_resnet50.py",
 

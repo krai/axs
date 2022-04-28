@@ -36,8 +36,7 @@ model_name          = sys.argv[3]
 output_file_path    = sys.argv[4]       # if empty, recording of the output will be skipped
 execution_device    = sys.argv[5]       # if empty, it will be autodetected
 max_batch_size      = int(sys.argv[6])
-class_names_path    = sys.argv[7]
-top_n_max           = int(sys.argv[8])
+top_n_max           = int(sys.argv[7])
 file_pattern        = 'ILSVRC2012_val_000{:05d}.JPEG'
 max_attempts        = 3
 retry_in_seconds    = 20
@@ -52,15 +51,6 @@ from torchvision import transforms
 execution_device    = execution_device or ('cuda' if torch.cuda.is_available() else 'cpu')  # autodetection
 torchvision_version = ':v' + torchvision.__version__.split('+')[0]
 
-def load_class_names(class_names_path):
-    class_names = []
-    with open( class_names_path ) as class_names_fd:
-        for line in class_names_fd:
-            label, class_name = line.rstrip().split(' ', 1)
-            class_names.append( class_name )
-
-    return class_names
-
 def load_one_batch(indices):
     file_names  = []
     pre_batch   = []
@@ -73,8 +63,6 @@ def load_one_batch(indices):
         pre_batch.append(input_tensor)
 
     return file_names, pre_batch
-
-class_names = load_class_names(class_names_path)
 
 ts_before_model_loading = time()
 
