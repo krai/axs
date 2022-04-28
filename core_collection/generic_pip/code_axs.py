@@ -24,20 +24,22 @@ def get_metadata_path(abs_packages_dir, package_name, metadata_filename='METADAT
 Usage examples:
                 axs byname generic_pip , get_metadata_path $HOME/CK-TOOLS/lib-python-onnx-compiler.python-3.6.8-precompiled-macos-64/build onnx
     """
+    import re
     import os.path
     from glob import glob
 
     distinfo_path_pattern   = os.path.join( abs_packages_dir, '*.dist-info' )
     for distinfo_path in glob( distinfo_path_pattern ):
         distinfo_name = os.path.basename( distinfo_path ).split( '-', 1 )[0]
+        normalized_distinfo_name = re.sub(r"[-_.]+", "-", distinfo_name).lower()
         toplevel_path = os.path.join( distinfo_path, 'top_level.txt' )
         if os.path.isfile( toplevel_path ):
             with open( toplevel_path, 'r' ) as toplevel_fp:
-                toplevel = toplevel_fp.readline().rstrip()
+                toplevel = toplevel_fp.readline().rstrip().lower()
         else:
-            toplevel = distinfo_name
+            toplevel = normalized_distinfo_name
 
-        if package_name.lower() in (toplevel.lower(), distinfo_name.lower()):
+        if package_name.lower() in (toplevel, normalized_distinfo_name):
             return os.path.join( distinfo_path, metadata_filename )
 
     assert False, f"Could not find METADATA for package={package_name} when abs_packages_dir={abs_packages_dir}"
