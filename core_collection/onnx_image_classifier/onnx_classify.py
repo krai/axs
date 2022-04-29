@@ -15,14 +15,13 @@ model_path          = sys.argv[1]
 imagenet_dir        = sys.argv[2]
 num_of_images       = int(sys.argv[3])
 max_batch_size      = int(sys.argv[4])
-class_names_path    = sys.argv[5]
-cpu_threads         = int(sys.argv[6])
-output_file_path    = sys.argv[7]
-model_name          = sys.argv[8]
+cpu_threads         = int(sys.argv[5])
+output_file_path    = sys.argv[6]
+model_name          = sys.argv[7]
 
-normalize_data_bool = eval(sys.argv[9])     # FIXME: currently we are passing a stringified form of a data structure,
-subtract_mean_bool  = eval(sys.argv[10])    # it would be more flexible to encode/decode through JSON instead.
-given_channel_means = eval(sys.argv[11])
+normalize_data_bool = eval(sys.argv[8])     # FIXME: currently we are passing a stringified form of a data structure,
+subtract_mean_bool  = eval(sys.argv[9])    # it would be more flexible to encode/decode through JSON instead.
+given_channel_means = eval(sys.argv[10])
 
 batch_count         = math.ceil(num_of_images / max_batch_size)
 
