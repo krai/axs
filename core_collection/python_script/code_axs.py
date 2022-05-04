@@ -20,6 +20,7 @@ def ext_use_python_deps(python_deps=None):
     if python_deps:
         new_env['PYTHONPATH']   = ':'.join( [ dep['abs_packages_dir'] for dep in python_deps ] )
 
-    new_env['LD_LIBRARY_PATH']  = os.environ['LD_LIBRARY_PATH']
+    if os.getenv('LD_LIBRARY_PATH') is not None:
+        new_env['LD_LIBRARY_PATH']  = os.environ['LD_LIBRARY_PATH']
 
     return new_env
