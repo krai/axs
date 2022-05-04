@@ -422,7 +422,7 @@ Usage examples :
                 rt_pipeline_wide[input_label] = call_record_entry_ptr[0]
 
             if output_label:
-                rt_pipeline_wide[output_label] = result
+                rt_pipeline_wide[output_label] = function_access.to_num_or_not_to_num( result )
 
         return result
 
