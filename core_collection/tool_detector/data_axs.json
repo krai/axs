@@ -26,6 +26,8 @@
         [ [ "shell_tool", "can_git"], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "git", "shell_cmd": [ "AS^IS", "^^", "substitute", [[
             "#{tool_path}#",
             "--version"
-        ]] ], "capture_output": true } ]
+        ]] ], "capture_output": true } ],
+        [ [ "shell_tool", "can_gpu" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "nvidia-smi", "shell_cmd_with_subs": "\"#{tool_path}#\" -L | grep -c GPU" ,  "capture_output": true} ],
+        [ [ "shell_tool", "can_gpu" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "echo", "shell_cmd": "echo 0" ,  "capture_output": true} ]
     ]
 }

@@ -32,7 +32,7 @@ sess_options = rt.SessionOptions()
 if cpu_threads > 0:
     sess_options.enable_sequential_execution = False
     sess_options.session_thread_pool_size = cpu_threads
-sess = rt.InferenceSession(model_path, sess_options)
+sess = rt.InferenceSession(model_path, sess_options, providers=rt.get_available_providers())
 
 ts_before_model_loading = time()
 

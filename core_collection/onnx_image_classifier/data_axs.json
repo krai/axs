@@ -1,7 +1,12 @@
 {
     "_parent_entries": [ [ "^", "byname", "python_script" ] ],
 
-    "onnxruntime_query":    [ "python_package", "package_name=onnxruntime" ],
+    "num_gpus": [ "^", "execute", [[
+                       [ "byquery", "shell_tool,can_gpu" ],
+                       [ "run" ]
+                ]] ],
+    "onnxruntime_name": ["^^", "case",[ ["^^","get","num_gpus"], "0", "package_name=onnxruntime" ], {"default_value": "package_name=onnxruntime-gpu"}],
+    "onnxruntime_query":    [ "python_package", [ "^^", "get","onnxruntime_name" ] ],
     "pillow_query":         [ "python_package", "package_name=pillow" ],
     "python_deps": [
         [ "^", "byquery", [ [ "^^", "get", "onnxruntime_query" ] ] ],
