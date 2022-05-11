@@ -1,5 +1,8 @@
 {
     "_parent_entries": [ [ "^", "byname", "python_script" ] ],
+    "_producer_rules": [
+        [ [ "script_output", "classified_imagenet", "framework=onnx" ], [ "^^", "get", "__entry__" ], "run", { "return_saved_record_entry": true } ]
+    ],
 
     "num_gpus": [ "^", "execute", [[
                        [ "byquery", "shell_tool,can_gpu" ],
@@ -43,7 +46,7 @@
         [ "get", "__record_entry__" ],
         [ "attach", [ "^", "work_collection" ] ],
         [ "plant", [ "^^", "substitute", [[
-            "tags", [ "script_output", "classified_imagenet", "onnx_model" ],
+            "tags", [ "script_output", "classified_imagenet" ],
             "num_of_images", "#{num_of_images}#",
             "model_name", "#{model_name}#",
             "framework", "#{framework}#",

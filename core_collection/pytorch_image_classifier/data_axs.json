@@ -2,7 +2,7 @@
     "_parent_entries": [ [ "^", "byname", "python_script" ] ],
 
     "_producer_rules": [
-        [ [ "script_output", "classified_imagenet" ], [ "^^", "get", "__entry__" ], "run", { "return_saved_record_entry": true } ]
+        [ [ "script_output", "classified_imagenet", "framework=pytorch" ], [ "^^", "get", "__entry__" ], "run", { "return_saved_record_entry": true } ]
     ],
 
     "imagenet_query": [ "extracted", "imagenet" ],
@@ -17,6 +17,7 @@
     "execution_device": "",
     "max_batch_size": 25,
     "top_n_max": 10,
+    "framework": "pytorch",
 
     "output_file_path": [ "^^", "execute", [[
         [ "get", "__record_entry__" ],
@@ -25,6 +26,7 @@
             "tags", [ "script_output", "classified_imagenet" ],
             "num_of_images", "#{num_of_images}#",
             "model_name", "#{model_name}#",
+	    "framework", "#{framework}#",
             "output_file_name", "#{output_file_name}#",
             "script_output", [ "AS^IS", "AS^IS", "^^", "load_json", [[ "^^", "get_path_from", "output_file_name" ]] ],
             "accuracy", [ "AS^IS", "AS^IS", "^^", "execute", [[
