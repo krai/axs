@@ -22,6 +22,9 @@ model_name          = sys.argv[7]
 normalize_data_bool = eval(sys.argv[8])     # FIXME: currently we are passing a stringified form of a data structure,
 subtract_mean_bool  = eval(sys.argv[9])    # it would be more flexible to encode/decode through JSON instead.
 given_channel_means = eval(sys.argv[10])
+execution_device    = sys.argv[11]         # if empty, it will be autodetected
+
+requested_provider  = sys.argv[12]
 
 batch_count         = math.ceil(num_of_images / max_batch_size)
 
@@ -32,9 +35,17 @@ sess_options = rt.SessionOptions()
 if cpu_threads > 0:
     sess_options.enable_sequential_execution = False
     sess_options.session_thread_pool_size = cpu_threads
-sess = rt.InferenceSession(model_path, sess_options, providers=rt.get_available_providers())
+sess = rt.InferenceSession(model_path, sess_options, providers= [requested_provider] if execution_device else rt.get_available_providers())
+
+session_execution_provider=sess.get_providers()
+print("Session execution provider: ", sess.get_providers())
 
 ts_before_model_loading = time()
+
+if "CUDAExecutionProvider" in session_execution_provider or "TensorrtExecutionProvider" in session_execution_provider:
+    print("Device: GPU")
+else:
+    print("Device: CPU")
 
 input_layer_names   = [ x.name for x in sess.get_inputs() ]
 input_layer_name    = input_layer_names[0]
@@ -140,7 +151,7 @@ for batch_start in range(0, num_of_images, max_batch_size):
 
 if output_file_path:
         output_dict = {
-            #"execution_device": execution_device,
+            "execution_device": execution_device,
             "model_name": model_name,
             "framework": "onnx",
             "max_batch_size":   max_batch_size,

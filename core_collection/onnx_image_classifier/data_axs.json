@@ -32,7 +32,9 @@
     "output_file_name": "script_output.json",
     "framework": "onnx",
 
+    "execution_device": "",
 
+    "requested_provider": ["^^", "case",[ ["^^","get","execution_device"], "cpu", "CPUExecutionProvider", ["gpu","cuda"], "CUDAExecutionProvider", ["tensorrt","trt"], "TensorrtExecutionProvider" ] ],
     "max_batch_size": 8,
 
     "cpu_threads": 0,
@@ -64,5 +66,5 @@
 
     "rel_script_path": "onnx_classify.py",
 
-    "script_extra_params": [ "^^", "substitute", "\"#{model_path}#\" \"#{imagenet_dir}#\" #{num_of_images}# #{max_batch_size}# #{cpu_threads}# \"#{output_file_path}#\" #{model_name}# \"#{normalize_data_bool}#\" \"#{subtract_mean_bool}#\" \"#{given_channel_means}#\"" ]
+    "script_extra_params": [ "^^", "substitute", "\"#{model_path}#\" \"#{imagenet_dir}#\" #{num_of_images}# #{max_batch_size}# #{cpu_threads}# \"#{output_file_path}#\" #{model_name}# \"#{normalize_data_bool}#\" \"#{subtract_mean_bool}#\" \"#{given_channel_means}#\" \"#{execution_device}#\" \"#{requested_provider}#\"" ]
 }
