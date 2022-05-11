@@ -35,7 +35,7 @@
     "execution_device": "",
 
     "requested_provider": ["^^", "case",[ ["^^","get","execution_device"], "cpu", "CPUExecutionProvider", ["gpu","cuda"], "CUDAExecutionProvider", ["tensorrt","trt"], "TensorrtExecutionProvider" ] ],
-    "max_batch_size": 8,
+    "max_batch_size": 25,
 
     "cpu_threads": 0,
 

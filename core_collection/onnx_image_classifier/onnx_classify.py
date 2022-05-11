@@ -38,14 +38,14 @@ if cpu_threads > 0:
 sess = rt.InferenceSession(model_path, sess_options, providers= [requested_provider] if execution_device else rt.get_available_providers())
 
 session_execution_provider=sess.get_providers()
-print("Session execution provider: ", sess.get_providers())
+print("Session execution provider: ", sess.get_providers(), file=sys.stderr)
 
 ts_before_model_loading = time()
 
 if "CUDAExecutionProvider" in session_execution_provider or "TensorrtExecutionProvider" in session_execution_provider:
-    print("Device: GPU")
+    print("Device: GPU", file=sys.stderr)
 else:
-    print("Device: CPU")
+    print("Device: CPU", file=sys.stderr)
 
 input_layer_names   = [ x.name for x in sess.get_inputs() ]
 input_layer_name    = input_layer_names[0]
@@ -56,10 +56,10 @@ model_output_shape  = sess.get_outputs()[0].shape
 height              = model_input_shape[2]
 width               = model_input_shape[3]
 
-print(f"input_layer_names={input_layer_names}")
-print(f"output_layer_names={output_layer_names}")
-print(f"model_input_shape={model_input_shape}")
-print(f"model_output_shape={model_output_shape}")
+print(f"input_layer_names={input_layer_names}", file=sys.stderr)
+print(f"output_layer_names={output_layer_names}", file=sys.stderr)
+print(f"model_input_shape={model_input_shape}", file=sys.stderr)
+print(f"model_output_shape={model_output_shape}", file=sys.stderr)
 
 
 def load_and_resize_image(image_filepath, height, width):
