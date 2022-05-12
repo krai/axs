@@ -5,17 +5,29 @@ environment:
   matrix:
     - job_name: Windows Py 3.6
       appveyor_build_worker_image: Visual Studio 2019
+      VISION_TEST_TYPE: pytorch
       PYTHON: C:\Python36-x64
 
     - job_name: Windows Py 3.9
       appveyor_build_worker_image: Visual Studio 2019
+      VISION_TEST_TYPE: pytorch
       PYTHON: C:\Python39-x64
 
-    - job_name: MacOS
+    - job_name: MacOS_pytorch
       appveyor_build_worker_image: macos
+      VISION_TEST_TYPE: pytorch
 
-    - job_name: Linux
+    - job_name: MacOS_onnxruntime
+      appveyor_build_worker_image: macos
+      VISION_TEST_TYPE: onnxruntime
+
+    - job_name: Linux_pytorch
       appveyor_build_worker_image: Ubuntu
+      VISION_TEST_TYPE: pytorch
+
+   - job_name: Linux_onnxruntime
+     appveyor_build_worker_image: Ubuntu
+     VISION_TEST_TYPE: onnxruntime
 
 init:
     - cmd: set PATH=%PYTHON%;%PYTHON%\\Scripts;%cd%;%PATH%
