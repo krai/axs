@@ -23,6 +23,7 @@ normalize_data_bool = eval(sys.argv[8])     # FIXME: currently we are passing a 
 subtract_mean_bool  = eval(sys.argv[9])    # it would be more flexible to encode/decode through JSON instead.
 given_channel_means = eval(sys.argv[10])
 execution_device    = sys.argv[11]         # if empty, it will be autodetected
+top_n_max           = int(sys.argv[12])
 
 batch_count         = math.ceil(num_of_images / max_batch_size)
 
@@ -147,10 +148,10 @@ for batch_start in range(0, num_of_images, max_batch_size):
 
     for i in range(batch_open_end-batch_start):
         softmax_vector      = batch_predictions[i][-1000:]
-        top10_indices        = list(reversed(softmax_vector.argsort()))[:10]
+        top_n_indices       = list(reversed(softmax_vector.argsort()))[:top_n_max]
         #predictions[ batch_filenames[i] ] = top5_indices[0]
 
-        for class_idx in top10_indices:
+        for class_idx in top_n_indices:
             weight_id[str(class_idx)] = str(softmax_vector[class_idx])
         top_n_predictions[batch_filenames[i]] = weight_id
         weight_id = {}

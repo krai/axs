@@ -38,6 +38,7 @@
     "execution_device": "",
 
     "max_batch_size": 25,
+    "top_n_max": 10,
 
     "cpu_threads": 0,
 
@@ -68,5 +69,5 @@
 
     "rel_script_path": "onnx_classify.py",
 
-    "script_extra_params": [ "^^", "substitute", "\"#{model_path}#\" \"#{imagenet_dir}#\" #{num_of_images}# #{max_batch_size}# #{cpu_threads}# \"#{output_file_path}#\" #{model_name}# \"#{normalize_data_bool}#\" \"#{subtract_mean_bool}#\" \"#{given_channel_means}#\" \"#{execution_device}#\"" ]
+    "script_extra_params": [ "^^", "substitute", "\"#{model_path}#\" \"#{imagenet_dir}#\" #{num_of_images}# #{max_batch_size}# #{cpu_threads}# \"#{output_file_path}#\" #{model_name}# \"#{normalize_data_bool}#\" \"#{subtract_mean_bool}#\" \"#{given_channel_means}#\" \"#{execution_device}#\" #{top_n_max}#" ]
 }
