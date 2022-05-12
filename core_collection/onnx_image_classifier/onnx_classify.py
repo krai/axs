@@ -24,8 +24,6 @@ subtract_mean_bool  = eval(sys.argv[9])    # it would be more flexible to encode
 given_channel_means = eval(sys.argv[10])
 execution_device    = sys.argv[11]         # if empty, it will be autodetected
 
-requested_provider  = sys.argv[12]
-
 batch_count         = math.ceil(num_of_images / max_batch_size)
 
 file_pattern        = 'ILSVRC2012_val_000{:05d}.JPEG'
@@ -35,6 +33,14 @@ sess_options = rt.SessionOptions()
 if cpu_threads > 0:
     sess_options.enable_sequential_execution = False
     sess_options.session_thread_pool_size = cpu_threads
+
+if execution_device == "cpu":
+    requested_provider = "CPUExecutionProvider"
+elif execution_device in ["gpu", "cuda"]:
+    requested_provider = "CUDAExecutionProvider"
+elif execution_device in ["tensorrt", "trt"]:
+    requested_provider = "TensorrtExecutionProvider"
+
 sess = rt.InferenceSession(model_path, sess_options, providers= [requested_provider] if execution_device else rt.get_available_providers())
 
 session_execution_provider=sess.get_providers()
