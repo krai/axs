@@ -48,7 +48,11 @@ import torch
 import torchvision
 from torchvision import transforms
 
-execution_device    = execution_device or ('cuda' if torch.cuda.is_available() else 'cpu')  # autodetection
+if execution_device == "gpu":
+    execution_device = ('cuda' if torch.cuda.is_available() else 'cpu')
+else:
+    execution_device = execution_device or ('cuda' if torch.cuda.is_available() else 'cpu')  # autodetection
+
 torchvision_version = ':v' + torchvision.__version__.split('+')[0]
 
 def load_one_batch(indices):
