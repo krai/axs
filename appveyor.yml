@@ -26,8 +26,8 @@ environment:
       VISION_TEST_TYPE: pytorch
 
     - job_name: Linux_onnxruntime
-     appveyor_build_worker_image: Ubuntu
-     VISION_TEST_TYPE: onnxruntime
+      appveyor_build_worker_image: Ubuntu
+      VISION_TEST_TYPE: onnxruntime
 
 init:
     - cmd: set PATH=%PYTHON%;%PYTHON%\\Scripts;%cd%;%PATH%
