@@ -6,6 +6,11 @@
         [ [ "shell_tool", "can_download_url" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "wget", "shell_cmd_with_subs": "\"#{tool_path}#\" -O #{target_path}# #{url}#" } ],
         [ [ "shell_tool", "can_download_url" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "curl", "shell_cmd_with_subs": "\"#{tool_path}#\" -L -o #{target_path}# #{url}#" } ],
 
+        [ [ "shell_tool", "can_extract_tar" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "tar.exe", "strip_components": 0,
+            "shell_cmd_with_subs": ["AS^IS", "^^", "case",   [ ["^^", "get", "archive_format"],
+                "tar", "tar -xvf - < #{archive_path}# -C #{target_path}# --strip_components #{strip_components}#",
+                "tgz", "tar -zxvf - < #{archive_path}#   -C #{target_path}# --strip_components #{strip_components}#"
+        ] ] } ],
         [ [ "shell_tool", "can_extract_tar" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "tar", "strip_components": 0, "shell_cmd": [ "AS^IS", "^^", "substitute", [[
             "#{tool_path}#",
             ["^^", "case", [ ["^^", "get", "archive_format"], "tar", "-xvf", "tgz", "-zxvf" ] ],
