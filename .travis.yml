@@ -28,7 +28,7 @@ matrix:
         - PYTHON_EXE=python
 
     - language: python
-      if: false
+      if: true
       python: 3.8
       env:
         - VISION_TEST_TYPE=onnxruntime
