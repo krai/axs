@@ -117,11 +117,15 @@ if [ "$VISION_TEST_TYPE" == "pytorch" ]; then
     assert_end dependency_installation_and_resolution_for_external_python_script
 
 elif [ "$VISION_TEST_TYPE" == "onnxruntime" ]; then
+    axs byname onnx_image_classifier , run ---capture_output=true --output_file_path=
+
     # The following line is split into two to provide more insight into what is going on.
     # Otherwise assert() blocks all the error output and the command looks "stuck" for quite a while.
     export INFERENCE_OUTPUT=`axs byname onnx_image_classifier , run ---capture_output=true --output_file_path=`
     assert 'echo $INFERENCE_OUTPUT' 'batch 1/1: (1..20) [65, 795, 231, 967, 520, 65, 334, 999, 674, 332, 109, 286, 370, 757, 595, 147, 327, 23, 478, 517]'
+
     axs byquery script_output,classified_imagenet,framework=onnx,num_of_images=32
+
     export ACCURACY_OUTPUT=`axs byquery script_output,classified_imagenet,framework=onnx,num_of_images=32 , get accuracy`
     echo "Accuracy: $ACCURACY_OUTPUT"
     assert 'echo $ACCURACY_OUTPUT' '0.6875'
