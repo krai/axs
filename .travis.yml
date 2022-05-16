@@ -14,30 +14,35 @@ matrix:
 
   include:
     - language: python
+      if: false
       python: 3.6
       env:
         - VISION_TEST_TYPE=pytorch
         - PYTHON_EXE=python
 
     - language: python
+      if: false
       python: 3.7
       env:
         - VISION_TEST_TYPE=onnxruntime
         - PYTHON_EXE=python
 
     - language: python
+      if: false
       python: 3.8
       env:
         - VISION_TEST_TYPE=onnxruntime
         - PYTHON_EXE=python
 
     - language: python
+      if: false
       python: 3.9
       env:
         - VISION_TEST_TYPE=pytorch
         - PYTHON_EXE=python
 
     - os: osx
+      if: false
       osx_image: xcode11.2  # Python 3.7, but may change with time
       language: shell       # 'language: python' is an error on Travis CI macOS
       env:
@@ -45,6 +50,7 @@ matrix:
         - PYTHON_EXE=python3
 
     - name: "Python 3.6 on FreeBSD"
+      if: false
       os: freebsd
       language: python
       python: 3.6
@@ -67,6 +73,7 @@ matrix:
         - ln -s `which python.exe` python3
 
     - name: "Python 3.6 on IBM Power"
+      if: false
       arch: ppc64le
       os: linux
       language: python
@@ -75,6 +82,7 @@ matrix:
         - PYTHON_EXE=python
 
     - name: "Python 3.6 on IBM Z"
+      if: false
       arch: s390x
       os: linux
       language: python
