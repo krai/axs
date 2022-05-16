@@ -11,8 +11,8 @@
                 "tar", "",
                 "tgz", "z"
             ] ],
-            "strip_components_insert": ["AS^IS", "^^", "case",   [ ["^^", "get", "archive_format"],
-                "0", ""
+            "strip_components_insert": ["AS^IS", "^^", "case",   [ ["^^", "get", "strip_components"],
+                0, ""
             ], {"default_value": ["^^", "substitute", "--strip-components #{strip_components}#"] } ],
             "shell_cmd_with_subs": "\"#{tool_path}#\" -#{uncompression_insert}#xvf - -C \"#{target_path}#\" #{strip_components_insert}# < \"#{archive_path}#\""
         } ],
