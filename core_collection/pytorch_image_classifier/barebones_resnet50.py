@@ -3,6 +3,7 @@
 """An example Python script that is given its data, necessary Python environment and the output path by wrapping it into an Entry.
 
 Usage examples :
+                    # execution_device can be cpu, gpu, cuda.
                     # as a side-effect, automatically downloads and extracts Imagenet500:
                 axs byname pytorch_image_classifier , run --execution_device=cpu --num_of_images=100
 
@@ -21,6 +22,19 @@ Usage examples :
 
                     # assuming Imagenet50k is already installed from a tarball, but still wanting to use Imagenet500:
                 axs byname pytorch_image_classifier , run --torchvision_query+=with_cuda --imagenet_query+=dataset_size=500 --num_of_images=350
+
+                    # as a side-effect, automatically downloads and extracts Imagenet500 and save output to file experiment.json:
+                axs byname pytorch_image_classifier , run --execution_device=gpu --num_of_images=100 --output_file_path=experiment.json
+
+                    # set top_n_max ( number of predictions for each image ) which is added to output_file. By default top_n_max = 10
+                axs byquery script_output,classified_imagenet,framework=pytorch,num_of_images=32 , top_n_max=6
+
+                    # get accuracy
+                axs byquery script_output,classified_imagenet,framework=pytorch,num_of_images=32 , get accuracy
+
+                    # get n predictions for each image
+                axs byquery script_output,classified_imagenet,framework=pytorch,num_of_images=32 , get print_top_n_predictions
+
 """
 
 import json
