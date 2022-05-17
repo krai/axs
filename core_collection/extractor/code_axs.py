@@ -50,26 +50,7 @@ Usage examples:
     __record_entry__.save( entry_name )
     target_path     = __record_entry__.get_path(file_name)
 
-    entry_path      =__record_entry__.get_path('')
-
-    logging.error(f"BEFORE makedirs-------------------------CURRENT DIRECTORY:")
-    os.system('ls -l')
-
-    logging.error(f"BEFORE makedirs=========================ENTRY DIRECTORY:")
-    os.system(f'ls -l {entry_path}')
-
-
     os.makedirs( target_path )
-
-    logging.error(f"AFTER makedirs-------------------------CURRENT DIRECTORY:")
-    os.system('ls -l')
-
-    logging.error(f"AFTER makedirs=========================ENTRY DIRECTORY:")
-    os.system(f'ls -l {entry_path}')
-
-    logging.error(f"AFTER makedirs=========================TARGET DIRECTORY:")
-    os.system(f'ls -l {target_path}')
-
 
     logging.warning(f"The resolved extraction_tool_entry '{extraction_tool_entry.get_name()}' located at '{extraction_tool_entry.get_path()}' uses the shell tool '{extraction_tool_entry['tool_path']}'")
     retval = extraction_tool_entry.call('run', [], {"archive_path": archive_path, "target_path": target_path, "errorize_output": True, "archive_format": archive_format, "strip_components": strip_components})

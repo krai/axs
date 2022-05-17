@@ -65,7 +65,7 @@ matrix:
       env:
 #        - VISION_TEST_TYPE=onnxruntime
         - PYTHON_EXE=python.exe
-        - PATH=/c/Python38:/c/Python38/Scripts:$PATH
+        - PATH=/c/Python38:/c/Python38/Scripts:/c/Windows/system32:$PATH
       before_install:
         - choco install python --version 3.8.0
         - choco install gzip
