@@ -3,9 +3,9 @@
 import os
 import sys
 
-import numpy as np
 from PIL import Image
 import onnxruntime as rt
+import numpy as np
 from time import time
 import json
 import math
