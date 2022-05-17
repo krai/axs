@@ -17,8 +17,8 @@ def ext_use_python_deps(python_deps=None):
     if 'SYSTEMROOT' in os.environ:
         new_env['SYSTEMROOT']   = os.environ['SYSTEMROOT']
 
-    if python_deps:
-        new_env['PYTHONPATH']   = ':'.join( [ dep['abs_packages_dir'] for dep in python_deps ] )
+    if python_deps:     # Note the OS-independent way of joining individual paths
+        new_env['PYTHONPATH']   = os.pathsep.join( [ dep['abs_packages_dir'] for dep in python_deps ] )
 
     if os.getenv('LD_LIBRARY_PATH') is not None:
         new_env['LD_LIBRARY_PATH']  = os.environ['LD_LIBRARY_PATH']
