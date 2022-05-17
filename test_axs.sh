@@ -91,6 +91,16 @@ axs byquery --/=shell_tool/can_python --- , remove
 assert_end dependency_installation_and_resolution_for_internal_code
 
 
+axs byname downloader , download 'http://cKnowledge.org/ai/data/ILSVRC2012_img_val_500.tar'
+axs byquery downloaded,file_name=ILSVRC2012_img_val_500.tar , archive_path: get_path , byname extractor , extract
+
+axs byquery extracted,archive_name=ILSVRC2012_img_val_500.tar --- , remove
+axs byquery shell_tool,can_extract_tar --- , remove
+axs byquery downloaded,file_name=ILSVRC2012_img_val_500.tar --- , remove
+axs byquery shell_tool,can_download_url --- , remove
+
+
+
 if [ "$VISION_TEST_TYPE" == "pytorch" ]; then
     # The following line is split into two to provide more insight into what is going on.
     # Otherwise assert() blocks all the error output and the command looks "stuck" for quite a while.
