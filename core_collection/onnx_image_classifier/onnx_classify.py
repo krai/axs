@@ -3,9 +3,6 @@
 import os
 import sys
 
-print(f"onnx_classify.py: PYTHONPATH={os.getenv('PYTHONPATH')}", file=sys.stderr)
-print(f"onnx_classify.py: sys.path={sys.path}", file=sys.stderr)
-
 from PIL import Image
 import onnxruntime as rt
 import numpy as np

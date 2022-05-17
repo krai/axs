@@ -117,8 +117,6 @@ if [ "$VISION_TEST_TYPE" == "pytorch" ]; then
     assert_end dependency_installation_and_resolution_for_external_python_script
 
 elif [ "$VISION_TEST_TYPE" == "onnxruntime" ]; then
-    axs byname onnx_image_classifier , run ---capture_output=true --output_file_path=
-
     # The following line is split into two to provide more insight into what is going on.
     # Otherwise assert() blocks all the error output and the command looks "stuck" for quite a while.
     export INFERENCE_OUTPUT=`axs byname onnx_image_classifier , run ---capture_output=true --output_file_path=`
