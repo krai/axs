@@ -64,13 +64,14 @@ matrix:
       language: shell       # 'language: python' is an error on Travis CI Windows
       env:
 #        - VISION_TEST_TYPE=onnxruntime
-        - PYTHON_EXE=python.exe
-        - PATH=/c/Python38:/c/Python38/Scripts:/c/Windows/system32:$PATH
+        - PYTHON_EXE=python3
+        - PATH=/c/Python38:/c/Python38/Scripts:$PATH
       before_install:
         - choco install python --version 3.8.0
         - choco install gzip
         - python -m pip install --upgrade pip
         - ln -s `which python.exe` python3
+        - ln -s /c/Windows/System32/tar.exe /c/Python38
 
     - name: "Python 3.6 on IBM Power"
       if: false
