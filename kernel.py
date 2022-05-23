@@ -10,10 +10,11 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.150'     # TODO: update with every kernel change
+__version__ = '0.2.151'     # TODO: update with every kernel change
 
 import logging
 import os
+import sys
 from runnable import Runnable
 from stored_entry import Entry
 
@@ -57,8 +58,17 @@ Usage examples :
             return kernel_dir_path
 
 
+    def python_path(self):
+        """Get the path to the Python executable that is used by the kernel itself
+
+Usage examples :
+                axs python_path
+        """
+        return sys.executable
+
+
     def introduce(self):
-        print(f"I am {self.get_name()} version={self.version()} kernel_path={self.kernel_path()}")
+        print(f"I am {self.get_name()} version={self.version()} kernel_path={self.kernel_path()} interpreted by python_path={self.python_path()}")
 
 
     def fresh_entry(self, entry_path=None, own_data=None, container=None, name=None, generated_name_prefix=None):
