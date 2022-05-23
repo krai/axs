@@ -17,7 +17,7 @@ Usage examples:
     return sys.platform.startswith('win')
 
 
-def which(exec_name, env=None):
+def which(tool_name, env=None):
     """OS-independent routine to search for an executable in the OS's executable path.
 
 Usage examples:
@@ -28,24 +28,33 @@ Usage examples:
 
     for exec_dir in exec_dirs:
         for suffix in suffixes:
-            candidate_full_path = os.path.join(exec_dir, exec_name + suffix)
+            candidate_full_path = os.path.join(exec_dir, tool_name + suffix)
             if os.access(candidate_full_path, os.X_OK):
                 return candidate_full_path
     return None
 
 
-def detect(tool_name, tags=None, entry_name=None, __record_entry__=None):
-    """Detect an installed shell tool and create an entry to point at it
+def basename(tool_path):
+    """Turn full tool_path into tool_name
+
+Usage examples:
+            axs byname tool_detector , basename /usr/bin/gcc
+    """
+    return os.path.basename(tool_path)
+
+
+def detect(tool_name=None, tool_path=None, tags=None, entry_name=None, __record_entry__=None):
+    """Detect/select an installed shell tool and create an entry to point at it
 
 Usage examples :
                 axs byname tool_detector , detect wget --tags,=shell_tool,can_download_url '--shell_cmd:=AS^IS:^^:substitute:#{tool_path}# -O #{target_path}# #{url}#'
 
                 axs byname tool_detector , detect curl --tags,=shell_tool,can_download_url '--shell_cmd:=AS^IS:^^:substitute:#{tool_path}# -L -o #{target_path}# #{url}#'
 
+                axs byname tool_detector , detect --tool_path,=^,python_path --tags,=shell_tool,can_python
+
                 axs byquery shell_tool,can_download_url , run --url=https://example.com/ --target_path=example.html
     """
-
-    tool_path   = which(tool_name)
 
     if tool_path:
         __record_entry__["tool_path"]       = tool_path
