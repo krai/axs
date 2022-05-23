@@ -31,8 +31,8 @@
         [ [ "shell_tool", "can_compute_md5" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "md5sum",     "shell_cmd_with_subs": "'#{tool_path}#' '#{file_path}#' | cut -f 1 -d ' '", "capture_output": true } ],
         [ [ "shell_tool", "can_compute_md5" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "md5",        "shell_cmd_with_subs": "'#{tool_path}#' -r '#{file_path}#' | cut -f 1 -d ' '", "capture_output": true } ],
 
-        [ [ "shell_tool", "can_python" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "python.exe", "shell_cmd_with_subs": "\"#{tool_path}#\" --version", "capture_output": true } ],
-        [ [ "shell_tool", "can_python" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "python3",    "shell_cmd_with_subs": "\"#{tool_path}#\" --version", "capture_output": true } ],
+        [ [ "shell_tool", "can_python" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "custom_python", "shell_cmd_with_subs": "\"#{tool_path}#\" --version", "capture_output": true } ],
+        [ [ "shell_tool", "can_python" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "kernel_python", "tool_path": [ "^", "python_path" ], "shell_cmd_with_subs": "\"#{tool_path}#\" --version", "capture_output": true } ],
 
         [ [ "shell_tool", "can_git"], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "git", "shell_cmd": [ "AS^IS", "^^", "substitute", [[
             "#{tool_path}#",

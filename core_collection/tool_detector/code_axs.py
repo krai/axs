@@ -51,7 +51,9 @@ Usage examples :
 
                 axs byname tool_detector , detect curl --tags,=shell_tool,can_download_url '--shell_cmd:=AS^IS:^^:substitute:#{tool_path}# -L -o #{target_path}# #{url}#'
 
-                axs byname tool_detector , detect --tool_path,=^,python_path --tags,=shell_tool,can_python
+                axs byquery shell_tool,can_python                       # select kernel_python by default
+
+                axs byquery shell_tool,can_python,tool_name=python3.8   # detect a custom tool_name
 
                 axs byquery shell_tool,can_download_url , run --url=https://example.com/ --target_path=example.html
     """
