@@ -10,7 +10,7 @@
     "imagenet_dir": [ "^", "execute", [[
         [ "byquery", [[ "^^", "get", "imagenet_query" ]] ],
         [ "get_path" ]
-    ]] ],
+    ]], {}, ["imagenet_query"] ],
     "num_of_images": 20,
     "model_name": "resnet50",
     "output_file_name": "script_output.json",
@@ -51,6 +51,6 @@
     "torchvision_query": [ "python_package", "package_name=torchvision" ],
 
     "python_deps": [
-        [ "^", "byquery", [[ "^^", "get", "torchvision_query" ]] ]
+        [ "^", "byquery", [[ "^^", "get", "torchvision_query" ]], {}, ["torchvision_query"] ]
     ]
 }

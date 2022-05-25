@@ -82,6 +82,12 @@ class ParamSource:
         return dict(enumerate(args))
 
 
+    def slice(self, *param_names):
+        "Produces a slice of a dictionary"
+
+        return dict([(param_name, self[param_name]) for param_name in param_names])
+
+
     def runtime_stack(self):
         "A list of entries to query for parameters before own_data during [] parameter access"
 

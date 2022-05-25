@@ -1,6 +1,11 @@
 {
     "_producer_rules": [
-        [ [ "preprocessed", "imagenet" ], [ "^^", "get", "__entry__" ], "preprocess", {} ]
+        [ [ "preprocessed", "imagenet" ], [ "^^", "get", "__entry__" ], "preprocess", {},
+          [
+            "imagenet_directory", "square_size", "supported_extensions", "crop_percentage", "inter_size",
+            "convert_to_bgr", "data_type", "new_file_extension", "file_name"
+          ]
+        ]
     ],
 
     "numpy_query": [ "python_package", "package_name=numpy" ],
@@ -18,8 +23,8 @@
     "imagenet_query": [ "extracted", "imagenet" ],
     "imagenet_directory": [ "^", "execute", [[
         [ "byquery", [[ "^^", "get", "imagenet_query" ]] ],
-        [ "get_path", "extracted" ]
-    ]] ],
+        [ "get_path" ]
+    ]], {}, [ "imagenet_query" ] ],
 
     "square_size":          224,
     "supported_extensions": ["jpeg", "jpg", "gif", "png"],

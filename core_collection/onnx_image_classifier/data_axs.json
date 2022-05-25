@@ -12,12 +12,12 @@
     "onnxruntime_query":    [ "python_package", [ "^^", "get","onnxruntime_name" ] ],
     "pillow_query":         [ "python_package", "package_name=pillow" ],
     "python_deps": [
-        [ "^", "byquery", [ [ "^^", "get", "onnxruntime_query" ] ] ],
-        [ "^", "byquery", [ [ "^^", "get", "pillow_query" ] ] ]
+        [ "^", "byquery", [ [ "^^", "get", "onnxruntime_query" ] ], {}, ["onnxruntime_query"] ],
+        [ "^", "byquery", [ [ "^^", "get", "pillow_query" ] ], {}, ["pillow_query"] ]
     ],
     "model_name": "resnet50",
     "model_query": [ "downloaded", "onnx_model", [ "^^", "substitute", "model_name=#{model_name}#" ] ],
-    "model_entry": [ "^", "byquery", [[ "^^", "get", "model_query" ]] ],
+    "model_entry": [ "^", "byquery", [[ "^^", "get", "model_query" ]], {}, ["model_query"] ],
     "model_path": [ "^^", "execute", [[
         [ "get", "model_entry" ],
         [ "get_path" ]
@@ -29,7 +29,7 @@
     "imagenet_dir": [ "^", "execute", [[
         [ "byquery", [[ "^^", "get", "imagenet_query" ]] ],
         [ "get_path" ]
-    ]] ],
+    ]], {}, ["imagenet_query"] ],
 
     "num_of_images": 20,
     "output_file_name": "script_output.json",

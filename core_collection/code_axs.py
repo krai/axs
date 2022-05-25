@@ -211,15 +211,17 @@ Usage examples :
                         if type(all_processed_rules)!=list:
                             raise(KeyError(f"{advertising_entry.get_name()}'s _producer_rules[] is incomplete, please check all substitutions work"))
 
-                        _, producer_entry, producer_method, extra_params = all_processed_rules[rule_index]
+                        _, producer_entry, producer_method, extra_params, *rest = all_processed_rules[rule_index]
+                        export_params = rest[0] if len(rest) else []
                         #extra_params    = advertising_entry.nested_calls( unprocessed_rule[3] )
 
                         logging.warning(f"Entry '{advertising_entry.get_name()}' advertises producer '{producer_entry.get_name()}' with action {producer_method}({extra_params}) and matching tags {rule_posi_tag_set} that may work with {query_posi_val_dict}")
-                        cumulative_params = deepcopy( extra_params )    # defaults first
-                        cumulative_params.update( rule_posi_val_dict )  # rules on top (may override some defaults)
-                        cumulative_params.update( query_posi_val_dict ) # query on top (may override some defaults)
-                        cumulative_params["tags"] = list(query_posi_tag_set)    # FIXME:  rule_posi_tag_set should include it
-                        new_entry = producer_entry.call(producer_method, [], {'AS^IS':cumulative_params}, nested_context=[ advertising_entry ])
+                        cumulative_params = advertising_entry.slice( *export_params )   # default slice
+                        cumulative_params.update( deepcopy( extra_params ) )            # extra_params on top
+                        cumulative_params.update( rule_posi_val_dict )                  # rules on top (may override some defaults)
+                        cumulative_params.update( query_posi_val_dict )                 # query on top (may override some defaults)
+                        cumulative_params["tags"] = list(query_posi_tag_set)            # FIXME:  rule_posi_tag_set should include it
+                        new_entry = producer_entry.call(producer_method, [], {'AS^IS':cumulative_params})
                         if new_entry:
                             logging.warning("The rule selected produced an entry.")
                             return new_entry

@@ -228,7 +228,7 @@ Usage examples :
         return param_value
 
 
-    def call(self, action_name, pos_params=None, edit_dict=None, deterministic=True, call_record_entry_ptr=None, nested_context=None):
+    def call(self, action_name, pos_params=None, edit_dict=None, export_params=None, deterministic=True, call_record_entry_ptr=None, nested_context=None, slice_relative_to=None):
         """Call a given function or method of a given entry and feed it
             with arguments from the current object optionally overridden by a given edit_dict
 
@@ -262,6 +262,11 @@ Usage examples :
         # pre-initializing each deep override from its full underlying stack value
         edit_dict       = edit_dict or {}
         override_dict   = {}
+        if export_params and slice_relative_to:
+            override_dict = slice_relative_to.slice( *export_params )
+        else:
+            override_dict   = {}
+
         for edit_path in edit_dict:
             dot_pos     = edit_path.find('.')
             augment     = edit_path.endswith('+')
@@ -362,7 +367,8 @@ Usage examples :
                     return self.call( *input_structure[1:] )
                 elif head=='^':
                     side_effects_count += 1
-                    return self.get_kernel().call( *input_structure[1:], nested_context=[ self ] )  # need to keep the context if we want to nest Entry-based expressions into a Kernel-based expression
+                    return self.get_kernel().call( *input_structure[1:], slice_relative_to=self )
+#                    return self.get_kernel().call( *input_structure[1:], nested_context=[ self ] )  # need to keep the context if we want to nest Entry-based expressions into a Kernel-based expression
                 elif head==self.ESCAPE_do_not_process:
                     side_effects_count += 1                                                         # it is only a "side effect" for the purposes of our GC-facilitating decision making below
                     return deepcopy( input_structure[1:] )                                          # drop the escape symbol, keeping the rest of the substructure intact
@@ -398,22 +404,23 @@ Usage examples :
             # Replay:
                 axs bypath factorial_of_5 , get _replay
         """
+        max_call_params     = 3     # action, pos_params, edit_dict
         rt_pipeline_wide    = self.get_kernel().bypath(path='rt_pipeline_wide', own_data={})  # the "service" pipeline-wide entry
 
-        inherited_context   = self.runtime_stack()
+#        inherited_context   = self.runtime_stack()
         local_context       = [ rt_pipeline_wide ]
         result              = entry = self
 
         for call_params in pipeline:
 
-            if hasattr(result, 'call') and result!=entry:
-                result.runtime_stack_cache = inherited_context
-                local_context.append( entry )
+#            if hasattr(result, 'call') and result!=entry:
+#                result.runtime_stack_cache = inherited_context
+#                local_context.append( entry )
 
             entry = result if hasattr(result, 'call') else self
 
-            output_label    = call_params.pop(3) if len(call_params)>3 else None    # NB: the order is important!
-            input_label     = call_params.pop(3) if len(call_params)>3 else None
+            output_label    = call_params.pop(max_call_params) if len(call_params)>max_call_params else None    # NB: the order is important!
+            input_label     = call_params.pop(max_call_params) if len(call_params)>max_call_params else None
 
             call_record_entry_ptr = []  # the value of call_record_entry is returned via appending to this empty list
             result = entry.call(*call_params, call_record_entry_ptr=call_record_entry_ptr, nested_context=local_context)

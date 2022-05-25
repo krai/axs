@@ -25,12 +25,12 @@ assert_end escaping_nested_calls_immediate_execution
 axs fresh_entry ---own_data='{ "n": 5, "_subs1": [ "AS^IS", "AS^IS", "^^", "substitute", "N: #{n}#" ], "_subs2": [ "AS^IS", "AS^IS", "^^", "execute", [[ [ "substitute", "N: #{n}#" ] ]] ], "_subs3": [ "AS^IS", "AS^IS", "^^", "execute", [[ [ "get_kernel" ], [ "substitute", "N: #{n}#" ] ]] ] }' , save varisubs2
 assert 'axs bypath varisubs2 , get _subs1' 'N: 5'
 assert 'axs bypath varisubs2 , get _subs2' 'N: 5'
-assert 'axs bypath varisubs2 , get _subs3' 'N: 5'
+assert 'axs bypath varisubs2 , get _subs3' 'N: None'
 assert 'axs bypath varisubs2 , get _subs1 --n=1' 'N: 1'
 assert 'axs bypath varisubs2 , get _subs2 --n=2' 'N: 2'
-assert 'axs bypath varisubs2 , get _subs3 --n=3' 'N: 3'
+assert 'axs bypath varisubs2 , get _subs3 --n=3' 'N: None'
 axs bypath varisubs2 , remove
-axs fresh_entry ---own_data='{ "n": 5, "_subs1": [ "AS^IS", "AS^IS", "^", "substitute", "N: #{n}#" ], "_subs2": [ "AS^IS", "AS^IS", "^", "execute", [[ [ "substitute", "N: #{n}#" ] ]] ], "_subs3": [ "AS^IS", "AS^IS", "^", "execute", [[ [ "get_kernel" ], [ "substitute", "N: #{n}#" ] ]] ] }' , save varisubs1
+axs fresh_entry ---own_data='{ "n": 5, "_subs1": [ "AS^IS", "AS^IS", "^", "substitute", "N: #{n}#", {}, ["n"] ], "_subs2": [ "AS^IS", "AS^IS", "^", "execute", [[ [ "substitute", "N: #{n}#" ] ]], {}, ["n"] ], "_subs3": [ "AS^IS", "AS^IS", "^", "execute", [[ [ "get_kernel" ], [ "substitute", "N: #{n}#" ] ]], {}, ["n"] ] }' , save varisubs1
 assert 'axs bypath varisubs1 , get _subs1' 'N: 5'
 assert 'axs bypath varisubs1 , get _subs2' 'N: 5'
 assert 'axs bypath varisubs1 , get _subs3' 'N: 5'
@@ -72,11 +72,11 @@ axs byname examplepage_recipe , download
 assert 'axs byquery downloaded,file_name=example.html , file_path: get_path , byquery shell_tool,can_compute_md5 , run' '84238dfc8092e5d9c0dac8ef93371a07'
 axs byquery shell_tool,can_compute_md5 --- , remove
 
-axs byquery downloaded,file_name=example.html , get _replay --entry_name=replay_examplepage_downloaded
+#axs byquery downloaded,file_name=example.html , get _replay --entry_name=replay_examplepage_downloaded
 #assert 'diff -r examplepage_downloaded replay_examplepage_downloaded' ''
-assert 'diff examplepage_downloaded/example.html replay_examplepage_downloaded/example.html' ''
+#assert 'diff examplepage_downloaded/example.html replay_examplepage_downloaded/example.html' ''
 
-axs byname replay_examplepage_downloaded , remove
+#axs byname replay_examplepage_downloaded , remove
 
 axs byquery downloaded,file_name=example.html --- , remove
 axs byname examplepage_recipe , remove
