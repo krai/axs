@@ -96,7 +96,7 @@ if [ "$VISION_TEST_TYPE" == "pytorch" ]; then
     # The following line is split into two to provide more insight into what is going on.
     # Otherwise assert() blocks all the error output and the command looks "stuck" for quite a while.
 
-    axs byname pytorch_image_classifier , run --torchvision_query+=package_version=0.9.0 ---capture_output=true --output_file_path=
+    axs byname pytorch_image_classifier , run --torchvision_query+=package_version=0.9.0 ---capture_output=false --output_file_path=
     export INFERENCE_OUTPUT=`axs byname pytorch_image_classifier , run --torchvision_query+=package_version=0.9.0 ---capture_output=true --output_file_path=`
     assert 'echo $INFERENCE_OUTPUT' 'batch 1/1: (1..20) [65, 795, 230, 809, 520, 65, 334, 852, 674, 332, 109, 286, 370, 757, 595, 147, 327, 23, 478, 517]'
     axs byquery script_output,classified_imagenet,framework=pytorch,num_of_images=32
@@ -123,7 +123,7 @@ elif [ "$VISION_TEST_TYPE" == "onnxruntime" ]; then
     # The following line is split into two to provide more insight into what is going on.
     # Otherwise assert() blocks all the error output and the command looks "stuck" for quite a while.
 
-    axs byname onnx_image_classifier , run ---capture_output=true --output_file_path=
+    axs byname onnx_image_classifier , run ---capture_output=false --output_file_path=
     export INFERENCE_OUTPUT=`axs byname onnx_image_classifier , run ---capture_output=true --output_file_path=`
     assert 'echo $INFERENCE_OUTPUT' 'batch 1/1: (1..20) [65, 795, 231, 967, 520, 65, 334, 999, 674, 332, 109, 286, 370, 757, 595, 147, 327, 23, 478, 517]'
 
