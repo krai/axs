@@ -63,9 +63,9 @@ matrix:
         - PATH=${PYTHON_DIR}:${PYTHON_DIR}/Scripts:$PATH
       before_install:
         - choco install python --version 3.8.0
+        - cmd <<< "mklink python3.exe ${PYTHON_DIR}\\python.exe"
         - choco install gzip
         - ${PYTHON_EXE} -m pip install --upgrade pip
-        - cmd <<< "mklink python3.exe ${PYTHON_DIR}\\python.exe"
         - ln -s /c/Windows/System32/tar.exe ${PYTHON_DIR}
 
     - name: "Python 3.6 on IBM Power"

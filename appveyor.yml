@@ -46,13 +46,13 @@ init:
 
 install:
     - cmd: mklink python3.exe %PYTHON_DIR%\\python.exe
-    - ${PYTHON_EXE} --version
+    - python3 --version
     - sh: |
         if [[ "$CI_LINUX" == "true" ]]; then
             appveyor DownloadFile "https://bootstrap.pypa.io/pip/3.6/get-pip.py"
             sudo python3 get-pip.py "pip==19.3.1"
         fi
-    - ${PYTHON_EXE} -m pip --version
+    - python3 -m pip --version
     - cmd: appveyor DownloadFile %ASSERT_URL%
     - sh: appveyor DownloadFile $ASSERT_URL
 
