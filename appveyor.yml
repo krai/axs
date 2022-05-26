@@ -6,52 +6,53 @@ environment:
     - job_name: Windows_onnxruntime Py 3.9
       appveyor_build_worker_image: Visual Studio 2019
       VISION_TEST_TYPE: onnxruntime
-      PYTHON: C:\Python39-x64
+      PYTHON_DIR: C:\Python39-x64
 
     - job_name: Windows_pytorch Py 3.9
       appveyor_build_worker_image: Visual Studio 2019
       VISION_TEST_TYPE: pytorch
-      PYTHON: C:\Python39-x64
+      PYTHON_DIR: C:\Python39-x64
 
     - job_name: MacOS_onnxruntime
       appveyor_build_worker_image: macos
       VISION_TEST_TYPE: onnxruntime
 
-    - job_name: MacOS_pytorch
-      appveyor_build_worker_image: macos
-      VISION_TEST_TYPE: pytorch
-
-    - job_name: Windows_onnxruntime Py 3.6
-      appveyor_build_worker_image: Visual Studio 2019
-      VISION_TEST_TYPE: onnxruntime
-      PYTHON: C:\Python36-x64
-
-    - job_name: Windows_pytorch Py 3.6
-      appveyor_build_worker_image: Visual Studio 2019
-      VISION_TEST_TYPE: pytorch
-      PYTHON: C:\Python36-x64
-
-    - job_name: Linux_onnxruntime
-      appveyor_build_worker_image: Ubuntu
-      VISION_TEST_TYPE: onnxruntime
+#    - job_name: MacOS_pytorch
+#      appveyor_build_worker_image: macos
+#      VISION_TEST_TYPE: pytorch
+#
+#    - job_name: Windows_onnxruntime Py 3.6
+#      appveyor_build_worker_image: Visual Studio 2019
+#      VISION_TEST_TYPE: onnxruntime
+#      PYTHON_DIR: C:\Python36-x64
+#
+#    - job_name: Windows_pytorch Py 3.6
+#      appveyor_build_worker_image: Visual Studio 2019
+#      VISION_TEST_TYPE: pytorch
+#      PYTHON_DIR: C:\Python36-x64
+#
+#    - job_name: Linux_onnxruntime
+#      appveyor_build_worker_image: Ubuntu
+#      VISION_TEST_TYPE: onnxruntime
 
     - job_name: Linux_pytorch
       appveyor_build_worker_image: Ubuntu
       VISION_TEST_TYPE: pytorch
 
 init:
-    - cmd: set PATH=%PYTHON%;%PYTHON%\\Scripts;%cd%;%PATH%
+    - cmd: set PYTHON_EXE=python3
+    - cmd: set PATH=%PYTHON_DIR%;%PYTHON_DIR%\\Scripts;%cd%;%PATH%
     - sh: export PATH=$APPVEYOR_BUILD_FOLDER:$PATH
 
 install:
-    - cmd: mklink python3.exe %PYTHON%\\python.exe
-    - python3 --version
+    - cmd: mklink python3.exe %PYTHON_DIR%\\python.exe
+    - ${PYTHON_EXE} --version
     - sh: |
         if [[ "$CI_LINUX" == "true" ]]; then
             appveyor DownloadFile "https://bootstrap.pypa.io/pip/3.6/get-pip.py"
             sudo python3 get-pip.py "pip==19.3.1"
         fi
-    - python3 -m pip --version
+    - ${PYTHON_EXE} -m pip --version
     - cmd: appveyor DownloadFile %ASSERT_URL%
     - sh: appveyor DownloadFile $ASSERT_URL
 

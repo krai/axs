@@ -13,58 +13,60 @@ matrix:
     - arch: s390x       # missing torchvision 0.10.1
 
   include:
-    - language: python
-      python: 3.6
-      env:
-        - VISION_TEST_TYPE=pytorch
-        - PYTHON_EXE=python
-
-    - language: python
-      python: 3.7
-      env:
-        - VISION_TEST_TYPE=onnxruntime
-        - PYTHON_EXE=python
-
-    - language: python
-      python: 3.8
-      env:
-        - VISION_TEST_TYPE=onnxruntime
-        - PYTHON_EXE=python
-
-    - language: python
-      python: 3.9
-      env:
-        - VISION_TEST_TYPE=pytorch
-        - PYTHON_EXE=python
-
-    - os: osx
-      osx_image: xcode11.2  # Python 3.7, but may change with time
-      language: shell       # 'language: python' is an error on Travis CI macOS
-      env:
-        - VISION_TEST_TYPE=pytorch
-        - PYTHON_EXE=python3
-
-    - name: "Python 3.6 on FreeBSD"
-      os: freebsd
-      language: python
-      python: 3.6
-      env:
-        - PYTHON_EXE=python
-      before_install:
-        - sudo pkg install -y bash
+#    - language: python
+#      python: 3.6
+#      env:
+#        - VISION_TEST_TYPE=pytorch
+#        - PYTHON_EXE=python
+#
+#    - language: python
+#      python: 3.7
+#      env:
+#        - VISION_TEST_TYPE=onnxruntime
+#        - PYTHON_EXE=python
+#
+#    - language: python
+#      python: 3.8
+#      env:
+#        - VISION_TEST_TYPE=onnxruntime
+#        - PYTHON_EXE=python
+#
+#    - language: python
+#      python: 3.9
+#      env:
+#        - VISION_TEST_TYPE=pytorch
+#        - PYTHON_EXE=python
+#
+#    - os: osx
+#      osx_image: xcode11.2  # Python 3.7, but may change with time
+#      language: shell       # 'language: python' is an error on Travis CI macOS
+#      env:
+#        - VISION_TEST_TYPE=pytorch
+#        - PYTHON_EXE=python3
+#
+#    - name: "Python 3.6 on FreeBSD"
+#      os: freebsd
+#      language: python
+#      python: 3.6
+#      env:
+#        - PYTHON_EXE=python
+#      before_install:
+#        - sudo pkg install -y bash
 
     - name: "Python 3.8.0 on Windows"
       os: windows           # Windows 10.0.17134 N/A Build 17134
       language: shell       # 'language: python' is an error on Travis CI Windows
       env:
         - VISION_TEST_TYPE=onnxruntime
-        - PYTHON_EXE=python.exe
-        - PATH=/c/Python38:/c/Python38/Scripts:$PATH
+        - PYTHON_EXE=python3
+        - PYTHON_DIR=/c/Python38
+        - PATH=${PYTHON_DIR}:${PYTHON_DIR}/Scripts:$PATH
       before_install:
         - choco install python --version 3.8.0
         - choco install gzip
-        - python -m pip install --upgrade pip
-        - ln -s /c/Windows/System32/tar.exe /c/Python38
+        - ${PYTHON_EXE} -m pip install --upgrade pip
+        - cmd <<< "mklink python3.exe ${PYTHON_DIR}\\python.exe"
+        - ln -s /c/Windows/System32/tar.exe ${PYTHON_DIR}
 
     - name: "Python 3.6 on IBM Power"
       arch: ppc64le
