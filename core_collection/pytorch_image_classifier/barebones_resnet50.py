@@ -37,9 +37,12 @@ Usage examples :
 
 """
 
-import json
 import os
 import sys
+
+print(f"\n**\nRUNNING {__file__} under {sys.executable} with sys.path={sys.path}\n**\n", file=sys.stderr)
+
+import json
 import math
 from time import time, sleep
 from urllib.error import HTTPError

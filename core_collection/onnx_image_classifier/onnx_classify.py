@@ -40,6 +40,8 @@ Usage examples :
 import os
 import sys
 
+print(f"\n**\nRUNNING {__file__} under {sys.executable} with sys.path={sys.path}\n**\n", file=sys.stderr)
+
 from PIL import Image
 import onnxruntime as rt
 import numpy as np
