@@ -72,6 +72,11 @@ else:
 
 torchvision_version = ':v' + torchvision.__version__.split('+')[0]
 
+if execution_device == "cuda":
+    print("Device: GPU", file=sys.stderr)
+else:
+    print("Device: CPU", file=sys.stderr)
+
 def load_one_batch(indices):
     file_names  = []
     pre_batch   = []

@@ -18,7 +18,10 @@
     "max_batch_size": 25,
     "top_n_max": 10,
     "framework": "pytorch",
-
+    "num_gpus": [ "^", "execute", [[
+                        [ "byquery", "shell_tool,can_gpu" ],
+                        [ "run"  ]
+                ]]  ],
     "output_file_path": [ "^^", "execute", [[
         [ "get", "__record_entry__" ],
         [ "attach", [ "^", "work_collection" ] ],
@@ -48,7 +51,7 @@
 
     "rel_script_path": "barebones_resnet50.py",
 
-    "torchvision_query": [ "python_package", "package_name=torchvision" ],
+    "torchvision_query": [ "^^", "case", [ [ "^^", "get", "num_gpus"] , "0" ,["python_package", "package_name=torchvision"] ], {"default_value": ["python_package", "package_name=torchvision", "with_cuda"] } ],
 
     "python_deps": [
         [ "^", "byquery", [[ "^^", "get", "torchvision_query" ]], {}, ["torchvision_query"] ]
