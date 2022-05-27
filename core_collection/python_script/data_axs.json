@@ -1,6 +1,8 @@
 {
     "_parent_entries": [ [ "^", "byname", "shell" ] ],
 
+    "inherit_env_keys": [ "SYSTEMROOT", "HOME" ],
+
     "tool_entry": [ "^", "byquery", "shell_tool,can_python" ],
     "abs_script_path": [ "^^", "get_path_from", "rel_script_path" ],
 

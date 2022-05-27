@@ -9,13 +9,14 @@ Usage examples:
 
 import os
 
-def ext_use_python_deps(python_deps=None):
+def ext_use_python_deps(python_deps=None, inherit_env_keys=None):
     """Build PYTHONPATH from a list of resolved Python dependencies.
     """
     new_env    = {}
 
-    if 'SYSTEMROOT' in os.environ:
-        new_env['SYSTEMROOT']   = os.environ['SYSTEMROOT']
+    for env_key in (inherit_env_keys or []):
+        if env_key in os.environ:
+            new_env[env_key]    = os.environ[env_key]
 
     if python_deps:     # Note the OS-independent way of joining individual paths
         new_env['PYTHONPATH']   = os.pathsep.join( [ dep['abs_packages_dir'] for dep in python_deps ] )
