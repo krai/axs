@@ -117,6 +117,7 @@ if [ "$VISION_TEST_TYPE" == "pytorch" ]; then
 
     axs byquery python_package,package_name=torchvision --- , remove
     axs byquery shell_tool,can_python --- , remove
+    axs byquery shell_tool,can_gpu --- , remove
     assert_end dependency_installation_and_resolution_for_external_python_script
 
 elif [ "$VISION_TEST_TYPE" == "onnxruntime" ]; then
