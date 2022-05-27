@@ -17,23 +17,23 @@ environment:
       appveyor_build_worker_image: macos
       VISION_TEST_TYPE: onnxruntime
 
-#    - job_name: MacOS_pytorch
-#      appveyor_build_worker_image: macos
-#      VISION_TEST_TYPE: pytorch
-#
-#    - job_name: Windows_onnxruntime Py 3.6
-#      appveyor_build_worker_image: Visual Studio 2019
-#      VISION_TEST_TYPE: onnxruntime
-#      PYTHON_DIR: C:\Python36-x64
-#
-#    - job_name: Windows_pytorch Py 3.6
-#      appveyor_build_worker_image: Visual Studio 2019
-#      VISION_TEST_TYPE: pytorch
-#      PYTHON_DIR: C:\Python36-x64
-#
-#    - job_name: Linux_onnxruntime
-#      appveyor_build_worker_image: Ubuntu
-#      VISION_TEST_TYPE: onnxruntime
+    - job_name: MacOS_pytorch
+      appveyor_build_worker_image: macos
+      VISION_TEST_TYPE: pytorch
+
+    - job_name: Windows_onnxruntime Py 3.6
+      appveyor_build_worker_image: Visual Studio 2019
+      VISION_TEST_TYPE: onnxruntime
+      PYTHON_DIR: C:\Python36-x64
+
+    - job_name: Windows_pytorch Py 3.6
+      appveyor_build_worker_image: Visual Studio 2019
+      VISION_TEST_TYPE: pytorch
+      PYTHON_DIR: C:\Python36-x64
+
+    - job_name: Linux_onnxruntime
+      appveyor_build_worker_image: Ubuntu
+      VISION_TEST_TYPE: onnxruntime
 
     - job_name: Linux_pytorch
       appveyor_build_worker_image: Ubuntu
