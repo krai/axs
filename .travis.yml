@@ -62,7 +62,7 @@ matrix:
         - PATH=/c/Python38:/c/Python38/Scripts:$PATH
       before_install:
         - choco install python --version 3.8.0
-        - cmd <<< "mklink python3.exe C:\\Python38\\python.exe"
+        - cmd <<< "mklink C:\\Python38\\python3.exe C:\\Python38\\python.exe"
         - choco install gzip
         - python -m pip install --upgrade pip
         - ln -s /c/Windows/System32/tar.exe /c/Python38
