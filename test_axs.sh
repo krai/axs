@@ -92,70 +92,63 @@ axs byquery --/=shell_tool/can_python --- , remove
 assert_end dependency_installation_and_resolution_for_internal_code
 
 
-if [ "$VISION_TEST_TYPE" == "pytorch" ]; then
-    # The following line is split into two to provide more insight into what is going on.
-    # Otherwise assert() blocks all the error output and the command looks "stuck" for quite a while.
+if [ "$ONNX_CLASSIFY" == "on" ] || [ "$PYTORCH_CLASSIFY" == "on" ]; then
+    if [ "$PYTORCH_CLASSIFY" == "on" ]; then
+        # The following line is split into two to provide more insight into what is going on.
+        # Otherwise assert() blocks all the error output and the command looks "stuck" for quite a while.
 
-    axs byname pytorch_image_classifier , run --torchvision_query+=package_version=0.9.0 ---capture_output=false --output_file_path=
-    export INFERENCE_OUTPUT=`axs byname pytorch_image_classifier , run --torchvision_query+=package_version=0.9.0 ---capture_output=true --output_file_path=`
-    assert 'echo $INFERENCE_OUTPUT' 'batch 1/1: (1..20) [65, 795, 230, 809, 520, 65, 334, 852, 674, 332, 109, 286, 370, 757, 595, 147, 327, 23, 478, 517]'
-    axs byquery script_output,classified_imagenet,framework=pytorch,num_of_images=32
-    export ACCURACY_OUTPUT=`axs byquery script_output,classified_imagenet,framework=pytorch,num_of_images=32 , get accuracy`
-    echo "Accuracy: $ACCURACY_OUTPUT"
-    assert 'echo $ACCURACY_OUTPUT' '0.71875'
+        axs byname pytorch_image_classifier , run --torchvision_query+=package_version=0.9.0 ---capture_output=false --output_file_path=
+        export INFERENCE_OUTPUT=`axs byname pytorch_image_classifier , run --torchvision_query+=package_version=0.9.0 ---capture_output=true --output_file_path=`
+        assert 'echo $INFERENCE_OUTPUT' 'batch 1/1: (1..20) [65, 795, 230, 809, 520, 65, 334, 852, 674, 332, 109, 286, 370, 757, 595, 147, 327, 23, 478, 517]'
+        axs byquery script_output,classified_imagenet,framework=pytorch,num_of_images=32
+        export ACCURACY_OUTPUT=`axs byquery script_output,classified_imagenet,framework=pytorch,num_of_images=32 , get accuracy`
+        echo "Accuracy: $ACCURACY_OUTPUT"
+        assert 'echo $ACCURACY_OUTPUT' '0.71875'
+
+        axs byquery python_package,package_name=torchvision --- , remove
+    else
+        echo "Skipping the dependency_installation_and_resolution_for_external_python_script"
+    fi
+    if [ "$ONNX_CLASSIFY" == "on" ]; then
+        # The following line is split into two to provide more insight into what is going on.
+        # Otherwise assert() blocks all the error output and the command looks "stuck" for quite a while.
+
+        axs byname onnx_image_classifier , run ---capture_output=false --output_file_path=
+        export INFERENCE_OUTPUT=`axs byname onnx_image_classifier , run ---capture_output=true --output_file_path=`
+        assert 'echo $INFERENCE_OUTPUT' 'batch 1/1: (1..20) [65, 795, 231, 967, 520, 65, 334, 999, 674, 332, 109, 286, 370, 757, 595, 147, 327, 23, 478, 517]'
+
+        axs byquery script_output,classified_imagenet,framework=onnx,num_of_images=32
+
+        export ACCURACY_OUTPUT=`axs byquery script_output,classified_imagenet,framework=onnx,num_of_images=32 , get accuracy`
+        echo "Accuracy: $ACCURACY_OUTPUT"
+        assert 'echo $ACCURACY_OUTPUT' '0.6875'
+
+        axs byquery downloaded,onnx_model --- , remove
+        axs byquery shell_tool,can_uncompress_gz --- , remove
+
+        axs byquery python_package,package_name=onnxruntime --- , remove
+        axs byquery python_package,package_name=onnxruntime-gpu --- , remove
+        axs byquery python_package,package_name=pillow --- , remove
+    else
+        echo "Skipping the dependency_installation_and_resolution_for_external_python_script"
+    fi
 
     axs byquery script_output,classified_imagenet --- , remove
     axs byquery imagenet_aux,extracted --- , remove
     axs byquery imagenet_aux,downloaded --- , remove
 
     axs byquery extracted,archive_name=ILSVRC2012_img_val_500.tar --- , remove
+
     axs byquery shell_tool,can_extract_tar --- , remove
 
     axs byquery downloaded,file_name=ILSVRC2012_img_val_500.tar --- , remove
     axs byquery shell_tool,can_compute_md5 --- , remove
     axs byquery shell_tool,can_download_url --- , remove
 
-    axs byquery python_package,package_name=torchvision --- , remove
     axs byquery shell_tool,can_python --- , remove
     axs byquery shell_tool,can_gpu --- , remove
+
     assert_end dependency_installation_and_resolution_for_external_python_script
-
-elif [ "$VISION_TEST_TYPE" == "onnxruntime" ]; then
-    # The following line is split into two to provide more insight into what is going on.
-    # Otherwise assert() blocks all the error output and the command looks "stuck" for quite a while.
-
-    axs byname onnx_image_classifier , run ---capture_output=false --output_file_path=
-    export INFERENCE_OUTPUT=`axs byname onnx_image_classifier , run ---capture_output=true --output_file_path=`
-    assert 'echo $INFERENCE_OUTPUT' 'batch 1/1: (1..20) [65, 795, 231, 967, 520, 65, 334, 999, 674, 332, 109, 286, 370, 757, 595, 147, 327, 23, 478, 517]'
-
-    axs byquery script_output,classified_imagenet,framework=onnx,num_of_images=32
-
-    export ACCURACY_OUTPUT=`axs byquery script_output,classified_imagenet,framework=onnx,num_of_images=32 , get accuracy`
-    echo "Accuracy: $ACCURACY_OUTPUT"
-    assert 'echo $ACCURACY_OUTPUT' '0.6875'
-
-    axs byquery script_output,classified_imagenet --- , remove
-    axs byquery imagenet_aux,extracted --- , remove
-    axs byquery imagenet_aux,downloaded --- , remove
-
-    axs byquery downloaded,onnx_model --- , remove
-    axs byquery shell_tool,can_uncompress_gz --- , remove
-
-    axs byquery extracted,archive_name=ILSVRC2012_img_val_500.tar --- , remove
-    axs byquery shell_tool,can_extract_tar --- , remove
-
-    axs byquery downloaded,file_name=ILSVRC2012_img_val_500.tar --- , remove
-    axs byquery shell_tool,can_compute_md5 --- , remove
-    axs byquery shell_tool,can_download_url --- , remove
-
-    axs byquery python_package,package_name=onnxruntime --- , remove
-    axs byquery python_package,package_name=onnxruntime-gpu --- , remove
-    axs byquery python_package,package_name=pillow --- , remove
-    axs byquery shell_tool,can_python --- , remove
-    axs byquery shell_tool,can_gpu --- , remove
-    assert_end dependency_installation_and_resolution_for_external_python_script
-else
-    echo "Skipping the dependency_installation_and_resolution_for_external_python_script"
 fi
 
 echo "axs tests done"

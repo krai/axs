@@ -5,39 +5,39 @@ environment:
   matrix:
     - job_name: Windows_onnxruntime Py 3.9
       appveyor_build_worker_image: Visual Studio 2019
-      VISION_TEST_TYPE: onnxruntime
+      ONNX_CLASSIFY: on
       PYTHON_DIR: C:\Python39-x64
 
     - job_name: Windows_pytorch Py 3.9
       appveyor_build_worker_image: Visual Studio 2019
-      VISION_TEST_TYPE: pytorch
+      PYTORCH_CLASSIFY: on
       PYTHON_DIR: C:\Python39-x64
 
     - job_name: MacOS_onnxruntime
       appveyor_build_worker_image: macos
-      VISION_TEST_TYPE: onnxruntime
+      ONNX_CLASSIFY: on
 
     - job_name: MacOS_pytorch
       appveyor_build_worker_image: macos
-      VISION_TEST_TYPE: pytorch
+      PYTORCH_CLASSIFY: on
 
     - job_name: Windows_onnxruntime Py 3.6
       appveyor_build_worker_image: Visual Studio 2019
-      VISION_TEST_TYPE: onnxruntime
+      ONNX_CLASSIFY: on
       PYTHON_DIR: C:\Python36-x64
 
     - job_name: Windows_pytorch Py 3.6
       appveyor_build_worker_image: Visual Studio 2019
-      VISION_TEST_TYPE: pytorch
+      PYTORCH_CLASSIFY: on
       PYTHON_DIR: C:\Python36-x64
 
     - job_name: Linux_onnxruntime
       appveyor_build_worker_image: Ubuntu
-      VISION_TEST_TYPE: onnxruntime
+      ONNX_CLASSIFY: on
 
     - job_name: Linux_pytorch
       appveyor_build_worker_image: Ubuntu
-      VISION_TEST_TYPE: pytorch
+      PYTORCH_CLASSIFY: on
 
 init:
     - cmd: set PYTHON_EXE=python3
