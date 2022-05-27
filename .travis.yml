@@ -41,7 +41,7 @@ matrix:
       osx_image: xcode11.2  # Python 3.7, but may change with time
       language: shell       # 'language: python' is an error on Travis CI macOS
       env:
-        - VISION_TEST_TYPE=pytorch
+        - VISION_TEST_TYPE=onnxruntime
         - PYTHON_EXE=python3
 
     - name: "Python 3.6 on FreeBSD"
