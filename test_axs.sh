@@ -148,6 +148,7 @@ elif [ "$VISION_TEST_TYPE" == "onnxruntime" ]; then
     axs byquery shell_tool,can_download_url --- , remove
 
     axs byquery python_package,package_name=onnxruntime --- , remove
+    axs byquery python_package,package_name=onnxruntime-gpu --- , remove
     axs byquery python_package,package_name=pillow --- , remove
     axs byquery shell_tool,can_python --- , remove
     axs byquery shell_tool,can_gpu --- , remove
