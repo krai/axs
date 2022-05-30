@@ -51,6 +51,9 @@ install:
         if [[ "$CI_LINUX" == "true" ]]; then
             appveyor DownloadFile "https://bootstrap.pypa.io/pip/3.6/get-pip.py"
             sudo python3 get-pip.py "pip==19.3.1"
+            if [[ "$(python3 --version)" == *"Python 3.6"* ]]; then
+                python3 -m pip install protobuf==3.19.4
+            fi
         fi
     - python3 -m pip --version
     - cmd: appveyor DownloadFile %ASSERT_URL%
