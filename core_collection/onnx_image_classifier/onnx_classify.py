@@ -14,7 +14,7 @@ Usage examples :
                 axs byquery extracted,imagenet,dataset_size=500 , remove
 
                     # assuming Imagenet50k in a directory:
-                axs byname onnx_image_classifier , run --imagenet_dir=/datasets/imagenet/imagenet --num_of_images=800 --dataset_size=50000
+                axs byname onnx_image_classifier , run --preprocessed_imagenet_dir=/datasets/imagenet/imagenet --num_of_images=800 --dataset_size=50000
 
                     # assuming Imagenet50k in a tarball:
                 axs byname extractor , extract --archive_path=/datasets/dataset-imagenet-ilsvrc2012-val.tar --tags,=extracted,imagenet --strip_components=1 --dataset_size=50000
@@ -50,24 +50,22 @@ import json
 import math
 
 
-model_path          = sys.argv[1]
-imagenet_dir        = sys.argv[2]
-num_of_images       = int(sys.argv[3])
-max_batch_size      = int(sys.argv[4])
-cpu_threads         = int(sys.argv[5])
-output_file_path    = sys.argv[6]
-model_name          = sys.argv[7]
+model_path                  = sys.argv[1]
+preprocessed_imagenet_dir   = sys.argv[2]
+num_of_images               = int(sys.argv[3])
+max_batch_size              = int(sys.argv[4])
+cpu_threads                 = int(sys.argv[5])
+output_file_path            = sys.argv[6]
+model_name                  = sys.argv[7]
+normalize_data_bool         = eval(sys.argv[8])     # FIXME: currently we are passing a stringified form of a data structure,
+subtract_mean_bool          = eval(sys.argv[9])    # it would be more flexible to encode/decode through JSON instead.
+given_channel_means         = eval(sys.argv[10])
+execution_device            = sys.argv[11]         # if empty, it will be autodetected
+top_n_max                   = int(sys.argv[12])
 
-normalize_data_bool = eval(sys.argv[8])     # FIXME: currently we are passing a stringified form of a data structure,
-subtract_mean_bool  = eval(sys.argv[9])    # it would be more flexible to encode/decode through JSON instead.
-given_channel_means = eval(sys.argv[10])
-execution_device    = sys.argv[11]         # if empty, it will be autodetected
-top_n_max           = int(sys.argv[12])
-
-batch_count         = math.ceil(num_of_images / max_batch_size)
-
-file_pattern        = 'ILSVRC2012_val_000{:05d}.JPEG'
-data_layout         = "NCHW"
+batch_count                 = math.ceil(num_of_images / max_batch_size)
+file_pattern                = 'ILSVRC2012_val_000{:05d}.rgb8'
+data_layout                 = "NCHW"
 
 sess_options = rt.SessionOptions()
 if cpu_threads > 0:
@@ -108,10 +106,11 @@ print(f"model_input_shape={model_input_shape}", file=sys.stderr)
 print(f"model_output_shape={model_output_shape}", file=sys.stderr)
 
 
-def load_and_resize_image(image_filepath, height, width):
-    pillow_img = Image.open(image_filepath).convert('RGB').resize((width, height)) # sic! The order of dimensions in resize is (W,H)
+def load_preprocessed_and_normalize(image_filepath, height, width):
+    img_rgb8 = np.fromfile(image_filepath, np.uint8)
+    img_rgb8 = img_rgb8.reshape((height, width, 3))
 
-    input_data = np.float32(pillow_img)
+    input_data = np.float32(img_rgb8)
 
     # Normalize
     if normalize_data_bool:
@@ -124,7 +123,7 @@ def load_and_resize_image(image_filepath, height, width):
         else:
             input_data -= np.mean(input_data)
 
-#    print(np.array(pillow_img).shape)
+#    print(np.array(img_rgb8).shape)
     nhwc_data = np.expand_dims(input_data, axis=0)
 
     if data_layout == 'NHWC':
@@ -139,8 +138,8 @@ def load_and_resize_image(image_filepath, height, width):
 def load_a_batch(batch_filenames):
     unconcatenated_batch_data = []
     for image_filename in batch_filenames:
-        image_filepath = os.path.join( imagenet_dir, image_filename )
-        nchw_data = load_and_resize_image( image_filepath, height, width )
+        image_filepath = os.path.join( preprocessed_imagenet_dir, image_filename )
+        nchw_data = load_preprocessed_and_normalize( image_filepath, height, width )
         unconcatenated_batch_data.append( nchw_data )
     batch_data = np.concatenate(unconcatenated_batch_data, axis=0)
 
