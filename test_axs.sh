@@ -115,13 +115,13 @@ if [ "$ONNX_CLASSIFY" == "on" ] || [ "$PYTORCH_CLASSIFY" == "on" ]; then
 
         axs byname onnx_image_classifier , run ---capture_output=false --output_file_path=
         export INFERENCE_OUTPUT=`axs byname onnx_image_classifier , run ---capture_output=true --output_file_path=`
-        assert 'echo $INFERENCE_OUTPUT' 'batch 1/1: (1..20) [65, 795, 231, 967, 520, 65, 334, 999, 674, 332, 109, 286, 370, 757, 595, 147, 327, 23, 478, 517]'
+        assert 'echo $INFERENCE_OUTPUT' 'batch 1/1: (1..20) [65, 795, 230, 809, 516, 67, 334, 415, 674, 332, 109, 286, 370, 757, 595, 147, 327, 23, 478, 517]'
 
         axs byquery script_output,classified_imagenet,framework=onnx,num_of_images=32
 
         export ACCURACY_OUTPUT=`axs byquery script_output,classified_imagenet,framework=onnx,num_of_images=32 , get accuracy`
         echo "Accuracy: $ACCURACY_OUTPUT"
-        assert 'echo $ACCURACY_OUTPUT' '0.6875'
+        assert 'echo $ACCURACY_OUTPUT' '0.75'
 
         axs byquery downloaded,onnx_model --- , remove
         axs byquery shell_tool,can_uncompress_gz --- , remove
