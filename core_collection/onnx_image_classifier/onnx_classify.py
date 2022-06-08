@@ -170,10 +170,11 @@ for batch_start in range(0, num_of_images, max_batch_size):
 
     batch_predictions   = sess.run([output_layer_name], {input_layer_name: batch_data})[0]
 
-    ts_after_inference      = time()
+    ts_after_inference  = time()
 
-    class_numbers       = (np.argmax( batch_predictions, axis=1) - 1).tolist()
-    predictions.update (dict(zip(batch_filenames, class_numbers)) )
+    class_numbers               = (np.argmax( batch_predictions, axis=1) - 1).tolist()
+    stripped_batch_filenames    = [file_name.rsplit('.', 1)[0] for file_name in batch_filenames]
+    predictions.update( dict(zip(stripped_batch_filenames, class_numbers)) )
 
     batch_loading_s     = ts_before_inference - ts_before_data_loading
     batch_inference_s   = ts_after_inference - ts_before_inference
@@ -187,11 +188,10 @@ for batch_start in range(0, num_of_images, max_batch_size):
     for i in range(batch_open_end-batch_start):
         softmax_vector      = batch_predictions[i][-1000:]
         top_n_indices       = list(reversed(softmax_vector.argsort()))[:top_n_max]
-        #predictions[ batch_filenames[i] ] = top5_indices[0]
 
         for class_idx in top_n_indices:
             weight_id[str(class_idx)] = str(softmax_vector[class_idx])
-        top_n_predictions[batch_filenames[i]] = weight_id
+        top_n_predictions[stripped_batch_filenames[i]] = weight_id
         weight_id = {}
 
 if output_file_path:

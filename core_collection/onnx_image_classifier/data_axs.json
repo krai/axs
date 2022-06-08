@@ -69,8 +69,8 @@
             "print_top_n_predictions", [ "AS^IS", "AS^IS", "^^", "execute", [[
                 [ "get_kernel" ],
                 [ "byname", "imagenet_meta" ],
-                [ "full_print_predictions", [[ "^^", "dig", "script_output.top_n" ]] ]
-            ]] ]
+                [ "full_print_predictions", [[ "^^", "dig", "script_output.top_n" ]], {}, ["top_number"] ]
+            ]], {}, ["top_number"] ]
          ]] ] ],
          [ "save" ],
          [ "get_path_from", "output_file_name" ]

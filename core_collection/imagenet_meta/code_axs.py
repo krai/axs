@@ -15,7 +15,8 @@ def load_ground_truth(ground_truth_path):
     with open( ground_truth_path ) as ground_truth_fd:
         for line in ground_truth_fd:
             file_name, class_number = line.rstrip().split(' ')
-            ground_truth[file_name] = int(class_number)
+            image_name = file_name.rsplit('.', 1)[0]
+            ground_truth[image_name] = int(class_number)
 
     return ground_truth
 
@@ -36,8 +37,8 @@ def measure_accuracy(predictions, ground_truth):
     """
     correct_count = 0.0
     total_count   = 0.0
-    for file_name in predictions:
-        if predictions[file_name]==ground_truth[file_name]:
+    for image_name in predictions:
+        if predictions[image_name]==ground_truth[image_name]:
             correct_count += 1.0
         total_count += 1.0
 
@@ -53,29 +54,21 @@ Usage examples :
                 axs byname imagenet_meta , show_table
                 axs byname imagenet_meta , show_table --n_from=21 --n_to=40
     """
-    for i, file_name in enumerate(sorted( ground_truth.keys() )):
+    for i, image_name in enumerate(sorted( ground_truth.keys() )):
         n = i+1
         if n_from <= n <= n_to:
-            print(f"{n:>5}    {file_name}    {ground_truth[file_name]:>3}    {class_names[ground_truth[file_name]]}")
+            print(f"{n:>5}    {image_name}    {ground_truth[image_name]:>3}    {class_names[ground_truth[image_name]]}")
 
     return n_to - n_from + 1
 
 
 def full_print_predictions(top_n, class_names, ground_truth, top_number=1):
- #   """Print a human-readable ordered slice of top_number predictions from output_file_path file.
-  #      NB: image indices are 1-based (1-50000), class labels are 0-based (0-999).
-  #      Returns the number of lines printed.
-
-#Usage examples :
-#                axs byname imagenet_meta , full_print
-#                axs byname imagenet_meta , full_print --top_number=5
-#   """
     count = 0
-    for file_name in top_n.keys():
-        list_keys = list(top_n[file_name].keys())
-        print(f"\t{file_name + ':'}\t{ground_truth[file_name]}\t{class_names[ground_truth[file_name]]}")
+    for image_name in top_n.keys():
+        list_keys = list(top_n[image_name].keys())
+        print(f"\t{image_name + ':'}\t{ground_truth[image_name]}\t{class_names[ground_truth[image_name]]}")
         for i in range(0,min(top_number, len(list_keys))):
-            print(f"\t{top_n[file_name][list_keys[i]]}\t{list_keys[i]}\t{class_names[int(list_keys[i])]} ")
+            print(f"\t{top_n[image_name][list_keys[i]]}\t{list_keys[i]}\t{class_names[int(list_keys[i])]} ")
             count = count + 1
         print("")
     return count

@@ -130,7 +130,7 @@ for batch_start in range(0,num_of_images, max_batch_size):
     batch_open_end = min(batch_start+max_batch_size, num_of_images)
     ts_before_data_loading  = time()
 
-    batch_file_names, pre_batch = load_one_batch( range(batch_start, batch_open_end) )
+    batch_filenames, pre_batch = load_one_batch( range(batch_start, batch_open_end) )
 
     input_batch = torch.stack(pre_batch, dim=0)
     input_batch = input_batch.to( execution_device )
@@ -146,7 +146,8 @@ for batch_start in range(0,num_of_images, max_batch_size):
     class_numbers = torch.argmax(output, dim=1).tolist()
     ts_after_inference      = time()
 
-    predictions.update( dict(zip(batch_file_names, class_numbers)) )
+    stripped_batch_filenames    = [file_name.rsplit('.', 1)[0] for file_name in batch_filenames]
+    predictions.update( dict(zip(stripped_batch_filenames, class_numbers)) )
     
     batch_loading_s     = ts_before_inference - ts_before_data_loading
     batch_inference_s   = ts_after_inference - ts_before_inference
@@ -165,7 +166,7 @@ for batch_start in range(0,num_of_images, max_batch_size):
     print(f"batch {batch_num}/{batch_count}: ({batch_start+1}..{batch_open_end}) {class_numbers}")
 
     for i in range(batch_open_end-batch_start):
-        top_n_predictions[batch_file_names[i]] = dict(zip(top_classId_1000[i], top_weight_1000[i]))
+        top_n_predictions[stripped_batch_filenames[i]] = dict(zip(top_classId_1000[i], top_weight_1000[i]))
 
 
 if output_file_path:
