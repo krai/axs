@@ -4,7 +4,7 @@
     It inherits the main run() function from the shell entry.
 
 Usage examples:
-                axs byname python_script , run --abs_script_path=./barebones_resnet50.py --python_deps/:=^:byquery:python_package,package_name=torchvision,package_version=0.8.1
+                axs byname python_script , run --abs_script_path=./pytorch_classify.py --python_deps/:=^:byquery:python_package,package_name=torchvision,package_version=0.8.1
 """
 
 import os
