@@ -121,7 +121,7 @@ if [ "$ONNX_CLASSIFY" == "on" ] || [ "$PYTORCH_CLASSIFY" == "on" ]; then
 
         export ACCURACY_OUTPUT=`axs byquery script_output,classified_imagenet,framework=onnx,num_of_images=32 , get accuracy`
         echo "Accuracy: $ACCURACY_OUTPUT"
-        assert 'echo $ACCURACY_OUTPUT' '0.75'
+        assert 'echo $ACCURACY_OUTPUT' '0.84375'
 
         axs byquery downloaded,onnx_model --- , remove
         axs byquery shell_tool,can_uncompress_gz --- , remove
