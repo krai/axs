@@ -10,19 +10,5 @@
     "archive_path": [ "^", "execute", [[
         [ "byquery", [[ "^^", "substitute", "downloaded,imagenet_aux,url=#{url}#,md5=#{md5}#" ]] ],
         [ "get_path" ]
-    ]], {}, ["url","md5"] ],
-
-    "ground_truth_path": [ "^", "execute", [[
-        [ "byquery", "extracted,imagenet_aux" ],
-        [ "get_path", "extracted/val.txt" ]
-    ]] ],
-
-    "class_names_path": [ "^", "execute", [[
-        [ "byquery", "extracted,imagenet_aux" ],
-        [ "get_path", "extracted/synset_words.txt" ]
-    ]] ],
-
-    "ground_truth": [ "^^", "load_ground_truth" ],
-
-    "class_names": [ "^^", "load_class_names" ]
+    ]], {}, ["url","md5"] ]
 }

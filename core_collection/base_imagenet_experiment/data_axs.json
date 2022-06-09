@@ -1,0 +1,24 @@
+{
+    "script_output": [ "^^", "load_json", [[ "^^", "get_path_from", "output_file_name" ]] ],
+
+    "imagenet_aux_entry": [ "^", "byquery", "extracted,imagenet_aux" ],
+
+    "ground_truth_path": [ "^", "execute", [[
+        [ "get", "imagenet_aux_entry" ],
+        [ "get_path", "extracted/val.txt" ]
+    ]], {}, ["imagenet_aux_entry"] ],
+
+    "class_names_path": [ "^", "execute", [[
+        [ "get", "imagenet_aux_entry" ],
+        [ "get_path", "extracted/synset_words.txt" ]
+    ]], {}, ["imagenet_aux_entry"] ],
+
+    "ground_truth": [ "^^", "load_ground_truth" ],
+
+    "class_names": [ "^^", "load_class_names" ],
+
+
+    "accuracy": [ "^^", "measure_accuracy", [[ "^^", "dig", "script_output.predictions" ]] ],
+    "top_number": 3,
+    "print_top_n_predictions": [ "^^", "full_print_predictions", [[ "^^", "dig", "script_output.top_n" ]], {}, ["top_number"] ]
+}
