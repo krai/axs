@@ -14,7 +14,7 @@ Usage examples :
                 axs byquery extracted,imagenet,dataset_size=500 , remove
 
                     # assuming Imagenet50k in a directory:
-                axs byname pytorch_image_classifier , run --torchvision_query+=with_cuda --imagenet_dir=/datasets/imagenet/imagenet --num_of_images=800 --dataset_size=50000
+                axs byname pytorch_image_classifier , run --torchvision_query+=with_cuda --preprocessed_imagenet_dir=/datasets/imagenet/imagenet --num_of_images=800 --dataset_size=50000
 
                     # assuming Imagenet50k in a tarball:
                 axs byname extractor , extract --archive_path=/datasets/dataset-imagenet-ilsvrc2012-val.tar --tags,=extracted,imagenet --strip_components=1 --dataset_size=50000
@@ -47,23 +47,25 @@ import math
 from time import time, sleep
 from urllib.error import HTTPError
 
-imagenet_dir        = sys.argv[1]
-num_of_images       = int(sys.argv[2])
-model_name          = sys.argv[3]
-output_file_path    = sys.argv[4]       # if empty, recording of the output will be skipped
-execution_device    = sys.argv[5]       # if empty, it will be autodetected
-max_batch_size      = int(sys.argv[6])
-top_n_max           = int(sys.argv[7])
-file_pattern        = 'ILSVRC2012_val_000{:05d}.JPEG'
-max_attempts        = 3
-retry_in_seconds    = 20
-batch_count         = math.ceil(num_of_images / max_batch_size)
+preprocessed_imagenet_dir   = sys.argv[1]
+preprocessed_square_size    = int(sys.argv[2])
+num_of_images               = int(sys.argv[3])
+model_name                  = sys.argv[4]
+output_file_path            = sys.argv[5]       # if empty, recording of the output will be skipped
+execution_device            = sys.argv[6]       # if empty, it will be autodetected
+max_batch_size              = int(sys.argv[7])
+top_n_max                   = int(sys.argv[8])
+
+file_pattern                = 'ILSVRC2012_val_000{:05d}.rgb8'
+max_attempts                = 3
+retry_in_seconds            = 20
+batch_count                 = math.ceil(num_of_images / max_batch_size)
 
 # sample execution (requires torchvision)
-from PIL import Image
 import torch
 import torchvision
 from torchvision import transforms
+import numpy as np
 
 if execution_device == "gpu":
     execution_device = ('cuda' if torch.cuda.is_available() else 'cpu')
@@ -82,9 +84,11 @@ def load_one_batch(indices):
     pre_batch   = []
     for i in indices:
         file_name = file_pattern.format(i+1)
-        file_path   = os.path.join( imagenet_dir, file_name )
-        input_image = Image.open( file_path ).convert('RGB')
-        input_tensor = preprocess(input_image)
+        file_path   = os.path.join( preprocessed_imagenet_dir, file_name )
+        img_rgb8 = np.fromfile(file_path, np.uint8)
+        img_rgb8 = img_rgb8.reshape((preprocessed_square_size, preprocessed_square_size, 3))
+
+        input_tensor = preprocess(img_rgb8)
         file_names.append( file_name )
         pre_batch.append(input_tensor)
 
@@ -109,8 +113,6 @@ model.eval()
 model.to( execution_device )
 
 preprocess = transforms.Compose([
-    transforms.Resize(256),
-    transforms.CenterCrop(224),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])
