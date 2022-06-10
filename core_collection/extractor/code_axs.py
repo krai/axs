@@ -45,7 +45,7 @@ Usage examples:
         __record_entry__["archive_format"] = archive_format
 
     if not entry_name:
-        entry_name = 'generated_by_extracting_' + archive_name
+        entry_name = 'extracted_' + archive_name
 
     __record_entry__.save( entry_name )
     target_path     = __record_entry__.get_path(file_name)

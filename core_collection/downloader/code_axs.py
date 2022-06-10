@@ -45,7 +45,7 @@ Usage examples:
         __record_entry__["file_name"] = file_name
 
     if not entry_name:
-        entry_name = 'generated_by_downloading_' + file_name
+        entry_name = 'downloaded_' + file_name
 
     __record_entry__.pluck("entry_name")
 
