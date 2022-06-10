@@ -31,7 +31,8 @@ Usage examples :
         rel_packages_dir    = os.path.join( rel_install_dir, 'lib', version_label, 'site-packages' )
 
     if not entry_name:
-        entry_name = '_'.join( [package_name, package_version, 'pip'] ) if package_version else '_'.join( [package_name, 'pip'] )
+        version_suffix_name = f"_{package_version}" if package_version is not None else ''
+        entry_name = f"{package_name}{version_suffix_name}_pip_package"
 
     __record_entry__.pluck("entry_name")
 
@@ -46,7 +47,7 @@ Usage examples :
     os.makedirs( os.path.join(extra_python_site_dir, 'lib') )
     os.symlink( 'lib', os.path.join(extra_python_site_dir, 'lib64') )
 
-    version_suffix  = '=='+package_version if package_version!=None else ''
+    version_suffix_cmd  = f"=={package_version}" if package_version is not None else ''
     if pip_options:
         if type(pip_options)==dict:
             pip_options = [ k+'='+pip_options[k] for k in pip_options ]
@@ -58,7 +59,7 @@ Usage examples :
         pip_options=''
 
     tool_entry.call('run', [], {
-        "shell_cmd": [ "^^", "substitute", "#{tool_path}#"+f" -m pip install {package_name}{version_suffix} --prefix={extra_python_site_dir} --ignore-installed {pip_options}" ],
+        "shell_cmd": [ "^^", "substitute", "#{tool_path}#"+f" -m pip install {package_name}{version_suffix_cmd} --prefix={extra_python_site_dir} --ignore-installed {pip_options}" ],
         "capture_output": False,
         "errorize_output": True,
     } )
