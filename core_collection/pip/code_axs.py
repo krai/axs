@@ -37,7 +37,7 @@ Usage examples :
     __record_entry__.pluck("entry_name")
 
     __record_entry__["tags"]                = tags or ["python_package"]
-    __record_entry__["_parent_entries"]     = [ [ "^", "byname", "generic_pip" ] ]
+    __record_entry__["_parent_entries"]     = [ [ "^", "byname", "base_pip_package" ] ]
     __record_entry__.parent_objects         = None      # reload parents
 
     __record_entry__["rel_packages_dir"]    = rel_packages_dir

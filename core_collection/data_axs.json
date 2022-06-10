@@ -9,7 +9,7 @@
         "downloader": "downloader",
         "sysinfo": "sysinfo",
         "pip": "pip",
-        "generic_pip": "generic_pip",
+        "base_pip_package": "base_pip_package",
         "numpy_import_test": "numpy_import_test",
         "python_script": "python_script",
         "pytorch_image_classifier": "pytorch_image_classifier",

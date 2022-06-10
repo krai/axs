@@ -10,8 +10,8 @@ def use(abs_packages_dir):
     """Make an entry that contains an installed pip package the preferred location to import the package from.
 
 Usage examples :
-                axs byname numpy_1.16.4_pip , use , python_api 'import numpy\nprint(numpy.__version__)'
-                axs np: byname numpy_1.16.4_pip , use , get np , ask_package_location
+                axs byname numpy_1.16.4_pip_package , use , python_api 'import numpy\nprint(numpy.__version__)'
+                axs np: byname numpy_1.16.4_pip_package , use , get np , ask_package_location
     """
     sys.path.insert(0, abs_packages_dir)
     return abs_packages_dir
@@ -22,7 +22,7 @@ def get_metadata_path(abs_packages_dir, package_name, metadata_filename='METADAT
         https://packaging.python.org/specifications/recording-installed-packages/
 
 Usage examples:
-                axs byname generic_pip , get_metadata_path $HOME/CK-TOOLS/lib-python-onnx-compiler.python-3.6.8-precompiled-macos-64/build onnx
+                axs byname base_pip_package , get_metadata_path $HOME/CK-TOOLS/lib-python-onnx-compiler.python-3.6.8-precompiled-macos-64/build onnx
     """
     import re
     import os.path
@@ -54,9 +54,9 @@ def get_metadata(abs_packages_dir, package_name, header_name=None):
         or a list of values corresponding to the specified --header_name
 
 Usage examples:
-                axs byname generic_pip , get_metadata $HOME/CK-TOOLS/lib-python-onnx-compiler.python-3.6.8-precompiled-macos-64/build onnx Version
-                axs byname numpy_1.16.4_pip , get_metadata
-                axs byname numpy_1.16.4_pip , get_metadata --header_name=Platform
+                axs byname base_pip_package , get_metadata $HOME/CK-TOOLS/lib-python-onnx-compiler.python-3.6.8-precompiled-macos-64/build onnx Version
+                axs byname numpy_1.16.4_pip_package , get_metadata
+                axs byname numpy_1.16.4_pip_package , get_metadata --header_name=Platform
     """
     from email.parser import BytesHeaderParser
     from email.policy import default
@@ -78,8 +78,8 @@ def get_deps(abs_packages_dir, package_name):
         https://packaging.python.org/specifications/core-metadata/#requires-dist-multiple-use
 
 Usage examples:
-                axs byname generic_pip , get_deps $HOME/CK-TOOLS/lib-python-onnx-compiler.python-3.6.8-precompiled-macos-64/build onnx
-                axs byname numpy_1.16.4_pip , get_deps
+                axs byname base_pip_package , get_deps $HOME/CK-TOOLS/lib-python-onnx-compiler.python-3.6.8-precompiled-macos-64/build onnx
+                axs byname numpy_1.16.4_pip_package , get_deps
     """
     return get_metadata( abs_packages_dir, package_name, 'Requires-Dist' )
 
@@ -89,11 +89,11 @@ def ask_package_version(package_name):
         This could work both with a use'd or the one importable by default.
 
 Usage examples :
-                axs np: byname numpy_1.16.4_pip , use , get np , ask_package_version
+                axs np: byname numpy_1.16.4_pip_package , use , get np , ask_package_version
 
-                axs gen: byname generic_pip , use $HOME/CK-TOOLS/lib-python-onnx-compiler.python-3.6.8-precompiled-macos-64/build , get gen , ask_package_version onnx
+                axs gen: byname base_pip_package , use $HOME/CK-TOOLS/lib-python-onnx-compiler.python-3.6.8-precompiled-macos-64/build , get gen , ask_package_version onnx
                 
-                axs byname generic_pip , ask_package_version numpy
+                axs byname base_pip_package , ask_package_version numpy
     """
     module = __import__(package_name)
     return getattr(module, '__version__')
@@ -104,9 +104,9 @@ def ask_package_location(package_name):
         This could work both with a use'd or the one importable by default.
 
 Usage examples :
-                axs np: byname numpy_1.16.4_pip , use , get np , ask_package_location
+                axs np: byname numpy_1.16.4_pip_package , use , get np , ask_package_location
 
-                axs byname generic_pip , ask_package_location numpy
+                axs byname base_pip_package , ask_package_location numpy
     """
     module = __import__(package_name)
     return getattr(module, '__file__')
