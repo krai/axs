@@ -72,7 +72,7 @@ def preprocess(imagenet_directory, square_size, supported_extensions, crop_perce
 
     __record_entry__["tags"] = tags or [ "preprocessed", "imagenet" ]
     if not entry_name:
-        entry_name = f'pillow_processed_imagenet_{square_size}'
+        entry_name = f'pillow_sq.{square_size}_cropped_resized_imagenet'
     __record_entry__.save( entry_name )
     output_directory     = __record_entry__.get_path(file_name)
 
