@@ -1,0 +1,16 @@
+{
+    "_producer_rules": [
+        [ [ "downloaded", "tf_model", "model_name=mobilenet_v2" ], [ "^", "byname", "downloader" ], "download", {
+            }, ["url","multiplier","resolution"] ],
+        [ [ "extracted",  "tf_model", "model_name=mobilenet_v2" ], [ "^", "byname", "extractor" ], "extract",  {}, [ "archive_path" ] ]
+    ],
+
+    "url": [ "^^", "substitute", "https://zenodo.org/record/2266646/files/mobilenet_v2_#{multiplier}#_#{resolution}#.tgz" ],
+    "multiplier": "0.35",
+    "resolution": 128,
+
+    "archive_path": [ "^", "execute", [[
+        [ "byquery", [[ "^^", "substitute", "downloaded,tf_model,model_name=mobilenet_v2,multiplier=#{multiplier}#,resolution=#{resolution}#" ]] ],
+        [ "get_path" ]
+    ]], {}, ["multiplier","resolution"] ]
+}
