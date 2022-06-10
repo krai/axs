@@ -1,0 +1,58 @@
+{
+    "_parent_entries": [ [ "^", "byname", "python_script" ] ],
+    "_producer_rules": [
+        [ [ "script_output", "classified_imagenet", "framework=tf" ], [ "^^", "get", "__entry__" ], "run", { "return_saved_record_entry": true } ]
+    ],
+
+    "python_version": [ "^", "execute", [[
+                             [ "byquery", "shell_tool,can_python" ],
+                             [ "run" ]
+                ]] ],
+
+    "tf_query": [ "python_package", "package_name=tensorflow" ],
+    "python_deps": [
+        [ "^", "byquery", [ [ "^^", "get", "tf_query" ] ], {}, ["tf_query"] ]
+    ],
+
+    "model_name": "mobilenet_v2",
+    "model_query": [ "extracted", "tf_model", [ "^^", "substitute", "model_name=#{model_name}#" ] ],
+    "model_entry": [ "^", "byquery", [[ "^^", "get", "model_query" ]], {}, ["model_query"] ],
+    "model_path": [ "^^", "execute", [[
+        [ "get", "model_entry" ],
+        [ "get_path_from", "model_rel_path" ]
+    ]] ],
+
+    "preprocessed_imagenet_query": [ "preprocessed", "imagenet" ],
+    "preprocessed_imagenet_dir": [ "^", "execute", [[
+        [ "byquery", [[ "^^", "get", "preprocessed_imagenet_query" ]] ],
+        [ "get_path" ]
+    ]], {}, ["preprocessed_imagenet_query"] ],
+
+    "num_of_images": 20,
+    "output_file_name": "script_output.json",
+    "framework": "tf",
+
+    "execution_device": "",
+
+    "max_batch_size": 25,
+    "top_n_max": 10,
+
+    "output_file_path": [ "^^", "execute", [[
+        [ "get", "__record_entry__" ],
+        [ "attach", [ "^", "work_collection" ] ],
+        [ "plant", [ "^^", "substitute", [[
+            "_parent_entries", [ "AS^IS", "AS^IS", [ "^", "byname", "base_imagenet_experiment" ] ],
+            "tags", [ "script_output", "classified_imagenet" ],
+            "num_of_images", "#{num_of_images}#",
+            "model_name", "#{model_name}#",
+            "framework", "#{framework}#",
+            "output_file_name", "#{output_file_name}#"
+         ]] ] ],
+         [ "save" ],
+         [ "get_path_from", "output_file_name" ]
+      ]] ],
+
+    "rel_script_path": "tf_classify.py",
+
+    "script_extra_params": [ "^^", "substitute", "#{model_name}# \"#{model_path}#\" \"#{preprocessed_imagenet_dir}#\" #{num_of_images}# #{max_batch_size}# \"#{output_file_path}#\" #{top_n_max}#" ]
+}
