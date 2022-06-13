@@ -58,7 +58,7 @@ def cli_parse(arglist):
 
         call_params     = {}
         call_pos_params = []
-        curr_link = [ None, call_pos_params, call_params ]
+        curr_link       = []
         pipeline.append( curr_link )
 
         ## Going through the arguments
@@ -69,17 +69,20 @@ def cli_parse(arglist):
                     delimiter = matched.group(4)
                     call_pos_params.append( [ matched.group(1), matched.group(2), [to_num_or_not_to_num(el) for el in matched.group(3).split(delimiter)[1:] ] if delimiter else [] ] )
 
-                    if curr_link[0]==None:          # no action has been parsed yet
-                        curr_link[0] = 'noop'
-                elif curr_link[0]==None and len(curr_link)<5 and re.match(r'^(\w*):(?:(\w*):)?$', arglist[i]):  # input and/or output label(s)
-                    matched = re.match(r'^(\w*):(?:(\w*):)?$', arglist[i])
-                    curr_link.extend( [ matched.group(1), matched.group(2) ] )
-                elif curr_link[0]==None and re.match(r'^\w+$', arglist[i]):                             # a normal action
+                    if len(curr_link)==0:          # no action has been parsed yet
+                        curr_link.extend( [ 'noop', call_pos_params, call_params ] )
+                elif len(curr_link)==0:
+                    if re.match(r'^(\w*):(?:(\w*):)?$', arglist[i]):                # input and/or output label(s)
+                        matched = re.match(r'^(\w*):(?:(\w*):)?$', arglist[i])
+                        curr_link.extend( [ None, call_pos_params, call_params, matched.group(1), matched.group(2) ] )
+                    elif re.match(r'^\w+$', arglist[i]):                            # a normal action
+                        curr_link.extend( [ arglist[i], call_pos_params, call_params ] )
+                    else:
+                        raise(Exception("Parsing error - cannot understand non-option '{}' before an action".format(arglist[i])))
+                elif curr_link[0] is None and re.match(r'^\w+$', arglist[i]):       # a normal action after input/output label(s)
                     curr_link[0] = arglist[i]
-                elif curr_link[0]:                                                                      # a positional argument
-                    call_pos_params.append( to_num_or_not_to_num(arglist[i]) )
                 else:
-                    raise(Exception("Parsing error - cannot understand non-option '{}' before an action".format(arglist[i])))
+                    call_pos_params.append( to_num_or_not_to_num(arglist[i]) )      # a positional argument
 
             else:
                 matched = re.match(r'^---(([\w\.]*\+?)((\^{1,2})(\w+))?)=(.*)$', arglist[i])                    # verbatim JSON value
@@ -126,6 +129,8 @@ def cli_parse(arglist):
 
 def main():
     pipeline = cli_parse(sys.argv[1:])
+#    from pprint import pprint
+#    pprint(pipeline)
     return ak.execute(pipeline)
 
 if __name__ == '__main__':

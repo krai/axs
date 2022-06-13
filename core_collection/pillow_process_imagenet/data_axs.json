@@ -15,6 +15,7 @@
         ["get_kernel"],
         ["byquery", [[ "^^", "get", "numpy_query" ]] ],
         ["use"],
+        [],
         ["get_kernel"],
         ["byquery", [[ "^^", "get", "pillow_query" ]] ],
         ["use"]

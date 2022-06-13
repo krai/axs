@@ -394,9 +394,7 @@ Usage examples :
 
 Usage examples :
                 axs si: byname sysinfo , substitute '#{os}#--#{ar}#' --os:=^^:dig:si.osname --ar:=^^:dig:si.arch
-                axs si: byname sysinfo , os: dig si.osname , ar: dig si.arch , substitute '#{os}#--#{ar}#'
-                axs si: byname sysinfo , os: dig si.osname , ar: dig si.arch , rt_pipeline_entry , save
-                axs rt_pipeline_entry , old_dir: cd , si: byname sysinfo , os: dig si.osname , ar: dig si.arch , get si , run 'echo "Hello, world!" >README.txt' , rt_pipeline_entry , save
+                axs si: byname sysinfo , os: dig si.osname , , ar: dig si.arch , , substitute 'OS=#{os}#, Arch=#{ar}#'
                 axs bypath only_code/iterative.py , :rec: factorial 5 , get rec , save factorial_of_5
 
             # Record a call:
@@ -417,19 +415,23 @@ Usage examples :
 #                result.runtime_stack_cache = inherited_context
 #                local_context.append( entry )
 
-            entry = result if hasattr(result, 'call') else self
+            if type(call_params)!=list or len(call_params)==0:      # an empty list is a signal to start again from self
+                entry = self
 
-            output_label    = call_params.pop(max_call_params) if len(call_params)>max_call_params else None    # NB: the order is important!
-            input_label     = call_params.pop(max_call_params) if len(call_params)>max_call_params else None
+            else:
+                output_label    = call_params.pop(max_call_params) if len(call_params)>max_call_params else None    # NB: the order is important!
+                input_label     = call_params.pop(max_call_params) if len(call_params)>max_call_params else None
 
-            call_record_entry_ptr = []  # the value of call_record_entry is returned via appending to this empty list
-            result = entry.call(*call_params, call_record_entry_ptr=call_record_entry_ptr, nested_context=local_context)
+                call_record_entry_ptr = []  # the value of call_record_entry is returned via appending to this empty list
+                result = entry.call(*call_params, call_record_entry_ptr=call_record_entry_ptr, nested_context=local_context)
 
-            if input_label:
-                rt_pipeline_wide[input_label] = call_record_entry_ptr[0]
+                if input_label:
+                    rt_pipeline_wide[input_label] = call_record_entry_ptr[0]
 
-            if output_label:
-                rt_pipeline_wide[output_label] = function_access.to_num_or_not_to_num( result )
+                if output_label:
+                    rt_pipeline_wide[output_label] = function_access.to_num_or_not_to_num( result )
+
+                entry = result
 
         return result
 
