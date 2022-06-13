@@ -396,6 +396,10 @@ Usage examples :
                 axs si: byname sysinfo , substitute '#{os}#--#{ar}#' --os:=^^:dig:si.osname --ar:=^^:dig:si.arch
                 axs si: byname sysinfo , os: dig si.osname , , ar: dig si.arch , , substitute 'OS=#{os}#, Arch=#{ar}#'
                 axs bypath only_code/iterative.py , :rec: factorial 5 , get rec , save factorial_of_5
+                axs noop 12.345 , format 10.4f
+                axs version , split . , __getitem__ 2
+                axs core_collection , get_path , split /axs/ , __getitem__ 0
+                axs core_collection , get contained_entries , keys , list
 
             # Record a call:
                 axs bypath only_code/iterative.py , :rec: factorial 5 , get rec , save factorial_of_5
@@ -423,7 +427,19 @@ Usage examples :
                 input_label     = call_params.pop(max_call_params) if len(call_params)>max_call_params else None
 
                 call_record_entry_ptr = []  # the value of call_record_entry is returned via appending to this empty list
-                result = entry.call(*call_params, call_record_entry_ptr=call_record_entry_ptr, nested_context=local_context)
+
+                if hasattr(entry, 'call'):
+                    result = entry.call(*call_params, call_record_entry_ptr=call_record_entry_ptr, nested_context=local_context)
+                else:
+                    (action_name, pos_params, edit_dict) = call_params
+                    try:                                                            # attempt to call a method of the object
+                        action_object = getattr(entry, action_name)
+                        pos_params = rt_pipeline_wide.nested_calls( pos_params )
+                    except AttributeError:                                          # if not available, try a builtin function instead
+                        action_object = __builtins__[action_name]
+                        pos_params = [ entry ] + rt_pipeline_wide.nested_calls( pos_params )
+
+                    result = function_access.feed(action_object, pos_params, edit_dict)
 
                 if input_label:
                     rt_pipeline_wide[input_label] = call_record_entry_ptr[0]
