@@ -23,7 +23,7 @@
     ]] ],
     "resolution": [ "^^", "dig", "model_entry.resolution" ],
 
-    "preprocessed_imagenet_query": [ "preprocessed", "imagenet", [ "^^", "substitute", "square_size=#{resolution}#" ] ],
+    "preprocessed_imagenet_query": [ "preprocessed", "imagenet", [ "^^", "substitute", "resolution=#{resolution}#" ] ],
     "preprocessed_imagenet_dir": [ "^", "execute", [[
         [ "byquery", [[ "^^", "get", "preprocessed_imagenet_query" ]] ],
         [ "get_path" ]

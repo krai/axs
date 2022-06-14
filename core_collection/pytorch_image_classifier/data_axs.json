@@ -5,18 +5,17 @@
         [ [ "script_output", "classified_imagenet", "framework=pytorch" ], [ "^^", "get", "__entry__" ], "run", { "return_saved_record_entry": true } ]
     ],
 
-    "preprocessed_imagenet_query": [ "preprocessed", "imagenet" ],
+    "model_name": "resnet50",
+    "resolution": 224,
+
+    "preprocessed_imagenet_query": [ "preprocessed", "imagenet", [ "^^", "substitute", "resolution=#{resolution}#" ] ],
     "preprocessed_imagenet_entry":[ "^", "byquery", [[ "^^", "get", "preprocessed_imagenet_query" ]] , {}, ["preprocessed_imagenet_query"]],
     "preprocessed_imagenet_dir":["^^", "execute", [[
         [ "get", "preprocessed_imagenet_entry" ],
         [ "get_path" ]
       ]] ] ,
-    "preprocessed_square_size":["^^", "execute", [[
-        [ "get", "preprocessed_imagenet_entry" ],
-        [ "get", "square_size" ]
-      ]] ] ,
+
     "num_of_images": 20,
-    "model_name": "resnet50",
     "output_file_name": "script_output.json",
     "execution_device": "",
     "max_batch_size": 25,
@@ -41,7 +40,7 @@
         [ "get_path_from", "output_file_name" ]
     ]] ],
 
-    "script_extra_params": [ "^^", "substitute", "\"#{preprocessed_imagenet_dir}#\" #{preprocessed_square_size}# #{num_of_images}# #{model_name}# \"#{output_file_path}#\" \"#{execution_device}#\" #{max_batch_size}# #{top_n_max}#" ],
+    "script_extra_params": [ "^^", "substitute", "\"#{preprocessed_imagenet_dir}#\" #{resolution}# #{num_of_images}# #{model_name}# \"#{output_file_path}#\" \"#{execution_device}#\" #{max_batch_size}# #{top_n_max}#" ],
 
     "rel_script_path": "pytorch_classify.py",
 

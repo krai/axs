@@ -48,7 +48,7 @@ from time import time, sleep
 from urllib.error import HTTPError
 
 preprocessed_imagenet_dir   = sys.argv[1]
-preprocessed_square_size    = int(sys.argv[2])
+resolution                  = int(sys.argv[2])
 num_of_images               = int(sys.argv[3])
 model_name                  = sys.argv[4]
 output_file_path            = sys.argv[5]       # if empty, recording of the output will be skipped
@@ -86,7 +86,7 @@ def load_one_batch(indices):
         file_name = file_pattern.format(i+1)
         file_path   = os.path.join( preprocessed_imagenet_dir, file_name )
         img_rgb8 = np.fromfile(file_path, np.uint8)
-        img_rgb8 = img_rgb8.reshape((preprocessed_square_size, preprocessed_square_size, 3))
+        img_rgb8 = img_rgb8.reshape((resolution, resolution, 3))
 
         input_tensor = preprocess(img_rgb8)
         file_names.append( file_name )

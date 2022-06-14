@@ -8,15 +8,15 @@ from PIL import Image
 # Load and preprocess image:
 # Mimic preprocessing steps from the official reference code.
 def load_image(image_path,            # Full path to processing image
-               square_size,           # Desired size of resulting image
+               resolution,            # Desired size of resulting image
                intermediate_size = 0, # Scale to this size then crop to target size
                crop_percentage = 0,   # Crop to this percentage then scale to target size
                data_type = 'uint8',   # Data type to store
                convert_to_bgr = False # Swap image channel RGB -> BGR
                ):
 
-    out_height  = square_size
-    out_width   = square_size
+    out_height  = resolution
+    out_width   = resolution
 
     def resize_with_aspectratio(img):
         width, height = img.size
@@ -68,11 +68,11 @@ def load_image(image_path,            # Full path to processing image
     return img
 
 
-def preprocess(imagenet_directory, square_size, supported_extensions, crop_percentage, inter_size, convert_to_bgr, data_type, new_file_extension, file_name, tags=None, entry_name=None, __record_entry__=None):
+def preprocess(imagenet_directory, resolution, supported_extensions, crop_percentage, inter_size, convert_to_bgr, data_type, new_file_extension, file_name, tags=None, entry_name=None, __record_entry__=None):
 
     __record_entry__["tags"] = tags or [ "preprocessed", "imagenet" ]
     if not entry_name:
-        entry_name = f'pillow_sq.{square_size}_cropped_resized_imagenet'
+        entry_name = f'pillow_sq.{resolution}_cropped_resized_imagenet'
     __record_entry__.save( entry_name )
     output_directory     = __record_entry__.get_path(file_name)
 
@@ -85,7 +85,7 @@ def preprocess(imagenet_directory, square_size, supported_extensions, crop_perce
         full_input_path     = os.path.join(imagenet_directory, input_filename)
 
         image_data = load_image(image_path = full_input_path,
-                              square_size = square_size,
+                              resolution = resolution,
                               intermediate_size = inter_size,
                               crop_percentage = crop_percentage,
                               data_type = data_type,
