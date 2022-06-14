@@ -14,16 +14,15 @@ import math
 model_name                  = sys.argv[1]
 model_path                  = sys.argv[2]
 preprocessed_imagenet_dir   = sys.argv[3]
-num_of_images               = int(sys.argv[4])
-max_batch_size              = int(sys.argv[5])
-output_file_path            = sys.argv[6]
-top_n_max                   = int(sys.argv[7])
+resolution                  = int(sys.argv[4])
+num_of_images               = int(sys.argv[5])
+max_batch_size              = int(sys.argv[6])
+output_file_path            = sys.argv[7]
+top_n_max                   = int(sys.argv[8])
 
 batch_count                 = math.ceil(num_of_images / max_batch_size)
 file_pattern                = 'ILSVRC2012_val_000{:05d}.rgb8'
 data_layout                 = "NHWC"
-height                      = 224
-width                       = 224
 input_layer_name            = "input"
 output_layer_name           = "MobilenetV2/Predictions/Reshape_1"
 normalize_data_bool         = True
@@ -78,7 +77,7 @@ def load_a_batch(batch_filenames):
     unconcatenated_batch_data = []
     for image_filename in batch_filenames:
         image_filepath = os.path.join( preprocessed_imagenet_dir, image_filename )
-        nchw_data = load_preprocessed_and_normalize( image_filepath, height, width )
+        nchw_data = load_preprocessed_and_normalize( image_filepath, resolution, resolution )
         unconcatenated_batch_data.append( nchw_data )
     batch_data = np.concatenate(unconcatenated_batch_data, axis=0)
 

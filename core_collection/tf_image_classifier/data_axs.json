@@ -21,8 +21,9 @@
         [ "get", "model_entry" ],
         [ "get_path_from", "model_rel_path" ]
     ]] ],
+    "resolution": [ "^^", "dig", "model_entry.resolution" ],
 
-    "preprocessed_imagenet_query": [ "preprocessed", "imagenet" ],
+    "preprocessed_imagenet_query": [ "preprocessed", "imagenet", [ "^^", "substitute", "square_size=#{resolution}#" ] ],
     "preprocessed_imagenet_dir": [ "^", "execute", [[
         [ "byquery", [[ "^^", "get", "preprocessed_imagenet_query" ]] ],
         [ "get_path" ]
@@ -54,5 +55,5 @@
 
     "rel_script_path": "tf_classify.py",
 
-    "script_extra_params": [ "^^", "substitute", "#{model_name}# \"#{model_path}#\" \"#{preprocessed_imagenet_dir}#\" #{num_of_images}# #{max_batch_size}# \"#{output_file_path}#\" #{top_n_max}#" ]
+    "script_extra_params": [ "^^", "substitute", "#{model_name}# \"#{model_path}#\" \"#{preprocessed_imagenet_dir}#\" #{resolution}# #{num_of_images}# #{max_batch_size}# \"#{output_file_path}#\" #{top_n_max}#" ]
 }
