@@ -1,0 +1,8 @@
+{
+    "_producer_rules": [
+        [ [ "downloaded", "coco_images" ], [ "^", "byname", "downloader" ], "download", {}, ["url", "md5"] ]
+    ],
+    "url": "http://images.cocodataset.org/zips/val2017.zip",
+    "md5": "442b8da7639aecaf257c1dceb8ba8c80"
+
+}

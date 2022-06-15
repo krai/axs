@@ -25,6 +25,8 @@
         "base_imagenet_experiment": "base_imagenet_experiment",
         "model_tf_mobilenet_v2_recipe": "model_tf_mobilenet_v2_recipe",
         "tf_image_classifier": "tf_image_classifier",
-        "model_onnx_ssd_resnet34_recipe": "model_onnx_ssd_resnet34_recipe"
+        "model_onnx_ssd_resnet34_recipe": "model_onnx_ssd_resnet34_recipe",
+        "coco_meta_recipe": "coco_meta_recipe",
+        "coco_images_recipe": "coco_images_recipe"
     }
 }
