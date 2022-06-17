@@ -1,8 +1,14 @@
 {
     "_producer_rules": [
-        [ [ "downloaded", "coco_images" ], [ "^", "byname", "downloader" ], "download", {}, ["url", "md5"] ]
+        [ [ "downloaded", "coco_images" ], [ "^", "byname", "downloader" ], "download", {}, ["url", "md5"] ],
+        [ [ "extracted",  "coco_images" ], [ "^", "byname", "extractor" ], "extract",  {}, [ "archive_path" ] ]
     ],
-    "url": "http://images.cocodataset.org/zips/val2017.zip",
-    "md5": "442b8da7639aecaf257c1dceb8ba8c80"
 
+    "url": "http://images.cocodataset.org/zips/val2017.zip",
+    "md5": "442b8da7639aecaf257c1dceb8ba8c80",
+
+    "archive_path": [ "^", "execute", [[
+             [ "byquery", [[ "^^", "substitute", "downloaded,coco_images" ]] ],
+             [ "get_path" ]
+    ]], {}, [] ]
 }

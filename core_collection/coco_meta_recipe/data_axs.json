@@ -1,8 +1,14 @@
 {
     "_producer_rules": [
-        [ [ "downloaded", "coco_meta" ], [ "^", "byname", "downloader" ], "download", {}, ["url", "md5"] ]
+        [ [ "downloaded", "coco_meta" ], [ "^", "byname", "downloader" ], "download", {}, ["url", "md5"] ],
+        [ [ "extracted",  "coco_meta" ], [ "^", "byname", "extractor" ], "extract",  {}, [ "archive_path" ] ]
     ],
-    "url": "http://images.cocodataset.org/annotations/annotations_trainval2017.zip",
-    "md5": "f4bbac642086de4f52a3fdda2de5fa2c"
 
+    "url": "http://images.cocodataset.org/annotations/annotations_trainval2017.zip",
+    "md5": "f4bbac642086de4f52a3fdda2de5fa2c",
+
+    "archive_path": [ "^", "execute", [[
+             [ "byquery", [[ "^^", "substitute", "downloaded,coco_meta" ]] ],
+             [ "get_path" ]
+    ]], {}, [] ]
 }
