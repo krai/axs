@@ -16,13 +16,8 @@
             ], {"default_value": ["^^", "substitute", "--strip-components #{strip_components}#"] } ],
             "shell_cmd_with_subs": "\"#{tool_path}#\" -#{uncompression_insert}#xvf - -C \"#{target_path}#\" #{strip_components_insert}# < \"#{archive_path}#\""
         } ],
-        [ [ "shell_tool", "can_extract_tar" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "tar", "strip_components": 0, "shell_cmd": [ "AS^IS", "^^", "substitute", [[
-            "#{tool_path}#",
-            ["^^", "case", [ ["^^", "get", "archive_format"], "tar", "-xvf", "tgz", "-zxvf" ] ],
-            "#{archive_path}#",
-            "-C", "#{target_path}#",
-            "--strip-components", "#{strip_components}#"
-        ]] ] } ],
+
+        [ [ "shell_tool", "can_extract_zip" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "unzip", "shell_cmd_with_subs": "\"#{tool_path}#\" -d \"#{target_path}#\" \"#{archive_path}#\"" } ],
 
         [ [ "shell_tool", "can_uncompress_gz" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "gzip.exe", "shell_cmd_with_subs": "\"#{tool_path}#\" -d \"#{target_path}#\"" } ],
         [ [ "shell_tool", "can_uncompress_gz" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "gunzip", "shell_cmd_with_subs": "\"#{tool_path}#\" \"#{target_path}#\"" } ],
