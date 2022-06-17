@@ -6,6 +6,14 @@
 import logging
 import os
 
+def detect_archive_format(archive_path):
+    if archive_path.lower().endswith('.tar'):
+        archive_format = 'tar'
+    elif archive_path.lower().endswith( ('.tgz','.tar.gz') ):
+        archive_format = 'tgz'
+    elif archive_path.lower().endswith('.zip'):
+        archive_format = 'zip'
+    return archive_format
 
 def extract(archive_path, archive_format=None, file_name="extracted", extraction_tool_entry=None, strip_components=0, tags=None, entry_name=None, __record_entry__=None):
     """Create a new entry and extract the archive into it
@@ -37,12 +45,6 @@ Usage examples:
     archive_name    = os.path.basename(archive_path)
     __record_entry__["archive_name"] = archive_name
 
-    if archive_format is None:      # perform some reasonable guesswork
-        if archive_path.lower().endswith('.tar'):
-            archive_format = 'tar'
-        elif archive_path.lower().endswith( ('.tgz','.tar.gz') ):
-            archive_format = 'tgz'
-        __record_entry__["archive_format"] = archive_format
 
     if not entry_name:
         entry_name = 'extracted_' + archive_name
