@@ -1,0 +1,48 @@
+{
+    "_producer_rules": [
+        [ [ "preprocessed", "coco_images" ], [ "^^", "get", "__entry__" ], "preprocess", {},
+          [
+            "coco_images_directory", "resolution", "supported_extensions",
+            "data_type","new_file_extension", "file_name", "coco_images_version"
+          ]
+        ]
+    ],
+
+    "numpy_query": [ "python_package", "package_name=numpy" ],
+    "pillow_query": [ "python_package", "package_name=pillow" ],
+
+    "_BEFORE_CODE_LOADING": [ "^^", "execute", [[
+        ["get_kernel"],
+        ["byquery", [[ "^^", "get", "numpy_query" ]] ],
+        ["use"],
+        [],
+        ["get_kernel"],
+        ["byquery", [[ "^^", "get", "pillow_query" ]] ],
+        ["use"]
+    ]] ],
+
+    "coco_images_query": [ "extracted", "coco_images" ],
+    "coco_images_base_dir": [ "^", "execute", [[
+        [ "byquery", [[ "^^", "get", "coco_images_query" ]] ],
+        [ "get_path" ]
+    ]], {}, [ "coco_images_query" ] ],
+    "coco_images_base_dir2": [ "^", "execute", [[
+        [ "byquery", [[ "^^", "get", "coco_images_query" ]] ]
+    ]], {}, [ "coco_images_query" ] ],
+    "coco_images_directory2":[ "^", "execute", [[ 
+        [ "byquery", [[ "^^", "get", "coco_images_base_dir" ]] ], 
+        [ "get_path" ]
+        ]], {}, [ "coco_images_base_dir" ]],
+    "coco_images_directory":[ "^", "execute", [[ 
+        [ "byquery", [[ "^^", "get", "coco_images_query" ]] ], 
+        [ "get_path" ]
+        ]], {}, [ "coco_images_query" ]],
+    "coco_images_directory_2":"/home/maria/work_collection/extracted_val2017.zip/extracted/val2017/",
+
+    "resolution":           300,
+    "supported_extensions": ["jpeg", "jpg", "gif", "png"],
+    "data_type":            "uint8",
+    "new_file_extension":   "rgb8",
+    "file_name":            "preprocessed",
+    "coco_images_version":  "2017"
+}
