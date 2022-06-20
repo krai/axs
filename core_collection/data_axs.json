@@ -27,6 +27,7 @@
         "tf_image_classifier": "tf_image_classifier",
         "model_onnx_ssd_resnet34_recipe": "model_onnx_ssd_resnet34_recipe",
         "coco_meta_recipe": "coco_meta_recipe",
-        "coco_images_recipe": "coco_images_recipe"
+        "coco_images_recipe": "coco_images_recipe",
+        "pillow_process_coco": "pillow_process_coco"
     }
 }
