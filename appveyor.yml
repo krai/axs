@@ -5,39 +5,28 @@ environment:
   matrix:
     - job_name: Windows_onnxruntime Py 3.9
       appveyor_build_worker_image: Visual Studio 2019
-      ONNX_CLASSIFY: on
       PYTHON_DIR: C:\Python39-x64
-
-    - job_name: Windows_pytorch Py 3.9
-      appveyor_build_worker_image: Visual Studio 2019
       PYTORCH_CLASSIFY: on
-      PYTHON_DIR: C:\Python39-x64
+      ONNX_CLASSIFY: on
+      TF_CLASSIFY: on
 
     - job_name: MacOS_onnxruntime
       appveyor_build_worker_image: macos
-      ONNX_CLASSIFY: on
-
-    - job_name: MacOS_pytorch
-      appveyor_build_worker_image: macos
       PYTORCH_CLASSIFY: on
-
-    - job_name: Windows_onnxruntime Py 3.6
-      appveyor_build_worker_image: Visual Studio 2019
       ONNX_CLASSIFY: on
-      PYTHON_DIR: C:\Python36-x64
-
-    - job_name: Windows_pytorch Py 3.6
-      appveyor_build_worker_image: Visual Studio 2019
-      PYTORCH_CLASSIFY: on
-      PYTHON_DIR: C:\Python36-x64
+      TF_CLASSIFY: on
 
     - job_name: Linux_onnxruntime
       appveyor_build_worker_image: Ubuntu
-      ONNX_CLASSIFY: on
-
-    - job_name: Linux_pytorch
-      appveyor_build_worker_image: Ubuntu
       PYTORCH_CLASSIFY: on
+      ONNX_CLASSIFY: on
+      TF_CLASSIFY: on
+
+    - job_name: Windows_onnxruntime Py 3.6
+      appveyor_build_worker_image: Visual Studio 2019
+      PYTHON_DIR: C:\Python36-x64
+      PYTORCH_CLASSIFY: on
+      ONNX_CLASSIFY: on
 
 init:
     - cmd: set PYTHON_EXE=python3

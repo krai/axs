@@ -28,7 +28,7 @@ matrix:
     - language: python
       python: 3.8
       env:
-        - ONNX_CLASSIFY=on
+        - TF_CLASSIFY=on
         - PYTHON_EXE=python
 
     - language: python
