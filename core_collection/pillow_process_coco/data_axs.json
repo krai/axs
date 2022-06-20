@@ -3,7 +3,7 @@
         [ [ "preprocessed", "coco_images" ], [ "^^", "get", "__entry__" ], "preprocess", {},
           [
             "coco_images_directory", "resolution", "supported_extensions",
-            "data_type","new_file_extension", "file_name"
+            "data_type","new_file_extension", "file_name", "fof_name"
           ]
         ]
     ],
@@ -35,5 +35,6 @@
     "supported_extensions": ["jpeg", "jpg", "gif", "png"],
     "data_type":            "uint8",
     "new_file_extension":   "rgb8",
-    "file_name":            "preprocessed"
+    "file_name":            "preprocessed",
+    "fof_name":             "original_dimensions.txt"
 }

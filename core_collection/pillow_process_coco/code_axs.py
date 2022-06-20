@@ -32,8 +32,10 @@ def load_image(image_path,            # Full path to processing image
 
     return batch_data, original_width, original_height
 
-def preprocess(coco_images_directory, resolution, supported_extensions, data_type, new_file_extension, file_name, tags=None, entry_name=None, __record_entry__=None):
+def preprocess(coco_images_directory, resolution, supported_extensions, data_type, new_file_extension, file_name,  fof_name, tags=None, entry_name=None, __record_entry__=None):
     "Go through the selected_filenames and preprocess all the files"
+
+    output_signatures = []
 
     __record_entry__["tags"] = tags or [ "preprocessed", "coco_images" ]
     if not entry_name:
@@ -59,5 +61,12 @@ def preprocess(coco_images_directory, resolution, supported_extensions, data_typ
         image_data.tofile(full_output_path)
 
         print("[{}]:  Stored {}".format(current_idx+1, full_output_path) )
+
+        output_signatures.append('{};{};{}'.format(output_filename, original_width, original_height) )
+
+    fof_full_path = os.path.join(output_directory, fof_name)
+    with open(fof_full_path, 'w') as fof:
+        for filename in output_signatures:
+            fof.write(filename + '\n')
 
     return __record_entry__
