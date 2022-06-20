@@ -92,7 +92,7 @@ axs byquery --/=shell_tool/can_python --- , remove
 assert_end dependency_installation_and_resolution_for_internal_code
 
 
-if [ "$ONNX_CLASSIFY" == "on" ] || [ "$PYTORCH_CLASSIFY" == "on" ]; then
+if [ "$PYTORCH_CLASSIFY" == "on" ] || [ "$ONNX_CLASSIFY" == "on" ] || [ "$TF_CLASSIFY" == "on" ]; then
     if [ "$PYTORCH_CLASSIFY" == "on" ]; then
         # The following line is split into two to provide more insight into what is going on.
         # Otherwise assert() blocks all the error output and the command looks "stuck" for quite a while.
@@ -107,8 +107,9 @@ if [ "$ONNX_CLASSIFY" == "on" ] || [ "$PYTORCH_CLASSIFY" == "on" ]; then
 
         axs byquery python_package,package_name=torchvision --- , remove
     else
-        echo "Skipping the dependency_installation_and_resolution_for_external_python_script"
+        echo "Skipping the PYTORCH_CLASSIFY test"
     fi
+
     if [ "$ONNX_CLASSIFY" == "on" ]; then
         # The following line is split into two to provide more insight into what is going on.
         # Otherwise assert() blocks all the error output and the command looks "stuck" for quite a while.
@@ -128,10 +129,35 @@ if [ "$ONNX_CLASSIFY" == "on" ] || [ "$PYTORCH_CLASSIFY" == "on" ]; then
 
         axs byquery python_package,package_name=onnxruntime --- , remove
         axs byquery python_package,package_name=onnxruntime-gpu --- , remove
-        axs byquery python_package,package_name=pillow --- , remove
     else
-        echo "Skipping the dependency_installation_and_resolution_for_external_python_script"
+        echo "Skipping the ONNX_CLASSIFY test"
     fi
+
+    if [ "$TF_CLASSIFY" == "on" ]; then
+        # The following line is split into two to provide more insight into what is going on.
+        # Otherwise assert() blocks all the error output and the command looks "stuck" for quite a while.
+
+        axs byname tf_image_classifier , run ---capture_output=false --output_file_path=
+        export INFERENCE_OUTPUT=`axs byname tf_image_classifier , run ---capture_output=true --output_file_path=`
+        assert 'echo $INFERENCE_OUTPUT' 'batch 1/1: (1..20) [65, 795, 230, 809, 529, 57, 334, 434, 674, 332, 109, 286, 370, 757, 595, 147, 327, 23, 478, 517]'
+
+        axs byquery script_output,classified_imagenet,framework=tf,num_of_images=32
+
+        export ACCURACY_OUTPUT=`axs byquery script_output,classified_imagenet,framework=tf,num_of_images=32 , get accuracy`
+        echo "Accuracy: $ACCURACY_OUTPUT"
+        assert 'echo $ACCURACY_OUTPUT' '0.8125'
+
+        axs byquery extracted,tf_model --- , remove
+        axs byquery downloaded,tf_model --- , remove
+
+        axs byquery python_package,package_name=tensorflow --- , remove
+    else
+        echo "Skipping the TF_CLASSIFY test"
+    fi
+
+    axs byquery preprocessed,imagenet --- , remove
+    axs byquery python_package,package_name=pillow --- , remove
+    axs byquery python_package,package_name=numpy --- , remove
 
     axs byquery script_output,classified_imagenet --- , remove
     axs byquery imagenet_aux,extracted --- , remove
