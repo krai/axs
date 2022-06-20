@@ -32,7 +32,7 @@ def load_image(image_path,            # Full path to processing image
 
     return batch_data, original_width, original_height
 
-def preprocess(coco_images_directory, resolution, supported_extensions, data_type, new_file_extension, file_name, coco_images_version, tags=None, entry_name=None, __record_entry__=None):
+def preprocess(coco_images_directory, resolution, supported_extensions, data_type, new_file_extension, file_name, tags=None, entry_name=None, __record_entry__=None):
     "Go through the selected_filenames and preprocess all the files"
 
     __record_entry__["tags"] = tags or [ "preprocessed", "coco_images" ]
@@ -42,8 +42,6 @@ def preprocess(coco_images_directory, resolution, supported_extensions, data_typ
     output_directory     = __record_entry__.get_path(file_name)
 
     os.makedirs( output_directory )
-
-    coco_images_directory = os.path.join(coco_images_directory, "val" + coco_images_version )
 
     sorted_filenames = [filename for filename in sorted(os.listdir(coco_images_directory)) if any(filename.lower().endswith(extension) for extension in supported_extensions) ]
 
