@@ -77,6 +77,9 @@ Usage examples :
             return self.entry_path
 
         if file_name:
+            if type(file_name)==list:
+                file_name = os.path.sep.join(file_name)
+
             if file_name.startswith(os.path.sep):
                 return file_name
             else:
