@@ -6,5 +6,7 @@
     "tool_query": ["^^", "get", [[ "^^", "case",   [ ["^^", "get", "archive_format"],
                         ["tar", "tgz"], "tar_tool_query",
                         "zip" , "zip_tool_query" ]]] ],
-    "extraction_tool_entry": [ "^", "byquery", [["^^", "get", "tool_query"]], {}, ["tool_query"] ]
+    "extraction_tool_entry": [ "^", "byquery", [["^^", "get", "tool_query"]], {}, ["tool_query"] ],
+    "extra_dir_prefix": "extracted",
+    "file_name": ["^^", "join_paths"]
 }

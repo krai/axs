@@ -15,7 +15,12 @@ def detect_archive_format(archive_path):
         archive_format = 'zip'
     return archive_format
 
-def extract(archive_path, archive_format=None, file_name="extracted", extraction_tool_entry=None, strip_components=0, tags=None, entry_name=None, __record_entry__=None):
+
+def join_paths(extra_dir_prefix="", internal_file_name=""):
+    return os.path.join(extra_dir_prefix, internal_file_name)
+
+
+def extract(archive_path, archive_format=None, extra_dir_prefix=None, file_name=None, extraction_tool_entry=None, strip_components=0, tags=None, entry_name=None, __record_entry__=None):
     """Create a new entry and extract the archive into it
 
 Usage examples:
@@ -44,15 +49,17 @@ Usage examples:
 
     archive_name    = os.path.basename(archive_path)
     __record_entry__["archive_name"] = archive_name
+    __record_entry__["file_name"] = file_name
 
 
     if not entry_name:
         entry_name = 'extracted_' + archive_name
 
     __record_entry__.save( entry_name )
-    target_path     = __record_entry__.get_path(file_name)
+    target_path     = __record_entry__.get_path(extra_dir_prefix)
 
-    os.makedirs( target_path )
+    if extra_dir_prefix:
+        os.makedirs( target_path )
 
     logging.warning(f"The resolved extraction_tool_entry '{extraction_tool_entry.get_name()}' located at '{extraction_tool_entry.get_path()}' uses the shell tool '{extraction_tool_entry['tool_path']}'")
     retval = extraction_tool_entry.call('run', [], {"archive_path": archive_path, "target_path": target_path, "errorize_output": True, "archive_format": archive_format, "strip_components": strip_components})
