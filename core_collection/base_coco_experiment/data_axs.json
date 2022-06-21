@@ -1,0 +1,5 @@
+{
+    "script_output": [ "^^", "load_json", [ [ "^^", "get_path_from", "output_file_name" ] ] ],
+
+    "coco_meta_entry": [ "^", "byquery", "extracted,coco_meta" ]
+}

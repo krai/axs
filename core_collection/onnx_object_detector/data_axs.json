@@ -1,0 +1,80 @@
+{
+    "_parent_entries": [ [ "^", "byname", "python_script" ] ],
+    "_producer_rules": [
+        [ [ "script_output", "detected_coco", "framework=onnx" ], [ "^^", "get", "__entry__" ], "run", { "return_saved_record_entry": true } ]
+    ],
+
+    "num_gpus": [ "^", "execute", [[
+                       [ "byquery", "shell_tool,can_gpu" ],
+                       [ "run" ]
+                ]] ],
+    "python_version": [ "^", "execute", [[
+                             [ "byquery", "shell_tool,can_python" ],
+                             [ "run" ]
+                ]] ],
+    "onnxruntime_name": ["^", "case",[ ["^^", "get", "num_gpus"], "0", "package_name=onnxruntime" ],
+                                     {"default_value": "package_name=onnxruntime-gpu"}, ["num_gpus"]],
+
+    "onnxruntime_query": [ "^^", "case", [ ["^^", "get", "python_version"],
+                                           "Python 3.6.9",
+                                           [ "python_package", ["^^", "get", "onnxruntime_name"], "for_python36" ] ],
+                                        {"default_value": [ "python_package", ["^^", "get", "onnxruntime_name"] ] } ],
+    "python_deps": [
+        [ "^", "byquery", [ [ "^^", "get", "onnxruntime_query" ] ], {}, ["onnxruntime_query"] ]
+    ],
+
+    "model_name": "ssd_resnet34",
+    "model_query": [ "downloaded", "onnx_model", [ "^^", "substitute", "model_name=#{model_name}#" ] ],
+    "model_entry": [ "^", "byquery", [[ "^^", "get", "model_query" ]], {}, ["model_query"] ],
+    "model_path": [ "^^", "execute", [[
+        [ "get", "model_entry" ],
+        [ "get_path" ]
+    ]] ],
+    "model_resolution": [ "^^", "dig", "model_entry.resolution" ],
+
+    "preprocessed_coco_query": [ "preprocessed", "coco_images", [ "^^", "substitute", "resolution=#{model_resolution}#" ], [ "^^", "substitute", "first_n=#{num_of_images}#" ] ],
+    "preprocessed_coco_dir": [ "^", "execute", [[
+        [ "byquery", [[ "^^", "get", "preprocessed_coco_query" ]] ],
+        [ "get_path" ]
+    ]], {}, ["preprocessed_coco_query"] ],
+
+    "coco_labels_file_name": "coco_flatlabels.txt",
+    "output_file_name": "script_output.json",
+    "detections_dir_name": "detections",
+    "framework": "onnx",
+
+    "num_of_images": 20,
+    "max_batch_size": 25,
+    "execution_device": "",
+    "cpu_threads": 0,
+
+    "output_entry": [ "^^", "execute", [[
+        [ "get", "__record_entry__" ],
+        [ "attach", [ "^", "work_collection" ] ],
+        [ "plant", [ "^^", "substitute", [[
+            "_parent_entries", [ "AS^IS", "AS^IS", [ "^", "byname", "base_coco_experiment" ] ],
+            "tags", [ "script_output", "detected_coco" ],
+            "num_of_images", "#{num_of_images}#",
+            "model_name", "#{model_name}#",
+            "framework", "#{framework}#",
+            "detections_dir_name", "#{detections_dir_name}#",
+            "output_file_name", "#{output_file_name}#"
+         ]] ] ],
+         [ "save" ]
+      ]] ],
+
+    "coco_labels_file_path": [ "^^", "get_path_from", "coco_labels_file_name"],
+
+    "detections_dir_path": [ "^^", "execute", [[
+        [ "get", "output_entry" ],
+        [ "get_path_from", "detections_dir_name" ]
+    ]] ],
+    "output_file_path": [ "^^", "execute", [[
+        [ "get", "output_entry" ],
+        [ "get_path_from", "output_file_name" ]
+    ]] ],
+
+    "rel_script_path": "onnx_detect.py",
+
+    "script_extra_params": [ "^^", "substitute", "\"#{model_name}#\" \"#{model_path}#\" \"#{preprocessed_coco_dir}#\" #{num_of_images}# #{max_batch_size}# \"#{execution_device}#\" #{cpu_threads}# \"#{coco_labels_file_path}#\" \"#{detections_dir_path}#\" \"#{output_file_path}#\"" ]
+}
