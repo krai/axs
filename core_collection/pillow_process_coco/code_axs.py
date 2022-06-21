@@ -32,14 +32,16 @@ def load_image(image_path,            # Full path to processing image
 
     return batch_data, original_width, original_height
 
-def preprocess(coco_images_directory, resolution, supported_extensions, data_type, new_file_extension, file_name,  fof_name, tags=None, entry_name=None, __record_entry__=None):
+
+def preprocess(coco_images_directory, resolution, supported_extensions, data_type, new_file_extension, file_name,  fof_name, first_n=None, tags=None, entry_name=None, __record_entry__=None):
     "Go through the selected_filenames and preprocess all the files"
 
     output_signatures = []
 
     __record_entry__["tags"] = tags or [ "preprocessed", "coco_images" ]
     if not entry_name:
-        entry_name = f'pillow_sq.{resolution}_cropped_resized_coco_images'
+        first_n_insert = f'first.{first_n}_' if first_n else ''
+        entry_name = f'pillow_sq.{resolution}_cropped_resized_{first_n_insert}coco_images'
     __record_entry__.save( entry_name )
     output_directory     = __record_entry__.get_path(file_name)
 
@@ -47,7 +49,9 @@ def preprocess(coco_images_directory, resolution, supported_extensions, data_typ
 
     sorted_filenames = [filename for filename in sorted(os.listdir(coco_images_directory)) if any(filename.lower().endswith(extension) for extension in supported_extensions) ]
 
-    for current_idx, input_filename in enumerate(sorted_filenames):
+    selected_filenames = sorted_filenames[:first_n] if first_n is not None else sorted_filenames
+
+    for current_idx, input_filename in enumerate(selected_filenames):
 
         full_input_path     = os.path.join(coco_images_directory, input_filename)
 

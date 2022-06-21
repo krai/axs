@@ -36,5 +36,6 @@
     "data_type":            "uint8",
     "new_file_extension":   "rgb8",
     "file_name":            "preprocessed",
-    "fof_name":             "original_dimensions.txt"
+    "fof_name":             "original_dimensions.txt",
+    "first_n":              null
 }
