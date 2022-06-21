@@ -4,7 +4,8 @@
             "url": "https://zenodo.org/record/3228411/files/resnet34-ssd1200.onnx",
             "md5": "b70fc6c72bc9349981f3b1258f31bc87",
             "normalize_data_bool": "True",
-            "given_channel_means": "[0.485, 0.456, 0.406]"
+            "given_channel_means": "[0.485, 0.456, 0.406]",
+            "resolution": 1200
         } ]
     ]
 }
