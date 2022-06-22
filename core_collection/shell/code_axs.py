@@ -5,14 +5,18 @@
 """
 
 import logging
+import os
 import subprocess
 import sys
 
-def run(shell_cmd, env=None, capture_output=False, errorize_output=False, split_to_lines=False, return_saved_record_entry=False, __record_entry__=None):
+def run(shell_cmd, env=None, in_dir=None, capture_output=False, errorize_output=False, split_to_lines=False, return_saved_record_entry=False, __record_entry__=None):
     """Run the given shell command in the given environment
 
 Usage examples:
             axs byname shell , run 'echo This is a test.'
+
+    # execute a shell command in a specific directory:
+            axs work_collection , in_dir: get_path , , byname shell , run 'ls -l'
 
     # dynamically create a tool and use it:
             axs fresh_entry , plant _parent_entries --,:=AS^IS:^:byname:shell , plant tool_path --:=^^:which:wget , plant shell_cmd '--:=AS^IS:^^:substitute:#{tool_path}# -O #{target_path}# #{url}#' , run --url=https://example.com --target_path=example.html
@@ -25,7 +29,11 @@ Usage examples:
     if type(shell_cmd)==list:   # making sure all components are strings
         shell_cmd = [str(x) for x in shell_cmd]
 
-    logging.warning(f"shell.run() about to execute (with env={env}, capture_output={capture_output}, errorize_output={errorize_output}, split_to_lines={split_to_lines}):\n\t{shell_cmd}\n" + (' '*8 + '^'*len(shell_cmd)) )
+    logging.warning(f"shell.run() about to execute (with env={env}, in_dir={in_dir}, capture_output={capture_output}, errorize_output={errorize_output}, split_to_lines={split_to_lines}):\n\t{shell_cmd}\n" + (' '*8 + '^'*len(shell_cmd)) )
+
+    if in_dir:
+        prev_dir = os.getcwd()
+        os.chdir( in_dir )
 
     if capture_output:
         stdout_target = subprocess.PIPE
@@ -35,6 +43,9 @@ Usage examples:
         stdout_target = None
 
     completed_process = subprocess.run(shell_cmd, shell = (type(shell_cmd)!=list), env=env, stdout=stdout_target)
+
+    if in_dir:
+        os.chdir( prev_dir )
 
     if capture_output:
         output  = completed_process.stdout.decode('utf-8').rstrip()
