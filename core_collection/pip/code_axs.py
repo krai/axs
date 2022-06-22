@@ -8,7 +8,7 @@ import os
 import sys
 
 
-def install(package_name, package_version=None, pip_options=None, tool_entry=None, tags=None, entry_name=None, __record_entry__=None):
+def install(package_name, package_version=None, pip_options=None, installable=None, tool_entry=None, tags=None, entry_name=None, __record_entry__=None):
     """Install a pip package into a separate entry, so that it could be easily use'd.
 
 Usage examples :
@@ -19,6 +19,11 @@ Usage examples :
                 axs byname pip , install scipy 1.5.1 --pip_options,=no-deps --tags,=python_package,no_deps
 
                 axs byname pip , install --package_name=torchvision --package_version=0.11.1+cu113 --pip_options="torch==1.10.0+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html"
+
+            # building a wheel file:
+                axs byquery git_repo,repo_name=mlperf_inference_git , in_dir: get_path loadgen , , byname python_script , run --abs_script_path=setup.py --script_extra_params=bdist_wheel --env,::=CC:/usr/bin/gcc,CFLAGS:-std=c++14
+            # installing from a wheel file:
+                axs byname pip , install mlperf_loadgen 1.1 --installable=$HOME/work_collection/mlperf_inference_git/loadgen/dist/mlperf_loadgen-1.1-cp36-cp36m-macosx_10_9_x86_64.whl
     """
 
     rel_install_dir = 'install'
@@ -48,6 +53,8 @@ Usage examples :
     os.symlink( 'lib', os.path.join(extra_python_site_dir, 'lib64') )
 
     version_suffix_cmd  = f"=={package_version}" if package_version is not None else ''
+    installable = installable or package_name + version_suffix_cmd
+
     if pip_options:
         if type(pip_options)==dict:
             pip_options = [ k+'='+pip_options[k] for k in pip_options ]
@@ -59,7 +66,7 @@ Usage examples :
         pip_options=''
 
     tool_entry.call('run', [], {
-        "shell_cmd": [ "^^", "substitute", "#{tool_path}#"+f" -m pip install {package_name}{version_suffix_cmd} --prefix={extra_python_site_dir} --ignore-installed {pip_options}" ],
+        "shell_cmd": [ "^^", "substitute", "#{tool_path}#"+f" -m pip install {installable} --prefix={extra_python_site_dir} --ignore-installed {pip_options}" ],
         "capture_output": False,
         "errorize_output": True,
     } )
