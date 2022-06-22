@@ -24,7 +24,7 @@ Usage examples :
         return None
 
 
-def clone(name=None, url=None, git_tool_entry=None, container_entry=None, tags=None, __entry__=None):
+def clone(name=None, url=None, git_tool_entry=None, container_entry=None, checkout=None, tags=None, __entry__=None):
     """Clone a git repository into an Entry,
 
 Usage examples :
@@ -42,9 +42,14 @@ Clean-up:
     assert ak != None, "__entry__'s kernel should be defined"
 
     container_path  = container_entry.get_path('')
+    entry_path      = container_entry.get_path(name)
     tool_path       = git_tool_entry["tool_path"]
     git_tool_entry.call('run', f"\"{tool_path}\" -C \"{container_path}\" clone {url} {name}" )
-    result_entry            = ak.bypath( container_entry.get_path(name) )   # "discover" the Entry after cloning, then either create or augment the data
+
+    if checkout:
+        git_tool_entry.call('run', f"\"{tool_path}\" -C \"{entry_path}\" checkout \"{checkout}\"" )
+
+    result_entry            = ak.bypath( entry_path )   # "discover" the Entry after cloning, then either create or augment the data
     result_entry['name']    = name
     result_entry['tags']    = tags or [ 'git_repo' ]
     result_entry.attach( container_entry ).save()
