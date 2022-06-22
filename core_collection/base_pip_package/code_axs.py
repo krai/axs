@@ -10,8 +10,8 @@ def use(abs_packages_dir):
     """Make an entry that contains an installed pip package the preferred location to import the package from.
 
 Usage examples :
-                axs byname numpy_1.16.4_pip_package , use , python_api 'import numpy\nprint(numpy.__version__)'
-                axs np: byname numpy_1.16.4_pip_package , use , get np , ask_package_location
+                axs byname numpy_1.16.4_pip_package , use , , python_api 'import numpy\nprint(numpy.__version__)'
+                axs np: byname numpy_1.16.4_pip_package , use , , get np , ask_package_location
     """
     sys.path.insert(0, abs_packages_dir)
     return abs_packages_dir
@@ -89,9 +89,9 @@ def ask_package_version(package_name):
         This could work both with a use'd or the one importable by default.
 
 Usage examples :
-                axs np: byname numpy_1.16.4_pip_package , use , get np , ask_package_version
+                axs np: byname numpy_1.16.4_pip_package , use , , get np , ask_package_version
 
-                axs gen: byname base_pip_package , use $HOME/CK-TOOLS/lib-python-onnx-compiler.python-3.6.8-precompiled-macos-64/build , get gen , ask_package_version onnx
+                axs gen: byname base_pip_package , use $HOME/CK-TOOLS/lib-python-onnx-compiler.python-3.6.8-precompiled-macos-64/build , , get gen , ask_package_version onnx
                 
                 axs byname base_pip_package , ask_package_version numpy
     """
@@ -104,7 +104,7 @@ def ask_package_location(package_name):
         This could work both with a use'd or the one importable by default.
 
 Usage examples :
-                axs np: byname numpy_1.16.4_pip_package , use , get np , ask_package_location
+                axs np: byname numpy_1.16.4_pip_package , use , , get np , ask_package_location
 
                 axs byname base_pip_package , ask_package_location numpy
     """
