@@ -24,7 +24,7 @@ Usage examples :
         return None
 
 
-def clone(repo_name=None, url=None, git_tool_entry=None, container_entry=None, checkout=None, tags=None, __entry__=None):
+def clone(repo_name=None, url=None, git_tool_entry=None, container_entry=None, clone_options=None, checkout=None, tags=None, __entry__=None):
     """Clone a git repository into an Entry,
 
 Usage examples :
@@ -44,7 +44,7 @@ Clean-up:
     container_path  = container_entry.get_path('')
     entry_path      = container_entry.get_path( repo_name )
     tool_path       = git_tool_entry["tool_path"]
-    git_tool_entry.call('run', f"\"{tool_path}\" -C \"{container_path}\" clone {url} {repo_name}" )
+    git_tool_entry.call('run', f"\"{tool_path}\" -C \"{container_path}\" clone {clone_options or ''} {url} {repo_name}" )
 
     if checkout:
         git_tool_entry.call('run', f"\"{tool_path}\" -C \"{entry_path}\" checkout \"{checkout}\"" )
