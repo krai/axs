@@ -33,6 +33,7 @@
         "coco_images_recipe": "coco_images_recipe",
         "pillow_process_coco": "pillow_process_coco",
         "onnx_object_detector": "onnx_object_detector",
-        "base_coco_experiment": "base_coco_experiment"
+        "base_coco_experiment": "base_coco_experiment",
+        "mlperf_inference_git_recipe": "mlperf_inference_git_recipe"
     }
 }
