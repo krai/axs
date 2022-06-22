@@ -11,28 +11,28 @@ def url_2_repo_name(url=None):
     """Cut the repo_name out of the URL, if given.
 
 Usage examples :
-                axs byname git , get name --url=https://hello.world/repo/long_name.git
-                axs byname git , get url --name=short_name
+                axs byname git , get repo_name --url=https://hello.world/repo/long_name.git
+                axs byname git , get url --repo_name=short_name
     """
     if url:
-        name = os.path.basename( url )
-        if name.endswith('.git'):
-            name = name[:-4]        # trim it off
+        repo_name = os.path.basename( url )
+        if repo_name.endswith('.git'):
+            repo_name = repo_name[:-4]          # trim it off
 
-        return name
+        return repo_name
     else:
         return None
 
 
-def clone(name=None, url=None, git_tool_entry=None, container_entry=None, checkout=None, tags=None, __entry__=None):
+def clone(repo_name=None, url=None, git_tool_entry=None, container_entry=None, checkout=None, tags=None, __entry__=None):
     """Clone a git repository into an Entry,
 
 Usage examples :
-                axs byname git , clone --name=counting_collection
+                axs byname git , clone --repo_name=counting_collection
             # or
                 axs byname git , clone --url=https://github.com/user_x/counting_collection
             # or
-                axs byquery git_repo,name=counting_collection
+                axs byquery git_repo,repo_name=counting_collection
 Clean-up:
                 axs byname counting_collection , remove
     """
@@ -42,16 +42,16 @@ Clean-up:
     assert ak != None, "__entry__'s kernel should be defined"
 
     container_path  = container_entry.get_path('')
-    entry_path      = container_entry.get_path(name)
+    entry_path      = container_entry.get_path( repo_name )
     tool_path       = git_tool_entry["tool_path"]
-    git_tool_entry.call('run', f"\"{tool_path}\" -C \"{container_path}\" clone {url} {name}" )
+    git_tool_entry.call('run', f"\"{tool_path}\" -C \"{container_path}\" clone {url} {repo_name}" )
 
     if checkout:
         git_tool_entry.call('run', f"\"{tool_path}\" -C \"{entry_path}\" checkout \"{checkout}\"" )
 
-    result_entry            = ak.bypath( entry_path )   # "discover" the Entry after cloning, then either create or augment the data
-    result_entry['name']    = name
-    result_entry['tags']    = tags or [ 'git_repo' ]
+    result_entry                = ak.bypath( entry_path )   # "discover" the Entry after cloning, then either create or augment the data
+    result_entry['repo_name']   = repo_name
+    result_entry['tags']        = tags or [ 'git_repo' ]
     result_entry.attach( container_entry ).save()
 
     return result_entry
