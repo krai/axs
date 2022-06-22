@@ -1,4 +1,7 @@
 {
+    "tags": [
+        "collection"
+    ],
     "contained_entries": {
         "shell": "shell",
         "git": "git",

@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.155'     # TODO: update with every kernel change
+__version__ = '0.2.156'     # TODO: update with every kernel change
 
 import logging
 import os
@@ -159,6 +159,7 @@ Usage examples :
             print(f"Creating new empty work_collection at {work_collection_path}...")
             work_collection_data = {
                 self.PARAMNAME_parent_entries: [[ "^", "core_collection" ]],
+                "tags": [ "collection" ]
             }
             work_collection_object = self.bypath(work_collection_path, name="work_collection", own_data=work_collection_data)
             work_collection_object.call('add_entry_path', [ self.kernel_path( 'core_collection' ) ] )

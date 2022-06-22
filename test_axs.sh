@@ -59,10 +59,10 @@ axs bypath granddad , remove
 assert_end entry_creation_multiple_inheritance_and_removal
 
 #axs byname git , clone --name=counting_collection
-axs byquery git_repo,name=counting_collection
+axs byquery git_repo,collection,name=counting_collection
 export REPO_DIG_OUTPUT=`axs byname French , dig number_mapping.5`
 assert "echo $REPO_DIG_OUTPUT" 'cinq'
-axs byquery git_repo,name=counting_collection , pull
+axs byquery git_repo,collection,name=counting_collection , pull
 axs byname counting_collection , remove
 axs byquery shell_tool,can_git --- , remove
 assert_end git_cloning_collection_access_and_removal
