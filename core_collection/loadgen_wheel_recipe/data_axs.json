@@ -17,7 +17,10 @@
     ]] ],
 
     "env": {
-        "CC": "/usr/bin/gcc",
+        "CC": [ "^", "execute", [[
+            [ "byquery", "shell_tool,can_compile_c" ],
+            [ "get", "tool_path" ]
+        ]] ],
         "CFLAGS": "-std=c++14"
     },
     "in_dir": [ "^", "execute", [[
