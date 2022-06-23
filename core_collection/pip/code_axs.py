@@ -20,8 +20,6 @@ Usage examples :
 
                 axs byname pip , install --package_name=torchvision --package_version=0.11.1+cu113 --pip_options="torch==1.10.0+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html"
 
-            # building a wheel file:
-                axs byquery git_repo,repo_name=mlperf_inference_git , in_dir: get_path loadgen , , byname python_script , run --abs_script_path=setup.py --script_extra_params=bdist_wheel --env,::=CC:/usr/bin/gcc,CFLAGS:-std=c++14
             # installing from a wheel file:
                 axs byname pip , install mlperf_loadgen 1.1 --installable=$HOME/work_collection/mlperf_inference_git/loadgen/dist/mlperf_loadgen-1.1-cp36-cp36m-macosx_10_9_x86_64.whl
     """
