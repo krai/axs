@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import shutil
+import sys
 import uuid
 
 from runnable import Runnable
@@ -190,7 +191,13 @@ Usage examples :
         """Load a data structure from given JSON file.
         """
         with open( json_file_path, encoding='utf-8' ) as json_fd:
-            return json.load(json_fd)
+            try:
+                data_structure = json.load(json_fd)
+            except json.decoder.JSONDecodeError as e:
+                print(f'Error parsing "{json_file_path}" : {e}', file=sys.stderr)
+                data_structure = {}
+
+            return data_structure
 
 
     def own_data(self, data_dict=None):
