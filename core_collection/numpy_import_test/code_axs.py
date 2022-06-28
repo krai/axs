@@ -14,11 +14,12 @@ Usage examples:
 
 import numpy as np
 import PIL
+import local_import     # testing an import inside the entry
 
 def deps_versions():
     """Reports the versions of currently used python dependencies.
     """
-    return f"numpy=={np.__version__}, pillow=={PIL.__version__}"
+    return local_import.external_deps_versions()
 
 
 def multiply(a, b, c, d, e, f):

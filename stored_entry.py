@@ -248,7 +248,9 @@ Usage examples :
                 else:
                     self.own_functions_cache = False    # to avoid infinite recursion
                     self.touch('_BEFORE_CODE_LOADING')
+                    sys.path.insert( 0, entry_path )    # allow (and prefer) code imports local to the entry
                     self.own_functions_cache = imp.load_module(path_to_module, open_file_descriptor, path_to_module, module_description) or False
+                    sys.path.pop( 0 )                   # /allow (and prefer) code imports local to the entry
 
             else:
                 logging.debug(f"[{self.get_name()}] The entry does not have a path, so no functions either")
