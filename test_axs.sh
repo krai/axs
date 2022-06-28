@@ -160,8 +160,8 @@ if [ "$PYTORCH_CLASSIFY" == "on" ] || [ "$ONNX_CLASSIFY" == "on" ] || [ "$TF_CLA
     axs byquery python_package,package_name=numpy --- , remove
 
     axs byquery script_output,classified_imagenet --- , remove
-    axs byquery imagenet_aux,extracted --- , remove
-    axs byquery imagenet_aux,downloaded --- , remove
+    axs byquery imagenet_annotation,extracted --- , remove
+    axs byquery imagenet_annotation,downloaded --- , remove
 
     axs byquery extracted,archive_name=ILSVRC2012_img_val_500.tar --- , remove
 

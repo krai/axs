@@ -2,7 +2,7 @@
     "script_output": [ "^^", "load_json", [ [ "^^", "get_path_from", "output_file_name" ] ] ],
     "postprocess_output": [ "^^", "load_json", [ [ "^^", "get_path_from", "postprocess_file_name" ] ] ],
 
-    "coco_meta_entry": [ "^", "byquery", "extracted,coco_meta" ],
+    "coco_annotation_entry": [ "^", "byquery", "extracted,coco_annotation" ],
 
     "_producer_rules": [
         [ [ "script_output", "postprocess_coco" ], [ "^^", "get", "__entry__" ], "run", { "return_saved_record_entry": true } ]
@@ -22,7 +22,7 @@
     "times_file_path": [ "^^", "get_path", "script_output.json"],
     "detections_dir_path": [ "^^", "get_path", "detections" ],
     "annotations_dir": [ "^", "execute", [[
-        ["byquery", "extracted,coco_meta"],
+        ["byquery", "extracted,coco_annotation"],
         ["get_path", [["annotations", "instances_val2017.json"]]]
     ]] ],
     "preprocessed_files": [ "^", "execute", [[
