@@ -3,6 +3,7 @@
 import os
 import json
 import sys
+import math
 from time import time
 
 import numpy as np
@@ -106,9 +107,8 @@ for line in image_list:
     original_w_h.append( (int(width), int(height)) )
 
 
-def load_image_by_index_and_normalize(image_index):
-    img_file = os.path.join(preprocessed_coco_dir, image_filenames[image_index])
-    img = np.fromfile(img_file, np.dtype(IMAGE_DATA_TYPE))
+def load_image_by_index_and_normalize(image_filename):
+    img = np.fromfile(image_filename, np.dtype(IMAGE_DATA_TYPE))
     img = img.reshape((MODEL_IMAGE_HEIGHT, MODEL_IMAGE_WIDTH, MODEL_IMAGE_CHANNELS))
     if MODEL_COLOURS_BGR:
         img = img[...,::-1]     # swapping Red and Blue colour channels
@@ -142,27 +142,25 @@ def load_image_by_index_and_normalize(image_index):
     return img.astype(MODEL_INPUT_DATA_TYPE)
 
 
-def load_preprocessed_batch(image_list, image_index):
+def load_preprocessed_batch(batch_filenames):
     batch_data = None
-    for in_batch_idx in range(BATCH_SIZE):
-        img = load_image_by_index_and_normalize(image_index)
+    for index_in_batch, image_filename in enumerate(batch_filenames):
+        img = load_image_by_index_and_normalize(image_filename)
         if batch_data is None:
-            batch_data = np.empty( (BATCH_SIZE, *img.shape), dtype=MODEL_INPUT_DATA_TYPE)
-        batch_data[in_batch_idx] = img
-        image_index += 1
+            batch_data = np.empty( (max_batch_size, *img.shape), dtype=MODEL_INPUT_DATA_TYPE)
+        batch_data[index_in_batch] = img
 
     #print('Data shape: {}'.format(batch_data.shape))
 
     if MODEL_USE_DLA and MODEL_MAX_BATCH_SIZE>len(batch_data):
-        return np.pad(batch_data, ((0,MODEL_MAX_BATCH_SIZE-len(batch_data)), (0,0), (0,0), (0,0)), 'constant'), image_index
+        return np.pad(batch_data, ((0,MODEL_MAX_BATCH_SIZE-len(batch_data)), (0,0), (0,0), (0,0)), 'constant')
     else:
-        return batch_data, image_index
-
+        return batch_data
 
 
 
 def main():
-    global INPUT_LAYER_NAME
+    global INPUT_LAYER_NAME, max_batch_size
 
     ts_before_model_loading = time()
 
@@ -218,8 +216,8 @@ def main():
 
     try:
         expected_batch_size = int(model_input_shape[0])
-        if BATCH_SIZE!=expected_batch_size:
-            raise Exception("expected_batch_size={}, desired CK_BATCH_SIZE={}, they do not match - exiting.".format(expected_batch_size, BATCH_SIZE))
+        if max_batch_size!=expected_batch_size:
+            raise Exception(f"expected_batch_size={expected_batch_size}, desired max_batch_size={max_batch_size}, they do not match - exiting.")
     except ValueError:
         max_batch_size = None
 
@@ -229,19 +227,25 @@ def main():
     images_loaded           = 0
     next_batch_offset       = 0
 
+    batch_count             = math.ceil(num_of_images / max_batch_size)
+    batch_num               = 0
+
     sum_loading_s           = 0
     sum_inference_s         = 0
     list_batch_loading_s    = []
     list_batch_inference_s  = []
 
-    for batch_index in range(BATCH_COUNT):
-        batch_number = batch_index+1
+    for batch_start in range(0, num_of_images, max_batch_size):
+        batch_num = batch_num + 1
+        batch_open_end = min(batch_start+max_batch_size, num_of_images)
 
         ts_before_data_loading  = time()
 
-        current_batch_offset = next_batch_offset
-        batch_data, next_batch_offset = load_preprocessed_batch(image_filenames, current_batch_offset)
-        images_loaded += BATCH_SIZE
+        batch_global_indices = range(batch_start, batch_open_end)
+        batch_filenames      = [ os.path.join(preprocessed_coco_dir, image_filenames[g]) for g in batch_global_indices ]
+
+        batch_data           = load_preprocessed_batch(batch_filenames)
+        images_loaded       += batch_open_end - batch_start
 
         ts_before_inference = time()
 
@@ -258,11 +262,10 @@ def main():
         sum_inference_s    += batch_inference_s
 
         print("[batch {} of {}] loading={:.2f} ms, inference={:.2f} ms".format(
-            batch_number, BATCH_COUNT, batch_loading_s*1000, batch_inference_s*1000))
+            batch_num, batch_count, batch_loading_s*1000, batch_inference_s*1000))
 
         # Process results
-        for index_in_batch in range(BATCH_SIZE):
-            global_image_index = current_batch_offset + index_in_batch
+        for index_in_batch, global_image_index in enumerate(batch_global_indices):
             width_orig, height_orig = original_w_h[global_image_index]
 
             filename_orig = image_filenames[global_image_index]

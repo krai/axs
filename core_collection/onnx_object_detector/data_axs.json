@@ -44,7 +44,7 @@
     "framework": "onnx",
 
     "num_of_images": 20,
-    "max_batch_size": 25,
+    "max_batch_size": 1,
     "execution_device": "",
     "cpu_threads": 0,
 
