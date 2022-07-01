@@ -19,7 +19,7 @@ def ext_use_python_deps(python_deps=None, inherit_env_keys=None):
             new_env[env_key]    = os.environ[env_key]
 
     if python_deps:     # Note the OS-independent way of joining individual paths
-        new_env['PYTHONPATH']   = os.pathsep.join( [ dep['abs_packages_dir'] for dep in python_deps ] )
+        new_env['PYTHONPATH']   = os.pathsep.join( [ dep.get('abs_packages_dir') or dep.get_path(dep.get('file_name')) for dep in python_deps ] )
 
     if os.getenv('LD_LIBRARY_PATH') is not None:
         new_env['LD_LIBRARY_PATH']  = os.environ['LD_LIBRARY_PATH']
