@@ -5,11 +5,14 @@ import sys
 
 print(f"\n**\nRUNNING {__file__} under {sys.executable} with sys.path={sys.path}\n**\n", file=sys.stderr)
 
-import tensorflow as tf
-import numpy as np
-from time import time
 import json
 import math
+from time import time
+
+import numpy as np
+import tensorflow as tf
+from imagenet_loader import ImagenetLoader
+
 
 model_name                  = sys.argv[1]
 model_path                  = sys.argv[2]
@@ -21,12 +24,14 @@ output_file_path            = sys.argv[7]
 top_n_max                   = int(sys.argv[8])
 
 batch_count                 = math.ceil(num_of_images / max_batch_size)
-file_pattern                = 'ILSVRC2012_val_000{:05d}.rgb8'
-data_layout                 = "NHWC"
 input_layer_name            = "input"
 output_layer_name           = "MobilenetV2/Predictions/Reshape_1"
 normalize_data_bool         = True
 subtract_mean_bool          = False
+given_channel_means         = []
+data_layout                 = "NHWC"
+
+loader_object               = ImagenetLoader(preprocessed_imagenet_dir, resolution, resolution, normalize_data_bool, subtract_mean_bool, given_channel_means, data_layout)
 
 
 def load_graph(model_path):
@@ -42,47 +47,6 @@ def load_graph(model_path):
         tf.import_graph_def(graph_def, name="")
 
     return graph
-
-
-def load_preprocessed_and_normalize(image_filepath, height, width):
-    img_rgb8 = np.fromfile(image_filepath, np.uint8)
-    img_rgb8 = img_rgb8.reshape((height, width, 3))
-
-    input_data = np.float32(img_rgb8)
-
-    # Normalize
-    if normalize_data_bool:
-        input_data = input_data/127.5 - 1.0
-
-    # Subtract mean value
-    if subtract_mean_bool:
-        if len(given_channel_means):
-            input_data -= given_channel_means
-        else:
-            input_data -= np.mean(input_data)
-
-#    print(np.array(img_rgb8).shape)
-    nhwc_data = np.expand_dims(input_data, axis=0)
-
-    if data_layout == 'NHWC':
-        # print(nhwc_data.shape)
-        return nhwc_data
-    else:
-        nchw_data = nhwc_data.transpose(0,3,1,2)
-        # print(nchw_data.shape)
-        return nchw_data
-
-
-def load_a_batch(batch_filenames):
-    unconcatenated_batch_data = []
-    for image_filename in batch_filenames:
-        image_filepath = os.path.join( preprocessed_imagenet_dir, image_filename )
-        nchw_data = load_preprocessed_and_normalize( image_filepath, resolution, resolution )
-        unconcatenated_batch_data.append( nchw_data )
-    batch_data = np.concatenate(unconcatenated_batch_data, axis=0)
-
-    return batch_data
-
 
 
 # Prepare TF config options
@@ -133,14 +97,14 @@ batch_num               = 0
 with tf.compat.v1.Session(graph=graph, config=config) as sess:
 
     for batch_start in range(0, num_of_images, max_batch_size):
-        batch_num = batch_num + 1
-        batch_open_end = min(batch_start+max_batch_size, num_of_images)
 
         ts_before_data_loading  = time()
 
+        batch_num           = batch_num + 1
+        batch_open_end      = min(batch_start+max_batch_size, num_of_images)
         batch_global_indices = range(batch_start, batch_open_end)
-        batch_filenames     = [ file_pattern.format(g+1) for g in batch_global_indices ]
-        batch_data          = load_a_batch( batch_filenames )
+        batch_filenames     = loader_object.generate_batch_filenames( batch_global_indices )
+        batch_data          = loader_object.load_a_batch( batch_filenames )
 
         ts_before_inference = time()
 

@@ -11,7 +11,8 @@
 
     "tf_query": [ "python_package", "package_name=tensorflow" ],
     "python_deps": [
-        [ "^", "byquery", [ [ "^^", "get", "tf_query" ] ], {}, ["tf_query"] ]
+        [ "^", "byquery", [ [ "^^", "get", "tf_query" ] ], {}, ["tf_query"] ],
+        [ "^", "byname", "preprocessed_imagenet_loader" ]
     ],
 
     "model_name": "mobilenet_v2",

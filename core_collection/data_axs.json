@@ -36,6 +36,7 @@
         "base_coco_experiment": "base_coco_experiment",
         "mlperf_inference_git_recipe": "mlperf_inference_git_recipe",
         "loadgen_example": "loadgen_example",
-        "loadgen_wheel_recipe": "loadgen_wheel_recipe"
+        "loadgen_wheel_recipe": "loadgen_wheel_recipe",
+        "preprocessed_imagenet_loader": "preprocessed_imagenet_loader"
     }
 }
