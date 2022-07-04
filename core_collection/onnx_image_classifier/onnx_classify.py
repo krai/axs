@@ -129,11 +129,10 @@ for batch_start in range(0, num_of_images, max_batch_size):
 
     ts_before_data_loading  = time()
 
-    batch_num           = batch_num + 1
-    batch_open_end      = min(batch_start+max_batch_size, num_of_images)
-    batch_global_indices = range(batch_start, batch_open_end)
-    batch_filenames     = loader_object.generate_batch_filenames( batch_global_indices )
-    batch_data          = loader_object.load_a_batch( batch_filenames )
+    batch_num                   = batch_num + 1
+    batch_open_end              = min(batch_start+max_batch_size, num_of_images)
+    batch_global_indices        = range(batch_start, batch_open_end)
+    batch_data, batch_filenames = loader_object.load_preprocessed_batch_from_indices( batch_global_indices )
 
     ts_before_inference = time()
 
