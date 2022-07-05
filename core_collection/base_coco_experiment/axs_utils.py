@@ -4,31 +4,6 @@ import os
 import re
 import shutil
 
-KITTI = 'kitti'
-COCO = 'coco'
-OID = 'openimages'
-
-# This is only used for METRIC_TYPE
-COCO_TF = 'coco_tf'
-
-# KITTI classes are taken from
-# https://github.com/tensorflow/models/blob/master/research/object_detection/data/kitti_label_map.pbtxt
-# and only contain two classes - 'pedestrian' and 'car'.
-KITTI_CLASSES = {
-  "pedestrian": 1,
-  "car": 2,
-}
-
-KITTI2COCO = {
-  "1": [1, "person", "person"],
-  "2": [3, "car", "vehicle"]
-}
-
-COCO2KITTI = {
-  "1": [1, "pedestrian"],
-  "3": [2, "car"]
-}
-
 def prepare_dir(dir_path):
   '''
   Recreate a directory
@@ -83,7 +58,7 @@ class Groundtruth:
     self.y2 = float(splitted[7])
 
 
-def filename_to_id(file_name, dataset_type):
+def filename_to_id(file_name):
   '''
   Returns identitifer of image in dataset.
 
@@ -92,25 +67,13 @@ def filename_to_id(file_name, dataset_type):
   '''
   short_name = os.path.splitext(file_name)[0]
 
-  # In KITTI dataset image identifies by its name
-  if dataset_type == KITTI:
-    return int(short_name)
-
   # In COCO dataset ID is a number which is a part of filename
-  if dataset_type == COCO:
     # COCO 2017: 000000000139.jpg
     # COCO 2014: COCO_val2014_000000000042.jpg
-    if short_name[0] == '0':
-      return int(short_name)
-    else:
-      return int(re.split(r'_', short_name)[2])
-
-  # In OpenImages dataset image identifies by its name
-  if dataset_type == OID:
-    return short_name
-
-  raise ValueError('Unknown datase type {}'.format(dataset_type))  
-
+  if short_name[0] == '0':
+    return int(short_name)
+  else:
+    return int(re.split(r'_', short_name)[2])
 
 def print_header(s):
   print('\n' + '*'*80)

@@ -5,18 +5,12 @@ import json
 import sys
 from time import time
 
-sys.path.append( os.path.dirname(__file__) )
-print(f"\n**\nRUNNING {__file__} under {sys.executable} with sys.path={sys.path}\n**\n", file=sys.stderr)
-
 import axs_utils
 import converter_results
 import calc_metrics_coco_pycocotools
 
 def postprocess(num_of_images, detections_dir_path, postprocess_file_path, annotations_dir, results_out_dir, preprocessed_files, times_file_path):
 
-  MODEL_DATASET_TYPE    = 'coco'
-  DATASET_TYPE          = 'coco' 
-  METRIC_TYPE           = 'coco' 
   FULL_REPORT           = True
 
   axs_utils.prepare_dir(results_out_dir)
@@ -25,15 +19,12 @@ def postprocess(num_of_images, detections_dir_path, postprocess_file_path, annot
 
     # Convert detection results from our universal text format
     # to a format specific for a tool that will calculate metrics
-    print('\nConvert results to {} ...'.format(METRIC_TYPE))
+    print('\nConvert results to {} ...'.format('coco'))
     results = converter_results.convert(detections_dir_path, 
-                                        results_out_dir,
-                                        DATASET_TYPE,
-                                        MODEL_DATASET_TYPE,
-                                        METRIC_TYPE)
+                                        results_out_dir)
 
     # Run evaluation tool
-    print('\nEvaluate metrics as {} ...'.format(METRIC_TYPE))
+    print('\nEvaluate metrics as {} ...'.format('coco'))
     mAP, recall, all_metrics = calc_metrics_coco_pycocotools.evaluate(processed_image_ids, results, annotations_dir)
 
     OPENME['mAP'] = mAP
@@ -47,7 +38,7 @@ def postprocess(num_of_images, detections_dir_path, postprocess_file_path, annot
   with open(preprocessed_files, 'r') as f:
     processed_image_filenames = [x.split(';')[0] for x in f.readlines()]
 
-  processed_image_ids = [ axs_utils.filename_to_id(image_filename, DATASET_TYPE) for image_filename in processed_image_filenames ]
+  processed_image_ids = [ axs_utils.filename_to_id(image_filename) for image_filename in processed_image_filenames ]
 
   if os.path.isfile(times_file_path):
     with open(times_file_path, 'r') as f:
