@@ -5,12 +5,12 @@
 
     "ground_truth_path": [ "^", "execute", [[
         [ "get", "imagenet_annotation_entry" ],
-        [ "get_path", "extracted/val.txt" ]
+        [ "get_path", [["extracted", "val.txt"]] ]
     ]], {}, ["imagenet_annotation_entry"] ],
 
     "class_names_path": [ "^", "execute", [[
         [ "get", "imagenet_annotation_entry" ],
-        [ "get_path", "extracted/synset_words.txt" ]
+        [ "get_path", [["extracted", "synset_words.txt"]] ]
     ]], {}, ["imagenet_annotation_entry"] ],
 
     "ground_truth": [ "^^", "load_ground_truth" ],
