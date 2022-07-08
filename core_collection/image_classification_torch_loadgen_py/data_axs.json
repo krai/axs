@@ -25,6 +25,7 @@
     ],
 
     "model_name": "resnet50",
+    "batch_size": 1,
     "framework": "pytorch",
     "verbosity": 2,
 
@@ -64,5 +65,5 @@
     ]] ],
     "rel_script_path": "torch_loadgen_classifier.py",
 
-    "script_extra_params": [ "^^", "substitute", "\"#{loadgen_scenario}#\" \"#{loadgen_mode}#\" #{loadgen_dataset_size}# #{loadgen_buffer_size}# \"#{loadgen_count_override}#\" \"#{loadgen_multistreamness}#\" \"#{loadgen_config_path}#\" #{verbosity}# \"#{model_name}#\" \"#{preprocessed_imagenet_dir}#\"" ]
+    "script_extra_params": [ "^^", "substitute", "\"#{loadgen_scenario}#\" \"#{loadgen_mode}#\" #{loadgen_dataset_size}# #{loadgen_buffer_size}# \"#{loadgen_count_override}#\" \"#{loadgen_multistreamness}#\" \"#{loadgen_config_path}#\" #{verbosity}# \"#{model_name}#\" #{batch_size}# \"#{preprocessed_imagenet_dir}#\"" ]
 }

@@ -20,7 +20,8 @@ count_override_str          = sys.argv[6]
 config_filepath             = sys.argv[7]
 verbosity                   = int( sys.argv[8] )
 model_name                  = sys.argv[9]
-preprocessed_imagenet_dir   = sys.argv[10]
+batch_size                  = int( sys.argv[10] )
+preprocessed_imagenet_dir   = sys.argv[11]
 
 
 use_cuda                    = torch.cuda.is_available()
@@ -28,7 +29,6 @@ MODEL_IMAGE_CHANNELS        = 3
 MODEL_IMAGE_HEIGHT          = 224
 MODEL_IMAGE_WIDTH           = 224
 MODEL_INPUT_DATA_TYPE       = 'float32'
-BATCH_SIZE                  = 1
 normalize_data_bool         = True
 subtract_mean_bool          = True
 given_channel_means         = []
@@ -76,7 +76,6 @@ def unload_query_samples(sample_indices):
 
 def issue_queries(query_samples):
 
-    global BATCH_SIZE
     global model
 
     if verbosity > 2:
@@ -84,8 +83,8 @@ def issue_queries(query_samples):
         print("issue_queries( {} )".format(printable_query))
     tick('Q', len(query_samples))
 
-    for j in range(0, len(query_samples), BATCH_SIZE):
-        batch       = query_samples[j:j+BATCH_SIZE]   # NB: the last one may be shorter than BATCH_SIZE in length
+    for j in range(0, len(query_samples), batch_size):
+        batch       = query_samples[j:j+batch_size]   # NB: the last one may be shorter than batch_size in length
         batch_data  = preprocessed_image_buffer[preprocessed_image_map[ [qs.index for qs in batch] ]]
         torch_batch = torch.from_numpy( batch_data )
 
