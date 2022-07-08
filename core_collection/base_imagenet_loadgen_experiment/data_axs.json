@@ -1,22 +1,7 @@
 {
     "_parent_entries": [ [ "^", "byname", "base_imagenet_experiment" ] ],
 
-    "imagenet_annotation_entry": [ "^", "byquery", "extracted,imagenet_annotation" ],
     "mlperf_inference_git_entry": [ "^", "byquery", "git_repo,repo_name=mlperf_inference_git" ],
-
-    "ground_truth_path": [ "^", "execute", [[
-        [ "get", "imagenet_annotation_entry" ],
-        [ "get_path", [["extracted", "val.txt"]] ]
-    ]], {}, ["imagenet_annotation_entry"] ],
-
-    "class_names_path": [ "^", "execute", [[
-        [ "get", "imagenet_annotation_entry" ],
-        [ "get_path", [["extracted", "synset_words.txt"]] ]
-    ]], {}, ["imagenet_annotation_entry"] ],
-
-    "ground_truth": [ "^^", "load_ground_truth" ],
-
-    "class_names": [ "^^", "load_class_names" ],
 
     "accuracy_log_path": ["^^", "get_path", "mlperf_log_accuracy.json"],
 
