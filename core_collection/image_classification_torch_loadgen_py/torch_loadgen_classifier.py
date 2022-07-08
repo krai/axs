@@ -168,7 +168,7 @@ def benchmark_using_loadgen():
     torchvision_version = ''    # master by default
     try:
         import torchvision
-        torchvision_version = ':v' + torchvision.__version__
+        torchvision_version = ':v' + torchvision.__version__.split('+')[0]
     except Exception:
         pass
 
