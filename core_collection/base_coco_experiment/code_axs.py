@@ -5,69 +5,125 @@ import json
 import sys
 from time import time
 
-import axs_utils
-import converter_results
 import calc_metrics_coco_pycocotools
 
-def postprocess(num_of_images, detections_dir_path, postprocess_file_path, annotations_dir, results_out_dir, preprocessed_files, times_file_path):
+def filename_to_id(file_name):
+  '''
+  Returns identitifer of image in dataset.
 
-  FULL_REPORT           = True
+  Each dataset has its own way how to identify
+  particular image in detection results or annotations.
+  '''
+  short_name = os.path.splitext(file_name)[0]
 
-  axs_utils.prepare_dir(results_out_dir)
+  # In COCO dataset ID is a number which is a part of filename
+    # COCO 2017: 000000000139.jpg
+    # COCO 2014: COCO_val2014_000000000042.jpg
+  if short_name[0] == '0':
+    return int(short_name)
+  else:
+    return int(re.split(r'_', short_name)[2])
+
+
+def generate_coco_detection_list( detection_results ):
+    result_full_list = []
+    image_ids = detection_results.keys()
+
+    for image_id in image_ids:
+        for detection in detection_results[image_id]["detections"]:
+            x1, y1, x2, y2 = detection["bbox"]
+            h = y2 - y1
+            w = x2 - x1
+            one_detection = {
+                "image_id":     int( image_id ),
+                "category_id":  detection["class_id"],
+                "bbox":         [ x1, y1, round(w, 2), round(h, 2) ],
+                "score":        detection["score"]
+            }
+            result_full_list.append(one_detection)
+
+    return result_full_list
+
+def save_to_json(structure, json_file_name):
+    with open(json_file_name, 'w') as f:
+        f.write(json.dumps( structure, indent=2, sort_keys=False))
+    return json_file_name
+
+def postprocess(num_of_images, postprocess_file_path, annotations_dir, results_out_dir, preprocessed_files, times_file_path, detection_results ):
 
   def evaluate(processed_image_ids, categories_list):
 
     # Convert detection results from our universal text format
     # to a format specific for a tool that will calculate metrics
-    print('\nConvert results to {} ...'.format('coco'))
-    results = converter_results.convert(detections_dir_path, 
-                                        results_out_dir)
+    results = generate_coco_detection_list( detection_results )
 
     # Run evaluation tool
-    print('\nEvaluate metrics as {} ...'.format('coco'))
-    mAP, recall, all_metrics = calc_metrics_coco_pycocotools.evaluate(processed_image_ids, results, annotations_dir)
+    all_metrics = calc_metrics_coco_pycocotools.evaluate(processed_image_ids, results, annotations_dir)
+    mAP = all_metrics['DetectionBoxes_Precision/mAP']
+    recall = all_metrics['DetectionBoxes_Recall/AR@100']
 
-    OPENME['mAP'] = mAP
-    OPENME['recall'] = recall
-    OPENME['metrics'] = all_metrics
-
+    postpocess_result['mAP'] = mAP
+    postpocess_result['recall'] = recall
+    postpocess_result['metrics'] = all_metrics
     return
 
-  OPENME = {}
+  postpocess_result = {}
 
   with open(preprocessed_files, 'r') as f:
     processed_image_filenames = [x.split(';')[0] for x in f.readlines()]
 
-  processed_image_ids = [ axs_utils.filename_to_id(image_filename) for image_filename in processed_image_filenames ]
+  processed_image_ids = [ filename_to_id(image_filename) for image_filename in processed_image_filenames ]
 
   if os.path.isfile(times_file_path):
     with open(times_file_path, 'r') as f:
-      OPENME = json.load(f)
+      postpocess_result = json.load(f)
 
   # Run evaluation
-  axs_utils.print_header('Process results')
   
   categories_list = []
 
   evaluate(processed_image_ids, categories_list)
 
-  OPENME['frame_predictions'] = converter_results.convert_to_frame_predictions(detections_dir_path)
-  OPENME['execution_time'] = OPENME['times'].get('sum_inference_s',0) + OPENME['times'].get('model_loading_s',0) + OPENME['times'].get('sum_loading_s',0)
+  postpocess_result['frame_predictions'] = generate_coco_detection_list( detection_results )
+  postpocess_result['execution_time'] = postpocess_result['times'].get('sum_inference_s',0) + postpocess_result['times'].get('model_loading_s',0) + postpocess_result['times'].get('sum_loading_s',0)
 
   # Store benchmark results
-  with open(postprocess_file_path, 'w') as o:
-    json.dump(OPENME, o, indent=2, sort_keys=True)
+  save_to_json(postpocess_result, postprocess_file_path)
 
-  # Print metrics
-  print('\nSummary:')
-  print('-------------------------------')
-  print('All images loaded in {:.6f}s'.format(OPENME['times'].get('sum_loading_s', 0)))
-  print('Average image load time: {:.6f}s'.format(OPENME['times'].get('sum_loading_s', 0)/int(num_of_images)))
-  print('All images detected in {:.6f}s'.format(OPENME['times'].get('sum_inference_s', 0)))
-  print('Average detection time: {:.6f}s'.format(OPENME['times'].get('per_inference_s', 0)))
-  print('Total NMS time: {:.6f}s'.format(OPENME['times'].get('non_max_suppression_time_total_s', 0)))
-  print('Average NMS time: {:.6f}s'.format(OPENME['times'].get('non_max_suppression_time_avg_s', 0)))
-  print('mAP: {}'.format(OPENME['mAP']))
-  print('Recall: {}'.format(OPENME['recall']))
-  print('--------------------------------\n')
+  return postpocess_result
 
+def mAP(num_of_images, postprocess_file_path, annotations_dir, results_out_dir, preprocessed_files, times_file_path, detection_results):
+    r = postprocess(num_of_images, postprocess_file_path, annotations_dir, results_out_dir, preprocessed_files, times_file_path, detection_results )
+    return r['mAP']
+
+def recall(num_of_images, postprocess_file_path, annotations_dir, results_out_dir, preprocessed_files, times_file_path, detection_results):
+    r = postprocess(num_of_images, postprocess_file_path, annotations_dir, results_out_dir, preprocessed_files, times_file_path, detection_results )
+    return r['recall']
+
+def execution_time(num_of_images, postprocess_file_path, annotations_dir, results_out_dir, preprocessed_files, times_file_path, detection_results):
+     r = postprocess(num_of_images, postprocess_file_path, annotations_dir, results_out_dir, preprocessed_files, times_file_path, detection_results )
+     return r['execution_time']
+
+def print_times(detection_times):
+    print ('\nmodel_loading_s        = ', detection_times['model_loading_s'])
+    print ('sum_loading_s          = ', detection_times['sum_loading_s'])
+    print ('sum_inference_s        = ', detection_times['sum_inference_s'])
+    print ('per_inference_s        = ', detection_times['per_inference_s'])
+    print ('fps                    = ', detection_times['fps'])
+    print ('\nlist_batch_loading_s   = ', detection_times['list_batch_loading_s'])
+    print ('\nlist_batch_inference_s = ', detection_times['list_batch_inference_s'])
+
+def print_metrics(num_of_images, postprocess_file_path, annotations_dir, results_out_dir, preprocessed_files, times_file_path, detection_results):
+    r = postprocess(num_of_images, postprocess_file_path, annotations_dir, results_out_dir, preprocessed_files, times_file_path, detection_results )
+    # Print metrics
+    print('\nSummary:')
+    print('-------------------------------')
+    print('All images loaded in {:.6f}s'.format(r['times'].get('sum_loading_s', 0)))
+    print('Average image load time: {:.6f}s'.format(r['times'].get('sum_loading_s', 0)/int(num_of_images)))
+    print('All images detected in {:.6f}s'.format(r['times'].get('sum_inference_s', 0)))
+    print('Average detection time: {:.6f}s'.format(r['times'].get('per_inference_s', 0)))
+    print('Total NMS time: {:.6f}s'.format(r['times'].get('non_max_suppression_time_total_s', 0)))
+    print('Average NMS time: {:.6f}s'.format(r['times'].get('non_max_suppression_time_avg_s', 0)))
+    print('mAP: {}'.format(r['mAP']))
+    print('Recall: {}'.format(r['recall']))
+    print('--------------------------------\n')

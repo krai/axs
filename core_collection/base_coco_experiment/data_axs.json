@@ -1,6 +1,14 @@
 {
     "script_output": [ "^^", "load_json", [ [ "^^", "get_path_from", "output_file_name" ] ] ],
     "postprocess_output": [ "^^", "load_json", [ [ "^^", "get_path_from", "postprocess_file_name" ] ] ],
+    "detection_results": [ "^^", "dig", "script_output.detections" ],
+    "detection_times": [ "^^", "dig", "script_output.times" ],
+
+    "coco_detection_list_file_name": "coco_detection_list.json",
+    "stored_coco_detection_list": [ "^^", "save_to_json", [
+        [ "^^", "generate_coco_detection_list" ],
+        [ "^^", "get_path_from", "coco_detection_list_file_name" ]
+    ] ],
 
     "coco_annotation_entry": [ "^", "byquery", "extracted,coco_annotation" ],
 
@@ -20,7 +28,6 @@
     "num_of_images": 20,
 
     "times_file_path": [ "^^", "get_path", "script_output.json"],
-    "detections_dir_path": [ "^^", "get_path", "detections" ],
     "annotations_dir": [ "^", "execute", [[
         ["byquery", "extracted,coco_annotation"],
         ["get_path", [["annotations", "instances_val2017.json"]]]

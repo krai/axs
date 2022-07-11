@@ -17,8 +17,7 @@ max_batch_size              = int(sys.argv[5])
 execution_device            = sys.argv[6]           # if empty, it will be autodetected
 cpu_threads                 = int(sys.argv[7])
 coco_labels_file_path       = sys.argv[8]
-detections_dir_path         = sys.argv[9]
-output_file_path            = sys.argv[10]
+output_file_path            = sys.argv[9]
 
 
 ## Model properties:
@@ -221,8 +220,6 @@ def main():
     except ValueError:
         max_batch_size = None
 
-    os.makedirs( detections_dir_path )      # make sure the directory path exists
-
     # Run batched mode
     images_loaded           = 0
     next_batch_offset       = 0
@@ -234,6 +231,8 @@ def main():
     sum_inference_s         = 0
     list_batch_loading_s    = []
     list_batch_inference_s  = []
+    results = {}
+    output_list_dict = []
 
     for batch_start in range(0, num_of_images, max_batch_size):
         batch_num = batch_num + 1
@@ -265,38 +264,43 @@ def main():
             batch_num, batch_count, batch_loading_s*1000, batch_inference_s*1000))
 
         # Process results
+        detection_res = {}
+
         for index_in_batch, global_image_index in enumerate(batch_global_indices):
             width_orig, height_orig = original_w_h[global_image_index]
 
             filename_orig = image_filenames[global_image_index]
-            detections_filename = os.path.splitext(filename_orig)[0] + '.txt'
-            detections_filepath = os.path.join(detections_dir_path, detections_filename)
-            with open(detections_filepath, 'w') as f:
-                f.write('{:d} {:d}\n'.format(width_orig, height_orig))
-                for i in range(len(batch_results[2][index_in_batch])):
-                    confidence = batch_results[2][index_in_batch][i]
-                    if confidence > SCORE_THRESHOLD:
-                        class_number = int(batch_results[1][index_in_batch][i])
-                        if class_map:
-                            class_number = class_map[class_number]
-                        else:
-                            class_number = class_number
+            image_name = os.path.splitext(filename_orig)[0]
+            print('Processing image ',image_name)
 
-                        box = batch_results[0][index_in_batch][i]
-                        x1 = box[0] * width_orig
-                        y1 = box[1] * height_orig
-                        x2 = box[2] * width_orig
-                        y2 = box[3] * height_orig
-                        class_label = class_labels[class_number - bg_class_offset]
-                        f.write('{:.2f} {:.2f} {:.2f} {:.2f} {:.3f} {} {}\n'.format(x1,
-                                                                                    y1,
-                                                                                    x2,
-                                                                                    y2,
-                                                                                    confidence,
-                                                                                    class_number,
-                                                                                    class_label
-                                                                                    )
-                                )
+            detection_res["image_height"] = height_orig
+            detection_res["image_width"] = width_orig
+            detection_res["detections"] = []
+
+            for i in range(len(batch_results[2][index_in_batch])):
+                confidence = batch_results[2][index_in_batch][i]
+                if confidence > SCORE_THRESHOLD:
+                    class_number = int(batch_results[1][index_in_batch][i])
+                    if class_map:
+                        class_number = class_map[class_number]
+                    else:
+                        class_number = class_number
+
+                    box = batch_results[0][index_in_batch][i]
+                    x1 = box[0] * width_orig
+                    y1 = box[1] * height_orig
+                    x2 = box[2] * width_orig
+                    y2 = box[3] * height_orig
+                    class_label = class_labels[class_number - bg_class_offset]
+
+                    detection = {}
+                    detection["bbox"] = [ round(float(x1),2), round(float(y1),2), round(float(x2),2), round(float(y2),2) ]
+                    detection["score"] = round(float(confidence),3)
+                    detection["class_id"] = class_number
+                    detection["class_name"] = class_label
+                    detection_res["detections"].append(detection)
+
+            results[image_name] = detection_res
 
     if output_file_path:
         output_dict = {
@@ -312,7 +316,8 @@ def main():
 
                 "list_batch_loading_s":     list_batch_loading_s,
                 "list_batch_inference_s":   list_batch_inference_s,
-            }
+            },
+            "detections": results
         }
         json_string = json.dumps( output_dict , indent=4)
         with open(output_file_path, "w") as json_fd:

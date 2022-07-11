@@ -39,6 +39,4 @@ def evaluate(image_ids_list, results_dir, annotations_file):
     "DetectionBoxes_Recall/AR@100 (large)": cocoEval.stats[11]
   }
 
-  mAP = all_metrics['DetectionBoxes_Precision/mAP']
-  recall = all_metrics['DetectionBoxes_Recall/AR@100']
-  return mAP, recall, all_metrics
+  return all_metrics
