@@ -27,7 +27,7 @@
     ]] ],
     "preprocessed_files": [ "^", "execute", [[
         ["byquery", "preprocessed,coco_images,resolution=1200,first_n=20"],
-        ["get_path", "preprocessed/original_dimensions.txt"]
+        ["get_path", [["preprocessed", "original_dimensions.txt"]] ]
     ]] ],
     "results_out_dir": [ "^^", "get_path_from", "results_dir_name" ],
     "postprocess_file_path": [ "^^", "get_path_from", "postprocess_file_name" ]

@@ -20,7 +20,10 @@ class ImagenetLoader:
         self.data_layout                = data_layout
 
 
-    def load_preprocessed_and_normalize(self, image_filepath):
+    def load_image_by_index_and_normalize(self, image_index):
+        image_filename = self.file_pattern.format(image_index+1)
+        image_filepath = os.path.join( self.preprocessed_imagenet_dir, image_filename )
+
         img_rgb8 = np.fromfile(image_filepath, np.uint8)
         img_rgb8 = img_rgb8.reshape((self.height, self.width, 3))
 
@@ -42,24 +45,21 @@ class ImagenetLoader:
 
         if self.data_layout == 'NHWC':
             # print(nhwc_data.shape)
-            return nhwc_data
+            return nhwc_data, image_filename
         else:
             nchw_data = nhwc_data.transpose(0,3,1,2)
             # print(nchw_data.shape)
-            return nchw_data
+            return nchw_data, image_filename
 
 
-    def load_a_batch(self, batch_filenames):
-        unconcatenated_batch_data = []
-        for image_filename in batch_filenames:
-            image_filepath = os.path.join( self.preprocessed_imagenet_dir, image_filename )
-            nchw_data = self.load_preprocessed_and_normalize( image_filepath )
-            unconcatenated_batch_data.append( nchw_data )
+    def load_preprocessed_batch_from_indices(self, batch_global_indices):
+        unconcatenated_batch_data   = []
+        batch_filenames             = []
+        for image_index in batch_global_indices:
+            image_data, image_filename = self.load_image_by_index_and_normalize( image_index )
+            unconcatenated_batch_data.append( image_data )
+            batch_filenames.append( image_filename )
         batch_data = np.concatenate(unconcatenated_batch_data, axis=0)
 
-        return batch_data
-
-
-    def generate_batch_filenames(self, batch_global_indices):
-        return [ self.file_pattern.format(g+1) for g in batch_global_indices ]
+        return batch_data, batch_filenames
 

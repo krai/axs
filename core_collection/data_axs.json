@@ -37,6 +37,8 @@
         "mlperf_inference_git_recipe": "mlperf_inference_git_recipe",
         "loadgen_example": "loadgen_example",
         "loadgen_wheel_recipe": "loadgen_wheel_recipe",
-        "preprocessed_imagenet_loader": "preprocessed_imagenet_loader"
+        "preprocessed_imagenet_loader": "preprocessed_imagenet_loader",
+        "image_classification_torch_loadgen_py": "image_classification_torch_loadgen_py",
+        "base_imagenet_loadgen_experiment": "base_imagenet_loadgen_experiment"
     }
 }

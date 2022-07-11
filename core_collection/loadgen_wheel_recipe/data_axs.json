@@ -16,12 +16,15 @@
         [ "get_path" ]
     ]] ],
 
+    "compiler_path": [ "^", "execute", [[
+        [ "byquery", "shell_tool,can_compile_c" ],
+        [ "get", "tool_path" ]
+    ]] ],
+
     "env": {
-        "CC": [ "^", "execute", [[
-            [ "byquery", "shell_tool,can_compile_c" ],
-            [ "get", "tool_path" ]
-        ]] ],
-        "CFLAGS": "-std=c++14"
+        "CC": [ "^^", "get", "compiler_path" ],
+        "CFLAGS": "-std=c++14",
+        "PATH": [ "^^", "python_api", "import os; _=os.path.dirname(self['compiler_path'])" ]
     },
     "in_dir": [ "^", "execute", [[
         [ "byquery", "git_repo,repo_name=mlperf_inference_git" ],

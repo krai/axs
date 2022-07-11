@@ -1,7 +1,7 @@
 {
     "_parent_entries": [ [ "^", "byname", "python_script" ] ],
     "_producer_rules": [
-        [ [ "script_output", "classified_imagenet", "framework=onnx" ], [ "^^", "get", "__entry__" ], "run", { "return_saved_record_entry": true } ]
+        [ [ "loadgen_output", "loadgen_example" ], [ "^^", "get", "__entry__" ], "run", { "return_saved_record_entry": true } ]
     ],
 
     "numpy_query":      [ "python_package", "package_name=numpy" ],
@@ -33,7 +33,7 @@
             "loadgen_buffer_size", "#{loadgen_buffer_size}#",
             "loadgen_config_path", "#{loadgen_config_path}#",
 
-            "tags", [ "script_output", "loadgen_example" ]
+            "tags", [ "loadgen_output", "loadgen_example" ]
          ]] ] ],
          [ "save" ]
     ]] ],
