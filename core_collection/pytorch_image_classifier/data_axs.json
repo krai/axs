@@ -47,6 +47,7 @@
     "torchvision_query": [ "^^", "case", [ [ "^^", "get", "num_gpus"] , "0" ,["python_package", "package_name=torchvision"] ], {"default_value": ["python_package", "package_name=torchvision", "with_cuda"] } ],
 
     "python_deps": [
-        [ "^", "byquery", [[ "^^", "get", "torchvision_query" ]], {}, ["torchvision_query"] ]
+        [ "^", "byquery", [[ "^^", "get", "torchvision_query" ]], {}, ["torchvision_query"] ],
+        [ "^", "byname", "preprocessed_imagenet_loader" ]
     ]
 }

@@ -8,20 +8,23 @@ Usage examples :
                 axs byname pytorch_image_classifier , run --execution_device=cpu --num_of_images=100
 
                     # reuses the Imagenet500 already downloaded & extracted:
-                axs byname pytorch_image_classifier , run --torchvision_query+=with_cuda --num_of_images=500
+                axs byname pytorch_image_classifier , run --num_of_images=500
 
                     # quick removal of Imagenet500:
                 axs byquery extracted,imagenet,dataset_size=500 , remove
 
                     # assuming Imagenet50k in a directory:
-                axs byname pytorch_image_classifier , run --torchvision_query+=with_cuda --preprocessed_imagenet_dir=/datasets/imagenet/imagenet --num_of_images=800 --dataset_size=50000
+                axs byname pytorch_image_classifier , run --preprocessed_imagenet_dir=/datasets/imagenet/pillow_sq.224_cropped_resized_imagenet50000 --num_of_images=800 --dataset_size=50000
+
+                    # same, but in query mode (full dataset), computing the accuracy as well:
+                axs byquery script_output,classified_imagenet,framework=pytorch,preprocessed_imagenet_dir=/datasets/imagenet/pillow_sq.224_cropped_resized_imagenet50000,num_of_images=50000,max_batch_size=1000 , get accuracy
 
                     # assuming Imagenet50k in a tarball:
                 axs byname extractor , extract --archive_path=/datasets/dataset-imagenet-ilsvrc2012-val.tar --tags,=extracted,imagenet --strip_components=1 --dataset_size=50000
-                axs byname pytorch_image_classifier , run --torchvision_query+=with_cuda --num_of_images=1000
+                axs byname pytorch_image_classifier , run --num_of_images=1000
 
                     # assuming Imagenet50k is already installed from a tarball, but still wanting to use Imagenet500:
-                axs byname pytorch_image_classifier , run --torchvision_query+=with_cuda --imagenet_query+=dataset_size=500 --num_of_images=350
+                axs byname pytorch_image_classifier , run --imagenet_query+=dataset_size=500 --num_of_images=350
 
                     # as a side-effect, automatically downloads and extracts Imagenet500 and save output to file experiment.json:
                 axs byname pytorch_image_classifier , run --execution_device=gpu --num_of_images=100 --output_file_path=experiment.json
@@ -66,6 +69,7 @@ import torch
 import torchvision
 from torchvision import transforms
 import numpy as np
+from imagenet_loader import ImagenetLoader
 
 if execution_device == "gpu":
     execution_device = ('cuda' if torch.cuda.is_available() else 'cpu')
@@ -79,20 +83,13 @@ if execution_device == "cuda":
 else:
     print("Device: CPU", file=sys.stderr)
 
-def load_one_batch(indices):
-    file_names  = []
-    pre_batch   = []
-    for i in indices:
-        file_name = file_pattern.format(i+1)
-        file_path   = os.path.join( preprocessed_imagenet_dir, file_name )
-        img_rgb8 = np.fromfile(file_path, np.uint8)
-        img_rgb8 = img_rgb8.reshape((resolution, resolution, 3))
+data_layout         = 'NCHW'
+normalize_symmetric = False # ternary choice (False means "asymmetric normalization ON")
+subtract_mean_bool  = True
+given_channel_means = [0.485, 0.456, 0.406]
+given_channel_stds  = [0.229, 0.224, 0.225]
+loader_object       = ImagenetLoader(preprocessed_imagenet_dir, resolution, resolution, data_layout, normalize_symmetric, subtract_mean_bool, given_channel_means, given_channel_stds)
 
-        input_tensor = preprocess(img_rgb8)
-        file_names.append( file_name )
-        pre_batch.append(input_tensor)
-
-    return file_names, pre_batch
 
 ts_before_model_loading = time()
 
@@ -112,11 +109,6 @@ for retry in range(max_attempts):
 model.eval()
 model.to( execution_device )
 
-preprocess = transforms.Compose([
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-])
-
 model_loading_s = time() - ts_before_model_loading
 
 predictions             = {}
@@ -132,9 +124,8 @@ for batch_start in range(0,num_of_images, max_batch_size):
     batch_open_end = min(batch_start+max_batch_size, num_of_images)
     ts_before_data_loading  = time()
 
-    batch_filenames, pre_batch = load_one_batch( range(batch_start, batch_open_end) )
-
-    input_batch = torch.stack(pre_batch, dim=0)
+    pre_batch, batch_filenames = loader_object.load_preprocessed_batch_from_indices( range(batch_start, batch_open_end) )
+    input_batch = torch.from_numpy( pre_batch )
     input_batch = input_batch.to( execution_device )
 
     ts_before_inference     = time()
