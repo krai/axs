@@ -1,6 +1,5 @@
 {
     "script_output": [ "^^", "load_json", [ [ "^^", "get_path_from", "output_file_name" ] ] ],
-    "postprocess_output": [ "^^", "load_json", [ [ "^^", "get_path_from", "postprocess_file_name" ] ] ],
     "detection_results": [ "^^", "dig", "script_output.detections" ],
     "detection_times": [ "^^", "dig", "script_output.times" ],
 
@@ -22,8 +21,7 @@
         ["byquery", [[ "^^", "get", "pycocotools_query"] ]],
         ["use"]
     ]] ],
-    "postprocess_file_name": "postprocess_output.json",
-    "results_dir_name": "results",
+    "postprocess_file_name_2": "postprocess_output.json",
 
     "num_of_images": 20,
 
@@ -35,7 +33,5 @@
     "preprocessed_files": [ "^", "execute", [[
         ["byquery", "preprocessed,coco_images,resolution=1200,first_n=20"],
         ["get_path", [["preprocessed", "original_dimensions.txt"]] ]
-    ]] ],
-    "results_out_dir": [ "^^", "get_path_from", "results_dir_name" ],
-    "postprocess_file_path": [ "^^", "get_path_from", "postprocess_file_name" ]
+    ]] ]
 }
