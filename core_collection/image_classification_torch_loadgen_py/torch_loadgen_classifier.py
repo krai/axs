@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
 
+"""Loadgen-based Image Classification program based on Pytorch.
+
+Usage examples  :
+
+                    # full Accuracy run (query mode) :
+                axs byquery loadgen_output,classified_imagenet,framework=pytorch,preprocessed_imagenet_dir=/datasets/imagenet/pillow_sq.224_cropped_resized_imagenet50000,loadgen_scenario=Offline,loadgen_dataset_size=50000,loadgen_buffer_size=1000,batch_size=1000 , get accuracy
+"""
+
 import array
 import os
 import sys
@@ -29,10 +37,14 @@ MODEL_IMAGE_CHANNELS        = 3
 MODEL_IMAGE_HEIGHT          = 224
 MODEL_IMAGE_WIDTH           = 224
 MODEL_INPUT_DATA_TYPE       = 'float32'
-normalize_data_bool         = True
+data_layout                 = 'NCHW'
+
+normalize_symmetric         = False # ternary choice (False means "asymmetric normalization ON")
 subtract_mean_bool          = True
-given_channel_means         = []
-loader_object               = ImagenetLoader(preprocessed_imagenet_dir, MODEL_IMAGE_HEIGHT, MODEL_IMAGE_WIDTH, normalize_data_bool, subtract_mean_bool, given_channel_means, 'NCHW')
+given_channel_means         = [0.485, 0.456, 0.406]
+given_channel_stds          = [0.229, 0.224, 0.225]
+
+loader_object               = ImagenetLoader(preprocessed_imagenet_dir, MODEL_IMAGE_HEIGHT, MODEL_IMAGE_WIDTH, data_layout, normalize_symmetric, subtract_mean_bool, given_channel_means, given_channel_stds)
 preprocessed_image_buffer   = None
 preprocessed_image_map      = np.empty(dataset_size, dtype=np.int)   # this type should be able to hold indices in range 0:dataset_size
 model                       = None

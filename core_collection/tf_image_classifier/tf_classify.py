@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
 
+""" Imagenet Classifier using TensorFlow.
+
+Usage examples :
+                    # Compute accuracy on the full ImageNet50k preprocessed dataset:
+                axs byquery script_output,classified_imagenet,framework=tf,preprocessed_imagenet_dir=/datasets/imagenet/pillow_sq.224_cropped_resized_imagenet50000,num_of_images=50000,max_batch_size=1000 , get accuracy
+"""
+
 import os
 import sys
 
@@ -26,12 +33,13 @@ top_n_max                   = int(sys.argv[8])
 batch_count                 = math.ceil(num_of_images / max_batch_size)
 input_layer_name            = "input"
 output_layer_name           = "MobilenetV2/Predictions/Reshape_1"
-normalize_data_bool         = True
+normalize_symmetric         = True
 subtract_mean_bool          = False
 given_channel_means         = []
+given_channel_stds          = []
 data_layout                 = "NHWC"
 
-loader_object               = ImagenetLoader(preprocessed_imagenet_dir, resolution, resolution, normalize_data_bool, subtract_mean_bool, given_channel_means, data_layout)
+loader_object               = ImagenetLoader(preprocessed_imagenet_dir, resolution, resolution, data_layout, normalize_symmetric, subtract_mean_bool, given_channel_means, given_channel_stds)
 
 
 def load_graph(model_path):
@@ -79,7 +87,7 @@ print("Expected input shape: {}".format(model_input_shape), file=sys.stderr)
 print("Output layer shape: {}".format(model_output_shape), file=sys.stderr)
 print("Number of labels: {}".format(num_labels), file=sys.stderr)
 print("Background/unlabelled classes to skip: {}".format(bg_class_offset), file=sys.stderr)
-print("Data normalization: {}".format(normalize_data_bool), file=sys.stderr)
+print("Data normalization (None, False=asymmeteric or True=symmetric) : {}".format(normalize_symmetric), file=sys.stderr)
 print("Mean substraction: {}".format(subtract_mean_bool), file=sys.stderr)
 print("", file=sys.stderr)
 

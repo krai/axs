@@ -63,14 +63,15 @@ max_batch_size              = int(sys.argv[4])
 cpu_threads                 = int(sys.argv[5])
 output_file_path            = sys.argv[6]
 model_name                  = sys.argv[7]
-normalize_data_bool         = eval(sys.argv[8])     # FIXME: currently we are passing a stringified form of a data structure,
-subtract_mean_bool          = eval(sys.argv[9])    # it would be more flexible to encode/decode through JSON instead.
+normalize_symmetric         = eval(sys.argv[8])     # FIXME: currently we are passing a stringified form of a data structure,
+subtract_mean_bool          = eval(sys.argv[9])     # it would be more flexible to encode/decode through JSON instead.
 given_channel_means         = eval(sys.argv[10])
-execution_device            = sys.argv[11]         # if empty, it will be autodetected
+execution_device            = sys.argv[11]          # if empty, it will be autodetected
 top_n_max                   = int(sys.argv[12])
 
 batch_count                 = math.ceil(num_of_images / max_batch_size)
 data_layout                 = "NCHW"
+given_channel_stds          = []
 
 sess_options = rt.SessionOptions()
 if cpu_threads > 0:
@@ -105,7 +106,7 @@ model_output_shape  = sess.get_outputs()[0].shape
 height              = model_input_shape[2]
 width               = model_input_shape[3]
 
-loader_object       = ImagenetLoader(preprocessed_imagenet_dir, height, width, normalize_data_bool, subtract_mean_bool, given_channel_means, data_layout)
+loader_object       = ImagenetLoader(preprocessed_imagenet_dir, height, width, data_layout, normalize_symmetric, subtract_mean_bool, given_channel_means, given_channel_stds)
 
 
 print(f"input_layer_names={input_layer_names}", file=sys.stderr)
