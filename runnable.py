@@ -396,10 +396,19 @@ Usage examples :
                 axs si: byname sysinfo , substitute '#{os}#--#{ar}#' --os:=^^:dig:si.osname --ar:=^^:dig:si.arch
                 axs si: byname sysinfo , os: dig si.osname , , ar: dig si.arch , , substitute 'OS=#{os}#, Arch=#{ar}#'
                 axs bypath only_code/iterative.py , :rec: factorial 5 , get rec , save factorial_of_5
-                axs noop 12.345 , format 10.4f
+
                 axs version , split . , __getitem__ 2
                 axs core_collection , get_path , split /axs/ , __getitem__ 0
-                axs core_collection , get contained_entries , keys , list
+
+                axs func runnable.plus_one 12
+                axs func numpy.arange 15                                                    # if numpy is already installed in PYTHONPATH
+                axs byquery python_package,package_name=numpy , use , func numpy.arange 7   # if we need our own specific numpy
+
+                axs noop 12 , func0 runnable.plus_one
+                axs noop 12.345 , func0 format 10.4f
+                axs core_collection , get contained_entries , keys , func0 list
+                axs byname downloader , own_data , func0 pprint.pformat --width=120
+                axs byname downloader , own_data , func0 json.dumps --indent=4
 
             # Record a call:
                 axs bypath only_code/iterative.py , :rec: factorial 5 , get rec , save factorial_of_5
@@ -428,18 +437,28 @@ Usage examples :
 
                 call_record_entry_ptr = []  # the value of call_record_entry is returned via appending to this empty list
 
-                if hasattr(entry, 'call'):
-                    result = entry.call(*call_params, call_record_entry_ptr=call_record_entry_ptr, nested_context=local_context)
-                else:
+                if call_params[0] in ('func', 'func0'):
                     (action_name, pos_params, edit_dict) = call_params
-                    try:                                                            # attempt to call a method of the object
+                    pre_params  = [ entry ] if action_name=='func0' else []
+                    action_name = pos_params[0]                                         # pos_params[] must have at least 1 element
+                    pos_params  = pos_params[1:]
+                    if '.' in action_name:                                              # an imported "dotted" function
+                        module_name, func_name = action_name.split('.')
+                        action_object = getattr(__import__(module_name), func_name)
+                    else:                                                               # a built-in function
+                        action_object = __builtins__[action_name]
+
+                    pos_params = pre_params + rt_pipeline_wide.nested_calls( pos_params )
+                    result = function_access.feed(action_object, pos_params, edit_dict)
+
+                else:
+                    if hasattr(entry, 'call'):                                          # an Entry-specific or Runnable-generic method
+                        result = entry.call(*call_params, call_record_entry_ptr=call_record_entry_ptr, nested_context=local_context)
+                    else:                                                               # a non-axs Object method
+                        (action_name, pos_params, edit_dict) = call_params
                         action_object = getattr(entry, action_name)
                         pos_params = rt_pipeline_wide.nested_calls( pos_params )
-                    except AttributeError:                                          # if not available, try a builtin function instead
-                        action_object = __builtins__[action_name]
-                        pos_params = [ entry ] + rt_pipeline_wide.nested_calls( pos_params )
-
-                    result = function_access.feed(action_object, pos_params, edit_dict)
+                        result = function_access.feed(action_object, pos_params, edit_dict)
 
                 if input_label:
                     rt_pipeline_wide[input_label] = call_record_entry_ptr[0]
@@ -482,6 +501,11 @@ Usage examples :
             return input_structure                                                          # basement step
 
 
+def plus_one(number):
+    "Adds 1 to the argument"
+    return number+1
+
+
 if __name__ == '__main__':
 
     logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")
@@ -489,10 +513,6 @@ if __name__ == '__main__':
     print('-'*40 + ' Creating a hierarchy of Runnables: ' + '-'*40)
 
     from argparse import Namespace
-
-    def plus_one(number):
-        "Adds 1 to the argument"
-        return number+1
 
     def trice(number):
         "Multiplies the argument by 3"
