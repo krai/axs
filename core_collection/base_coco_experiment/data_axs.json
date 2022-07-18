@@ -30,8 +30,5 @@
         ["byquery", "extracted,coco_annotation"],
         ["get_path", [["annotations", "instances_val2017.json"]]]
     ]] ],
-    "preprocessed_files": [ "^", "execute", [[
-        ["byquery", "preprocessed,coco_images,resolution=1200,first_n=20"],
-        ["get_path", [["preprocessed", "original_dimensions.txt"]] ]
-    ]] ]
+    "preprocessed_files": [ "^^", "get_path", [[ ["^^", "get", "preprocessed_coco_dir"], "original_dimensions.txt" ]] ]
 }
