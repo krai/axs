@@ -8,6 +8,15 @@
         ]
     ],
 
+    "coco_annotation_path": [ "^", "execute", [[
+        [ "byquery", "extracted,coco_annotation" ],
+        [ "get_path", [["annotations", "instances_val2017.json"]] ]
+    ]] ],
+    "images_annotation": [ "^^", "execute", [[
+        [ "load_json", [[ "^^", "get", "coco_annotation_path" ]] ],
+        [ "get", ["images"] ]
+    ]] ],
+
     "numpy_query": [ "python_package", "package_name=numpy" ],
     "pillow_query": [ "python_package", "package_name=pillow" ],
 
@@ -26,12 +35,12 @@
         [ "byquery", [[ "^^", "get", "coco_images_query" ]] ],
         [ "get_path" ]
     ]], {}, [ "coco_images_query" ] ],
-    "coco_images_directory":[ "^", "execute", [[ 
+    "coco_images_directory": [ "^", "execute", [[
         [ "byquery", [[ "^^", "get", "coco_images_query" ]] ], 
         [ "get_path" ]
         ]], {}, [ "coco_images_query" ]],
 
-    "resolution":           300,
+    "resolution":           1200,
     "supported_extensions": ["jpeg", "jpg", "gif", "png"],
     "data_type":            "uint8",
     "new_file_extension":   "rgb8",

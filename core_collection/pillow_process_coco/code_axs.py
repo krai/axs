@@ -33,7 +33,7 @@ def load_image(image_path,            # Full path to processing image
     return batch_data, original_width, original_height
 
 
-def preprocess(coco_images_directory, resolution, supported_extensions, data_type, new_file_extension, file_name,  fof_name, first_n=None, tags=None, entry_name=None, __record_entry__=None):
+def preprocess(coco_images_directory, images_annotation, resolution, supported_extensions, data_type, new_file_extension, file_name,  fof_name, first_n=None, tags=None, entry_name=None, __record_entry__=None):
     "Go through the selected_filenames and preprocess all the files"
 
     output_signatures = []
@@ -47,7 +47,8 @@ def preprocess(coco_images_directory, resolution, supported_extensions, data_typ
 
     os.makedirs( output_directory )
 
-    sorted_filenames = [filename for filename in sorted(os.listdir(coco_images_directory)) if any(filename.lower().endswith(extension) for extension in supported_extensions) ]
+    #sorted_filenames = [filename for filename in sorted(os.listdir(coco_images_directory)) if any(filename.lower().endswith(extension) for extension in supported_extensions) ]
+    sorted_filenames = [ ann_record['file_name'] for ann_record in images_annotation ]
 
     selected_filenames = sorted_filenames[:first_n] if first_n is not None else sorted_filenames
 
