@@ -231,8 +231,7 @@ def main():
     sum_inference_s         = 0
     list_batch_loading_s    = []
     list_batch_inference_s  = []
-    results = {}
-    output_list_dict = []
+    detection_results       = {}
 
     for batch_start in range(0, num_of_images, max_batch_size):
         batch_num = batch_num + 1
@@ -264,8 +263,6 @@ def main():
             batch_num, batch_count, batch_loading_s*1000, batch_inference_s*1000))
 
         # Process results
-        detection_res = {}
-
         for index_in_batch, global_image_index in enumerate(batch_global_indices):
             width_orig, height_orig = original_w_h[global_image_index]
 
@@ -273,10 +270,7 @@ def main():
             image_name = os.path.splitext(filename_orig)[0]
             print('Processing image ',image_name)
 
-            detection_res["image_height"] = height_orig
-            detection_res["image_width"] = width_orig
-            detection_res["detections"] = []
-
+            detections = []
             for i in range(len(batch_results[2][index_in_batch])):
                 confidence = batch_results[2][index_in_batch][i]
                 if confidence > SCORE_THRESHOLD:
@@ -293,14 +287,18 @@ def main():
                     y2 = box[3] * height_orig
                     class_label = class_labels[class_number - bg_class_offset]
 
-                    detection = {}
-                    detection["bbox"] = [ round(float(x1),2), round(float(y1),2), round(float(x2),2), round(float(y2),2) ]
-                    detection["score"] = round(float(confidence),3)
-                    detection["class_id"] = class_number
-                    detection["class_name"] = class_label
-                    detection_res["detections"].append(detection)
+                    detections.append({
+                        "bbox":         [ round(float(x1),2), round(float(y1),2), round(float(x2),2), round(float(y2),2) ],
+                        "score":        round(float(confidence),3),
+                        "class_id":     class_number,
+                        "class_name":   class_label,
+                    })
 
-            results[image_name] = detection_res
+            detection_results[image_name] = {
+                "image_height": height_orig,
+                "image_width":  width_orig,
+                "detections":   detections,
+            }
 
     if output_file_path:
         output_dict = {
@@ -317,7 +315,7 @@ def main():
                 "list_batch_loading_s":     list_batch_loading_s,
                 "list_batch_inference_s":   list_batch_inference_s,
             },
-            "detections": results
+            "detections": detection_results,
         }
         json_string = json.dumps( output_dict , indent=4)
         with open(output_file_path, "w") as json_fd:
