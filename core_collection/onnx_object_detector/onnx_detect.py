@@ -202,16 +202,16 @@ def main():
             model_classes = output.shape[1]
 
 
-    print("Data layout: {}".format(MODEL_DATA_LAYOUT) )
-    print("Input layers: {}".format(input_layer_names))
-    print("Output layers: {}".format(output_layer_names))
-    print("Input layer name: " + INPUT_LAYER_NAME)
-    print("Expected input shape: {}".format(model_input_shape))
-    print("Expected input type: {}".format(model_input_type))
-    print("Output layer names: " + ", ".join([OUTPUT_LAYER_BBOXES, OUTPUT_LAYER_LABELS, OUTPUT_LAYER_SCORES]))
-    print("Data normalization: {}".format(MODEL_NORMALIZE_DATA))
-    print("Background/unlabelled classes to skip: {}".format(bg_class_offset))
-    print("")
+    print(f"Data layout: {MODEL_DATA_LAYOUT}", file=sys.stderr)
+    print(f"Input layers: {input_layer_names}", file=sys.stderr)
+    print(f"Output layers: {output_layer_names}", file=sys.stderr)
+    print(f"Input layer name: {INPUT_LAYER_NAME}", file=sys.stderr)
+    print(f"Expected input shape: {model_input_shape}", file=sys.stderr)
+    print(f"Expected input type: {model_input_type}", file=sys.stderr)
+    print(f"Output layer names: {[OUTPUT_LAYER_BBOXES, OUTPUT_LAYER_LABELS, OUTPUT_LAYER_SCORES]}", file=sys.stderr)
+    print(f"Data normalization: {MODEL_NORMALIZE_DATA}", file=sys.stderr)
+    print(f"Background/unlabelled classes to skip: {bg_class_offset}", file=sys.stderr)
+    print("", file=sys.stderr)
 
     try:
         expected_batch_size = int(model_input_shape[0])
@@ -259,8 +259,7 @@ def main():
         sum_loading_s      += batch_loading_s
         sum_inference_s    += batch_inference_s
 
-        print("[batch {} of {}] loading={:.2f} ms, inference={:.2f} ms".format(
-            batch_num, batch_count, batch_loading_s*1000, batch_inference_s*1000))
+        print(f"[batch {batch_num} of {batch_count}] loading={batch_loading_s*1000:.2f} ms, inference={batch_inference_s*1000:.2f} ms", file=sys.stderr)
 
         # Process results
         for index_in_batch, global_image_index in enumerate(batch_global_indices):
@@ -268,7 +267,6 @@ def main():
 
             filename_orig = image_filenames[global_image_index]
             image_name = os.path.splitext(filename_orig)[0]
-            print('Processing image ',image_name)
 
             detections = []
             for i in range(len(batch_results[2][index_in_batch])):
@@ -320,7 +318,7 @@ def main():
         json_string = json.dumps( output_dict , indent=4)
         with open(output_file_path, "w") as json_fd:
             json_fd.write( json_string+"\n" )
-        print(f'Predictions for {num_of_images} images written into "{output_file_path}"')
+        print(f'Predictions for {num_of_images} images written into "{output_file_path}"', file=sys.stderr)
 
 if __name__ == '__main__':
     main()
