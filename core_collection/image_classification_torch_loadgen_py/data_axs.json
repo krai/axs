@@ -20,7 +20,7 @@
 
     "python_deps": [
         [ "^", "byquery", [[ "^^", "get", "torchvision_query" ]], {}, ["torchvision_query"] ],
-        [ "^", "byname", "preprocessed_imagenet_loader" ],
+        [ "^", "byquery", "data_loader,imagenet" ],
         [ "^", "byquery", [ [ "^^", "get", "loadgen_query" ] ], {}, ["loadgen_query"] ]
     ],
 
