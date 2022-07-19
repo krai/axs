@@ -437,28 +437,35 @@ Usage examples :
 
                 call_record_entry_ptr = []  # the value of call_record_entry is returned via appending to this empty list
 
-                if call_params[0] in ('func', 'func0'):
-                    (action_name, pos_params, edit_dict) = call_params
-                    pre_params  = [ entry ] if action_name=='func0' else []
-                    action_name = pos_params[0]                                         # pos_params[] must have at least 1 element
-                    pos_params  = pos_params[1:]
-                    if '.' in action_name:                                              # an imported "dotted" function
-                        module_name, func_name = action_name.split('.')
-                        action_object = getattr(__import__(module_name), func_name)
-                    else:                                                               # a built-in function
-                        action_object = __builtins__[action_name]
+                call_params_iter    = iter(call_params)
+                action_name         = next(call_params_iter)
 
-                    pos_params = pre_params + rt_pipeline_wide.nested_calls( pos_params )
-                    result = function_access.feed(action_object, pos_params, edit_dict)
-
+                if action_name not in ('func', 'func0') and hasattr(entry, 'call'):     # an Entry-specific or Runnable-generic method
+                    result = entry.call(*call_params, call_record_entry_ptr=call_record_entry_ptr, nested_context=local_context)
                 else:
-                    if hasattr(entry, 'call'):                                          # an Entry-specific or Runnable-generic method
-                        result = entry.call(*call_params, call_record_entry_ptr=call_record_entry_ptr, nested_context=local_context)
+                    pos_params  = next(call_params_iter, [])
+                    if type(pos_params)==list:
+                        pos_params = rt_pipeline_wide.nested_calls(pos_params)              # perform all nested calls if there are any
+                    else:
+                        pos_params = [ pos_params ]                                         # simplified syntax for single positional parameter actions
+
+                    if action_name in ('func', 'func0'):                                # a built-in or dotted function, with or without passing
+                        pre_params  = [ entry ] if action_name=='func0' else []
+
+                        action_name = pos_params[0]                                         # pos_params[] must have at least 1 element
+                        pos_params  = pos_params[1:]
+                        if '.' in action_name:                                          # an imported "dotted" function
+                            module_name, func_name = action_name.split('.')
+                            action_object = getattr(__import__(module_name), func_name)
+                        else:                                                           # a built-in function
+                            action_object = __builtins__[action_name]
+
                     else:                                                               # a non-axs Object method
-                        (action_name, pos_params, edit_dict) = call_params
-                        action_object = getattr(entry, action_name)
-                        pos_params = rt_pipeline_wide.nested_calls( pos_params )
-                        result = function_access.feed(action_object, pos_params, edit_dict)
+                        pre_params = []
+                        action_object   = getattr(entry, action_name)
+
+                    edit_dict   = next(call_params_iter, {})
+                    result      = function_access.feed(action_object, pre_params + pos_params, edit_dict)
 
                 if input_label:
                     rt_pipeline_wide[input_label] = call_record_entry_ptr[0]
