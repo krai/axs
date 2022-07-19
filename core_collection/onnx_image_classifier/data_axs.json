@@ -18,7 +18,6 @@
                                            "Python 3.6.9",
                                            [ "python_package", ["^^", "get", "onnxruntime_name"], "for_python36" ] ],
                                         {"default_value": [ "python_package", ["^^", "get", "onnxruntime_name"] ] } ],
-    "pillow_query":         [ "python_package", "package_name=pillow" ],
     "python_deps": [
         [ "^", "byquery", [ [ "^^", "get", "onnxruntime_query" ] ], {}, ["onnxruntime_query"] ],
         [ "^", "byquery", "data_loader,imagenet" ]
