@@ -14,7 +14,7 @@
     ]] ],
     "images_annotation": [ "^^", "execute", [[
         [ "load_json", [[ "^^", "get", "coco_annotation_path" ]] ],
-        [ "get", ["images"] ]
+        [ "get", "images" ]
     ]] ],
 
     "numpy_query": [ "python_package", "package_name=numpy" ],
