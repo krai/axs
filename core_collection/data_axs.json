@@ -39,6 +39,7 @@
         "loadgen_wheel_recipe": "loadgen_wheel_recipe",
         "image_classification_torch_loadgen_py": "image_classification_torch_loadgen_py",
         "base_imagenet_loadgen_experiment": "base_imagenet_loadgen_experiment",
-        "imagenet_preprocessed_loader": "imagenet_preprocessed_loader"
+        "imagenet_preprocessed_loader": "imagenet_preprocessed_loader",
+        "coco_preprocessed_loader": "coco_preprocessed_loader"
     }
 }

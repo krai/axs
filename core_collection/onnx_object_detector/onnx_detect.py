@@ -8,6 +8,7 @@ from time import time
 
 import numpy as np
 import onnxruntime as rt
+from coco_loader import CocoLoader
 
 model_name                  = sys.argv[1]
 model_path                  = sys.argv[2]
@@ -30,46 +31,29 @@ OUTPUT_LAYER_SCORES = "scores"
 # Program parameters
 SCORE_THRESHOLD     = 0
 
-## Processing in batches:
-#
-BATCH_SIZE              = 1
-BATCH_COUNT             = 20
-SKIP_IMAGES             = 0
-
 
 ## Model properties:
 #
 MODEL_IMAGE_HEIGHT      = 1200
 MODEL_IMAGE_WIDTH       = 1200
 MODEL_IMAGE_CHANNELS    = 3
-MODEL_DATA_TYPE         = "(unknown)"
-MODEL_DATA_LAYOUT       = "NCHW"
-MODEL_COLOURS_BGR       = False
-MODEL_INPUT_DATA_TYPE   = "float32"
-MODEL_USE_DLA           = False
 SKIPPED_CLASSES         = [12,26,29,30,45,66,68,69,71,83]
-
-
-## Internal processing:
-#
-INTERMEDIATE_DATA_TYPE  = np.float32    # default for internal conversion
-#INTERMEDIATE_DATA_TYPE  = np.int8       # affects the accuracy a bit
 
 
 ## Image normalization:
 #
-MODEL_NORMALIZE_DATA    = True
-MODEL_NORMALIZE_LOWER   = 0
-MODEL_NORMALIZE_UPPER   = 1
-SUBTRACT_MEAN           = True
-GIVEN_CHANNEL_MEANS     = [0.485, 0.456, 0.406]
-GIVEN_CHANNEL_STDS      = [0.229, 0.224, 0.225]
+data_layout             = "NCHW"
+normalize_symmetric     = False
+subtract_mean_bool      = True
+given_channel_means     = [0.485, 0.456, 0.406]
+given_channel_stds      = [0.229, 0.224, 0.225]
+
 
 ## Preprocessed input images' properties:
 #
 IMAGE_LIST_FILE_NAME    = "original_dimensions.txt"
 original_dims_file_path = os.path.join(preprocessed_coco_dir, IMAGE_LIST_FILE_NAME)
-IMAGE_DATA_TYPE         = 'uint8'
+loader_object           = CocoLoader(preprocessed_coco_dir, original_dims_file_path, MODEL_IMAGE_HEIGHT, MODEL_IMAGE_WIDTH, data_layout, normalize_symmetric, subtract_mean_bool, given_channel_means, given_channel_stds)
 
 
 def load_labels(labels_filepath):
@@ -88,74 +72,6 @@ if (SKIPPED_CLASSES):
     for i in range(num_classes + bg_class_offset):
         if i not in SKIPPED_CLASSES:
             class_map.append(i)
-
-
-# Load preprocessed image filenames:
-with open(original_dims_file_path, 'r') as f:
-    image_list = [s.strip() for s in f]
-
-# Trim the input list of preprocessed files:
-image_list = image_list[SKIP_IMAGES: BATCH_COUNT * BATCH_SIZE + SKIP_IMAGES]
-
-# Creating a local list of processed files and parsing it:
-image_filenames = []
-original_w_h    = []
-for line in image_list:
-    file_name, width, height = line.split(";")
-    image_filenames.append( file_name )
-    original_w_h.append( (int(width), int(height)) )
-
-
-def load_image_by_index_and_normalize(image_filename):
-    img = np.fromfile(image_filename, np.dtype(IMAGE_DATA_TYPE))
-    img = img.reshape((MODEL_IMAGE_HEIGHT, MODEL_IMAGE_WIDTH, MODEL_IMAGE_CHANNELS))
-    if MODEL_COLOURS_BGR:
-        img = img[...,::-1]     # swapping Red and Blue colour channels
-
-    if IMAGE_DATA_TYPE != 'float32':
-        img = img.astype(np.float32)
-
-        # Normalize
-        if MODEL_NORMALIZE_DATA:
-            img = img*(MODEL_NORMALIZE_UPPER-MODEL_NORMALIZE_LOWER)/255.0+MODEL_NORMALIZE_LOWER
-
-        # Subtract mean value
-        if SUBTRACT_MEAN:
-            if len(GIVEN_CHANNEL_MEANS):
-                img -= GIVEN_CHANNEL_MEANS
-            else:
-                img -= np.mean(img, axis=(0,1), keepdims=True)
-
-        if len(GIVEN_CHANNEL_STDS):
-            img /= GIVEN_CHANNEL_STDS
-
-    if MODEL_INPUT_DATA_TYPE == 'int8' or INTERMEDIATE_DATA_TYPE==np.int8:
-        img = np.clip(img, -128, 127).astype(INTERMEDIATE_DATA_TYPE)
-
-    if MODEL_DATA_LAYOUT == 'NCHW':
-        img = img.transpose(2,0,1)
-    elif MODEL_DATA_LAYOUT == 'CHW4':
-        img = np.pad(img, ((0,0), (0,0), (0,1)), 'constant')
-
-    # Add img to batch
-    return img.astype(MODEL_INPUT_DATA_TYPE)
-
-
-def load_preprocessed_batch(batch_filenames):
-    batch_data = None
-    for index_in_batch, image_filename in enumerate(batch_filenames):
-        img = load_image_by_index_and_normalize(image_filename)
-        if batch_data is None:
-            batch_data = np.empty( (max_batch_size, *img.shape), dtype=MODEL_INPUT_DATA_TYPE)
-        batch_data[index_in_batch] = img
-
-    #print('Data shape: {}'.format(batch_data.shape))
-
-    if MODEL_USE_DLA and MODEL_MAX_BATCH_SIZE>len(batch_data):
-        return np.pad(batch_data, ((0,MODEL_MAX_BATCH_SIZE-len(batch_data)), (0,0), (0,0), (0,0)), 'constant')
-    else:
-        return batch_data
-
 
 
 def main():
@@ -202,14 +118,13 @@ def main():
             model_classes = output.shape[1]
 
 
-    print(f"Data layout: {MODEL_DATA_LAYOUT}", file=sys.stderr)
+    print(f"Data layout: {data_layout}", file=sys.stderr)
     print(f"Input layers: {input_layer_names}", file=sys.stderr)
     print(f"Output layers: {output_layer_names}", file=sys.stderr)
     print(f"Input layer name: {INPUT_LAYER_NAME}", file=sys.stderr)
     print(f"Expected input shape: {model_input_shape}", file=sys.stderr)
     print(f"Expected input type: {model_input_type}", file=sys.stderr)
     print(f"Output layer names: {[OUTPUT_LAYER_BBOXES, OUTPUT_LAYER_LABELS, OUTPUT_LAYER_SCORES]}", file=sys.stderr)
-    print(f"Data normalization: {MODEL_NORMALIZE_DATA}", file=sys.stderr)
     print(f"Background/unlabelled classes to skip: {bg_class_offset}", file=sys.stderr)
     print("", file=sys.stderr)
 
@@ -221,7 +136,6 @@ def main():
         max_batch_size = None
 
     # Run batched mode
-    images_loaded           = 0
     next_batch_offset       = 0
 
     batch_count             = math.ceil(num_of_images / max_batch_size)
@@ -234,16 +148,13 @@ def main():
     detection_results       = {}
 
     for batch_start in range(0, num_of_images, max_batch_size):
-        batch_num = batch_num + 1
-        batch_open_end = min(batch_start+max_batch_size, num_of_images)
 
         ts_before_data_loading  = time()
 
-        batch_global_indices = range(batch_start, batch_open_end)
-        batch_filenames      = [ os.path.join(preprocessed_coco_dir, image_filenames[g]) for g in batch_global_indices ]
-
-        batch_data           = load_preprocessed_batch(batch_filenames)
-        images_loaded       += batch_open_end - batch_start
+        batch_num                   = batch_num + 1
+        batch_open_end              = min(batch_start+max_batch_size, num_of_images)
+        batch_global_indices        = range(batch_start, batch_open_end)
+        batch_data, batch_filenames = loader_object.load_preprocessed_batch_from_indices( batch_global_indices )
 
         ts_before_inference = time()
 
@@ -263,9 +174,9 @@ def main():
 
         # Process results
         for index_in_batch, global_image_index in enumerate(batch_global_indices):
-            width_orig, height_orig = original_w_h[global_image_index]
+            width_orig, height_orig = loader_object.original_w_h[global_image_index]
 
-            filename_orig = image_filenames[global_image_index]
+            filename_orig = loader_object.image_filenames[global_image_index]
             image_name = os.path.splitext(filename_orig)[0]
 
             detections = []
