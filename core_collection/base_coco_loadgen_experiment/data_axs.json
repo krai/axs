@@ -1,0 +1,31 @@
+{
+    "__parent_entries": [ [ "^", "byname", "base_imagenet_experiment" ] ],
+
+    "mlperf_inference_git_entry": [ "^", "byquery", "git_repo,repo_name=mlperf_inference_git" ],
+
+    "abs_script_path": [ "^^", "execute", [[
+        [ "get", "mlperf_inference_git_entry" ],
+        [ "get_path", [["vision", "classification_and_detection", "tools", "accuracy-coco.py"]] ]
+    ]], {}, ["mlperf_inference_git_entry"] ],
+
+    "coco_dir": [ "^", "execute", [[
+        ["byquery", "extracted,coco_annotation"],
+        ["get_path", ""]
+    ]] ],
+
+    "accuracy_log_path": ["^^", "get_path", "mlperf_log_accuracy.json"],
+
+    "mAP": [ "^^", "execute", [[
+        [ "get_kernel" ],
+        [ "byname", "python_script" ],
+        [ "run", [], {
+                "python_deps": [
+                    [ "^", "byquery", "python_package,package_name=matplotlib" ],
+                    [ "^", "byquery", "python_package,package_name=pycocotools" ]
+                ],
+                "abs_script_path": ["^^", "get", "abs_script_path"],
+                "script_extra_params": [ "^^", "substitute", "--coco-dir \"#{coco_dir}#\" --mlperf-accuracy-file \"#{accuracy_log_path}#\"" ],
+                "capture_output": true
+            } ]
+    ]], {} ]
+}

@@ -1,0 +1,93 @@
+{
+    "_parent_entries": [ [ "^", "byname", "python_script" ] ],
+    "_producer_rules": [
+        [ [ "loadgen_output", "detected_coco", "framework=onnx" ], [ "^^", "get", "__entry__" ], "run", { "return_saved_record_entry": true } ]
+    ],
+
+    "num_gpus": [ "^", "execute", [[
+                       [ "byquery", "shell_tool,can_gpu" ],
+                       [ "run" ]
+                ]] ],
+    "python_version": [ "^", "execute", [[
+                             [ "byquery", "shell_tool,can_python" ],
+                             [ "run" ]
+                ]] ],
+    "onnxruntime_name": ["^", "case",[ ["^^", "get", "num_gpus"], "0", "package_name=onnxruntime" ], {"default_value": "package_name=onnxruntime-gpu"}, ["num_gpus"]],
+
+    "onnxruntime_query": [ "^^", "case", [ ["^^", "get", "python_version"],
+                                           "Python 3.6.9",
+                                           [ "python_package", ["^^", "get", "onnxruntime_name"], "for_python36" ] ],
+                                        {"default_value": [ "python_package", ["^^", "get", "onnxruntime_name"] ] } ],
+
+    "loadgen_query":    [ "python_package", "package_name=mlperf_loadgen" ],
+
+    "python_deps": [
+        [ "^", "byquery", [ [ "^^", "get", "onnxruntime_query" ] ], {}, ["onnxruntime_query"] ],
+        [ "^", "byquery", "data_loader,coco_images" ],
+        [ "^", "byquery", [ [ "^^", "get", "loadgen_query" ] ], {}, ["loadgen_query"] ]
+    ],
+
+    "model_name": "ssd_resnet34",
+    "model_query": [ "downloaded", "onnx_model", [ "^^", "substitute", "model_name=#{model_name}#" ] ],
+    "model_entry": [ "^", "byquery", [[ "^^", "get", "model_query" ]], {}, ["model_query"] ],
+    "model_path": [ "^^", "execute", [[
+        [ "get", "model_entry" ],
+        [ "get_path" ]
+    ]] ],
+    "model_resolution": [ "^^", "dig", "model_entry.resolution" ],
+
+    "preprocessed_coco_query": [ "preprocessed", "coco_images", [ "^^", "substitute", "resolution=#{model_resolution}#" ], [ "^^", "substitute", "first_n=#{loadgen_dataset_size}#" ] ],
+    "preprocessed_coco_dir": [ "^", "execute", [[
+        [ "byquery", [[ "^^", "get", "preprocessed_coco_query" ]] ],
+        [ "get_path" ]
+    ]], {}, ["preprocessed_coco_query"] ],
+
+    "coco_labels_file_name": "coco_flatlabels.txt",
+    "output_file_name": "script_output.json",
+    "framework": "onnx",
+    "cpu_threads": 0,
+    "batch_size": 1,
+    "framework": "onnx",
+    "execution_device": "",
+    "verbosity": 2,
+
+    "loadgen_scenario": "SingleStream",
+    "loadgen_mode": "AccuracyOnly",
+    "loadgen_dataset_size": 20,
+    "loadgen_buffer_size": 8,
+    "loadgen_count_override": "",
+    "loadgen_multistreamness": "",
+    "loadgen_config_path": "",
+
+    "output_entry": [ "^^", "execute", [[
+        [ "get", "__record_entry__" ],
+        [ "attach", [ "^", "work_collection" ] ],
+        [ "plant", [ "^^", "substitute", [[
+            "_parent_entries", [ "AS^IS", "AS^IS", [ "^", "byname", "base_coco_loadgen_experiment" ] ],
+            "model_name", "#{model_name}#",
+            "framework", "#{framework}#",
+            "preprocessed_coco_dir", "#{preprocessed_coco_dir}#",
+
+            "loadgen_scenario", "#{loadgen_scenario}#",
+            "loadgen_mode", "#{loadgen_mode}#",
+            "loadgen_dataset_size", "#{loadgen_dataset_size}#",
+            "loadgen_buffer_size", "#{loadgen_buffer_size}#",
+            "loadgen_count_override", "#{loadgen_count_override}#",
+            "loadgen_multistreamness", "#{loadgen_multistreamness}#",
+            "loadgen_config_path", "#{loadgen_config_path}#",
+
+            "tags", [ "loadgen_output", "detected_coco" ]
+         ]] ] ],
+         [ "save" ]
+    ]] ],
+
+    "coco_labels_file_path": [ "^^", "get_path_from", "coco_labels_file_name"],
+
+    "in_dir": [ "^^", "execute", [[
+        [ "get", "output_entry" ],
+        [ "get_path" ]
+    ]] ],
+    "rel_script_path": "onnx_loadgen_detector.py",
+
+    "script_extra_params": [ "^^", "substitute", "\"#{loadgen_scenario}#\" \"#{loadgen_mode}#\" #{loadgen_dataset_size}# #{loadgen_buffer_size}# \"#{loadgen_count_override}#\" \"#{loadgen_multistreamness}#\" \"#{loadgen_config_path}#\" #{verbosity}# \"#{model_path}#\" \"#{model_name}#\" \"#{execution_device}#\" #{batch_size}# #{cpu_threads}# \"#{preprocessed_coco_dir}#\" \"#{coco_labels_file_path}#\"" ]
+}

@@ -41,6 +41,8 @@
         "base_imagenet_loadgen_experiment": "base_imagenet_loadgen_experiment",
         "imagenet_preprocessed_loader": "imagenet_preprocessed_loader",
         "coco_preprocessed_loader": "coco_preprocessed_loader",
-        "image_classification_onnx_loadgen_py": "image_classification_onnx_loadgen_py"
+        "image_classification_onnx_loadgen_py": "image_classification_onnx_loadgen_py",
+        "object_detection_onnx_loadgen_py": "object_detection_onnx_loadgen_py",
+        "base_coco_loadgen_experiment": "base_coco_loadgen_experiment"
     }
 }
