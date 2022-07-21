@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
 
+"""A standalone Object Detection program based on ONNX.
+
+Usage examples  :
+
+                    # a short accuracy run:
+                axs byquery script_output,detected_coco,framework=onnx,num_of_images=20 , mAP
+"""
+
 import os
 import json
 import sys
