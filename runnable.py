@@ -298,7 +298,7 @@ Usage examples :
             call_record_entry   = ak.fresh_entry(container=ak.record_container(), own_data=captured_mapping, generated_name_prefix=f"generated_by_{self.get_name()}_on_{action_name}_")
             rt_call_specific['__record_entry__'] = call_record_entry    # the order is important: first nested_calls() (potentially blocked by {"AS^IS": {}}  then add __record_entry__
 
-        if not pos_params:
+        if pos_params is None:
             pos_params = []                                 # allow pos_params to be missing
         elif type(pos_params)==list:
             pos_params = self.nested_calls(pos_params)      # perform all nested calls if there are any
