@@ -6,6 +6,10 @@ Usage examples  :
 
                     # a short accuracy run:
                 axs byquery script_output,detected_coco,framework=onnx,num_of_images=20 , mAP
+
+                    # running without a model_entry (all relevant data specified directly) :
+                axs byname onnx_object_detector , run --num_of_images=1 --model_name=RetinaNet --model_path=/Users/lg4/tmp/retinanet/retinanet_resnext50_32x4d_model_12.onnx --model_resolution=800 --model_output_scale=800 --model_input_layer_name=images --model_output_layers_bls="['boxes','labels','scores']" --model_skipped_classes="[]" --normalize_symmetric=False --subtract_mean_bool=False --given_channel_means="[]" --given_channel_stds="[]"
+
 """
 
 import os
@@ -20,48 +24,51 @@ from coco_loader import CocoLoader
 
 model_name                  = sys.argv[1]
 model_path                  = sys.argv[2]
-preprocessed_coco_dir       = sys.argv[3]
-num_of_images               = int(sys.argv[4])
-max_batch_size              = int(sys.argv[5])
-execution_device            = sys.argv[6]           # if empty, it will be autodetected
-cpu_threads                 = int(sys.argv[7])
-coco_labels_file_path       = sys.argv[8]
-output_file_path            = sys.argv[9]
+model_resolution            = int(sys.argv[3])
+model_output_scale          = float(sys.argv[4])
+model_input_layer_name      = sys.argv[5]
+model_output_layers_bls     = eval(sys.argv[6])
+model_skipped_classes       = eval(sys.argv[7])
+
+normalize_symmetric         = eval(sys.argv[8])     # FIXME: currently we are passing a stringified form of a data structure,
+subtract_mean_bool          = eval(sys.argv[9])     # it would be more flexible to encode/decode through JSON instead.
+given_channel_means         = eval(sys.argv[10])
+given_channel_stds          = eval(sys.argv[11])
+
+preprocessed_coco_dir       = sys.argv[12]
+num_of_images               = int(sys.argv[13])
+max_batch_size              = int(sys.argv[14])
+execution_device            = sys.argv[15]           # if empty, it will be autodetected
+cpu_threads                 = int(sys.argv[16])
+coco_labels_file_path       = sys.argv[17]
+output_file_path            = sys.argv[18]
 
 
-## Model properties:
+### RetinaNet:
+### num_of_images=1  : mAP=0.33182702885673176
+### num_of_images=10 : mAP=0.3836621714436375
 #
-INPUT_LAYER_NAME    = "image"
-OUTPUT_LAYER_BBOXES = "bboxes"
-OUTPUT_LAYER_LABELS = "labels"
-OUTPUT_LAYER_SCORES = "scores"
-
-# Program parameters
-SCORE_THRESHOLD     = 0
-
-
-## Model properties:
-#
-MODEL_IMAGE_HEIGHT      = 1200
-MODEL_IMAGE_WIDTH       = 1200
-MODEL_IMAGE_CHANNELS    = 3
-SKIPPED_CLASSES         = [12,26,29,30,45,66,68,69,71,83]
+#model_input_layer_name  = "images"
+#model_output_layers_bls = ["boxes", "labels", "scores"]
+#model_skipped_classes   = []
+#normalize_symmetric     = False
+#subtract_mean_bool      = False
+#given_channel_means     = []
+#given_channel_stds      = []
 
 
 ## Image normalization:
 #
-data_layout             = "NCHW"
-normalize_symmetric     = False
-subtract_mean_bool      = True
-given_channel_means     = [0.485, 0.456, 0.406]
-given_channel_stds      = [0.229, 0.224, 0.225]
+data_layout                 = "NCHW"
 
+# Program parameters
+SCORE_THRESHOLD             = 0
 
 ## Preprocessed input images' properties:
 #
 IMAGE_LIST_FILE_NAME    = "original_dimensions.txt"
 original_dims_file_path = os.path.join(preprocessed_coco_dir, IMAGE_LIST_FILE_NAME)
-loader_object           = CocoLoader(preprocessed_coco_dir, original_dims_file_path, MODEL_IMAGE_HEIGHT, MODEL_IMAGE_WIDTH, data_layout, normalize_symmetric, subtract_mean_bool, given_channel_means, given_channel_stds)
+loader_object           = CocoLoader(preprocessed_coco_dir, original_dims_file_path, model_resolution, model_resolution, data_layout, normalize_symmetric, subtract_mean_bool, given_channel_means, given_channel_stds)
 
 
 def load_labels(labels_filepath):
@@ -75,15 +82,15 @@ class_labels    = load_labels(coco_labels_file_path)
 num_classes     = len(class_labels)
 bg_class_offset = 1
 class_map       = None
-if (SKIPPED_CLASSES):
+if (model_skipped_classes):
     class_map = []
     for i in range(num_classes + bg_class_offset):
-        if i not in SKIPPED_CLASSES:
+        if i not in model_skipped_classes:
             class_map.append(i)
 
 
 def main():
-    global INPUT_LAYER_NAME, max_batch_size
+    global model_input_layer_name, max_batch_size
 
     ts_before_model_loading = time()
 
@@ -111,28 +118,31 @@ def main():
 
     model_loading_s = time() - ts_before_model_loading
 
-    input_layer_names = [x.name for x in sess.get_inputs()]     # FIXME: check that INPUT_LAYER_NAME belongs to this list
-    INPUT_LAYER_NAME = INPUT_LAYER_NAME or input_layer_names[0]
+    input_layer_names = [x.name for x in sess.get_inputs()]     # FIXME: check that model_input_layer_name belongs to this list
+    model_input_layer_name = model_input_layer_name or input_layer_names[0]
 
     output_layer_names = [x.name for x in sess.get_outputs()]    # FIXME: check that OUTPUT_LAYER_NAME belongs to this list
+
+
+    for inp in sess.get_inputs():
+        print(f"inp.name={inp.name} , inp.shape={inp.shape} , inp.type={inp.type}")
 
     model_input_shape = sess.get_inputs()[0].shape
     model_input_type  = sess.get_inputs()[0].type
     model_input_type  = np.uint8 if model_input_type == 'tensor(uint8)' else np.float32     # FIXME: there must be a more humane way!
 
-        # a more portable way to detect the number of classes
     for output in sess.get_outputs():
-        if output.name == OUTPUT_LAYER_LABELS:
-            model_classes = output.shape[1]
-
+        print(f"output.name={output.name} , output.shape={output.shape} , output.type={output.type}")
+        if output.name == model_output_layers_bls[0]:
+            extra_dimension_needed = len(output.shape)<3
 
     print(f"Data layout: {data_layout}", file=sys.stderr)
     print(f"Input layers: {input_layer_names}", file=sys.stderr)
     print(f"Output layers: {output_layer_names}", file=sys.stderr)
-    print(f"Input layer name: {INPUT_LAYER_NAME}", file=sys.stderr)
+    print(f"Input layer name: {model_input_layer_name}", file=sys.stderr)
     print(f"Expected input shape: {model_input_shape}", file=sys.stderr)
     print(f"Expected input type: {model_input_type}", file=sys.stderr)
-    print(f"Output layer names: {[OUTPUT_LAYER_BBOXES, OUTPUT_LAYER_LABELS, OUTPUT_LAYER_SCORES]}", file=sys.stderr)
+    print(f"Output layer names: {model_output_layers_bls}", file=sys.stderr)
     print(f"Background/unlabelled classes to skip: {bg_class_offset}", file=sys.stderr)
     print("", file=sys.stderr)
 
@@ -167,7 +177,12 @@ def main():
         ts_before_inference = time()
 
         run_options = rt.RunOptions()
-        batch_results = sess.run([OUTPUT_LAYER_BBOXES, OUTPUT_LAYER_LABELS, OUTPUT_LAYER_SCORES], {INPUT_LAYER_NAME: batch_data}, run_options)
+        batch_results = sess.run(model_output_layers_bls, {model_input_layer_name: batch_data}, run_options)
+
+        print(f"len(batch_results[2])={len(batch_results[2])}")
+
+        if extra_dimension_needed:  # adding an extra dimension (on for RetinaNet, off for Resnet34-SSD)
+            batch_results = [[br] for br in batch_results]
 
         ts_after_inference  = time()
 
@@ -198,10 +213,10 @@ def main():
                         class_number = class_number
 
                     box = batch_results[0][index_in_batch][i]
-                    x1 = box[0] * width_orig
-                    y1 = box[1] * height_orig
-                    x2 = box[2] * width_orig
-                    y2 = box[3] * height_orig
+                    x1 = box[0] / model_output_scale * width_orig
+                    y1 = box[1] / model_output_scale * height_orig
+                    x2 = box[2] / model_output_scale * width_orig
+                    y2 = box[3] / model_output_scale * height_orig
                     class_label = class_labels[class_number - bg_class_offset]
 
                     detections.append({

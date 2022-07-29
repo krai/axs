@@ -32,6 +32,16 @@
         [ "get_path" ]
     ]] ],
     "model_resolution": [ "^^", "dig", "model_entry.resolution" ],
+    "model_output_scale": [ "^^", "dig", "model_entry.output_scale" ],
+
+    "model_input_layer_name": [ "^^", "dig", "model_entry.input_layer_name" ],
+    "model_output_layers_bls": [ "^^", "dig", "model_entry.output_layers_bls" ],
+    "model_skipped_classes": [ "^^", "dig", "model_entry.skipped_classes" ],
+
+    "normalize_symmetric": [ "^^", "dig", "model_entry.normalize_symmetric" ],
+    "subtract_mean_bool": [ "^^", "dig", "model_entry.subtract_mean_bool" ],
+    "given_channel_means": [ "^^", "dig", "model_entry.given_channel_means" ],
+    "given_channel_stds": [ "^^", "dig", "model_entry.given_channel_stds" ],
 
     "preprocessed_coco_query": [ "preprocessed", "coco_images", [ "^^", "substitute", "resolution=#{model_resolution}#" ], [ "^^", "substitute", "first_n=#{num_of_images}#" ] ],
     "preprocessed_coco_dir": [ "^", "execute", [[
@@ -56,6 +66,7 @@
             "tags", [ "script_output", "detected_coco" ],
             "num_of_images", "#{num_of_images}#",
             "model_name", "#{model_name}#",
+            "model_resolution", "#{model_resolution}#",
             "framework", "#{framework}#",
             "output_file_name", "#{output_file_name}#",
             "preprocessed_coco_dir", "#{preprocessed_coco_dir}#"
@@ -72,5 +83,5 @@
 
     "rel_script_path": "onnx_detect.py",
 
-    "script_extra_params": [ "^^", "substitute", "\"#{model_name}#\" \"#{model_path}#\" \"#{preprocessed_coco_dir}#\" #{num_of_images}# #{max_batch_size}# \"#{execution_device}#\" #{cpu_threads}# \"#{coco_labels_file_path}#\" \"#{output_file_path}#\"" ]
+    "script_extra_params": [ "^^", "substitute", "\"#{model_name}#\" \"#{model_path}#\" #{model_resolution}# #{model_output_scale}# \"#{model_input_layer_name}#\" \"#{model_output_layers_bls}#\" \"#{model_skipped_classes}#\" \"#{normalize_symmetric}#\" \"#{subtract_mean_bool}#\" \"#{given_channel_means}#\" \"#{given_channel_stds}#\" \"#{preprocessed_coco_dir}#\" #{num_of_images}# #{max_batch_size}# \"#{execution_device}#\" #{cpu_threads}# \"#{coco_labels_file_path}#\" \"#{output_file_path}#\"" ]
 }
