@@ -7,6 +7,9 @@ Usage examples  :
                     # a short accuracy run:
                 axs byquery script_output,detected_coco,framework=onnx,num_of_images=20 , mAP
 
+                    # a short accuracy run with RetinaNet model:
+                axs byquery script_output,detected_coco,framework=onnx,model_name=retinanet , mAP
+
                     # running without a model_entry (all relevant data specified directly) :
                 axs byname onnx_object_detector , run --num_of_images=1 --model_name=RetinaNet --model_path=/Users/lg4/tmp/retinanet/retinanet_resnext50_32x4d_model_12.onnx --model_resolution=800 --model_output_scale=800 --model_input_layer_name=images --model_output_layers_bls="['boxes','labels','scores']" --model_skipped_classes="[]" --normalize_symmetric=False --subtract_mean_bool=False --given_channel_means="[]" --given_channel_stds="[]"
 
@@ -178,8 +181,6 @@ def main():
 
         run_options = rt.RunOptions()
         batch_results = sess.run(model_output_layers_bls, {model_input_layer_name: batch_data}, run_options)
-
-        print(f"len(batch_results[2])={len(batch_results[2])}")
 
         if extra_dimension_needed:  # adding an extra dimension (on for RetinaNet, off for Resnet34-SSD)
             batch_results = [[br] for br in batch_results]

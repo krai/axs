@@ -43,6 +43,7 @@
         "coco_preprocessed_loader": "coco_preprocessed_loader",
         "image_classification_onnx_loadgen_py": "image_classification_onnx_loadgen_py",
         "object_detection_onnx_loadgen_py": "object_detection_onnx_loadgen_py",
-        "base_coco_loadgen_experiment": "base_coco_loadgen_experiment"
+        "base_coco_loadgen_experiment": "base_coco_loadgen_experiment",
+        "model_onnx_retinanet_recipe": "model_onnx_retinanet_recipe"
     }
 }
