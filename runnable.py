@@ -400,10 +400,6 @@ Usage examples :
                 axs version , split . , __getitem__ 2
                 axs core_collection , get_path , split /axs/ , __getitem__ 0
 
-                axs func runnable.plus_one 12
-                axs func numpy.arange 15                                                    # if numpy is already installed in PYTHONPATH
-                axs byquery python_package,package_name=numpy , use , func numpy.arange 7   # if we need our own specific numpy
-
                 axs noop 12 , func0 runnable.plus_one
                 axs noop 12.345 , func0 format 10.4f
                 axs core_collection , get contained_entries , keys , func0 list
@@ -440,7 +436,7 @@ Usage examples :
                 call_params_iter    = iter(call_params)
                 action_name         = next(call_params_iter)
 
-                if action_name not in ('func', 'func0') and hasattr(entry, 'call'):     # an Entry-specific or Runnable-generic method
+                if action_name!='func0' and hasattr(entry, 'call'):                     # an Entry-specific or Runnable-generic method ("func" called on an Entry will fire here)
                     result = entry.call(*call_params, call_record_entry_ptr=call_record_entry_ptr, nested_context=local_context)
                 else:
                     pos_params  = next(call_params_iter, [])
@@ -449,27 +445,17 @@ Usage examples :
                     else:
                         pos_params = [ pos_params ]                                         # simplified syntax for single positional parameter actions
 
-                    if action_name in ('func', 'func0'):                                # a built-in or dotted function, with or without passing
+                    if action_name in ('func', 'func0'):                                # a built-in or dotted function, with or without passing ("func" called on an non-Entry will fire here)
                         pre_params  = [ entry ] if action_name=='func0' else []
 
                         action_name = pos_params[0]                                         # pos_params[] must have at least 1 element
-                        pos_params  = pos_params[1:]
-                        if '.' in action_name:                                          # an imported "dotted" function (can be several dots deep)
-                            action_object = None
-                            for syll in action_name.split('.'):
-                                if action_object:
-                                    action_object = getattr(action_object, syll)
-                                else:
-                                    action_object =  __import__(syll)
-                        else:                                                           # a built-in function
-                            action_object = __builtins__[action_name]
-
+                        pos_params  = pre_params + pos_params[1:]
+                        result = self.func(action_name, *pos_params)
                     else:                                                               # a non-axs Object method
-                        pre_params = []
                         action_object   = getattr(entry, action_name)
 
-                    edit_dict   = next(call_params_iter, {})
-                    result      = function_access.feed(action_object, pre_params + pos_params, edit_dict)
+                        edit_dict   = next(call_params_iter, {})
+                        result      = function_access.feed(action_object, pos_params, edit_dict)
 
                 if input_label:
                     rt_pipeline_wide[input_label] = call_record_entry_ptr[0]
@@ -480,6 +466,31 @@ Usage examples :
                 entry = result
 
         return result
+
+
+    def func(self, func_name, *func_params):
+        """Run an arbitrary Python's function - either a built-in or member of a reachable module.
+
+            NB: Currently doesn't pick up parameters from the containing object.
+
+Usage examples :
+                axs func runnable.plus_one 12                                               # internal to AXS
+                axs func len abcde                                                          # built-in
+                axs func os.path.join alpha beta gamma                                      # part of Python's core library
+                axs func numpy.arange 15                                                    # if numpy is already installed in PYTHONPATH
+                axs byquery python_package,package_name=numpy , use , func numpy.arange 7   # if we need our own specific numpy
+        """
+        if '.' in func_name:                                            # an imported "dotted" function (can be several dots deep)
+            func_object = None
+            for syll in func_name.split('.'):
+                if func_object:
+                    func_object = getattr(func_object, syll)
+                else:
+                    func_object =  __import__(syll)
+        else:                                                           # a built-in function
+            func_object = __builtins__[func_name]
+
+        return function_access.feed(func_object, func_params, {})
 
 
     def python_api(self, src_text, line_sep='\\n'):
