@@ -3,8 +3,11 @@
         [ "^", "byname", "shell" ]
     ],
     "_producer_rules": [
+        [ ["shell_tool", "can_download_url_from_google_drive" ] , [ "^^", "get", "__entry__" ], "detect", { "tool_name": "gdown", "shell_cmd_with_subs": "\"#{tool_path}#\" -O \"#{target_path}#\" \"#{url}#\"" } ],
+
         [ [ "shell_tool", "can_download_url" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "wget", "shell_cmd_with_subs": "\"#{tool_path}#\" -O \"#{target_path}#\" #{url}#" } ],
         [ [ "shell_tool", "can_download_url" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "curl", "shell_cmd_with_subs": "\"#{tool_path}#\" -L -o \"#{target_path}#\" #{url}#" } ],
+
 
         [ [ "shell_tool", "can_extract_tar" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "tar", "strip_components": 0,
             "uncompression_insert": ["AS^IS", "^^", "case",   [ ["^^", "get", "archive_format"],
