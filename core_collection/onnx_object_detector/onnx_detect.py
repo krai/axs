@@ -32,7 +32,6 @@ model_output_scale          = float(sys.argv[4])
 model_input_layer_name      = sys.argv[5]
 model_output_layers_bls     = eval(sys.argv[6])
 model_skipped_classes       = eval(sys.argv[7])
-
 normalize_symmetric         = eval(sys.argv[8])     # FIXME: currently we are passing a stringified form of a data structure,
 subtract_mean_bool          = eval(sys.argv[9])     # it would be more flexible to encode/decode through JSON instead.
 given_channel_means         = eval(sys.argv[10])
@@ -50,21 +49,14 @@ output_file_path            = sys.argv[18]
 ### RetinaNet:
 ### num_of_images=1  : mAP=0.33182702885673176
 ### num_of_images=10 : mAP=0.3836621714436375
-#
-#model_input_layer_name  = "images"
-#model_output_layers_bls = ["boxes", "labels", "scores"]
-#model_skipped_classes   = []
-#normalize_symmetric     = False
-#subtract_mean_bool      = False
-#given_channel_means     = []
-#given_channel_stds      = []
 
 
 ## Image normalization:
 #
 data_layout                 = "NCHW"
 
-# Program parameters
+# Program parameters:
+#
 SCORE_THRESHOLD             = 0
 
 ## Preprocessed input images' properties:

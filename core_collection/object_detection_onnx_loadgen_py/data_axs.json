@@ -35,6 +35,17 @@
         [ "get_path" ]
     ]] ],
     "model_resolution": [ "^^", "dig", "model_entry.resolution" ],
+    "model_output_scale": [ "^^", "dig", "model_entry.output_scale" ],
+
+    "model_input_layer_name": [ "^^", "dig", "model_entry.input_layer_name" ],
+    "model_output_layers_bls": [ "^^", "dig", "model_entry.output_layers_bls" ],
+    "model_skipped_classes": [ "^^", "dig", "model_entry.skipped_classes" ],
+
+    "normalize_symmetric": [ "^^", "dig", "model_entry.normalize_symmetric" ],
+    "subtract_mean_bool": [ "^^", "dig", "model_entry.subtract_mean_bool" ],
+    "given_channel_means": [ "^^", "dig", "model_entry.given_channel_means" ],
+    "given_channel_stds": [ "^^", "dig", "model_entry.given_channel_stds" ],
+
 
     "preprocessed_coco_query": [ "preprocessed", "coco_images", [ "^^", "substitute", "resolution=#{model_resolution}#" ], [ "^^", "substitute", "first_n=#{loadgen_dataset_size}#" ] ],
     "preprocessed_coco_dir": [ "^", "execute", [[
@@ -89,5 +100,5 @@
     ]] ],
     "rel_script_path": "onnx_loadgen_detector.py",
 
-    "script_extra_params": [ "^^", "substitute", "\"#{loadgen_scenario}#\" \"#{loadgen_mode}#\" #{loadgen_dataset_size}# #{loadgen_buffer_size}# \"#{loadgen_count_override}#\" \"#{loadgen_multistreamness}#\" \"#{loadgen_config_path}#\" #{verbosity}# \"#{model_path}#\" \"#{model_name}#\" \"#{execution_device}#\" #{batch_size}# #{cpu_threads}# \"#{preprocessed_coco_dir}#\" \"#{coco_labels_file_path}#\"" ]
+    "script_extra_params": [ "^^", "substitute", "\"#{loadgen_scenario}#\" \"#{loadgen_mode}#\" #{loadgen_dataset_size}# #{loadgen_buffer_size}# \"#{loadgen_multistreamness}#\" \"#{loadgen_count_override}#\"  \"#{loadgen_config_path}#\" #{verbosity}# \"#{model_name}#\" \"#{model_path}#\" #{model_resolution}# #{model_output_scale}# \"#{model_input_layer_name}#\" \"#{model_output_layers_bls}#\" \"#{model_skipped_classes}#\" \"#{normalize_symmetric}#\" \"#{subtract_mean_bool}#\" \"#{given_channel_means}#\" \"#{given_channel_stds}#\" \"#{preprocessed_coco_dir}#\" \"#{coco_labels_file_path}#\" \"#{execution_device}#\" \"#{batch_size}#\" #{cpu_threads}#" ]
 }

@@ -6,6 +6,9 @@ Usage examples  :
 
                     # a short accuracy run:
                 axs byquery loadgen_output,detected_coco,framework=onnx,loadgen_dataset_size=20 , get mAP
+
+                    # a short accuracy run with RetinaNet model:
+                axs byquery loadgen_output,detected_coco,framework=onnx,loadgen_dataset_size=20,model_name=retinanet , get mAP
 """
 
 import array
@@ -28,48 +31,42 @@ multistreamness_str         = sys.argv[5]
 count_override_str          = sys.argv[6]
 config_filepath             = sys.argv[7]
 verbosity                   = int( sys.argv[8] )
-model_path                  = sys.argv[9]
-model_name                  = sys.argv[10]
-execution_device            = sys.argv[11]          # if empty, it will be autodetected
-batch_size                  = int( sys.argv[12])
-cpu_threads                 = int( sys.argv[13])
-preprocessed_coco_dir       = sys.argv[14]
-coco_labels_file_path       = sys.argv[15]
+
+model_name                  = sys.argv[9]
+model_path                  = sys.argv[10]
+model_resolution            = int(sys.argv[11])
+model_output_scale          = float(sys.argv[12])
+model_input_layer_name      = sys.argv[13]
+model_output_layers_bls     = eval(sys.argv[14])
+model_skipped_classes       = eval(sys.argv[15])
+normalize_symmetric         = eval(sys.argv[16])    # FIXME: currently we are passing a stringified form of a data structure,
+subtract_mean_bool          = eval(sys.argv[17])    # it would be more flexible to encode/decode through JSON instead.
+given_channel_means         = eval(sys.argv[18])
+given_channel_stds          = eval(sys.argv[19])
+
+preprocessed_coco_dir       = sys.argv[20]
+coco_labels_file_path       = sys.argv[21]
+execution_device            = sys.argv[22]          # if empty, it will be autodetected
+batch_size                  = int( sys.argv[23])
+cpu_threads                 = int( sys.argv[24])
 
 
-## Model properties:
+## Model parameters:
 #
-INPUT_LAYER_NAME    = "image"
-OUTPUT_LAYER_BBOXES = "bboxes"
-OUTPUT_LAYER_LABELS = "labels"
-OUTPUT_LAYER_SCORES = "scores"
-MODEL_MAX_PREDICTIONS = 100
-MODEL_IMAGE_HEIGHT      = 1200
-MODEL_IMAGE_WIDTH       = 1200
-MODEL_IMAGE_CHANNELS    = 3
-SKIPPED_CLASSES         = [12,26,29,30,45,66,68,69,71,83]
-
-
-# Program parameters
-SCORE_THRESHOLD         = 0
-
-
-## Image normalization:
-#
-data_layout             = "NCHW"
-normalize_symmetric     = False
-subtract_mean_bool      = True
-given_channel_means     = [0.485, 0.456, 0.406]
-given_channel_stds      = [0.229, 0.224, 0.225]
-
+data_layout                 = "NCHW"
 MODEL_INPUT_DATA_TYPE       = 'float32'
+
+
+# Program parameters:
+#
+SCORE_THRESHOLD             = 0
 
 
 ## Preprocessed input images' properties:
 #
 IMAGE_LIST_FILE_NAME    = "original_dimensions.txt"
 original_dims_file_path = os.path.join(preprocessed_coco_dir, IMAGE_LIST_FILE_NAME)
-loader_object           = CocoLoader(preprocessed_coco_dir, original_dims_file_path, MODEL_IMAGE_HEIGHT, MODEL_IMAGE_WIDTH, data_layout, normalize_symmetric, subtract_mean_bool, given_channel_means, given_channel_stds)
+loader_object           = CocoLoader(preprocessed_coco_dir, original_dims_file_path, model_resolution, model_resolution, data_layout, normalize_symmetric, subtract_mean_bool, given_channel_means, given_channel_stds)
 
 
 def load_labels(labels_filepath):
@@ -83,10 +80,10 @@ class_labels    = load_labels(coco_labels_file_path)
 num_classes     = len(class_labels)
 bg_class_offset = 1
 class_map       = None
-if (SKIPPED_CLASSES):
+if (model_skipped_classes):
     class_map = []
     for i in range(num_classes + bg_class_offset):
-        if i not in SKIPPED_CLASSES:
+        if i not in model_skipped_classes:
             class_map.append(i)
 
 preprocessed_image_buffer   = None
@@ -115,14 +112,12 @@ if "CUDAExecutionProvider" in session_execution_provider or "TensorrtExecutionPr
 else:
     print("Device: CPU", file=sys.stderr)
 
-input_layer_names   = [ x.name for x in sess.get_inputs() ]
-input_layer_name    = input_layer_names[0]
-output_layer_names  = [ x.name for x in sess.get_outputs() ]
-output_layer_name   = output_layer_names[0]
-model_input_shape   = sess.get_inputs()[0].shape
-model_output_shape  = sess.get_outputs()[0].shape
-height              = model_input_shape[2]
-width               = model_input_shape[3]
+
+for output in sess.get_outputs():
+    print(f"output.name={output.name} , output.shape={output.shape} , output.type={output.type}")
+    if output.name == model_output_layers_bls[0]:
+        extra_dimension_needed = len(output.shape)<3
+
 
 
 def tick(letter, quantity=1):
@@ -141,7 +136,7 @@ def load_query_samples(sample_indices):     # 0-based indices in our whole datas
     tick('B', len_sample_indices)
 
     if preprocessed_image_buffer is None:     # only do this once, once we know the expected size of the buffer
-        preprocessed_image_buffer = np.empty((len_sample_indices, MODEL_IMAGE_CHANNELS, MODEL_IMAGE_HEIGHT, MODEL_IMAGE_WIDTH), dtype=MODEL_INPUT_DATA_TYPE)
+        preprocessed_image_buffer = np.empty((len_sample_indices, 3, model_resolution, model_resolution), dtype=MODEL_INPUT_DATA_TYPE)
 
     for buffer_index, sample_index in zip(range(len_sample_indices), sample_indices):
         preprocessed_image_map[sample_index] = buffer_index
@@ -176,11 +171,10 @@ def issue_queries(query_samples):
 
         begin_time = time.time()
 
-        batch_results = sess.run([OUTPUT_LAYER_BBOXES, OUTPUT_LAYER_LABELS, OUTPUT_LAYER_SCORES], {INPUT_LAYER_NAME: batch_data}, run_options)
+        batch_results = sess.run(model_output_layers_bls, {model_input_layer_name: batch_data}, run_options)
 
-#        with open('output_tensors_loadgen.txt', 'w') as f:
-#            np.set_printoptions(threshold=sys.maxsize)
-#            print(batch_results, file=f)
+        if extra_dimension_needed:  # adding an extra dimension (on for RetinaNet, off for Resnet34-SSD)
+            batch_results = [[br] for br in batch_results]
 
         inference_time_s = time.time() - begin_time
 
@@ -197,7 +191,6 @@ def issue_queries(query_samples):
 
         for index_in_batch, qs in enumerate(batch):
             global_image_index      = qs.index
-            width_orig, height_orig = loader_object.original_w_h[global_image_index]
 
             reformed_active_boxes_for_this_sample = []
             for i in range(len(batch_results[2][index_in_batch])):
@@ -210,7 +203,7 @@ def issue_queries(query_samples):
                     (x1, y1, x2, y2) = batch_results[0][index_in_batch][i]
 
                     reformed_active_boxes_for_this_sample += [
-                        float(global_image_index), y1, x1, y2, x2, confidence_score, class_number ]
+                        float(global_image_index), y1/model_output_scale, x1/model_output_scale, y2/model_output_scale, x2/model_output_scale, confidence_score, class_number ]
 
             response_array = array.array("B", np.array(reformed_active_boxes_for_this_sample, np.float32).tobytes())
             response_array_refs.append(response_array)
