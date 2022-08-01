@@ -454,9 +454,13 @@ Usage examples :
 
                         action_name = pos_params[0]                                         # pos_params[] must have at least 1 element
                         pos_params  = pos_params[1:]
-                        if '.' in action_name:                                          # an imported "dotted" function
-                            module_name, func_name = action_name.split('.')
-                            action_object = getattr(__import__(module_name), func_name)
+                        if '.' in action_name:                                          # an imported "dotted" function (can be several dots deep)
+                            action_object = None
+                            for syll in action_name.split('.'):
+                                if action_object:
+                                    action_object = getattr(action_object, syll)
+                                else:
+                                    action_object =  __import__(syll)
                         else:                                                           # a built-in function
                             action_object = __builtins__[action_name]
 
