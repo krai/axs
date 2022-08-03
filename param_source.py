@@ -83,9 +83,20 @@ class ParamSource:
 
 
     def slice(self, *param_names):
-        "Produces a slice of a dictionary"
+        """Produces a slice of a dictionary, with optional remapping
 
-        return dict([(param_name, self[param_name]) for param_name in param_names])
+Usage examples :
+                axs bypath 3d_point , slice x y --,::=another_y:y,another_z:z z
+        """
+        slice_dict = {}
+        for param_name in param_names:
+            if type(param_name)==dict:      # perform optional remapping
+                for k in param_name.keys():
+                    slice_dict[k] = self[param_name[k]]
+            else:
+                slice_dict[param_name] = self[param_name]
+
+        return slice_dict
 
 
     def runtime_stack(self):
