@@ -3,6 +3,6 @@
         [ [ "git_repo", "repo_name=mlperf_inference_git" ], [ "^", "byname", "git" ], "clone", {}, [ "url", "checkout", "clone_options" ] ]
     ],
     "url": "https://github.com/mlcommons/inference",
-    "checkout": "r2.0",
+    "checkout": "r2.1",
     "clone_options": "--recurse-submodules"
 }
