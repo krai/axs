@@ -445,16 +445,16 @@ Usage examples :
                     else:
                         pos_params = [ pos_params ]                                         # simplified syntax for single positional parameter actions
 
+                    edit_dict   = next(call_params_iter, {})
                     if action_name in ('func', 'func0'):                                # a built-in or dotted function, with or without passing ("func" called on an non-Entry will fire here)
                         pre_params  = [ entry ] if action_name=='func0' else []
 
                         action_name = pos_params[0]                                         # pos_params[] must have at least 1 element
                         pos_params  = pre_params + pos_params[1:]
-                        result = self.func(action_name, *pos_params)
+                        result      = self.func(action_name, *pos_params, **edit_dict)
                     else:                                                               # a non-axs Object method
                         action_object   = getattr(entry, action_name)
 
-                        edit_dict   = next(call_params_iter, {})
                         result      = function_access.feed(action_object, pos_params, edit_dict)
 
                 if input_label:
@@ -468,7 +468,7 @@ Usage examples :
         return result
 
 
-    def func(self, func_name, *func_params):
+    def func(self, func_name, *func_pos_params, **func_opt_params):
         """Run an arbitrary Python's function - either a built-in or member of a reachable module.
 
             NB: Currently doesn't pick up parameters from the containing object.
@@ -490,7 +490,7 @@ Usage examples :
         else:                                                           # a built-in function
             func_object = __builtins__[func_name]
 
-        return function_access.feed(func_object, func_params, {})
+        return function_access.feed(func_object, func_pos_params, func_opt_params)
 
 
     def python_api(self, src_text, line_sep='\\n'):
