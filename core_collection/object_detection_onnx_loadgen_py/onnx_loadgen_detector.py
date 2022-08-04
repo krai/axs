@@ -27,9 +27,9 @@ scenario_str                = sys.argv[1]
 mode_str                    = sys.argv[2]
 dataset_size                = int(sys.argv[3])
 buffer_size                 = int(sys.argv[4])
-multistreamness_str         = sys.argv[5]
-count_override_str          = sys.argv[6]
-config_filepath             = sys.argv[7]
+count_override_str          = sys.argv[5]
+mlperf_conf_path            = sys.argv[6]
+user_conf_path              = sys.argv[7]
 verbosity                   = int( sys.argv[8] )
 
 model_name                  = sys.argv[9]
@@ -235,13 +235,13 @@ def benchmark_using_loadgen():
     }[mode_str]
 
     ts = lg.TestSettings()
-    if(config_filepath):
-        ts.FromConfig(config_filepath, model_name, scenario_str)
+    if(mlperf_conf_path):
+        ts.FromConfig(mlperf_conf_path, model_name, scenario_str)
+    if(user_conf_path):
+        ts.FromConfig(user_conf_path, model_name, scenario_str)
+
     ts.scenario = scenario
     ts.mode     = mode
-
-    if multistreamness_str:
-        ts.multi_stream_samples_per_query = int(multistreamness_str)
 
     if count_override_str:
         ts.min_query_count = int(count_override_str)

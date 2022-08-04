@@ -67,8 +67,15 @@
     "loadgen_dataset_size": 20,
     "loadgen_buffer_size": 8,
     "loadgen_count_override": "",
-    "loadgen_multistreamness": "",
-    "loadgen_config_path": "",
+
+    "loadgen_multistreamness": null,
+    "loadgen_target_latency": null,
+    "loadgen_target_qps": null,
+
+    "loadgen_mlperf_conf_path": [ "^", "execute", [[
+        [ "byquery", "git_repo,repo_name=mlperf_inference_git" ],
+        [ "get_path", "mlperf.conf" ]
+    ]] ],
 
     "output_entry": [ "^^", "execute", [[
         [ "get", "__record_entry__" ],
@@ -85,12 +92,21 @@
             "loadgen_buffer_size", "#{loadgen_buffer_size}#",
             "loadgen_count_override", "#{loadgen_count_override}#",
             "loadgen_multistreamness", "#{loadgen_multistreamness}#",
-            "loadgen_config_path", "#{loadgen_config_path}#",
+            "loadgen_mlperf_conf_path", "#{loadgen_mlperf_conf_path}#",
 
             "tags", [ "loadgen_output", "detected_coco" ]
          ]] ] ],
          [ "save" ]
     ]] ],
+
+    "target_user_conf_path": [ "^^", "execute", [[
+        [ "get", "output_entry" ],
+        [ "get_path", "user.conf" ]
+    ]] ],
+
+    "loadgen_user_conf_path": [ "^^", "generate_user_conf", [
+        [ "^^", "slice", [ "loadgen_buffer_size", "loadgen_multistreamness", "loadgen_target_latency", "loadgen_target_qps" ] ]
+    ]],
 
     "coco_labels_file_path": [ "^^", "get_path_from", "coco_labels_file_name"],
 
@@ -100,5 +116,5 @@
     ]] ],
     "rel_script_path": "onnx_loadgen_detector.py",
 
-    "script_extra_params": [ "^^", "substitute", "\"#{loadgen_scenario}#\" \"#{loadgen_mode}#\" #{loadgen_dataset_size}# #{loadgen_buffer_size}# \"#{loadgen_multistreamness}#\" \"#{loadgen_count_override}#\"  \"#{loadgen_config_path}#\" #{verbosity}# \"#{model_name}#\" \"#{model_path}#\" #{model_resolution}# #{model_output_scale}# \"#{model_input_layer_name}#\" \"#{model_output_layers_bls}#\" \"#{model_skipped_classes}#\" \"#{normalize_symmetric}#\" \"#{subtract_mean_bool}#\" \"#{given_channel_means}#\" \"#{given_channel_stds}#\" \"#{preprocessed_coco_dir}#\" \"#{coco_labels_file_path}#\" \"#{execution_device}#\" \"#{batch_size}#\" #{cpu_threads}#" ]
+    "script_extra_params": [ "^^", "substitute", "\"#{loadgen_scenario}#\" \"#{loadgen_mode}#\" #{loadgen_dataset_size}# #{loadgen_buffer_size}# \"#{loadgen_count_override}#\"  \"#{loadgen_mlperf_conf_path}#\" \"#{loadgen_user_conf_path}#\" #{verbosity}# \"#{model_name}#\" \"#{model_path}#\" #{model_resolution}# #{model_output_scale}# \"#{model_input_layer_name}#\" \"#{model_output_layers_bls}#\" \"#{model_skipped_classes}#\" \"#{normalize_symmetric}#\" \"#{subtract_mean_bool}#\" \"#{given_channel_means}#\" \"#{given_channel_stds}#\" \"#{preprocessed_coco_dir}#\" \"#{coco_labels_file_path}#\" \"#{execution_device}#\" \"#{batch_size}#\" #{cpu_threads}#" ]
 }
