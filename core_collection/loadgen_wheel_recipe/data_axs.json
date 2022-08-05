@@ -31,7 +31,7 @@
         [ "get_path", "loadgen" ]
     ]] ],
     "abs_script_path": "setup.py",
-    "script_extra_params": [ "^^", "substitute", "bdist_wheel -d #{wheel_entry_path}#" ],
+    "script_extra_params": [ "^^", "substitute", "egg_info --egg-base #{wheel_entry_path}# bdist_wheel -d #{wheel_entry_path}#" ],
 
     "populated_wheel_entry": [ "^^", "execute", [[
         [ "run" ],
