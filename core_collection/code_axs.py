@@ -103,13 +103,15 @@ Usage examples :
             else:
                 raise SyntaxError(f"Could not parse the condition '{condition}' in {context}")
         else:
-            unary_op_match = re.match('([\w\.]*\w)(\.|\?|\+|-)$', condition)
+            unary_op_match = re.match('([\w\.]*\w)(\.|!\.|\?|\+|-)$', condition)
             if unary_op_match:
                 key_path    = unary_op_match.group(1)
                 op          = unary_op_match.group(2)
                 val         = None
                 if op=='.':               # path exists
-                    comparison_lambda   = lambda x, y: x!=None
+                    comparison_lambda   = lambda x, y: x is not None
+                elif op=='!.':            # path does not exist
+                    comparison_lambda   = lambda x, y: x is None
                 elif op in ('?', '+'):    # computes to True
                     comparison_lambda   = lambda x, y: bool(x)
                 elif op=='-':             # computes to False
