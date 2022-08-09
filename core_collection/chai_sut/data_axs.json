@@ -35,7 +35,7 @@
         "cooling": "",
         "hw_notes": "https://www.intel.co.uk/content/www/uk/en/products/sku/199343/intel-xeon-gold-6240r-processor-35-75m-cache-2-40-ghz/specifications.html; https://www.nvidia.com/rtx-a5000/",
 
-        "framework": "ONNX",
+        "framework": "ONNX runtime v.1.12 with GPU support",
         "operating_system": "Ubuntu 20.04.4 LTS; kernel 5.14.0-1046-oem #53-Ubuntu SMP (Wed Jul 13 13:15:06 UTC 2022)",
         "other_software_stack": "",
         "sw_notes": "none"
