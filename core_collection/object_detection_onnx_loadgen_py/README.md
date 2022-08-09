@@ -5,9 +5,8 @@ The two supported models for it are SSD-ResNet34 (as offered by MLPerf) and Reti
 
 ## Prerequisites
 
-This workflow is a designed showcase for `axs` workflow management system.
+This workflow is designed to showcase the `axs` workflow management system.
 So the only prerequisite from the user's point of view is a sufficiently fresh version of `axs` system.
-
 
 Dependencies of various components (on Python code and external utilities) as well as interdependencies of the workflow's main components (original dataset, preprocessed dataset, model and its parameters) have been described in `axs`'s internal language to achieve the fullest automation we could.
 
@@ -22,6 +21,11 @@ which includes the model with weights, the original COCO dataset and its' pre-re
 
 On the other hand, since all those components may take considerable time to be installed, we do not recommend cleaning up between individual runs.
 The entry cache is there for a reason.
+
+The following command effectively wipes off hours of downloading, compilation and/or installation:
+```
+axs work_collection , remove
+```
 
 
 ## Performing a short accuracy run (specifying the number of samples to run on) :
