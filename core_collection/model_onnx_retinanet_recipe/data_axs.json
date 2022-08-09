@@ -6,6 +6,11 @@
             "file_name": "retinanet_resnext50_32x4d_model_12.onnx",
             "md5": "3409b68c2c6fb0d1e6586f37cd31c79d",
 
+            "retrained": true,
+            "input_data_types": "fp32",
+            "weight_data_types": "fp32",
+            "weight_transformations": "PyTorch -> ONNX",
+
             "resolution": 800,
             "output_scale": 800,
 
