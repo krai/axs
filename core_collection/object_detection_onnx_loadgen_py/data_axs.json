@@ -88,6 +88,7 @@
             "framework", "#{framework}#",
             "preprocessed_coco_dir", "#{preprocessed_coco_dir}#",
             "sut_name", "#{sut_name}#",
+            "program_name", "object_detection_onnx_loadgen_py",
 
             "loadgen_scenario", "#{loadgen_scenario}#",
             "loadgen_mode", "#{loadgen_mode}#",
