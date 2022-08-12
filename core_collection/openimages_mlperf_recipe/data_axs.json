@@ -1,0 +1,35 @@
+{
+    "_parent_entries": [ [ "^", "byname", "python_in_shell" ] ],
+    "_producer_rules": [
+        [ [ "downloaded", "openimages_mlperf" ], [ "^^", "get", "__entry__" ], "run", {} ]
+    ],
+
+    "python_deps": [
+        [ "^", "byquery", "python_package,package_name=fiftyone" ]
+    ],
+
+    "input_entry_path": [ "^", "execute", [[
+        [ "work_collection" ],
+        [ "get_path", "downloaded_openimages" ]
+    ]] ],
+
+    "output_entry_path": [ "^^", "execute", [[
+        [ "get_kernel" ],
+        [ "fresh_entry", [], {
+            "entry_path": [ "^^", "get", "input_entry_path" ],
+            "own_data": { "tags": [ "downloaded", "openimages_mlperf" ] },
+            "container": [ "^", "work_collection" ]
+          } ],
+        [ "save" ],
+        [ "get_path" ]
+    ]] ],
+
+    "mlperf_inference_git_entry": [ "^", "byquery", "git_repo,repo_name=mlperf_inference_git" ],
+
+    "in_dir": [ "^^", "execute", [[
+        [ "get", "mlperf_inference_git_entry" ],
+        [ "get_path", [["vision", "classification_and_detection", "tools"]] ]
+    ]], {}, ["mlperf_inference_git_entry"] ],
+
+    "shell_cmd_with_subs": "./openimages_mlperf.sh --dataset-path #{output_entry_path}#"
+}
