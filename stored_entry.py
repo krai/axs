@@ -48,6 +48,10 @@ Usage examples :
 
 
     def set_path(self, new_path):
+        """Sets the path of the given Entry
+
+            Please note that the output of this method is the Entry itself, not the new_path
+        """
 
         new_path = new_path or self.name or self.generate_name( self.generated_name_prefix )
 
@@ -60,7 +64,7 @@ Usage examples :
         else:                                   # relative to cwd
             self.entry_path = os.path.realpath( new_path )
 
-        return self.entry_path
+        return self
 
 
     def get_path(self, file_name=None):
