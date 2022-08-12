@@ -1,0 +1,7 @@
+{
+    "_parent_entries": [ [ "^", "byname", "shell" ] ],
+
+    "inherit_env_keys": [ "SYSTEMROOT", "HOME", "USERPROFILE", "USERNAME", "HOMEPATH", "HOMEDRIVE" ],
+
+    "env": [ "^^", "ext_use_python_deps" ]
+}
