@@ -1,8 +1,31 @@
 {
     "_producer_rules": [
-        [ [ "preprocessed", "coco_images" ], [ "^^", "get", "__entry__" ], "preprocess", {},
+        [ [ "preprocessed", "coco_images" ], [ "^^", "get", "__entry__" ], "preprocess", {
+            "dataset_name": "coco",
+            "images_directory": [ "AS^IS", "^", "execute", [[
+                [ "byquery", [[ "^^", "get", "coco_images_query" ]] ], 
+                [ "get_path" ]
+                ]], {}, [ "coco_images_query" ]],
+            "images_annotation": [ "AS^IS", "^^", "execute", [[
+                [ "load_json", [[ "^^", "get", "coco_annotation_path" ]] ],
+                [ "get", "images" ]
+            ]] ]
+          },
           [
-            "coco_images_directory", "resolution", "supported_extensions",
+            "images_directory", "resolution", "supported_extensions",
+            "data_type","new_file_extension", "file_name", "fof_name"
+          ]
+        ],
+        [ [ "preprocessed", "openimages" ], [ "^^", "get", "__entry__" ], "preprocess", {
+            "dataset_name": "openimages",
+            "images_directory": [ "AS^IS", "^", "execute", [[
+                [ "byquery", [[ "^^", "get", "openimages_query" ]] ], 
+                [ "get_path" , [["validation", "data"]] ]
+                ]], {}, [ "openimages_query" ]],
+            "images_annotation": ""
+        },
+        [
+            "images_directory", "resolution", "supported_extensions",
             "data_type","new_file_extension", "file_name", "fof_name"
           ]
         ]
@@ -12,14 +35,9 @@
         [ "byquery", "extracted,coco_annotation" ],
         [ "get_path", [["annotations", "instances_val2017.json"]] ]
     ]] ],
-    "images_annotation": [ "^^", "execute", [[
-        [ "load_json", [[ "^^", "get", "coco_annotation_path" ]] ],
-        [ "get", "images" ]
-    ]] ],
 
     "numpy_query": [ "python_package", "package_name=numpy" ],
     "pillow_query": [ "python_package", "package_name=pillow" ],
-
     "_BEFORE_CODE_LOADING": [ "^^", "execute", [[
         ["get_kernel"],
         ["byquery", [[ "^^", "get", "numpy_query" ]] ],
@@ -30,15 +48,9 @@
         ["use"]
     ]] ],
 
+    "images_directory": "",
     "coco_images_query": [ "extracted", "coco_images" ],
-    "coco_images_base_dir": [ "^", "execute", [[
-        [ "byquery", [[ "^^", "get", "coco_images_query" ]] ],
-        [ "get_path" ]
-    ]], {}, [ "coco_images_query" ] ],
-    "coco_images_directory": [ "^", "execute", [[
-        [ "byquery", [[ "^^", "get", "coco_images_query" ]] ], 
-        [ "get_path" ]
-        ]], {}, [ "coco_images_query" ]],
+    "openimages_query": [ "downloaded", "openimages_mlperf" ],
 
     "resolution":           1200,
     "supported_extensions": ["jpeg", "jpg", "gif", "png"],
