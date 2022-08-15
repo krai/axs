@@ -46,7 +46,7 @@ Usage examples:
     return None
 
 
-def get_metadata(abs_packages_dir, package_name, header_name=None):
+def get_metadata(abs_packages_dir, package_name, header_name=None, full=False):
     """Parse the METADATA file that gets installed alongside the pip package using email header parser, see
         https://packaging.python.org/specifications/core-metadata/
 
@@ -66,7 +66,15 @@ Usage examples:
     with open(metadata_path, 'rb') as metadata_fp:
         headers = BytesHeaderParser(policy=default).parse(metadata_fp)
 
-    if header_name:
+    if full:
+        metadata_dict = {}
+        for k, v in headers.items():
+            if k in metadata_dict:
+                metadata_dict[k].append(v)
+            else:
+                metadata_dict[k] = [ v ]
+        return metadata_dict
+    elif header_name:
         return [ v for k, v in headers.items() if k==header_name ]
     else:
         return headers.keys()
