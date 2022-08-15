@@ -73,6 +73,7 @@ Usage examples :
     __record_entry__.parent_objects = None
     version_from_metadata = __record_entry__.call('get_metadata', [], {'header_name': 'Version'})[0]
     __record_entry__["package_version"] = version_from_metadata
+    __record_entry__["python_version"]  = tool_entry["tool_version"]
     __record_entry__.save( entry_name )
 
     return __record_entry__
