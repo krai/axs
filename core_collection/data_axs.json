@@ -44,7 +44,7 @@
         "image_classification_onnx_loadgen_py": "image_classification_onnx_loadgen_py",
         "object_detection_onnx_loadgen_py": "object_detection_onnx_loadgen_py",
         "base_coco_loadgen_experiment": "base_coco_loadgen_experiment",
-        "model_onnx_retinanet_recipe": "model_onnx_retinanet_recipe",
+        "model_onnx_retinanet_coco_recipe": "model_onnx_retinanet_coco_recipe",
         "chai_sut": "chai_sut",
         "python_in_shell": "python_in_shell",
         "model_onnx_retinanet_openimages_recipe": "model_onnx_retinanet_openimages_recipe",
