@@ -1,38 +1,26 @@
 {
     "_producer_rules": [
-        [
-            [
-                "downloaded",
-                "onnx_model",
-                "model_name=retinanet_openimages"
-            ],
-            [
-                "^",
-                "byname",
-                "downloader"
-            ],
-            "download",
-            {
-                "downloading_tool_query": [
-                    "shell_tool",
-                    "can_download_url"
-                ],
-                "url": "https://zenodo.org/record/6617879/files/resnext50_32x4d_fpn.onnx",
-                "md5": "4544f4e56e0a4684215831cc937ea45c",
-                "retrained": false,
-                "input_data_types": "fp32",
-                "weight_data_types": "fp32",
-                "weight_transformations": "PyTorch -> ONNX",
-                "resolution": 800,
-                "output_scale": 800,
-                "input_layer_name": "images",
-                "output_layers_bls": "['boxes', 'labels', 'scores']",
-                "skipped_classes": "[]",
-                "normalize_symmetric": "False",
-                "subtract_mean_bool": "False",
-                "given_channel_means": "[]",
-                "given_channel_stds": "[]"
-            }
-        ]
+        [ [ "downloaded", "onnx_model", "model_name=retinanet_openimages" ], [ "^", "byname", "downloader" ], "download", {
+            "downloading_tool_query": [ "shell_tool", "can_download_url" ],
+            "url": "https://zenodo.org/record/6617879/files/resnext50_32x4d_fpn.onnx",
+            "md5": "4544f4e56e0a4684215831cc937ea45c",
+
+            "retrained": false,
+            "input_data_types": "fp32",
+            "weight_data_types": "fp32",
+            "weight_transformations": "PyTorch -> ONNX",
+
+            "resolution": 800,
+            "output_scale": 800,
+
+            "input_layer_name": "images",
+            "output_layers_bls": "['boxes', 'labels', 'scores']",
+            "skipped_classes": "[]",
+
+            "normalize_symmetric": "False",
+            "subtract_mean_bool": "False",
+            "given_channel_means": "[]",
+            "given_channel_stds": "[]"
+        } ]
     ]
 }
