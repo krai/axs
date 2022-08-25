@@ -6,10 +6,11 @@
     ],
 
     "wheel_entry": [ "^^", "execute", [[
-        [ "get_kernel" ],
-        [ "fresh_entry", [], { "own_data": { "tags": ["package_wheel"], "package_name": "mlperf_loadgen" }} ],
+        [ "get", "__record_entry__" ],
+        [ "set_path", "loadgen_package_wheel" ],
+        [ "plant", [ "tags", ["package_wheel"], "package_name", "mlperf_loadgen" ] ],
         [ "attach", [ "^", "work_collection" ] ],
-        [ "save", "loadgen_package_wheel" ]
+        [ "save" ]
     ]] ],
     "wheel_entry_path": [ "^^", "execute", [[
         [ "get", "wheel_entry" ],
