@@ -62,7 +62,7 @@
     "execution_device": "",
     "verbosity": 2,
 
-    "loadgen_scenario": "SingleStream",
+    "loadgen_scenario": "Offline",
     "loadgen_mode": "AccuracyOnly",
     "loadgen_dataset_size": 20,
     "loadgen_buffer_size": 8,
