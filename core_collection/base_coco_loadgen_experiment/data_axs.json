@@ -1,5 +1,5 @@
 {
-    "__parent_entries": [ [ "^", "byname", "base_imagenet_experiment" ] ],
+    "_parent_entries": [ [ "^", "byname", "base_loadgen_experiment" ] ],
 
     "sut_query": [ "sut", [ "^^", "substitute", "sut_name=#{sut_name}#" ] ],
     "sut_entry": [ "^", "byquery", [[ "^^", "get", "sut_query" ]], {}, ["sut_query"] ],

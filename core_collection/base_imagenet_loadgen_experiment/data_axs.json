@@ -1,5 +1,5 @@
 {
-    "_parent_entries": [ [ "^", "byname", "base_imagenet_experiment" ] ],
+    "_parent_entries": [ [ "^", "byname", "base_imagenet_experiment" ], [ "^", "byname", "base_loadgen_experiment" ] ],
 
     "mlperf_inference_git_entry": [ "^", "byquery", "git_repo,repo_name=mlperf_inference_git" ],
 
