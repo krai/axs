@@ -8,7 +8,7 @@ Usage examples  :
                 axs byquery loadgen_output,detected_coco,framework=onnx,loadgen_dataset_size=20 , get mAP
 
                     # a short accuracy run with RetinaNet model:
-                axs byquery loadgen_output,detected_coco,framework=onnx,loadgen_dataset_size=20,model_name=retinanet , get mAP
+                axs byquery loadgen_output,detected_coco,framework=onnx,loadgen_dataset_size=20,model_name=retinanet_coco , get mAP
 """
 
 import array

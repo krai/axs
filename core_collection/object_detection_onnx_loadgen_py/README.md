@@ -47,7 +47,7 @@ The mAP value should be printed after a succesful run.
 
 The following test run will trigger (in addition to the above) downloading and installation of the RetinaNet model:
 ```
-axs byquery loadgen_output,detected_coco,framework=onnx,loadgen_dataset_size=20,model_name=retinanet , get mAP
+axs byquery loadgen_output,detected_coco,framework=onnx,loadgen_dataset_size=20,model_name=retinanet_coco , get mAP
 ```
 The mAP value should be printed after a succesful run.
 
@@ -102,7 +102,7 @@ Measured QPS:
 The following command will trigger (in addition to the above) resizing of the whole COCO validation dataset of 5,000 images to the 800x800 resolution used by the RetinaNet_COCO model and will run on the whole dataset. Please note that depending on whether both the hardware and the software supports running on the GPU, the run may be performed either on the GPU or on the CPU.
 (There are ways to constrain this to the CPU only.)
 ```
-time axs byquery loadgen_output,detected_coco,framework=onnx,model_name=retinanet,loadgen_dataset_size=5000,loadgen_buffer_size=100 , get mAP
+time axs byquery loadgen_output,detected_coco,framework=onnx,model_name=retinanet_coco,loadgen_dataset_size=5000,loadgen_buffer_size=100 , get mAP
 ```
 The mAP value and running time should be printed after a succesful run.
 <details><pre>
@@ -133,7 +133,7 @@ Two important changes for performance mode should be taken into account:
 
 So `TargetQPS` is the input, whereas `QPS` is the output of this benchmark:
 ```
-axs byquery loadgen_output,detected_coco,framework=onnx,model_name=retinanet,loadgen_dataset_size=5000,loadgen_buffer_size=100,loadgen_mode=PerformanceOnly,loadgen_target_qps=38,verbosity=1 , dig summary.Samples_per_second
+axs byquery loadgen_output,detected_coco,framework=onnx,model_name=retinanet_coco,loadgen_dataset_size=5000,loadgen_buffer_size=100,loadgen_mode=PerformanceOnly,loadgen_target_qps=38,verbosity=1 , dig summary.Samples_per_second
 ```
 Measured QPS:
 ```
