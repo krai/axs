@@ -88,22 +88,10 @@ Two important changes for performance mode should be taken into account:
 
 So `TargetQPS` is the input, whereas `QPS` is the output of this benchmark:
 ```
-head -11 `axs byquery loadgen_output,detected_coco,framework=onnx,model_name=ssd_resnet34,loadgen_dataset_size=5000,loadgen_buffer_size=100,loadgen_mode=PerformanceOnly,loadgen_target_qps=32,verbosity=1 , get_path mlperf_log_summary.txt`
+axs byquery loadgen_output,detected_coco,framework=onnx,model_name=ssd_resnet34,loadgen_dataset_size=5000,loadgen_buffer_size=100,loadgen_mode=PerformanceOnly,loadgen_target_qps=32,verbosity=1 , dig summary.Samples_per_second
+
+29.1735
 ```
-<details><pre>
-...
-================================================
-MLPerf Results Summary
-================================================
-SUT name : PySUT
-Scenario : Offline
-Mode     : PerformanceOnly
-Samples per second: 29.1735
-Result is : VALID
-  Min duration satisfied : Yes
-  Min queries satisfied : Yes
-  Early stopping satisfied: Yes
-</pre></details>
 
 
 ## Benchmarking RetinaNet_COCO model in the Accuracy mode
@@ -142,19 +130,7 @@ Two important changes for performance mode should be taken into account:
 
 So `TargetQPS` is the input, whereas `QPS` is the output of this benchmark:
 ```
-head -11 `axs byquery loadgen_output,detected_coco,framework=onnx,model_name=retinanet,loadgen_dataset_size=5000,loadgen_buffer_size=100,loadgen_mode=PerformanceOnly,loadgen_target_qps=38,verbosity=1 , get_path mlperf_log_summary.txt`
+axs byquery loadgen_output,detected_coco,framework=onnx,model_name=retinanet,loadgen_dataset_size=5000,loadgen_buffer_size=100,loadgen_mode=PerformanceOnly,loadgen_target_qps=38,verbosity=1 , dig summary.Samples_per_second
+
+32.5764
 ```
-<details><pre>
-...
-================================================
-MLPerf Results Summary
-================================================
-SUT name : PySUT
-Scenario : Offline
-Mode     : PerformanceOnly
-Samples per second: 32.5764
-Result is : VALID
-  Min duration satisfied : Yes
-  Min queries satisfied : Yes
-  Early stopping satisfied: Yes
-</pre></details>
