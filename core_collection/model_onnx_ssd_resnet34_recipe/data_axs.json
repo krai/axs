@@ -8,6 +8,7 @@
             "weight_data_types": "fp32",
             "weight_transformations": "PyTorch -> ONNX",
 
+            "dataset_name": "coco",
             "resolution": 1200,
             "output_scale": 1,
 

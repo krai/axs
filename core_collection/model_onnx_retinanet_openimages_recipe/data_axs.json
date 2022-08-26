@@ -10,6 +10,7 @@
             "weight_data_types": "fp32",
             "weight_transformations": "PyTorch -> ONNX",
 
+            "dataset_name": "openimages",
             "resolution": 800,
             "output_scale": 800,
 
