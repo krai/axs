@@ -88,7 +88,7 @@
         [ "get", "__record_entry__" ],
         [ "attach", [ "^", "work_collection" ] ],
         [ "plant", [ "^^", "substitute", [[
-            "_parent_entries", [ "AS^IS", "AS^IS", [ "^", "byname", "base_coco_loadgen_experiment" ] ],
+            "_parent_entries", [ "AS^IS", "AS^IS", [ "^", "byname", "base_object_detection_loadgen_experiment" ] ],
             "model_name", "#{model_name}#",
             "framework", "#{framework}#",
             "dataset_name", "#{dataset_name}#",
