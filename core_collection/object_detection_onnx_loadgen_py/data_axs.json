@@ -34,6 +34,7 @@
         [ "get", "model_entry" ],
         [ "get_path" ]
     ]] ],
+    "dataset_name": [ "^^", "dig", "model_entry.dataset_name" ],
     "model_resolution": [ "^^", "dig", "model_entry.resolution" ],
     "model_output_scale": [ "^^", "dig", "model_entry.output_scale" ],
 
@@ -47,11 +48,15 @@
     "given_channel_stds": [ "^^", "dig", "model_entry.given_channel_stds" ],
 
 
-    "preprocessed_coco_query": [ "preprocessed", "coco_images", [ "^^", "substitute", "resolution=#{model_resolution}#" ], [ "^^", "substitute", "first_n=#{loadgen_dataset_size}#" ] ],
-    "preprocessed_coco_dir": [ "^", "execute", [[
-        [ "byquery", [[ "^^", "get", "preprocessed_coco_query" ]] ],
+    "preprocessed_images_query": [ "preprocessed",
+        [ "^^", "substitute", "dataset_name=#{dataset_name}#" ],
+        [ "^^", "substitute", "resolution=#{model_resolution}#" ],
+        [ "^^", "substitute", "first_n=#{loadgen_dataset_size}#" ]
+    ],
+    "preprocessed_images_dir": [ "^", "execute", [[
+        [ "byquery", [[ "^^", "get", "preprocessed_images_query" ]] ],
         [ "get_path" ]
-    ]], {}, ["preprocessed_coco_query"] ],
+    ]], {}, ["preprocessed_images_query"] ],
 
     "coco_labels_file_name": "coco_flatlabels.txt",
     "output_file_name": "script_output.json",
@@ -86,7 +91,8 @@
             "_parent_entries", [ "AS^IS", "AS^IS", [ "^", "byname", "base_coco_loadgen_experiment" ] ],
             "model_name", "#{model_name}#",
             "framework", "#{framework}#",
-            "preprocessed_coco_dir", "#{preprocessed_coco_dir}#",
+            "dataset_name", "#{dataset_name}#",
+            "preprocessed_images_dir", "#{preprocessed_images_dir}#",
             "sut_name", "#{sut_name}#",
             "program_name", "object_detection_onnx_loadgen_py",
 
@@ -120,5 +126,5 @@
     ]] ],
     "rel_script_path": "onnx_loadgen_detector.py",
 
-    "script_extra_params": [ "^^", "substitute", "\"#{loadgen_scenario}#\" \"#{loadgen_mode}#\" #{loadgen_dataset_size}# #{loadgen_buffer_size}# \"#{loadgen_count_override}#\"  \"#{loadgen_mlperf_conf_path}#\" \"#{loadgen_user_conf_path}#\" #{verbosity}# \"#{model_name}#\" \"#{model_path}#\" #{model_resolution}# #{model_output_scale}# \"#{model_input_layer_name}#\" \"#{model_output_layers_bls}#\" \"#{model_skipped_classes}#\" \"#{normalize_symmetric}#\" \"#{subtract_mean_bool}#\" \"#{given_channel_means}#\" \"#{given_channel_stds}#\" \"#{preprocessed_coco_dir}#\" \"#{coco_labels_file_path}#\" \"#{execution_device}#\" \"#{batch_size}#\" #{cpu_threads}#" ]
+    "script_extra_params": [ "^^", "substitute", "\"#{loadgen_scenario}#\" \"#{loadgen_mode}#\" #{loadgen_dataset_size}# #{loadgen_buffer_size}# \"#{loadgen_count_override}#\"  \"#{loadgen_mlperf_conf_path}#\" \"#{loadgen_user_conf_path}#\" #{verbosity}# \"#{model_name}#\" \"#{model_path}#\" #{model_resolution}# #{model_output_scale}# \"#{model_input_layer_name}#\" \"#{model_output_layers_bls}#\" \"#{model_skipped_classes}#\" \"#{normalize_symmetric}#\" \"#{subtract_mean_bool}#\" \"#{given_channel_means}#\" \"#{given_channel_stds}#\" \"#{preprocessed_images_dir}#\" \"#{coco_labels_file_path}#\" \"#{execution_device}#\" \"#{batch_size}#\" #{cpu_threads}#" ]
 }

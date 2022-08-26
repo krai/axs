@@ -1,7 +1,6 @@
 {
     "_producer_rules": [
-        [ [ "preprocessed", "coco_images" ], [ "^^", "get", "__entry__" ], "preprocess", {
-            "dataset_name": "coco",
+        [ [ "preprocessed", "dataset_name=coco" ], [ "^^", "get", "__entry__" ], "preprocess", {
             "images_directory": [ "AS^IS", "^", "execute", [[
                 [ "byquery", [[ "^^", "get", "coco_images_query" ]] ], 
                 [ "get_path" ]
@@ -16,8 +15,7 @@
             "data_type","new_file_extension", "file_name", "fof_name"
           ]
         ],
-        [ [ "preprocessed", "openimages" ], [ "^^", "get", "__entry__" ], "preprocess", {
-            "dataset_name": "openimages",
+        [ [ "preprocessed", "dataset_name=openimages" ], [ "^^", "get", "__entry__" ], "preprocess", {
             "images_directory": [ "AS^IS", "^", "execute", [[
                 [ "byquery", [[ "^^", "get", "openimages_query" ]] ], 
                 [ "get_path" , [["validation", "data"]] ]
