@@ -41,7 +41,7 @@ def preprocess(dataset_name, images_directory, images_annotation, resolution, su
     __record_entry__["tags"] = tags or [ "preprocessed", dataset_name ]
     if not entry_name:
         first_n_insert = f'first.{first_n}_' if first_n else ''
-        entry_name = f'pillow_{dataset_name}_sq.{resolution}_cropped_resized_{first_n_insert}images'
+        entry_name = f'pillow_{dataset_name}_resized_for_detection_sq.{resolution}_{first_n_insert}images'
     __record_entry__.save( entry_name )
     output_directory     = __record_entry__.get_path(file_name)
 
