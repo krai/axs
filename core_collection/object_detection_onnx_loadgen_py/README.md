@@ -89,7 +89,10 @@ Two important changes for performance mode should be taken into account:
 So `TargetQPS` is the input, whereas `QPS` is the output of this benchmark:
 ```
 axs byquery loadgen_output,detected_coco,framework=onnx,model_name=ssd_resnet34,loadgen_dataset_size=5000,loadgen_buffer_size=100,loadgen_mode=PerformanceOnly,loadgen_target_qps=32,verbosity=1 , dig summary.Samples_per_second
-
+```
+Measured QPS:
+```
+...
 29.1735
 ```
 
@@ -131,6 +134,9 @@ Two important changes for performance mode should be taken into account:
 So `TargetQPS` is the input, whereas `QPS` is the output of this benchmark:
 ```
 axs byquery loadgen_output,detected_coco,framework=onnx,model_name=retinanet,loadgen_dataset_size=5000,loadgen_buffer_size=100,loadgen_mode=PerformanceOnly,loadgen_target_qps=38,verbosity=1 , dig summary.Samples_per_second
-
+```
+Measured QPS:
+```
+...
 32.5764
 ```
