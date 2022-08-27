@@ -153,7 +153,21 @@ time axs byquery loadgen_output,detected_coco,framework=onnx,model_name=retinane
 The mAP value and running time should be printed after a succesful run.
 <details><pre>
 ...
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.375                                                                                                                                                             Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.524                                                                                                                                                             Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.405                                                                                                                                                             Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.025                                                                                                                                                             Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.124                                                                                                                                                             Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.415                                                                                                                                                             Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.420                                                                                                                                                             Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.599                                                                                                                                                             Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.627                                                                                                                                                             Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.083                                                                                                                                                             Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.333                                                                                                                                                             Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.678                                                                                                                                                            mAP=37.525%                                                                                                                                                                                                                                                                                                                                                                                                                                                                           real    25m58.508s
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.375
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.524
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.405
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.025
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.124
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.415
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.420
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.599
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.627
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.083
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.333
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.678
+mAP=37.525%
+
+real    25m58.508s
 </pre></details>
 
 
@@ -170,5 +184,7 @@ time axs byquery loadgen_output,detected_coco,framework=onnx,model_name=retinane
 Measured QPS and running time:
 ```
 ...
-24.5116                                                                                                                                                                                                                                                                                                                                                                                                                                                                               real    16m46.103s
+24.5116
+
+real    16m46.103s
 ```
