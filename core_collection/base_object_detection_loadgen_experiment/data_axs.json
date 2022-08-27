@@ -41,5 +41,7 @@
                 "script_extra_params": [ "^^", "substitute", "--#{dataset_name}#-dir \"#{annotation_dir}#\" --mlperf-accuracy-file \"#{accuracy_log_path}#\" --output-file #{detections_path}#" ],
                 "capture_output": true
             } ]
-    ]], {} ]
+    ]], {} ],
+
+    "accuracy": [ "^^", "get", "mAP" ]
 }

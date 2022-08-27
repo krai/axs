@@ -40,7 +40,7 @@ axs work_collection , remove
 
 The following test run should trigger downloading and installation of the necessary Python packages, the default model (SSD-ResNet34), the original COCO dataset and a short partial resized subset of 20 images:
 ```
-axs byquery loadgen_output,detected_coco,framework=onnx,loadgen_dataset_size=20 , get mAP
+axs byquery loadgen_output,detected_coco,framework=onnx,loadgen_dataset_size=20 , get accuracy
 ```
 The mAP value should be printed after a succesful run.
 
@@ -49,7 +49,7 @@ The mAP value should be printed after a succesful run.
 
 The following test run should trigger (in addition to the above) downloading and installation of the RetinaNet model:
 ```
-axs byquery loadgen_output,detected_coco,framework=onnx,loadgen_dataset_size=20,model_name=retinanet_coco , get mAP
+axs byquery loadgen_output,detected_coco,framework=onnx,loadgen_dataset_size=20,model_name=retinanet_coco , get accuracy
 ```
 The mAP value should be printed after a succesful run.
 
@@ -59,7 +59,7 @@ The mAP value should be printed after a succesful run.
 The following command may trigger (in addition to the above) resizing of the whole COCO validation dataset of 5,000 images to the 1200x1200 resolution used by the SSD-ResNet34 model and will run on the whole dataset. Please note that depending on whether both the hardware and the software supports running on the GPU, the run may be performed either on the GPU or on the CPU.
 (There are ways to constrain this to the CPU only.)
 ```
-time axs byquery loadgen_output,detected_coco,framework=onnx,model_name=ssd_resnet34,loadgen_dataset_size=5000,loadgen_buffer_size=100 , get mAP
+time axs byquery loadgen_output,detected_coco,framework=onnx,model_name=ssd_resnet34,loadgen_dataset_size=5000,loadgen_buffer_size=100 , get accuracy
 ```
 The mAP value and running time should be printed after a succesful run.
 <details><pre>
@@ -90,7 +90,7 @@ Two important changes for performance mode should be taken into account:
 
 So `TargetQPS` is the input, whereas `QPS` is the output of this benchmark:
 ```
-axs byquery loadgen_output,detected_coco,framework=onnx,model_name=ssd_resnet34,loadgen_dataset_size=5000,loadgen_buffer_size=100,loadgen_mode=PerformanceOnly,loadgen_target_qps=32,verbosity=1 , dig summary.Samples_per_second
+axs byquery loadgen_output,detected_coco,framework=onnx,model_name=ssd_resnet34,loadgen_dataset_size=5000,loadgen_buffer_size=100,loadgen_mode=PerformanceOnly,loadgen_target_qps=32,verbosity=1 , get performance
 ```
 Measured QPS:
 ```
@@ -104,7 +104,7 @@ Measured QPS:
 The following command may trigger (in addition to the above) resizing of the whole COCO validation dataset of 5,000 images to the 800x800 resolution used by the RetinaNet_COCO model and will run on the whole dataset. Please note that depending on whether both the hardware and the software supports running on the GPU, the run may be performed either on the GPU or on the CPU.
 (There are ways to constrain this to the CPU only.)
 ```
-time axs byquery loadgen_output,detected_coco,framework=onnx,model_name=retinanet_coco,loadgen_dataset_size=5000,loadgen_buffer_size=100 , get mAP
+time axs byquery loadgen_output,detected_coco,framework=onnx,model_name=retinanet_coco,loadgen_dataset_size=5000,loadgen_buffer_size=100 , get accuracy
 ```
 The mAP value and running time should be printed after a succesful run.
 <details><pre>
@@ -135,7 +135,7 @@ Two important changes for performance mode should be taken into account:
 
 So `TargetQPS` is the input, whereas `QPS` is the output of this benchmark:
 ```
-axs byquery loadgen_output,detected_coco,framework=onnx,model_name=retinanet_coco,loadgen_dataset_size=5000,loadgen_buffer_size=100,loadgen_mode=PerformanceOnly,loadgen_target_qps=38,verbosity=1 , dig summary.Samples_per_second
+axs byquery loadgen_output,detected_coco,framework=onnx,model_name=retinanet_coco,loadgen_dataset_size=5000,loadgen_buffer_size=100,loadgen_mode=PerformanceOnly,loadgen_target_qps=38,verbosity=1 , get performance
 ```
 Measured QPS:
 ```
@@ -148,7 +148,7 @@ Measured QPS:
 The following command may trigger resizing of the whole OpenImages validation dataset of 24,781 images to the 800x800 resolution used by the RetinaNet_OpenImages model and will run on the whole dataset. Please note that depending on whether both the hardware and the software supports running on the GPU, the run may be performed either on the GPU or on the CPU.
 (There are ways to constrain this to the CPU only.)
 ```
-time axs byquery loadgen_output,detected_coco,framework=onnx,model_name=retinanet_openimages,loadgen_dataset_size=24781,loadgen_buffer_size=200 , get mAP
+time axs byquery loadgen_output,detected_coco,framework=onnx,model_name=retinanet_openimages,loadgen_dataset_size=24781,loadgen_buffer_size=200 , get accuracy
 ```
 The mAP value and running time should be printed after a succesful run.
 <details><pre>
@@ -179,7 +179,7 @@ Two important changes for performance mode should be taken into account:
 
 So `TargetQPS` is the input, whereas `QPS` is the output of this benchmark:
 ```
-time axs byquery loadgen_output,detected_coco,framework=onnx,model_name=retinanet_openimages,loadgen_dataset_size=24781,loadgen_buffer_size=200,loadgen_mode=PerformanceOnly,loadgen_target_qps=25,verbosity=1 , dig summary.Samples_per_second
+time axs byquery loadgen_output,detected_coco,framework=onnx,model_name=retinanet_openimages,loadgen_dataset_size=24781,loadgen_buffer_size=200,loadgen_mode=PerformanceOnly,loadgen_target_qps=25,verbosity=1 , get performance
 ```
 Measured QPS and running time:
 ```

@@ -1,5 +1,7 @@
 {
     "abs_log_summary_path": [ "^^", "get_path", "mlperf_log_summary.txt" ],
 
-    "summary": [ "^^", "parse_summary" ]
+    "summary": [ "^^", "parse_summary" ],
+
+    "performance": [ "^^", "dig", "summary.Samples_per_second" ]
 }
