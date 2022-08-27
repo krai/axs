@@ -24,11 +24,11 @@
     ]] ],
     "resolution": [ "^^", "dig", "model_entry.resolution" ],
 
-    "preprocessed_imagenet_query": [ "preprocessed", "imagenet", [ "^^", "substitute", "resolution=#{resolution}#" ] ],
-    "preprocessed_imagenet_dir": [ "^", "execute", [[
-        [ "byquery", [[ "^^", "get", "preprocessed_imagenet_query" ]] ],
+    "preprocessed_images_query": [ "preprocessed", "dataset_name=imagenet", [ "^^", "substitute", "resolution=#{resolution}#" ] ],
+    "preprocessed_images_dir": [ "^", "execute", [[
+        [ "byquery", [[ "^^", "get", "preprocessed_images_query" ]] ],
         [ "get_path" ]
-    ]], {}, ["preprocessed_imagenet_query"] ],
+    ]], {}, ["preprocessed_images_query"] ],
 
     "num_of_images": 20,
     "output_file_name": "script_output.json",
@@ -48,6 +48,7 @@
             "num_of_images", "#{num_of_images}#",
             "model_name", "#{model_name}#",
             "framework", "#{framework}#",
+            "preprocessed_images_dir", "#{preprocessed_images_dir}#",
             "output_file_name", "#{output_file_name}#"
          ]] ] ],
          [ "save" ],
@@ -56,5 +57,5 @@
 
     "rel_script_path": "tf_classify.py",
 
-    "script_extra_params": [ "^^", "substitute", "#{model_name}# \"#{model_path}#\" \"#{preprocessed_imagenet_dir}#\" #{resolution}# #{num_of_images}# #{max_batch_size}# \"#{output_file_path}#\" #{top_n_max}#" ]
+    "script_extra_params": [ "^^", "substitute", "#{model_name}# \"#{model_path}#\" \"#{preprocessed_images_dir}#\" #{resolution}# #{num_of_images}# #{max_batch_size}# \"#{output_file_path}#\" #{top_n_max}#" ]
 }

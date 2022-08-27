@@ -1,8 +1,8 @@
 {
     "_producer_rules": [
-        [ [ "preprocessed", "imagenet" ], [ "^^", "get", "__entry__" ], "preprocess", {},
+        [ [ "preprocessed", "dataset_name=imagenet" ], [ "^^", "get", "__entry__" ], "preprocess", {},
           [
-            "imagenet_directory", "resolution", "supported_extensions", "crop_percentage", "inter_size",
+            "images_directory", "resolution", "supported_extensions", "crop_percentage", "inter_size",
             "convert_to_bgr", "data_type", "new_file_extension", "file_name"
           ]
         ]
@@ -22,11 +22,12 @@
     ]] ],
 
     "imagenet_query": [ "extracted", "imagenet" ],
-    "imagenet_directory": [ "^", "execute", [[
+    "images_directory": [ "^", "execute", [[
         [ "byquery", [[ "^^", "get", "imagenet_query" ]] ],
         [ "get_path" ]
     ]], {}, [ "imagenet_query" ] ],
 
+    "dataset_name":         "imagenet",
     "resolution":           224,
     "supported_extensions": ["jpeg", "jpg", "gif", "png"],
     "crop_percentage":      87.5,

@@ -68,21 +68,21 @@ def load_image(image_path,            # Full path to processing image
     return img
 
 
-def preprocess(imagenet_directory, resolution, supported_extensions, crop_percentage, inter_size, convert_to_bgr, data_type, new_file_extension, file_name, tags=None, entry_name=None, __record_entry__=None):
+def preprocess(dataset_name, images_directory, resolution, supported_extensions, crop_percentage, inter_size, convert_to_bgr, data_type, new_file_extension, file_name, tags=None, entry_name=None, __record_entry__=None):
 
-    __record_entry__["tags"] = tags or [ "preprocessed", "imagenet" ]
+    __record_entry__["tags"] = tags or [ "preprocessed", dataset_name ]
     if not entry_name:
-        entry_name = f'pillow_sq.{resolution}_cropped_resized_imagenet'
+        entry_name = f'pillow_{dataset_name}_cropped_resized_to_sq.{resolution}'
     __record_entry__.save( entry_name )
     output_directory     = __record_entry__.get_path(file_name)
 
     os.makedirs( output_directory )
 
-    sorted_filenames = [filename for filename in sorted(os.listdir(imagenet_directory)) if any(filename.lower().endswith(extension) for extension in supported_extensions) ]
+    sorted_filenames = [filename for filename in sorted(os.listdir(images_directory)) if any(filename.lower().endswith(extension) for extension in supported_extensions) ]
 
     for current_idx, input_filename in enumerate(sorted_filenames):
 
-        full_input_path     = os.path.join(imagenet_directory, input_filename)
+        full_input_path     = os.path.join(images_directory, input_filename)
 
         image_data = load_image(image_path = full_input_path,
                               resolution = resolution,

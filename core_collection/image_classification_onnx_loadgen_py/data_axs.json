@@ -4,12 +4,12 @@
         [ [ "loadgen_output", "classified_imagenet", "framework=onnx" ], [ "^^", "get", "__entry__" ], "run", { "return_saved_record_entry": true } ]
     ],
 
-    "preprocessed_imagenet_query": [ "preprocessed", "imagenet" ],
-    "preprocessed_imagenet_dir": [ "^", "execute", [[
-        [ "byquery", [[ "^^", "get", "preprocessed_imagenet_query" ]] ],
+    "resolution": 224,
+    "preprocessed_images_query": [ "preprocessed", "dataset_name=imagenet", [ "^^", "substitute", "resolution=#{resolution}#" ] ],
+    "preprocessed_images_dir": [ "^", "execute", [[
+        [ "byquery", [[ "^^", "get", "preprocessed_images_query" ]] ],
         [ "get_path" ]
-    ]], {}, ["preprocessed_imagenet_query"] ],
-
+    ]], {}, ["preprocessed_images_query"] ],
 
     "num_gpus": [ "^", "execute", [[
                        [ "byquery", "shell_tool,can_gpu" ],
@@ -66,7 +66,7 @@
             "_parent_entries", [ "AS^IS", "AS^IS", [ "^", "byname", "base_imagenet_loadgen_experiment" ] ],
             "model_name", "#{model_name}#",
             "framework", "#{framework}#",
-            "preprocessed_imagenet_dir", "#{preprocessed_imagenet_dir}#",
+            "preprocessed_images_dir", "#{preprocessed_images_dir}#",
 
             "loadgen_scenario", "#{loadgen_scenario}#",
             "loadgen_mode", "#{loadgen_mode}#",
@@ -87,5 +87,5 @@
     ]] ],
     "rel_script_path": "onnx_loadgen_classifier.py",
 
-    "script_extra_params": [ "^^", "substitute", "\"#{loadgen_scenario}#\" \"#{loadgen_mode}#\" #{loadgen_dataset_size}# #{loadgen_buffer_size}# \"#{loadgen_count_override}#\" \"#{loadgen_multistreamness}#\" \"#{loadgen_config_path}#\" #{verbosity}# \"#{model_path}#\" \"#{model_name}#\" \"#{normalize_symmetric}#\" \"#{subtract_mean_bool}#\" \"#{given_channel_means}#\" \"#{execution_device}#\" #{batch_size}# #{cpu_threads}# \"#{preprocessed_imagenet_dir}#\"" ]
+    "script_extra_params": [ "^^", "substitute", "\"#{loadgen_scenario}#\" \"#{loadgen_mode}#\" #{loadgen_dataset_size}# #{loadgen_buffer_size}# \"#{loadgen_count_override}#\" \"#{loadgen_multistreamness}#\" \"#{loadgen_config_path}#\" #{verbosity}# \"#{model_path}#\" \"#{model_name}#\" \"#{normalize_symmetric}#\" \"#{subtract_mean_bool}#\" \"#{given_channel_means}#\" \"#{execution_device}#\" #{batch_size}# #{cpu_threads}# \"#{preprocessed_images_dir}#\"" ]
 }
