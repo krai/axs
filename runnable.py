@@ -446,7 +446,9 @@ Usage examples :
                         pos_params = [ pos_params ]                                         # simplified syntax for single positional parameter actions
 
                     edit_dict   = next(call_params_iter, {})
-                    if action_name in ('func', 'func0'):                                # a built-in or dotted function, with or without passing ("func" called on an non-Entry will fire here)
+                    if action_name == 'attr':
+                        result      = self.attr(pos_params[0])
+                    elif action_name in ('func', 'func0'):                              # a built-in or dotted function, with or without passing ("func" called on an non-Entry will fire here)
                         pre_params  = [ entry ] if action_name=='func0' else []
 
                         action_name = pos_params[0]                                         # pos_params[] must have at least 1 element
@@ -468,25 +470,37 @@ Usage examples :
         return result
 
 
+    def attr(self, attr_name):
+        """Access an arbitrary Python's attribute that is a member of a reachable module.
+
+Usage examples :
+                axs attr json.__file__
+                axs byquery python_package,package_name=numpy , use , attr numpy.__version__
+        """
+        attr_object = None
+        for syll in attr_name.split('.'):
+            if attr_object:
+                attr_object = getattr(attr_object, syll)
+            else:
+                attr_object =  __import__(syll)
+        return attr_object
+
+
     def func(self, func_name, *func_pos_params, **func_opt_params):
         """Run an arbitrary Python's function - either a built-in or member of a reachable module.
 
             NB: Currently doesn't pick up parameters from the containing object.
 
 Usage examples :
-                axs func runnable.plus_one 12                                               # internal to AXS
-                axs func len abcde                                                          # built-in
-                axs func os.path.join alpha beta gamma                                      # part of Python's core library
-                axs func numpy.arange 15                                                    # if numpy is already installed in PYTHONPATH
-                axs byquery python_package,package_name=numpy , use , func numpy.arange 7   # if we need our own specific numpy
+                axs func runnable.plus_one 12                                                                   # internal to AXS
+                axs func len abcde                                                                              # built-in
+                axs func os.path.join alpha beta gamma                                                          # part of Python's core library
+                axs func numpy.arange 15                                                                        # if numpy is already installed in PYTHONPATH
+                axs byquery python_package,package_name=numpy , use , func numpy.arange 7                       # if we need our own specific numpy
+                axs byquery python_package,package_name=numpy , use , func numpy.exp2 --,=0,1,2,3,4,5,6,7,8     # same, passing a list
         """
         if '.' in func_name:                                            # an imported "dotted" function (can be several dots deep)
-            func_object = None
-            for syll in func_name.split('.'):
-                if func_object:
-                    func_object = getattr(func_object, syll)
-                else:
-                    func_object =  __import__(syll)
+            func_object = self.attr(func_name)
         else:                                                           # a built-in function
             func_object = __builtins__[func_name]
 
