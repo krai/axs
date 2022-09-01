@@ -470,7 +470,7 @@ Usage examples :
         return result
 
 
-    def attr(self, attr_name):
+    def attr(self, attr_name, default_attr_value=None):
         """Access an arbitrary Python's attribute that is a member of a reachable module.
 
 Usage examples :
@@ -479,10 +479,13 @@ Usage examples :
         """
         attr_object = None
         for syll in attr_name.split('.'):
-            if attr_object:
-                attr_object = getattr(attr_object, syll)
-            else:
-                attr_object =  __import__(syll)
+            try:
+                if attr_object:
+                    attr_object = getattr(attr_object, syll)
+                else:
+                    attr_object =  __import__(syll)
+            except Exception:
+                attr_object = default_attr_value
         return attr_object
 
 
@@ -504,7 +507,10 @@ Usage examples :
         else:                                                           # a built-in function
             func_object = __builtins__[func_name]
 
-        return function_access.feed(func_object, func_pos_params, func_opt_params)
+        if func_object:
+            return function_access.feed(func_object, func_pos_params, func_opt_params)
+        else:
+            raise NameError( f"could not find the function '{func_name}'" )
 
 
     def python_api(self, src_text, line_sep='\\n'):
