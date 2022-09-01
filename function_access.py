@@ -111,9 +111,9 @@ def prep(action_object, given_arg_list, dict_like_object, mapping_used=None):
 
 def feed(action_object, joint_arg_tuple, optional_arg_dict):
 
-    logging.debug(f"Feeding {action_object.__name__} with {joint_arg_tuple} and {optional_arg_dict} ...")
+    logging.debug(f"Feeding {getattr(action_object, '__name__', 'Unknown')} with {joint_arg_tuple} and {optional_arg_dict} ...")
     ret_values = action_object(*joint_arg_tuple, **optional_arg_dict)
-    logging.debug(f"Just fed {action_object.__name__} , ret_values = {ret_values}")
+    logging.debug(f"Just fed {getattr(action_object, '__name__', 'Unknown')} , ret_values = {ret_values}")
 
     return ret_values
 
