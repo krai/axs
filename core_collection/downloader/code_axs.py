@@ -54,7 +54,8 @@ Usage examples:
 
     __record_entry__["tags"] = tags or ["downloaded"]
     __record_entry__.save( entry_name )
-    target_path     = __record_entry__.get_path(file_name)
+    target_path         = __record_entry__.get_path(file_name)
+    record_entry_path   = __record_entry__.get_path( "" )
 
     logging.warning(f"The resolved downloading_tool_entry '{downloading_tool_entry.get_name()}' located at '{downloading_tool_entry.get_path()}' uses the shell tool '{downloading_tool_entry['tool_path']}'")
     retval = downloading_tool_entry.call('run', [], {"url": url, "target_path": target_path})
@@ -77,7 +78,7 @@ Usage examples:
             __entry__['uncompress_format'] = ""                 # NB: avoid screwing up parallel invocations of the same function in context of its entry
             if uncompress_tool_entry:
                 logging.warning(f"Uncompression from {uncompress_format} requested")
-                retval = uncompress_tool_entry.call('run', [], {"target_path": target_path})
+                retval = uncompress_tool_entry.call('run', [], {"target_path": target_path, "in_dir": record_entry_path})
                 if retval == 0:
                     __record_entry__['uncompress_tool_entry'] = uncompress_tool_entry
                     __record_entry__["file_name"] = file_name.rsplit('.', 1)[0]
