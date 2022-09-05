@@ -114,8 +114,8 @@ if [ "$PYTORCH_CLASSIFY" == "on" ] || [ "$ONNX_CLASSIFY" == "on" ] || [ "$TF_CLA
         # The following line is split into two to provide more insight into what is going on.
         # Otherwise assert() blocks all the error output and the command looks "stuck" for quite a while.
 
-        axs byname onnx_image_classifier , run ---capture_output=false --output_file_path=
-        export INFERENCE_OUTPUT=`axs byname onnx_image_classifier , run ---capture_output=true --output_file_path=`
+        axs byname onnx_image_classifier , run --onnxruntime_prequery+=package_version=1.9.0 ---capture_output=false --output_file_path=
+        export INFERENCE_OUTPUT=`axs byname onnx_image_classifier , run --onnxruntime_prequery+=package_version=1.9.0 ---capture_output=true --output_file_path=`
         assert 'echo $INFERENCE_OUTPUT' 'batch 1/1: (1..20) [65, 795, 230, 809, 516, 67, 334, 415, 674, 332, 109, 286, 370, 757, 595, 147, 327, 23, 478, 517]'
 
         axs byquery script_output,classified_imagenet,framework=onnx,num_of_images=32
