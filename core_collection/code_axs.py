@@ -143,6 +143,8 @@ Usage examples :
 
     # parsing the Query:
     for condition in query_conditions:
+        if condition in (None, ""): continue
+
         key_path, op, val, query_comparison_lambda = parse_condition( condition, "Query" )
         query_mentioned_set.add( key_path )
 
