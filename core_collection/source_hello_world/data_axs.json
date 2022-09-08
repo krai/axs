@@ -1,0 +1,28 @@
+{
+    "_parent_entries": [ [ "^", "byname", "shell" ] ],
+    "_producer_rules": [
+            [ [ "compiled", "hello_world" ], [ "^^", "get", "__entry__" ], "run", { "return_saved_record_entry": false } ]
+    ],
+    "tags": [ "source_code", "hello_world" ],
+    "file_name": "hello.c",
+    "abs_source_path": [ "^^", "get_path" ],
+    "output_binary_path": [ "^^", "execute", [[
+        [ "get", "__record_entry__" ],
+        [ "set_path", "compiled_hello_world" ],
+        [ "plant", [
+            "_parent_entries", [ [ "AS^IS", "AS^IS", "^", "byname", "shell" ] ],
+            "tags", [ "compiled", "hello_world"] ,
+            "binary_name", "hello",
+            "abs_binary_path", ["AS^IS", "AS^IS", "^^", "get_path_from", "binary_name"],
+            "shell_cmd_with_subs", "#{abs_binary_path}#"
+            ]
+        ],
+        [ "attach", [ "^", "work_collection" ] ],
+        [ "save" ],
+        [ "get_path_from", "binary_name" ]
+    ]] ],
+
+    "compiler_entry": [ "^", "byquery", "shell_tool,can_compile_c" ],
+
+    "shell_cmd_with_subs": "#{compiler_entry.tool_path}# -o #{output_binary_path}# #{abs_source_path}#"
+}
