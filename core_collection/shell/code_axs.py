@@ -9,7 +9,7 @@ import os
 import subprocess
 import sys
 
-def run(shell_cmd, env=None, in_dir=None, capture_output=False, errorize_output=False, split_to_lines=False, return_saved_record_entry=False, __record_entry__=None):
+def run(shell_cmd, env=None, in_dir=None, capture_output=False, errorize_output=False, split_to_lines=False, return_saved_record_entry=False, return_this_entry=None, __record_entry__=None):
     """Run the given shell command in the given environment
 
 Usage examples:
@@ -56,6 +56,8 @@ Usage examples:
         return output
     elif return_saved_record_entry:
         return __record_entry__.save()
+    elif return_this_entry:
+        return return_this_entry
     else:
         return completed_process.returncode
 
