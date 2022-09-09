@@ -14,6 +14,7 @@
                 "tags": [ "compiled", "hello_world"] ,
                 "binary_name": "hello",
                 "abs_binary_path": ["AS^IS", "AS^IS", "^^", "get_path_from", "binary_name"],
+                "capture_output": true,
                 "shell_cmd_with_subs": "#{abs_binary_path}#"
             } ] ],
         [ "save" ]
@@ -21,5 +22,5 @@
 
     "compiler_entry": [ "^", "byquery", "shell_tool,can_compile_c" ],
 
-    "shell_cmd_with_subs": "#{compiler_entry.tool_path}# -o #{return_this_entry.abs_binary_path}# #{abs_source_path}#"
+    "shell_cmd_with_subs": "#{compiler_entry.tool_path}# -o #{return_this_entry.abs_binary_path}# #{abs_source_path}# -lm"
 }
