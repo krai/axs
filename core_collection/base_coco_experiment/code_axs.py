@@ -5,7 +5,9 @@ import json
 import sys
 from time import time
 
-import calc_metrics_coco_pycocotools
+from pycocotools.coco import COCO
+from pycocotools.cocoeval import COCOeval
+
 
 def filename_to_id(file_name):
   '''
@@ -49,45 +51,61 @@ def save_to_json(structure, json_file_name):
         f.write(json.dumps( structure, indent=2, sort_keys=False))
     return json_file_name
 
+
 def postprocess(num_of_images, annotations_dir, preprocessed_files, times_file_path, detection_results ):
 
-  def evaluate(processed_image_ids, categories_list):
+    with open(preprocessed_files, 'r') as f:
+        processed_image_filenames = [x.split(';')[0] for x in f.readlines()]
+
+    processed_image_ids = [ filename_to_id(image_filename) for image_filename in processed_image_filenames ]
 
     # Convert detection results from our universal text format
     # to a format specific for a tool that will calculate metrics
-    results = generate_coco_detection_list( detection_results )
+    frame_predictions = generate_coco_detection_list( detection_results )
 
-    # Run evaluation tool
-    all_metrics = calc_metrics_coco_pycocotools.evaluate(processed_image_ids, results, annotations_dir)
-    mAP = all_metrics['DetectionBoxes_Precision/mAP']
-    recall = all_metrics['DetectionBoxes_Recall/AR@100']
+    # Calculate COCO metrics via evaluator from pycocotool package.
+    # MSCOCO evaluation protocol: http://cocodataset.org/#detections-eval
+    # This method uses original COCO json-file annotations
+    # and results of detection converted into json file too.
+    cocoGt = COCO(annotations_dir)
+    cocoDt = cocoGt.loadRes(frame_predictions)
+    cocoEval = COCOeval(cocoGt, cocoDt, iouType='bbox')
+    cocoEval.params.imgIds = processed_image_ids
+    cocoEval.evaluate()
+    cocoEval.accumulate()
+    cocoEval.summarize()
 
-    postpocess_result['mAP'] = mAP
-    postpocess_result['recall'] = recall
+    # These are the same names as object returned by CocoDetectionEvaluator has
+    all_metrics = {
+        "DetectionBoxes_Precision/mAP": cocoEval.stats[0],
+        "DetectionBoxes_Precision/mAP@.50IOU": cocoEval.stats[1],
+        "DetectionBoxes_Precision/mAP@.75IOU": cocoEval.stats[2],
+        "DetectionBoxes_Precision/mAP (small)": cocoEval.stats[3],
+        "DetectionBoxes_Precision/mAP (medium)": cocoEval.stats[4],
+        "DetectionBoxes_Precision/mAP (large)": cocoEval.stats[5],
+        "DetectionBoxes_Recall/AR@1": cocoEval.stats[6],
+        "DetectionBoxes_Recall/AR@10": cocoEval.stats[7],
+        "DetectionBoxes_Recall/AR@100": cocoEval.stats[8],
+        "DetectionBoxes_Recall/AR@100 (small)": cocoEval.stats[9],
+        "DetectionBoxes_Recall/AR@100 (medium)": cocoEval.stats[10],
+        "DetectionBoxes_Recall/AR@100 (large)": cocoEval.stats[11]
+    }
+
+    if os.path.isfile(times_file_path):
+        with open(times_file_path, 'r') as f:
+            postpocess_result = json.load(f)
+    else:
+        postpocess_result = {}
+
+    postpocess_result['mAP'] = all_metrics['DetectionBoxes_Precision/mAP']
+    postpocess_result['recall'] = all_metrics['DetectionBoxes_Recall/AR@100']
     postpocess_result['metrics'] = all_metrics
-    return
 
-  postpocess_result = {}
+    postpocess_result['frame_predictions'] = frame_predictions
+    postpocess_result['execution_time'] = postpocess_result['times'].get('sum_inference_s',0) + postpocess_result['times'].get('model_loading_s',0) + postpocess_result['times'].get('sum_loading_s',0)
 
-  with open(preprocessed_files, 'r') as f:
-    processed_image_filenames = [x.split(';')[0] for x in f.readlines()]
+    return postpocess_result
 
-  processed_image_ids = [ filename_to_id(image_filename) for image_filename in processed_image_filenames ]
-
-  if os.path.isfile(times_file_path):
-    with open(times_file_path, 'r') as f:
-      postpocess_result = json.load(f)
-
-  # Run evaluation
-  
-  categories_list = []
-
-  evaluate(processed_image_ids, categories_list)
-
-  postpocess_result['frame_predictions'] = generate_coco_detection_list( detection_results )
-  postpocess_result['execution_time'] = postpocess_result['times'].get('sum_inference_s',0) + postpocess_result['times'].get('model_loading_s',0) + postpocess_result['times'].get('sum_loading_s',0)
-
-  return postpocess_result
 
 def mAP(num_of_images, annotations_dir, preprocessed_files, times_file_path, detection_results):
     r = postprocess(num_of_images, annotations_dir, preprocessed_files, times_file_path, detection_results )
