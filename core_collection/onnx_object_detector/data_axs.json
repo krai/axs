@@ -54,7 +54,8 @@
         [ "get_path" ]
     ]], {}, ["preprocessed_images_query"] ],
 
-    "coco_labels_file_name": "coco_flatlabels.txt",
+    "labels_file_name": ["^", "case",[ ["^^", "get", "dataset_name"], "openimages", "openimages_flatlabels.txt" ],
+                                         {"default_value": "coco_flatlabels.txt"}, ["dataset_name"] ],
     "output_file_name": "script_output.json",
     "framework": "onnx",
 
@@ -80,7 +81,7 @@
          [ "save" ]
       ]] ],
 
-    "coco_labels_file_path": [ "^^", "get_path_from", "coco_labels_file_name"],
+    "labels_file_path": [ "^^", "get_path_from", "labels_file_name"],
 
     "output_file_path": [ "^^", "execute", [[
         [ "get", "output_entry" ],
@@ -89,5 +90,5 @@
 
     "rel_script_path": "onnx_detect.py",
 
-    "script_extra_params": [ "^^", "substitute", "\"#{model_name}#\" \"#{model_path}#\" #{model_resolution}# #{model_output_scale}# \"#{model_input_layer_name}#\" \"#{model_output_layers_bls}#\" \"#{model_skipped_classes}#\" \"#{normalize_symmetric}#\" \"#{subtract_mean_bool}#\" \"#{given_channel_means}#\" \"#{given_channel_stds}#\" \"#{preprocessed_images_dir}#\" #{num_of_images}# #{max_batch_size}# \"#{execution_device}#\" #{cpu_threads}# \"#{coco_labels_file_path}#\" \"#{output_file_path}#\"" ]
+    "script_extra_params": [ "^^", "substitute", "\"#{model_name}#\" \"#{model_path}#\" #{model_resolution}# #{model_output_scale}# \"#{model_input_layer_name}#\" \"#{model_output_layers_bls}#\" \"#{model_skipped_classes}#\" \"#{normalize_symmetric}#\" \"#{subtract_mean_bool}#\" \"#{given_channel_means}#\" \"#{given_channel_stds}#\" \"#{preprocessed_images_dir}#\" #{num_of_images}# #{max_batch_size}# \"#{execution_device}#\" #{cpu_threads}# \"#{labels_file_path}#\" \"#{output_file_path}#\"" ]
 }

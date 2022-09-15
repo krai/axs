@@ -42,7 +42,7 @@ num_of_images               = int(sys.argv[13])
 max_batch_size              = int(sys.argv[14])
 execution_device            = sys.argv[15]           # if empty, it will be autodetected
 cpu_threads                 = int(sys.argv[16])
-coco_labels_file_path       = sys.argv[17]
+labels_file_path            = sys.argv[17]
 output_file_path            = sys.argv[18]
 
 
@@ -73,7 +73,7 @@ def load_labels(labels_filepath):
         my_labels.append(l.strip())
     return my_labels
 
-class_labels    = load_labels(coco_labels_file_path)
+class_labels    = load_labels(labels_file_path)
 num_classes     = len(class_labels)
 bg_class_offset = 1
 class_map       = None
