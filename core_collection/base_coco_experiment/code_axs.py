@@ -9,25 +9,7 @@ from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 
 
-def filename_to_id(file_name):
-  '''
-  Returns identitifer of image in dataset.
-
-  Each dataset has its own way how to identify
-  particular image in detection results or annotations.
-  '''
-  short_name = os.path.splitext(file_name)[0]
-
-  # In COCO dataset ID is a number which is a part of filename
-    # COCO 2017: 000000000139.jpg
-    # COCO 2014: COCO_val2014_000000000042.jpg
-  if short_name[0] == '0':
-    return int(short_name)
-  else:
-    return int(re.split(r'_', short_name)[2])
-
-
-def generate_coco_detection_list( detection_results ):
+def generate_coco_detection_list( detection_results, fileroot_2_id ):
     result_full_list = []
     image_ids = detection_results.keys()
 
@@ -37,7 +19,7 @@ def generate_coco_detection_list( detection_results ):
             h = y2 - y1
             w = x2 - x1
             one_detection = {
-                "image_id":     int( image_id ),
+                "image_id":     fileroot_2_id[image_id],
                 "category_id":  detection["class_id"],
                 "bbox":         [ x1, y1, round(w, 2), round(h, 2) ],
                 "score":        detection["score"]
@@ -55,19 +37,22 @@ def save_to_json(structure, json_file_name):
 def postprocess(num_of_images, annotations_dir, preprocessed_files, times_file_path, detection_results ):
 
     with open(preprocessed_files, 'r') as f:
-        processed_image_filenames = [x.split(';')[0] for x in f.readlines()]
-
-    processed_image_ids = [ filename_to_id(image_filename) for image_filename in processed_image_filenames ]
-
-    # Convert detection results from our universal text format
-    # to a format specific for a tool that will calculate metrics
-    frame_predictions = generate_coco_detection_list( detection_results )
+        processed_image_fileroots = [ os.path.splitext(x.split(';')[0])[0] for x in f.readlines() ]
 
     # Calculate COCO metrics via evaluator from pycocotool package.
     # MSCOCO evaluation protocol: http://cocodataset.org/#detections-eval
     # This method uses original COCO json-file annotations
     # and results of detection converted into json file too.
     cocoGt = COCO(annotations_dir)
+
+    image_map = cocoGt.dataset["images"]
+    fileroot_2_id = { os.path.splitext(x["file_name"])[0]: x["id"] for x in image_map }
+    processed_image_ids = [ fileroot_2_id[x] for x in processed_image_fileroots ]
+
+    # Convert detection results from our universal text format
+    # to a format specific for a tool that will calculate metrics
+    frame_predictions = generate_coco_detection_list( detection_results, fileroot_2_id )
+
     cocoDt = cocoGt.loadRes(frame_predictions)
     cocoEval = COCOeval(cocoGt, cocoDt, iouType='bbox')
     cocoEval.params.imgIds = processed_image_ids
