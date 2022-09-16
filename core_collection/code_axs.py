@@ -156,6 +156,27 @@ class FilterPile:
         return candidate_still_ok
 
 
+def all_byquery(query, parent_recursion=False, __entry__=None):
+    """Returns a list of ALL entries matching the query.
+        Empty list if nothing matched.
+
+Usage examples :
+                axs all_byquery onnx_model
+                axs all_byquery python_package,package_name=pillow
+    """
+    assert __entry__ != None, "__entry__ should be defined"
+
+    query_conditions    = query if type(query)==list else query.split(',')
+    parsed_query        = FilterPile( query_conditions, "Query" )
+
+    # trying to match the Query in turn against each existing and walkable entry, gathering them all:
+    matched_entries = []
+    for candidate_entry in walk(__entry__):
+        if parsed_query.matches_entry( candidate_entry, parent_recursion ):
+            matched_entries.append( candidate_entry )
+
+    return matched_entries
+
 
 def byquery(query, produce_if_not_found=True, parent_recursion=False, __entry__=None):
     """Fetch an entry by query.
@@ -172,11 +193,10 @@ Usage examples :
     """
     assert __entry__ != None, "__entry__ should be defined"
 
-
     query_conditions    = query if type(query)==list else query.split(',')
     parsed_query        = FilterPile( query_conditions, "Query" )
 
-    # trying to match the Query in turn against each existing and walkable entry:
+    # trying to match the Query in turn against each existing and walkable entry, first match returns:
     for candidate_entry in walk(__entry__):
         if parsed_query.matches_entry( candidate_entry, parent_recursion ):
             return candidate_entry

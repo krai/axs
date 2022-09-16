@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.172'     # TODO: update with every kernel change
+__version__ = '0.2.173'     # TODO: update with every kernel change
 
 import logging
 import os
@@ -176,6 +176,18 @@ Usage examples :
         """
         logging.debug(f"[{self.get_name()}] byname({entry_name})")
         return self.work_collection().call('byname', [entry_name])
+
+
+    def all_byquery(self, query, parent_recursion=False):
+        """Returns a list of ALL entries matching the query.
+            Empty list if nothing matched.
+
+Usage examples :
+                axs all_byquery onnx_model
+                axs all_byquery python_package,package_name=pillow
+        """
+        logging.debug(f"[{self.get_name()}] all_byquery({query})")
+        return self.work_collection().call('all_byquery', [query, parent_recursion])
 
 
     def byquery(self, query, produce_if_not_found=True, parent_recursion=False):
