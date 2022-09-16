@@ -163,6 +163,9 @@ def all_byquery(query, template=None, parent_recursion=False, __entry__=None):
 Usage examples :
                 axs all_byquery onnx_model
                 axs all_byquery python_package,package_name=pillow
+                axs all_byquery onnx_model "#{model_name}# : #{file_name}#"
+                axs all_byquery python_package "Python package #{package_name}# version #{package_version}#"
+                axs all_byquery tags. "tags=#{tags}#"
     """
     assert __entry__ != None, "__entry__ should be defined"
 
@@ -173,7 +176,7 @@ Usage examples :
     matched_entries = []
     for candidate_entry in walk(__entry__):
         if parsed_query.matches_entry( candidate_entry, parent_recursion ):
-            matched_entries.append( candidate_entry if template is None else candidate_entry.substitute(template) )
+            matched_entries.append( candidate_entry if template is None else str(candidate_entry.substitute(template)) )
 
     return matched_entries if template is None else "\n".join( matched_entries )
 

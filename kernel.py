@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.174'     # TODO: update with every kernel change
+__version__ = '0.2.175'     # TODO: update with every kernel change
 
 import logging
 import os
@@ -185,6 +185,9 @@ Usage examples :
 Usage examples :
                 axs all_byquery onnx_model
                 axs all_byquery python_package,package_name=pillow
+                axs all_byquery onnx_model "#{model_name}# : #{file_name}#"
+                axs all_byquery python_package "Python package #{package_name}# version #{package_version}#"
+                axs all_byquery tags. "tags=#{tags}#"
         """
         logging.debug(f"[{self.get_name()}] all_byquery({query}, {template})")
         return self.work_collection().call('all_byquery', [query, template, parent_recursion])
