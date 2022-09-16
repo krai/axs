@@ -156,7 +156,7 @@ class FilterPile:
         return candidate_still_ok
 
 
-def all_byquery(query, parent_recursion=False, __entry__=None):
+def all_byquery(query, template=None, parent_recursion=False, __entry__=None):
     """Returns a list of ALL entries matching the query.
         Empty list if nothing matched.
 
@@ -173,9 +173,9 @@ Usage examples :
     matched_entries = []
     for candidate_entry in walk(__entry__):
         if parsed_query.matches_entry( candidate_entry, parent_recursion ):
-            matched_entries.append( candidate_entry )
+            matched_entries.append( candidate_entry if template is None else candidate_entry.substitute(template) )
 
-    return matched_entries
+    return matched_entries if template is None else "\n".join( matched_entries )
 
 
 def byquery(query, produce_if_not_found=True, parent_recursion=False, __entry__=None):
