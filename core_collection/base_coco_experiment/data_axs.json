@@ -22,19 +22,9 @@
 
     "times_file_path": [ "^^", "get_path", "script_output.json"],
 
-    "annotation_query": ["^", "case",[ ["^^", "get", "dataset_name"],
-                                            "coco", "extracted,coco_annotation",
-                                            "openimages", "downloaded,openimages_mlperf"
-                                    ], {}, ["dataset_name"]],
-    "annotation_file": ["^", "case",[ ["^^", "get", "dataset_name"],
-                                            "coco", ["annotations", "instances_val2017.json" ],
-                                            "openimages", ["annotations", "openimages-mlperf.json" ]
-                                    ], {}, ["dataset_name"]],
-    "annotations_dir": [ "^^", "execute", [[
-        [ "get_kernel" ],
-        [ "byquery", [[ "^^", "get", "annotation_query" ]] ],
-        [ "get_path", [[ "^^", "get", "annotation_file" ]] ]
-    ]] ],
+    "dataset_entry": [ "^", "byquery", [[ "^^", "substitute", "dataset,dataset_name=#{dataset_name}#" ]], {}, [ "dataset_name"] ],
+
+    "annotation_file": [ "^^", "dig", "dataset_entry.annotation_file" ],
 
     "preprocessed_files": [ "^^", "get_path", [[ ["^^", "get", "preprocessed_images_dir"], "original_dimensions.txt" ]] ],
 

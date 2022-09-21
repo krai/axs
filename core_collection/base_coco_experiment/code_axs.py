@@ -34,7 +34,7 @@ def save_to_json(structure, json_file_name):
     return json_file_name
 
 
-def postprocess(num_of_images, annotations_dir, preprocessed_files, times_file_path, detection_results ):
+def postprocess(num_of_images, annotation_file, preprocessed_files, times_file_path, detection_results ):
 
     with open(preprocessed_files, 'r') as f:
         processed_image_fileroots = [ os.path.splitext(x.split(';')[0])[0] for x in f.readlines() ]
@@ -43,7 +43,7 @@ def postprocess(num_of_images, annotations_dir, preprocessed_files, times_file_p
     # MSCOCO evaluation protocol: http://cocodataset.org/#detections-eval
     # This method uses original COCO json-file annotations
     # and results of detection converted into json file too.
-    cocoGt = COCO(annotations_dir)
+    cocoGt = COCO(annotation_file)
 
     image_map = cocoGt.dataset["images"]
     fileroot_2_id = { os.path.splitext(x["file_name"])[0]: x["id"] for x in image_map }
@@ -92,16 +92,16 @@ def postprocess(num_of_images, annotations_dir, preprocessed_files, times_file_p
     return postpocess_result
 
 
-def mAP(num_of_images, annotations_dir, preprocessed_files, times_file_path, detection_results):
-    r = postprocess(num_of_images, annotations_dir, preprocessed_files, times_file_path, detection_results )
+def mAP(num_of_images, annotation_file, preprocessed_files, times_file_path, detection_results):
+    r = postprocess(num_of_images, annotation_file, preprocessed_files, times_file_path, detection_results )
     return r['mAP']
 
-def recall(num_of_images, annotations_dir, preprocessed_files, times_file_path, detection_results):
-    r = postprocess(num_of_images, annotations_dir, preprocessed_files, times_file_path, detection_results )
+def recall(num_of_images, annotation_file, preprocessed_files, times_file_path, detection_results):
+    r = postprocess(num_of_images, annotation_file, preprocessed_files, times_file_path, detection_results )
     return r['recall']
 
-def execution_time(num_of_images, annotations_dir, preprocessed_files, times_file_path, detection_results):
-     r = postprocess(num_of_images, annotations_dir, preprocessed_files, times_file_path, detection_results )
+def execution_time(num_of_images, annotation_file, preprocessed_files, times_file_path, detection_results):
+     r = postprocess(num_of_images, annotation_file, preprocessed_files, times_file_path, detection_results )
      return r['execution_time']
 
 def print_times(detection_times):
@@ -113,8 +113,8 @@ def print_times(detection_times):
     print ('\nlist_batch_loading_s   = ', detection_times['list_batch_loading_s'])
     print ('\nlist_batch_inference_s = ', detection_times['list_batch_inference_s'])
 
-def print_metrics(num_of_images, annotations_dir, preprocessed_files, times_file_path, detection_results):
-    r = postprocess(num_of_images, annotations_dir, preprocessed_files, times_file_path, detection_results )
+def print_metrics(num_of_images, annotation_file, preprocessed_files, times_file_path, detection_results):
+    r = postprocess(num_of_images, annotation_file, preprocessed_files, times_file_path, detection_results )
     # Print metrics
     print('\nSummary:')
     print('-------------------------------')
