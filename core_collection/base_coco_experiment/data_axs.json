@@ -3,14 +3,6 @@
     "detection_results": [ "^^", "dig", "script_output.detections" ],
     "detection_times": [ "^^", "dig", "script_output.times" ],
 
-    "coco_detection_list_file_name": "coco_detection_list.json",
-    "stored_coco_detection_list": [ "^^", "save_to_json", [
-        [ "^^", "generate_coco_detection_list" ],
-        [ "^^", "get_path_from", "coco_detection_list_file_name" ]
-    ] ],
-
-    "coco_annotation_entry": [ "^", "byquery", "extracted,coco_annotation" ],
-
     "pycocotools_query":["python_package", "package_name=pycocotools"],
     "_BEFORE_CODE_LOADING": [ "^^", "execute", [[
         ["get_kernel"],
