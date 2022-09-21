@@ -11,6 +11,7 @@
             "weight_transformations": "PyTorch -> ONNX",
 
             "dataset_name": "openimages",
+            "minimal_class_id": 0,
             "resolution": 800,
             "output_scale": 800,
 

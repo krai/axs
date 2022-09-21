@@ -9,6 +9,7 @@
             "weight_transformations": "PyTorch -> ONNX",
 
             "dataset_name": "coco",
+            "minimal_class_id": 1,
             "resolution": 1200,
             "output_scale": 1,
 

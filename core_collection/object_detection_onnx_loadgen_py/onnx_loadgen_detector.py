@@ -50,6 +50,8 @@ execution_device            = sys.argv[22]          # if empty, it will be autod
 batch_size                  = int( sys.argv[23])
 cpu_threads                 = int( sys.argv[24])
 
+minimal_class_id            = int( sys.argv[25])
+
 
 ## Model parameters:
 #
@@ -78,11 +80,10 @@ def load_labels(labels_filepath):
 
 class_labels    = load_labels(coco_labels_file_path)
 num_classes     = len(class_labels)
-bg_class_offset = 1
 class_map       = None
 if (model_skipped_classes):
     class_map = []
-    for i in range(num_classes + bg_class_offset):
+    for i in range(num_classes + minimal_class_id):
         if i not in model_skipped_classes:
             class_map.append(i)
 

@@ -77,16 +77,12 @@ output_layer = graph.get_tensor_by_name(output_layer_name+':0')
 model_input_shape = input_layer.shape
 model_output_shape = output_layer.shape
 model_classes = model_output_shape[1]
-num_labels = 1000
-bg_class_offset = model_classes-num_labels
 
 print("Data layout: {}".format(data_layout), file=sys.stderr)
 print("Input layer: {}".format(input_layer), file=sys.stderr)
 print("Output layer: {}".format(output_layer), file=sys.stderr)
 print("Expected input shape: {}".format(model_input_shape), file=sys.stderr)
 print("Output layer shape: {}".format(model_output_shape), file=sys.stderr)
-print("Number of labels: {}".format(num_labels), file=sys.stderr)
-print("Background/unlabelled classes to skip: {}".format(bg_class_offset), file=sys.stderr)
 print("Data normalization (None, False=asymmeteric or True=symmetric) : {}".format(normalize_symmetric), file=sys.stderr)
 print("Mean substraction: {}".format(subtract_mean_bool), file=sys.stderr)
 print("", file=sys.stderr)

@@ -45,6 +45,8 @@ cpu_threads                 = int(sys.argv[16])
 labels_file_path            = sys.argv[17]
 output_file_path            = sys.argv[18]
 
+minimal_class_id            = int(sys.argv[19])
+
 
 ### RetinaNet:
 ### num_of_images=1  : mAP=0.33182702885673176
@@ -75,11 +77,10 @@ def load_labels(labels_filepath):
 
 class_labels    = load_labels(labels_file_path)
 num_classes     = len(class_labels)
-bg_class_offset = 1
 class_map       = None
 if (model_skipped_classes):
     class_map = []
-    for i in range(num_classes + bg_class_offset):
+    for i in range(num_classes + minimal_class_id):
         if i not in model_skipped_classes:
             class_map.append(i)
 
@@ -138,7 +139,7 @@ def main():
     print(f"Expected input shape: {model_input_shape}", file=sys.stderr)
     print(f"Expected input type: {model_input_type}", file=sys.stderr)
     print(f"Output layer names: {model_output_layers_bls}", file=sys.stderr)
-    print(f"Background/unlabelled classes to skip: {bg_class_offset}", file=sys.stderr)
+    print(f"Background/unlabelled classes to skip: {minimal_class_id}", file=sys.stderr)
     print("", file=sys.stderr)
 
     try:
@@ -210,7 +211,7 @@ def main():
                     y1 = box[1] / model_output_scale * height_orig
                     x2 = box[2] / model_output_scale * width_orig
                     y2 = box[3] / model_output_scale * height_orig
-                    class_label = class_labels[class_number - bg_class_offset]
+                    class_label = class_labels[class_number - minimal_class_id]
 
                     detections.append({
                         "bbox":         [ round(float(x1),2), round(float(y1),2), round(float(x2),2), round(float(y2),2) ],
