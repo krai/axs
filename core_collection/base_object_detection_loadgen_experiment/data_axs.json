@@ -15,13 +15,11 @@
         [ "get_path", [[ "vision", "classification_and_detection", "tools", [ "^^", "substitute", "accuracy-#{dataset_name}#.py" ] ]] ]
     ]], {}, ["mlperf_inference_git_entry"] ],
 
-    "annotation_query": ["^", "case",[ ["^^", "get", "dataset_name"],
-                                            "coco", "extracted,coco_annotation",
-                                            "openimages", "downloaded,openimages_mlperf"
-                                    ], {}, ["dataset_name"]],
+    "dataset_entry": [ "^", "byquery", [[ "^^", "substitute", "dataset,dataset_name=#{dataset_name}#" ]], {}, [ "dataset_name"] ],
+
     "annotation_dir": [ "^^", "execute", [[
         [ "get_kernel" ],
-        [ "byquery", [[ "^^", "get", "annotation_query" ]] ],
+        [ "byquery", [[ "^^", "dig", "dataset_entry.annotation_query" ]] ],
         [ "get_path", ""]
     ]] ],
 
