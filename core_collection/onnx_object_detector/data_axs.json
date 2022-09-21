@@ -55,8 +55,6 @@
         [ "get_path" ]
     ]], {}, ["preprocessed_images_query"] ],
 
-    "labels_file_name": ["^", "case",[ ["^^", "get", "dataset_name"], "openimages", "openimages_flatlabels.txt" ],
-                                         {"default_value": "coco_flatlabels.txt"}, ["dataset_name"] ],
     "output_file_name": "script_output.json",
     "framework": "onnx",
 
@@ -82,7 +80,8 @@
          [ "save" ]
       ]] ],
 
-    "labels_file_path": [ "^^", "get_path_from", "labels_file_name"],
+    "dataset_entry": [ "^", "byquery", [[ "^^", "substitute", "dataset,dataset_name=#{dataset_name}#" ]], {}, [ "dataset_name"] ],
+    "labels_file_path": [ "^^", "dig", "dataset_entry.labels_file_path"],
 
     "output_file_path": [ "^^", "execute", [[
         [ "get", "output_entry" ],

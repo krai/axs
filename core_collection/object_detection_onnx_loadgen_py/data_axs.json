@@ -59,7 +59,6 @@
         [ "get_path" ]
     ]], {}, ["preprocessed_images_query"] ],
 
-    "coco_labels_file_name": "coco_flatlabels.txt",
     "output_file_name": "script_output.json",
     "framework": "onnx",
     "cpu_threads": 0,
@@ -119,7 +118,8 @@
         [ "^^", "slice", [ "loadgen_buffer_size", "loadgen_multistreamness", "loadgen_target_latency", "loadgen_target_qps" ] ]
     ]],
 
-    "coco_labels_file_path": [ "^^", "get_path_from", "coco_labels_file_name"],
+    "dataset_entry": [ "^", "byquery", [[ "^^", "substitute", "dataset,dataset_name=#{dataset_name}#" ]], {}, [ "dataset_name"] ],
+    "labels_file_path": [ "^^", "dig", "dataset_entry.labels_file_path"],
 
     "in_dir": [ "^^", "execute", [[
         [ "get", "output_entry" ],
@@ -127,5 +127,5 @@
     ]] ],
     "rel_script_path": "onnx_loadgen_detector.py",
 
-    "script_extra_params": [ "^^", "substitute", "\"#{loadgen_scenario}#\" \"#{loadgen_mode}#\" #{loadgen_dataset_size}# #{loadgen_buffer_size}# \"#{loadgen_count_override}#\"  \"#{loadgen_mlperf_conf_path}#\" \"#{loadgen_user_conf_path}#\" #{verbosity}# \"#{model_name}#\" \"#{model_path}#\" #{model_resolution}# #{model_output_scale}# \"#{model_input_layer_name}#\" \"#{model_output_layers_bls}#\" \"#{model_skipped_classes}#\" \"#{normalize_symmetric}#\" \"#{subtract_mean_bool}#\" \"#{given_channel_means}#\" \"#{given_channel_stds}#\" \"#{preprocessed_images_dir}#\" \"#{coco_labels_file_path}#\" \"#{execution_device}#\" \"#{batch_size}#\" #{cpu_threads}# #{minimal_class_id}#" ]
+    "script_extra_params": [ "^^", "substitute", "\"#{loadgen_scenario}#\" \"#{loadgen_mode}#\" #{loadgen_dataset_size}# #{loadgen_buffer_size}# \"#{loadgen_count_override}#\"  \"#{loadgen_mlperf_conf_path}#\" \"#{loadgen_user_conf_path}#\" #{verbosity}# \"#{model_name}#\" \"#{model_path}#\" #{model_resolution}# #{model_output_scale}# \"#{model_input_layer_name}#\" \"#{model_output_layers_bls}#\" \"#{model_skipped_classes}#\" \"#{normalize_symmetric}#\" \"#{subtract_mean_bool}#\" \"#{given_channel_means}#\" \"#{given_channel_stds}#\" \"#{preprocessed_images_dir}#\" \"#{labels_file_path}#\" \"#{execution_device}#\" \"#{batch_size}#\" #{cpu_threads}# #{minimal_class_id}#" ]
 }

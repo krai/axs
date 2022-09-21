@@ -1,4 +1,7 @@
 {
+
+    "labels_file_path": [ "^^", "get_path_from", "labels_rel_file" ],
+
     "images_entry": [ "^", "execute", [[
         [ "byquery", [[ "^^", "get", "images_query" ]] ]
     ]], {}, [ "images_query" ]],

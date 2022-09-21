@@ -4,6 +4,8 @@
     "tags": [ "dataset" ],
     "dataset_name": "coco",
 
+    "labels_rel_file": "coco_flatlabels.txt",
+
     "images_query": [ "extracted", "coco_images" ],
     "images_rel_dir": "val2017",
     "annotation_query": [ "extracted", "coco_annotation" ],
