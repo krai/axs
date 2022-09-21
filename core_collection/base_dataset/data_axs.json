@@ -1,0 +1,19 @@
+{
+    "images_entry": [ "^", "execute", [[
+        [ "byquery", [[ "^^", "get", "images_query" ]] ]
+    ]], {}, [ "images_query" ]],
+
+    "images_dir": [ "^^", "execute", [[
+        [ "get", "images_entry" ],
+        [ "get_path", [[ "^^", "get", "images_rel_dir" ]] ]
+    ]] ],
+
+    "annotation_entry": [ "^", "execute", [[
+        [ "byquery", [[ "^^", "get", "annotation_query" ]] ]
+    ]], {}, [ "dataset_name", "annotation_query" ]],
+
+    "annotation_file": [ "^^", "execute", [[
+        [ "get", "annotation_entry" ],
+        [ "get_path", [[ "^^", "get", "annotation_rel_file" ]] ]
+    ]] ]
+}

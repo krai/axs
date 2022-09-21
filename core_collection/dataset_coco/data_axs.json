@@ -1,0 +1,11 @@
+{
+    "_parent_entries": [ [ "^", "byname", "base_dataset" ] ],
+
+    "tags": [ "dataset" ],
+    "dataset_name": "coco",
+
+    "images_query": [ "extracted", "coco_images" ],
+    "images_rel_dir": "val2017",
+    "annotation_query": [ "extracted", "coco_annotation" ],
+    "annotation_rel_file": ["annotations", "instances_val2017.json" ]
+}

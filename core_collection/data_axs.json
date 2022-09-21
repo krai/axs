@@ -50,6 +50,9 @@
         "model_onnx_retinanet_openimages_recipe": "model_onnx_retinanet_openimages_recipe",
         "openimages_mlperf_recipe": "openimages_mlperf_recipe",
         "base_loadgen_experiment": "base_loadgen_experiment",
-        "source_hello_world": "source_hello_world"
+        "source_hello_world": "source_hello_world",
+        "base_dataset": "base_dataset",
+        "dataset_coco": "dataset_coco",
+        "dataset_openimages": "dataset_openimages"
     }
 }

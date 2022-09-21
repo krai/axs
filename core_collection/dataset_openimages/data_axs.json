@@ -1,0 +1,11 @@
+{
+    "_parent_entries": [ [ "^", "byname", "base_dataset" ] ],
+
+    "tags": [ "dataset" ],
+    "dataset_name": "openimages",
+
+    "images_query": [ "downloaded", "openimages_mlperf" ],
+    "images_rel_dir": ["validation", "data"],
+    "annotation_query": [ "downloaded", "openimages_mlperf" ],
+    "annotation_rel_file": ["annotations", "openimages-mlperf.json" ]
+}
