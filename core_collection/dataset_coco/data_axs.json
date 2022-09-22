@@ -5,6 +5,7 @@
     "dataset_name": "coco",
 
     "labels_rel_file": "coco_flatlabels.txt",
+    "minimal_class_id": 1,
 
     "images_query": [ "extracted", "coco_images" ],
     "images_rel_dir": "val2017",

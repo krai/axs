@@ -35,7 +35,6 @@
         [ "get_path" ]
     ]] ],
     "dataset_name": [ "^^", "dig", "model_entry.dataset_name" ],
-    "minimal_class_id": [ "^^", "dig", "model_entry.minimal_class_id" ],
     "model_resolution": [ "^^", "dig", "model_entry.resolution" ],
     "model_output_scale": [ "^^", "dig", "model_entry.output_scale" ],
 
@@ -119,6 +118,7 @@
     ]],
 
     "dataset_entry": [ "^", "byquery", [[ "^^", "substitute", "dataset,dataset_name=#{dataset_name}#" ]], {}, [ "dataset_name"] ],
+    "minimal_class_id": [ "^^", "dig", "dataset_entry.minimal_class_id" ],
     "labels_file_path": [ "^^", "dig", "dataset_entry.labels_file_path"],
 
     "in_dir": [ "^^", "execute", [[
