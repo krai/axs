@@ -1,38 +1,16 @@
 {
     "_producer_rules": [
-        [ [ "preprocessed", "dataset_name=coco" ], [ "^^", "get", "__entry__" ], "preprocess", {
-            "images_directory": [ "AS^IS", "^", "execute", [[
-                [ "byquery", [[ "^^", "get", "coco_images_query" ]] ], 
-                [ "get_path" ]
-                ]], {}, [ "coco_images_query" ]],
-            "images_annotation": [ "AS^IS", "^^", "execute", [[
-                [ "load_json", [[ "^^", "get", "coco_annotation_path" ]] ],
-                [ "get", "images" ]
-            ]] ]
+        [ [ "preprocessed" ], [ "^^", "get", "__entry__" ], "preprocess", {
+                "dataset_entry": [  "AS^IS", "^", "byquery", [[ "^^", "substitute", "dataset,dataset_name=#{dataset_name}#" ]], {}, [ "dataset_name" ] ],
+                "images_dir": [  "AS^IS", "^^", "dig", "dataset_entry.images_dir" ],
+                "annotation_data": [  "AS^IS", "^^", "dig", "dataset_entry.annotation_data" ]
           },
           [
-            "images_directory", "resolution", "supported_extensions",
-            "data_type","new_file_extension", "file_name", "fof_name"
-          ]
-        ],
-        [ [ "preprocessed", "dataset_name=openimages" ], [ "^^", "get", "__entry__" ], "preprocess", {
-            "images_directory": [ "AS^IS", "^", "execute", [[
-                [ "byquery", [[ "^^", "get", "openimages_query" ]] ], 
-                [ "get_path" , [["validation", "data"]] ]
-                ]], {}, [ "openimages_query" ]],
-            "images_annotation": ""
-        },
-        [
-            "images_directory", "resolution", "supported_extensions",
+            "resolution", "supported_extensions",
             "data_type","new_file_extension", "file_name", "fof_name"
           ]
         ]
     ],
-
-    "coco_annotation_path": [ "^", "execute", [[
-        [ "byquery", "extracted,coco_annotation" ],
-        [ "get_path", [["annotations", "instances_val2017.json"]] ]
-    ]] ],
 
     "numpy_query": [ "python_package", "package_name=numpy" ],
     "pillow_query": [ "python_package", "package_name=pillow" ],
@@ -45,10 +23,6 @@
         ["byquery", [[ "^^", "get", "pillow_query" ]] ],
         ["use"]
     ]] ],
-
-    "images_directory": "",
-    "coco_images_query": [ "extracted", "coco_images" ],
-    "openimages_query": [ "downloaded", "openimages_mlperf" ],
 
     "resolution":           1200,
     "supported_extensions": ["jpeg", "jpg", "gif", "png"],

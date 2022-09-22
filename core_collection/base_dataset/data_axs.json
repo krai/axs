@@ -18,5 +18,10 @@
     "annotation_file": [ "^^", "execute", [[
         [ "get", "annotation_entry" ],
         [ "get_path", [[ "^^", "get", "annotation_rel_file" ]] ]
+    ]] ],
+
+    "annotation_data": [ "^^", "execute", [[
+        [ "load_json", [[ "^^", "get", "annotation_file" ]] ],
+        [ "get", "images" ]
     ]] ]
 }

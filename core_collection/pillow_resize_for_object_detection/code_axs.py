@@ -33,7 +33,7 @@ def load_image(image_path,            # Full path to processing image
     return batch_data, original_width, original_height
 
 
-def preprocess(dataset_name, images_directory, images_annotation, resolution, supported_extensions, data_type, new_file_extension, file_name,  fof_name, first_n=None, tags=None, entry_name=None, __record_entry__=None):
+def preprocess(dataset_name, images_dir, annotation_data, resolution, supported_extensions, data_type, new_file_extension, file_name,  fof_name, first_n=None, tags=None, entry_name=None, __record_entry__=None):
     "Go through the selected_filenames and preprocess all the files"
 
     output_signatures = []
@@ -47,16 +47,16 @@ def preprocess(dataset_name, images_directory, images_annotation, resolution, su
 
     os.makedirs( output_directory )
 
-    if images_annotation:
-        sorted_filenames = [ ann_record['file_name'] for ann_record in images_annotation ]
+    if annotation_data:
+        sorted_filenames = [ ann_record['file_name'] for ann_record in annotation_data ]
     else:
-        sorted_filenames = [filename for filename in sorted(os.listdir(images_directory)) if any(filename.lower().endswith(extension) for extension in supported_extensions) ]
+        sorted_filenames = [filename for filename in sorted(os.listdir(images_dir)) if any(filename.lower().endswith(extension) for extension in supported_extensions) ]
 
     selected_filenames = sorted_filenames[:first_n] if first_n is not None else sorted_filenames
 
     for current_idx, input_filename in enumerate(selected_filenames):
 
-        full_input_path     = os.path.join(images_directory, input_filename)
+        full_input_path     = os.path.join(images_dir, input_filename)
 
         image_data, original_width, original_height = load_image(image_path = full_input_path,
                               resolution = resolution,
