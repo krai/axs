@@ -53,6 +53,7 @@
         "source_hello_world": "source_hello_world",
         "base_dataset": "base_dataset",
         "dataset_coco": "dataset_coco",
-        "dataset_openimages": "dataset_openimages"
+        "dataset_openimages": "dataset_openimages",
+        "bboxes_for_onnx_object_detector":"bboxes_for_onnx_object_detector"
     }
 }
