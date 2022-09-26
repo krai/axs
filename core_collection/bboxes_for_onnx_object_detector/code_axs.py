@@ -3,7 +3,6 @@
 import os
 
 from PIL import ImageFont,Image, ImageDraw
-import json
 
 def add_bboxes_to_image(input_file_path, output_file_path, bboxes, n):
     im = Image.open(input_file_path)
