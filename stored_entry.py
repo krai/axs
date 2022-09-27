@@ -8,6 +8,7 @@ import shutil
 import sys
 import uuid
 
+import ufun
 from runnable import Runnable
 
 
@@ -191,19 +192,6 @@ Usage examples :
         return self
 
 
-    def load_json(self, json_file_path):
-        """Load a data structure from given JSON file.
-        """
-        with open( json_file_path, encoding='utf-8' ) as json_fd:
-            try:
-                data_structure = json.load(json_fd)
-            except json.decoder.JSONDecodeError as e:
-                print(f'Error parsing "{json_file_path}" : {e}', file=sys.stderr)
-                data_structure = {}
-
-            return data_structure
-
-
     def own_data(self, data_dict=None):
         """Lazy-load, cache and return own data from the file system
 
@@ -220,7 +208,7 @@ Usage examples :
         elif self.own_data_cache is None:   # lazy-loading condition
             parameters_path = self.get_parameters_path()
             if os.path.isfile( parameters_path ):
-                self.own_data_cache = self.load_json( parameters_path )
+                self.own_data_cache = ufun.load_json( parameters_path )
                 self.touch('_AFTER_DATA_LOADING')
             else:
                 logging.warning(f"[{self.get_name()}] parameters file {parameters_path} did not exist, initializing to empty parameters")

@@ -1,5 +1,9 @@
 {
-    "script_output": [ "^^", "load_json", [ [ "^^", "get_path_from", "output_file_name" ] ] ],
+    "script_output": [ "^^", "execute", [[
+        [ "get_path_from", "output_file_name" ],
+        [ "func0", "ufun.load_json" ]
+    ]] ],
+
     "detection_results": [ "^^", "dig", "script_output.detections" ],
     "detection_times": [ "^^", "dig", "script_output.times" ],
 

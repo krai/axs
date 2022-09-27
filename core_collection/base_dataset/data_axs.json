@@ -21,7 +21,8 @@
     ]] ],
 
     "annotation_data": [ "^^", "execute", [[
-        [ "load_json", [[ "^^", "get", "annotation_file" ]] ],
+        [ "get", "annotation_file" ],
+        [ "func0", "ufun.load_json" ],
         [ "get", "images" ]
     ]] ]
 }
