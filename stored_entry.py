@@ -144,24 +144,6 @@ Usage examples :
         return self.get_kernel().bypath(self.get_path(path), name, container=self)
 
 
-    def cd(self):
-        """Change the current working directory into the Entry's directory.
-            Especially useful when recording a pipeline via its rt_pipeline_entry .
-            Returns the directory path that was current prior to this execution.
-
-Usage examples :
-                axs rt_pipeline_entry , cd , byname shell , run 'echo "Hello, world!" > README.txt'
-        """
-        prev_path   = os.getcwd()
-
-        entry_path  = self.get_path()
-        if not os.path.exists( entry_path ):
-            self.save()
-        os.chdir( entry_path )
-
-        return prev_path
-
-
     def attach(self, container=None):
         """Dispatch the request to register an entry in a container to the container.
 

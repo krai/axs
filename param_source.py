@@ -105,12 +105,6 @@ Usage examples :
         return self.runtime_stack_cache
 
 
-    def rt_pipeline_entry(self):
-        "Returns the entry that persists through the pipeline's execution"
-
-        return self.runtime_stack_cache[0]
-
-
     def get_own_value_generator(self, param_name):
         "Common part of accessing a parameter"
 

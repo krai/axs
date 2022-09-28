@@ -410,6 +410,11 @@ Usage examples :
                 axs bypath only_code/iterative.py , :rec: factorial 5 , get rec , save factorial_of_5
             # Replay:
                 axs bypath factorial_of_5 , get _replay
+
+            # Record a command's output:
+                axs work_collection , attached_entry ls_output_entry , plant file_name ls_output.txt , save , target_path: get_path , , byname shell , run --shell_cmd_with_subs='ls -l > #{target_path}#'
+                axs byname ls_output_entry , entry_dir:  get_path '' , , byname shell , run --shell_cmd_with_subs='ls -l #{entry_dir}#'
+                axs byname ls_output_entry , out_file_path: get_path , , byname shell , run --shell_cmd_with_subs='cat #{out_file_path}#'
         """
         max_call_params     = 3     # action, pos_params, edit_dict
         rt_pipeline_wide    = self.get_kernel().bypath(path='rt_pipeline_wide', own_data={})  # the "service" pipeline-wide entry
