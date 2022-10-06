@@ -1,7 +1,7 @@
 {
     "_parent_entries": [ [ "^", "byname", "shell" ] ],
     "_producer_rules": [
-            [ [ "compiled", "hello_world" ], [ "^^", "get", "__entry__" ], "run", { } ]
+            [ [ "compiled", "hello_world" ], [["run"]] ]
     ],
     "tags": [ "source_code", "hello_world" ],
     "file_name": "hello.c",

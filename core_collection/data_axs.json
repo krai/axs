@@ -54,6 +54,8 @@
         "base_dataset": "base_dataset",
         "dataset_coco": "dataset_coco",
         "dataset_openimages": "dataset_openimages",
-        "bboxes_for_onnx_object_detector":"bboxes_for_onnx_object_detector"
+        "bboxes_for_onnx_object_detector":"bboxes_for_onnx_object_detector",
+        "rule_matching_producer": "rule_matching_producer",
+        "rule_matching_advertiser": "rule_matching_advertiser"
     }
 }

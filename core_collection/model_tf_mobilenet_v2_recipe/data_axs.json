@@ -1,8 +1,8 @@
 {
     "_producer_rules": [
-        [ [ "downloaded", "tf_model", "model_name=mobilenet_v2" ], [ "^", "byname", "downloader" ], "download", {
+        [ [ "downloaded", "tf_model", "model_name=mobilenet_v2" ], [["get_kernel"],["byname","downloader"],["download"]], {
             }, ["url","multiplier","resolution"] ],
-        [ [ "extracted",  "tf_model", "model_name=mobilenet_v2" ], [ "^", "byname", "extractor" ], "extract",  {
+        [ [ "extracted",  "tf_model", "model_name=mobilenet_v2" ], [["get_kernel"],["byname","extractor"],["extract"]], {
             }, ["archive_path","model_rel_path","multiplier","resolution"] ]
     ],
 

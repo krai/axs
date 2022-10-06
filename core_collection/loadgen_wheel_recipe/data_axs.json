@@ -2,7 +2,7 @@
     "_parent_entries": [ [ "^", "byname", "python_script" ] ],
 
     "_producer_rules": [
-        [ [ "package_wheel", "package_name=mlperf_loadgen" ], [ "^^", "get", "__entry__" ], "get", { "param_name": "populated_wheel_entry" }, [] ]
+        [ [ "package_wheel", "package_name=mlperf_loadgen" ], [["get","populated_wheel_entry"]] ]
     ],
 
     "wheel_entry": [ "^^", "execute", [[

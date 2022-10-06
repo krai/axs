@@ -1,0 +1,17 @@
+{
+    "_producer_rules": [
+        [ [ "test_product_n", "m=10" ], [["producer_function"]], {
+            "rap": "rap:RP",
+            "ra": "ra:RP",
+            "rp": "rp:RP",
+            "r": "r:RP"
+        }, [ "i" ] ]
+    ],
+    "rap": "rap:P",
+    "rp":  "rp:P",
+
+    "ap":  "ap:P",
+    "p":   "p:P",
+
+    "i":   "i:P"
+}

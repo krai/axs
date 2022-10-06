@@ -1,7 +1,7 @@
 {
     "_parent_entries": [ [ "^", "byname", "python_in_shell" ] ],
     "_producer_rules": [
-        [ [ "downloaded", "openimages_mlperf" ], [ "^^", "get", "__entry__" ], "run", { "return_saved_record_entry": true } ]
+        [ [ "downloaded", "openimages_mlperf" ], [["run"]], { "return_saved_record_entry": true } ]
     ],
 
     "mlperf_inference_git_entry": [ "^", "byquery", "git_repo,repo_name=mlperf_inference_git" ],

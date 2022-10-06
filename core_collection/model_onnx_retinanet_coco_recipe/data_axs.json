@@ -1,6 +1,6 @@
 {
     "_producer_rules": [
-        [ [ "downloaded", "onnx_model", "model_name=retinanet_coco" ], [ "^", "byname", "downloader" ], "download", {
+        [ [ "downloaded", "onnx_model", "model_name=retinanet_coco" ], [["get_kernel"],["byname","downloader"],["download"]], {
             "downloading_tool_query": [ "shell_tool", "can_download_url" ],
             "url": "https://zenodo.org/record/6976934/files/retinanet_resnext50_openimage_train_coco_finetune_acc0.353.onnx",
             "md5": "3409b68c2c6fb0d1e6586f37cd31c79d",

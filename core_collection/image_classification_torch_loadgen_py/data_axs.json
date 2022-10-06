@@ -1,7 +1,7 @@
 {
     "_parent_entries": [ [ "^", "byname", "python_script" ] ],
     "_producer_rules": [
-        [ [ "loadgen_output", "classified_imagenet", "framework=pytorch" ], [ "^^", "get", "__entry__" ], "run", { "return_saved_record_entry": true } ]
+        [ [ "loadgen_output", "classified_imagenet", "framework=pytorch" ], [["run"]], { "return_saved_record_entry": true } ]
     ],
 
     "resolution": 224,

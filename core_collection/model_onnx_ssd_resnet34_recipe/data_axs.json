@@ -1,6 +1,6 @@
 {
     "_producer_rules": [
-        [ [ "downloaded", "onnx_model", "model_name=ssd_resnet34" ], [ "^", "byname", "downloader" ], "download", {
+        [ [ "downloaded", "onnx_model", "model_name=ssd_resnet34" ], [["get_kernel"],["byname","downloader"],["download"]], {
             "url": "https://zenodo.org/record/3228411/files/resnet34-ssd1200.onnx",
             "md5": "b70fc6c72bc9349981f3b1258f31bc87",
 

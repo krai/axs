@@ -1,6 +1,6 @@
 {
     "_producer_rules": [
-        [ [ "preprocessed" ], [ "^^", "get", "__entry__" ], "preprocess", {
+        [ [ "preprocessed" ], [["preprocess"]], {
                 "dataset_entry": [  "AS^IS", "^", "byquery", [[ "^^", "substitute", "dataset,dataset_name=#{dataset_name}#" ]], {}, [ "dataset_name" ] ],
                 "images_dir": [  "AS^IS", "^^", "dig", "dataset_entry.images_dir" ],
                 "annotation_data": [  "AS^IS", "^^", "dig", "dataset_entry.annotation_data" ]

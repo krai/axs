@@ -14,6 +14,7 @@ class Runnable(ParamSource):
         It can run an own or inherited action using own or inherited parameters.
     """
 
+    pipeline_counter                = 0
     ESCAPE_do_not_process           = 'AS^IS'
 
     def __init__(self, own_functions=None, kernel=None, **kwargs):
@@ -388,7 +389,7 @@ Usage examples :
         return processed_struct if side_effects_count else unprocessed_struct                   # keeping the original if unchanged should help with GC
 
 
-    def execute(self, pipeline):
+    def execute(self, pipeline, pipeline_wide_data=None):
         """Execute a parsed pipeline (a chain of calls that starts from the kernel object).
             Whenever a result returned by a function is NOT an Runnable, the execution resets back to the kernel object.
 
@@ -417,7 +418,9 @@ Usage examples :
                 axs byname ls_output_entry , out_file_path: get_path , , byname shell , run --shell_cmd_with_subs='cat #{out_file_path}#'
         """
         max_call_params     = 3     # action, pos_params, edit_dict
-        rt_pipeline_wide    = self.get_kernel().bypath(path='rt_pipeline_wide', own_data={})  # the "service" pipeline-wide entry
+        pipeline_wide_data  = pipeline_wide_data or {}
+        rt_pipeline_wide    = self.get_kernel().bypath(path=f'rt_pipeline_wide_{Runnable.pipeline_counter}', own_data=pipeline_wide_data)  # the "service" pipeline-wide entry
+        Runnable.pipeline_counter += 1
 
 #        inherited_context   = self.runtime_stack()
         local_context       = [ rt_pipeline_wide ]
@@ -440,17 +443,19 @@ Usage examples :
 
                 call_params_iter    = iter(call_params)
                 action_name         = next(call_params_iter)
+                pos_params          = next(call_params_iter, [])
+                edit_dict           = { **pipeline_wide_data, **next(call_params_iter, {}) }    # shallow dictionary merge
+                export_params       = next(call_params_iter, None)
 
                 if action_name!='func0' and hasattr(entry, 'call'):                     # an Entry-specific or Runnable-generic method ("func" called on an Entry will fire here)
-                    result = entry.call(*call_params, call_record_entry_ptr=call_record_entry_ptr, nested_context=local_context)
+#                    print(f"Before call({action_name}, {pos_params}, {edit_dict}, export:{export_params}, rel:+++{self}---)")
+                    result = entry.call(action_name, pos_params, edit_dict, export_params, slice_relative_to=self, call_record_entry_ptr=call_record_entry_ptr, nested_context=local_context)
                 else:
-                    pos_params  = next(call_params_iter, [])
                     if type(pos_params)==list:
                         pos_params = rt_pipeline_wide.nested_calls(pos_params)              # perform all nested calls if there are any
                     else:
                         pos_params = [ pos_params ]                                         # simplified syntax for single positional parameter actions
 
-                    edit_dict   = next(call_params_iter, {})
                     if action_name == 'attr':
                         result      = self.attr(pos_params[0])
                     elif action_name in ('func', 'func0'):                              # a built-in or dotted function, with or without passing ("func" called on an non-Entry will fire here)

@@ -1,6 +1,7 @@
 {
     "_producer_rules": [
-        [ [ "git_repo", "repo_name=mlperf_inference_git" ], [ "^", "byname", "git" ], "clone", {}, [ "url", "checkout", "submodules" ] ]
+        [ [ "git_repo", "repo_name=mlperf_inference_git" ], [["get_kernel"],["byname","git"],["clone"]], {
+        }, [ "url", "checkout", "submodules" ] ]
     ],
     "url": "https://github.com/mlcommons/inference",
     "checkout": "r2.1",

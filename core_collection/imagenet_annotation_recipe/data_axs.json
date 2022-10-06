@@ -1,7 +1,7 @@
 {
     "_producer_rules": [
-        [ [ "downloaded", "imagenet_annotation" ], [ "^", "byname", "downloader" ], "download", {}, [ "url", "md5" ] ],
-        [ [ "extracted",  "imagenet_annotation" ], [ "^", "byname", "extractor" ], "extract",  {}, [ "archive_path" ] ]
+        [ [ "downloaded", "imagenet_annotation" ], [["get_kernel"],["byname","downloader"],["download"]], {}, [ "url", "md5" ] ],
+        [ [ "extracted",  "imagenet_annotation" ], [["get_kernel"],["byname","extractor" ],["extract"]],  {}, [ "archive_path" ] ]
     ],
 
     "url": "https://www.dropbox.com/s/92n2fyej3lzy3s3/caffe_ilsvrc12.tar.gz",

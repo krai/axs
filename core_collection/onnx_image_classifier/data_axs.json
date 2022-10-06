@@ -1,7 +1,7 @@
 {
     "_parent_entries": [ [ "^", "byname", "python_script" ] ],
     "_producer_rules": [
-        [ [ "script_output", "classified_imagenet", "framework=onnx" ], [ "^^", "get", "__entry__" ], "run", { "return_saved_record_entry": true } ]
+        [ [ "script_output", "classified_imagenet", "framework=onnx" ], [["run"]], { "return_saved_record_entry": true } ]
     ],
 
     "num_gpus": [ "^", "execute", [[

@@ -1,6 +1,12 @@
 {
-   "_producer_rules": [
-        [ [ "bboxed", "detected_coco" ], [ "^^", "get", "__entry__" ], "postprocess_add_detections", {
+    "_BEFORE_CODE_LOADING": [ "^^", "execute", [[
+        ["get_kernel"],
+        ["byquery", [[ "^^", "get", "pillow_query" ]] ],
+        ["use"]
+    ]] ],
+
+    "_producer_rules": [
+        [ [ "bboxed", "detected_coco" ], [["postprocess_add_detections"]], {
             "experiment_query": [ "AS^IS", "^^","substitute", [ [ "script_output", "detected_coco", "framework=#{framework}#", "model_name=#{model_name}#","num_of_images=#{num_of_images}#" ]] ],
             "experiment_entry": [ "AS^IS", "^", "byquery", [[ "^^", "get", "experiment_query" ]], {}, ["experiment_query"] ],
             "input_images_directory":[ "AS^IS","^^", "dig", "experiment_entry.dataset_entry.images_dir" ],
@@ -8,20 +14,12 @@
                 ["dig", "experiment_entry.script_output"],
                 ["get","detections" ]
             ]] ]
-        },
-          [
-           "file_name", "n"
-          ]
+        }, [ "file_name", "n" ]
         ]
-   ],
+    ],
 
- "pillow_query": [ "python_package", "package_name=pillow" ],
-    "_BEFORE_CODE_LOADING": [ "^^", "execute", [[
-        ["get_kernel"],
-        ["byquery", [[ "^^", "get", "pillow_query" ]] ],
-        ["use"]
-    ]] ],
+    "pillow_query": [ "python_package", "package_name=pillow" ],
 
-  "file_name":            "bboxed",
-    "n":                    3
+    "file_name": "bboxed",
+    "n": 3
 }

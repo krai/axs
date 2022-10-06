@@ -1,7 +1,9 @@
 {
     "_producer_rules": [
-        [ [ "downloaded", "coco_annotation" ], [ "^", "byname", "downloader" ], "download", {}, ["url", "md5"] ],
-        [ [ "extracted",  "coco_annotation" ], [ "^", "byname", "extractor" ], "extract",  {}, [ "archive_path", "extra_dir_prefix", "internal_file_name" ] ]
+        [ [ "downloaded", "coco_annotation" ], [["get_kernel"],["byname","downloader"],["download"]], {
+        }, ["url", "md5"] ],
+        [ [ "extracted",  "coco_annotation" ], [["get_kernel"],["byname","extractor"],["extract"]], {
+        }, [ "archive_path", "extra_dir_prefix", "internal_file_name" ] ]
     ],
 
     "url": "http://images.cocodataset.org/annotations/annotations_trainval2017.zip",

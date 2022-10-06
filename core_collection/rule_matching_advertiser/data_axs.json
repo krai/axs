@@ -1,0 +1,16 @@
+{
+    "_producer_rules": [
+        [ [ "test_product_n", "m=11" ], [["get_kernel"],["byname", "rule_matching_producer"],["producer_function"]], {
+            "rap": "rap:RA",
+            "ra": "ra:RA",
+            "r": "r:RA"
+        }, [ "i" ] ]
+    ],
+    "rap": "rap:A",
+    "ra":  "ra:A",
+
+    "ap":  "ap:A--missing",
+    "a":   "a:A--missing",
+
+    "i":   "i:A"
+}

@@ -240,17 +240,36 @@ Usage examples :
                         if type(all_processed_rules)!=list:
                             raise(KeyError(f"{advertising_entry.get_name()}'s _producer_rules[] is incomplete, please check all substitutions work"))
 
-                        _, producer_entry, producer_method, extra_params, *rest = all_processed_rules[rule_index]
-                        export_params = rest[0] if len(rest) else []
-                        #extra_params    = advertising_entry.nested_calls( unprocessed_rule[3] )
+                        rule_vector = all_processed_rules[rule_index]
+                        if type(rule_vector[1])==list:      # new rule format
+                            producer_pipeline   = rule_vector[1]
+                            extra_params        = rule_vector[2] if len(rule_vector)>2 else {}
+                            export_params       = rule_vector[3] if len(rule_vector)>3 else []
 
-                        logging.warning(f"Entry '{advertising_entry.get_name()}' advertises producer '{producer_entry.get_name()}' with action {producer_method}({extra_params}) and matching tags {parsed_rule.posi_tag_set} that may work with {parsed_query.posi_val_dict}")
-                        cumulative_params = advertising_entry.slice( *export_params )   # default slice
-                        cumulative_params.update( deepcopy( extra_params ) )            # extra_params on top
-                        cumulative_params.update( parsed_rule.posi_val_dict )           # rules on top (may override some defaults)
-                        cumulative_params.update( parsed_query.posi_val_dict )          # query on top (may override some defaults)
-                        cumulative_params["tags"] = list(parsed_query.posi_tag_set)     # FIXME:  parsed_rule.posi_tag_set should include it
-                        new_entry = producer_entry.call(producer_method, [], {'AS^IS':cumulative_params})
+                            logging.warning(f"Entry '{advertising_entry.get_name()}' advertises producer pipeline matching tags {parsed_rule.posi_tag_set} that may work with {parsed_query.posi_val_dict}")
+                            cumulative_params = advertising_entry.slice( *export_params )   # default slice
+                            cumulative_params.update( deepcopy( extra_params ) )            # extra_params on top
+                            cumulative_params.update( parsed_rule.posi_val_dict )           # rules on top (may override some defaults)
+                            cumulative_params.update( parsed_query.posi_val_dict )          # query on top (may override some defaults)
+                            cumulative_params["tags"] = list(parsed_query.posi_tag_set)     # FIXME:  parsed_rule.posi_tag_set should include it
+                            logging.warning(f"Pipeline: {producer_pipeline}, Cumulative params: {cumulative_params}")
+
+                            new_entry = advertising_entry.execute(producer_pipeline, cumulative_params)
+
+                        else:   # legacy format
+                            print( type(rule_vector[1]) )
+                            _, producer_entry, producer_method, extra_params, *rest = rule_vector
+                            export_params = rest[0] if len(rest) else []
+                            #extra_params    = advertising_entry.nested_calls( unprocessed_rule[3] )
+
+                            logging.warning(f"Entry '{advertising_entry.get_name()}' advertises producer '{producer_entry.get_name()}' with action {producer_method}({extra_params}) and matching tags {parsed_rule.posi_tag_set} that may work with {parsed_query.posi_val_dict}")
+                            cumulative_params = advertising_entry.slice( *export_params )   # default slice
+                            cumulative_params.update( deepcopy( extra_params ) )            # extra_params on top
+                            cumulative_params.update( parsed_rule.posi_val_dict )           # rules on top (may override some defaults)
+                            cumulative_params.update( parsed_query.posi_val_dict )          # query on top (may override some defaults)
+                            cumulative_params["tags"] = list(parsed_query.posi_tag_set)     # FIXME:  parsed_rule.posi_tag_set should include it
+                            new_entry = producer_entry.call(producer_method, [], {'AS^IS':cumulative_params})
+
                         if new_entry:
                             logging.warning("The rule selected produced an entry.")
                             return new_entry

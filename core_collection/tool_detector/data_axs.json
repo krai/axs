@@ -3,10 +3,10 @@
         [ "^", "byname", "shell" ]
     ],
     "_producer_rules": [
-        [ ["shell_tool", "can_download_url_from_google_drive" ] , [ "^^", "get", "__entry__" ], "detect",
+        [ ["shell_tool", "can_download_url_from_google_drive" ] , [["detect"]],
             { "tool_name": "gdown", "shell_cmd_with_subs": "\"#{tool_path}#\" -O \"#{target_path}#\" \"#{url}#\"" }
         ],
-        [ ["shell_tool", "can_download_url_from_google_drive" ] , [ "^^", "get", "__entry__" ], "detect",
+        [ ["shell_tool", "can_download_url_from_google_drive" ] , [["detect"]],
             {   "tool_name": "gdown",
                 "tool_path": [ "AS^IS", "^", "execute", [[
                     [ "byquery", "python_package,package_name=gdown" ],
@@ -20,11 +20,11 @@
             }
         ],
 
-        [ [ "shell_tool", "can_download_url" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "wget", "shell_cmd_with_subs": "\"#{tool_path}#\" -O \"#{target_path}#\" #{url}#" } ],
-        [ [ "shell_tool", "can_download_url" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "curl", "shell_cmd_with_subs": "\"#{tool_path}#\" -L -o \"#{target_path}#\" #{url}#" } ],
+        [ [ "shell_tool", "can_download_url" ], [["detect"]], { "tool_name": "wget", "shell_cmd_with_subs": "\"#{tool_path}#\" -O \"#{target_path}#\" #{url}#" } ],
+        [ [ "shell_tool", "can_download_url" ], [["detect"]], { "tool_name": "curl", "shell_cmd_with_subs": "\"#{tool_path}#\" -L -o \"#{target_path}#\" #{url}#" } ],
 
 
-        [ [ "shell_tool", "can_extract_tar" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "tar", "strip_components": 0,
+        [ [ "shell_tool", "can_extract_tar" ], [["detect"]], { "tool_name": "tar", "strip_components": 0,
             "uncompression_insert": ["AS^IS", "^^", "case",   [ ["^^", "get", "archive_format"],
                 "tar", "",
                 "tgz", "z"
@@ -35,34 +35,34 @@
             "shell_cmd_with_subs": "\"#{tool_path}#\" -#{uncompression_insert}#xvf - -C \"#{target_path}#\" #{strip_components_insert}# < \"#{archive_path}#\""
         } ],
 
-        [ [ "shell_tool", "can_extract_zip" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "unzip", "shell_cmd_with_subs": "\"#{tool_path}#\" -d \"#{target_path}#\" \"#{archive_path}#\"" } ],
+        [ [ "shell_tool", "can_extract_zip" ], [["detect"]], { "tool_name": "unzip", "shell_cmd_with_subs": "\"#{tool_path}#\" -d \"#{target_path}#\" \"#{archive_path}#\"" } ],
 
-        [ [ "shell_tool", "can_uncompress_gz" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "7z.exe", "shell_cmd_with_subs": "\"#{tool_path}#\" e \"#{target_path}#\"" } ],
-        [ [ "shell_tool", "can_uncompress_gz" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "gzip.exe", "shell_cmd_with_subs": "\"#{tool_path}#\" -d \"#{target_path}#\"" } ],
-        [ [ "shell_tool", "can_uncompress_gz" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "gunzip", "shell_cmd_with_subs": "\"#{tool_path}#\" \"#{target_path}#\"" } ],
+        [ [ "shell_tool", "can_uncompress_gz" ], [["detect"]], { "tool_name": "7z.exe", "shell_cmd_with_subs": "\"#{tool_path}#\" e \"#{target_path}#\"" } ],
+        [ [ "shell_tool", "can_uncompress_gz" ], [["detect"]], { "tool_name": "gzip.exe", "shell_cmd_with_subs": "\"#{tool_path}#\" -d \"#{target_path}#\"" } ],
+        [ [ "shell_tool", "can_uncompress_gz" ], [["detect"]], { "tool_name": "gunzip", "shell_cmd_with_subs": "\"#{tool_path}#\" \"#{target_path}#\"" } ],
 
-        [ [ "shell_tool", "can_compute_md5" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "md5sum.exe", "shell_cmd_with_subs": "\"#{tool_path}#\" \"#{file_path}#\" | cut -f 1 -d \" \" | sed \"s/\\\\\\\\//g\"", "capture_output": true } ],
-        [ [ "shell_tool", "can_compute_md5" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "certutil.exe",     "shell_cmd_with_subs": "\"#{tool_path}#\" -hashfile \"#{file_path}#\" MD5 | findstr /v \":\"", "capture_output": true } ],
-        [ [ "shell_tool", "can_compute_md5" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "md5sum",     "shell_cmd_with_subs": "'#{tool_path}#' '#{file_path}#' | cut -f 1 -d ' '", "capture_output": true } ],
-        [ [ "shell_tool", "can_compute_md5" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "md5",        "shell_cmd_with_subs": "'#{tool_path}#' -r '#{file_path}#' | cut -f 1 -d ' '", "capture_output": true } ],
+        [ [ "shell_tool", "can_compute_md5" ], [["detect"]], { "tool_name": "md5sum.exe", "shell_cmd_with_subs": "\"#{tool_path}#\" \"#{file_path}#\" | cut -f 1 -d \" \" | sed \"s/\\\\\\\\//g\"", "capture_output": true } ],
+        [ [ "shell_tool", "can_compute_md5" ], [["detect"]], { "tool_name": "certutil.exe",     "shell_cmd_with_subs": "\"#{tool_path}#\" -hashfile \"#{file_path}#\" MD5 | findstr /v \":\"", "capture_output": true } ],
+        [ [ "shell_tool", "can_compute_md5" ], [["detect"]], { "tool_name": "md5sum",     "shell_cmd_with_subs": "'#{tool_path}#' '#{file_path}#' | cut -f 1 -d ' '", "capture_output": true } ],
+        [ [ "shell_tool", "can_compute_md5" ], [["detect"]], { "tool_name": "md5",        "shell_cmd_with_subs": "'#{tool_path}#' -r '#{file_path}#' | cut -f 1 -d ' '", "capture_output": true } ],
 
-        [ [ "shell_tool", "can_python" ], [ "^^", "get", "__entry__" ], "detect",
+        [ [ "shell_tool", "can_python" ], [["detect"]],
             {   "tool_name": "custom_python",
                 "shell_cmd_with_subs": "\"#{tool_path}#\" --version",
                 "capture_output": true,
-                "tool_version": [ "AS^IS", "^^", "execute", [[
+                "tool_version": [ "AS^IS", "AS^IS", "^^", "execute", [[
                     [ "run" ],
                     [ "split", " " ],
                     [ "__getitem__", 1 ]
                 ]] ]
             }
         ],
-        [ [ "shell_tool", "can_python" ], [ "^^", "get", "__entry__" ], "detect",
+        [ [ "shell_tool", "can_python" ], [["detect"]],
             {   "tool_name": "kernel_python",
                 "tool_path": [ "^", "python_path" ],
                 "shell_cmd_with_subs": "\"#{tool_path}#\" --version",
                 "capture_output": true,
-                "tool_version": [ "AS^IS", "^^", "execute", [[
+                "tool_version": [ "AS^IS", "AS^IS", "^^", "execute", [[
                     [ "run" ],
                     [ "split", " " ],
                     [ "__getitem__", 1 ]
@@ -70,15 +70,15 @@
             }
         ],
 
-        [ [ "shell_tool", "can_git"], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "git", "shell_cmd": [ "AS^IS", "^^", "substitute", [[
+        [ [ "shell_tool", "can_git"], [["detect"]], { "tool_name": "git", "shell_cmd": [ "AS^IS", "^^", "substitute", [[
             "#{tool_path}#",
             "--version"
         ]] ], "capture_output": true } ],
-        [ [ "shell_tool", "can_gpu" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "nvidia-smi.exe", "shell_cmd_with_subs": "\"#{tool_path}#\" -L | findstr GPU | find /c /v \"\"" ,  "capture_output": true} ],
-        [ [ "shell_tool", "can_gpu" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "nvidia-smi", "shell_cmd_with_subs": "\"#{tool_path}#\" -L | grep -c GPU" ,  "capture_output": true} ],
-        [ [ "shell_tool", "can_gpu" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "echo", "shell_cmd": "echo 0" ,  "capture_output": true} ],
+        [ [ "shell_tool", "can_gpu" ], [["detect"]], { "tool_name": "nvidia-smi.exe", "shell_cmd_with_subs": "\"#{tool_path}#\" -L | findstr GPU | find /c /v \"\"" ,  "capture_output": true} ],
+        [ [ "shell_tool", "can_gpu" ], [["detect"]], { "tool_name": "nvidia-smi", "shell_cmd_with_subs": "\"#{tool_path}#\" -L | grep -c GPU" ,  "capture_output": true} ],
+        [ [ "shell_tool", "can_gpu" ], [["detect"]], { "tool_name": "echo", "shell_cmd": "echo 0" ,  "capture_output": true} ],
 
-        [ [ "shell_tool", "can_compile_c" ], [ "^^", "get", "__entry__" ], "detect", { "tool_name": "gcc", "shell_cmd_with_subs": "\"#{tool_path}#\" --version", "capture_output": true } ]
+        [ [ "shell_tool", "can_compile_c" ], [["detect"]], { "tool_name": "gcc", "shell_cmd_with_subs": "\"#{tool_path}#\" --version", "capture_output": true } ]
     ],
 
 

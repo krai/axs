@@ -1,6 +1,6 @@
 {
     "_producer_rules": [
-        [ [ "git_repo", "collection" ], [ "^^", "get", "__entry__" ], "clone", {} ]
+        [ [ "git_repo", "collection" ], [["clone"]], {} ]
     ],
 
     "url_prefix": "https://github.com/ens-lg4",
