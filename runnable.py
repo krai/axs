@@ -456,10 +456,8 @@ Usage examples :
                 edit_dict           = { **pipeline_wide_data, **next(call_params_iter, {}) }    # shallow dictionary merge
                 export_params       = next(call_params_iter, None)
 
-                if type(pos_params)==list:      # ensure pos_params is a list first
-                    pos_params = rt_pipeline_wide.nested_calls(pos_params)              # perform all nested calls if there are any
-                else:
-                    pos_params = [ pos_params ]                                         # simplified syntax for single positional parameter actions
+                if type(pos_params)!=list:      # first ensure pos_params is a list
+                    pos_params = [ pos_params ]         # simplified syntax for single positional parameter actions
 
                 if insert_stash:                # insert the previous call's result into pos_params of the current call
                     insert_position, insert_result = insert_stash
@@ -472,6 +470,7 @@ Usage examples :
                     result = entry.call(action_name, pos_params, edit_dict, export_params, slice_relative_to=self, call_record_entry_ptr=call_record_entry_ptr, nested_context=local_context)
                 else:                                                       # a non-axs Object method
                     action_object   = getattr(entry, action_name)
+                    pos_params      = rt_pipeline_wide.nested_calls(pos_params)              # perform all nested calls if there are any
                     result          = function_access.feed(action_object, pos_params, edit_dict)
 
                 if input_label:
