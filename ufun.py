@@ -9,8 +9,8 @@ def load_json(json_file_path):
     """Load a data structure from given JSON file.
 
 Usage examples :
-                axs func ufun.load_json ab.json , keys , func0 list
-                axs byquery script_output,detected_coco,framework=onnx,model_name=ssd_resnet34,num_of_images=5 , get_path_from output_file_name , func0 ufun.load_json
+                axs func ufun.load_json ab.json , keys ,0 func list
+                axs byquery script_output,detected_coco,framework=onnx,model_name=ssd_resnet34,num_of_images=5 , get_path_from output_file_name ,0 func ufun.load_json
     """
     with open( json_file_path, encoding='utf-8' ) as json_fd:
         try:
@@ -26,7 +26,7 @@ def rematch(input_string, regex, group=1):
     """Find a substring matching a given regular expression and return it
 
 Usage examples :
-                axs byname kernel_python_tool , run , func0 ufun.rematch '^Python\s((\d+)\.(\d+))\.\d+'    # parse the major.minor version from Python
+                axs byname kernel_python_tool , run ,0 func ufun.rematch '^Python\s((\d+)\.(\d+))\.\d+'    # parse the major.minor version from Python
     """
     import re
 

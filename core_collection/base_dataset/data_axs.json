@@ -22,7 +22,8 @@
 
     "annotation_data": [ "^^", "execute", [[
         [ "get", "annotation_file" ],
-        [ "func0", "ufun.load_json" ],
+        0,
+        [ "func", "ufun.load_json" ],
         [ "get", "images" ]
     ]] ]
 }

@@ -401,11 +401,15 @@ Usage examples :
                 axs version , split . , __getitem__ 2
                 axs core_collection , get_path , split /axs/ , __getitem__ 0
 
-                axs noop 12 , func0 runnable.plus_one
-                axs noop 12.345 , func0 format 10.4f
-                axs core_collection , get contained_entries , keys , func0 list
-                axs byname downloader , own_data , func0 pprint.pformat --width=120
-                axs byname downloader , own_data , func0 json.dumps --indent=4
+                axs noop --,=alpha,beta ,0 enumerate existing values
+                axs noop --,=alpha,beta ,1 enumerate existing values
+                axs noop --,=alpha,beta ,2 enumerate existing values
+
+                axs noop 12 ,0 func runnable.plus_one
+                axs noop 12.345 ,0 func format 10.4f
+                axs core_collection , get contained_entries , keys ,0 func list
+                axs byname downloader , own_data ,0 func pprint.pformat --width=120
+                axs byname downloader , own_data ,0 func json.dumps --indent=4
 
             # Record a call:
                 axs bypath only_code/iterative.py , :rec: factorial 5 , get rec , save factorial_of_5
@@ -425,6 +429,7 @@ Usage examples :
 #        inherited_context   = self.runtime_stack()
         local_context       = [ rt_pipeline_wide ]
         result              = entry = self
+        insert_stash        = None
 
         for call_params in pipeline:
 
@@ -432,7 +437,11 @@ Usage examples :
 #                result.runtime_stack_cache = inherited_context
 #                local_context.append( entry )
 
-            if type(call_params)!=list or len(call_params)==0:      # an empty list is a signal to start again from self
+            if type(call_params) == int:    # a number is a signal to insert the previous result into the pos_params of the next call
+                insert_stash = (call_params, result)
+                entry = self
+
+            elif call_params == []:         # an empty list is a signal to start again from self
                 entry = self
 
             else:
@@ -447,27 +456,23 @@ Usage examples :
                 edit_dict           = { **pipeline_wide_data, **next(call_params_iter, {}) }    # shallow dictionary merge
                 export_params       = next(call_params_iter, None)
 
-                if action_name!='func0' and hasattr(entry, 'call'):                     # an Entry-specific or Runnable-generic method ("func" called on an Entry will fire here)
-#                    print(f"Before call({action_name}, {pos_params}, {edit_dict}, export:{export_params}, rel:+++{self}---)")
-                    result = entry.call(action_name, pos_params, edit_dict, export_params, slice_relative_to=self, call_record_entry_ptr=call_record_entry_ptr, nested_context=local_context)
+                if type(pos_params)==list:      # ensure pos_params is a list first
+                    pos_params = rt_pipeline_wide.nested_calls(pos_params)              # perform all nested calls if there are any
                 else:
-                    if type(pos_params)==list:
-                        pos_params = rt_pipeline_wide.nested_calls(pos_params)              # perform all nested calls if there are any
-                    else:
-                        pos_params = [ pos_params ]                                         # simplified syntax for single positional parameter actions
+                    pos_params = [ pos_params ]                                         # simplified syntax for single positional parameter actions
 
-                    if action_name == 'attr':
-                        result      = self.attr(pos_params[0])
-                    elif action_name in ('func', 'func0'):                              # a built-in or dotted function, with or without passing ("func" called on an non-Entry will fire here)
-                        pre_params  = [ entry ] if action_name=='func0' else []
+                if insert_stash:                # insert the previous call's result into pos_params of the current call
+                    insert_position, insert_result = insert_stash
+                    insert_position_offset = 1 if action_name=='func' else 0
+                    pos_params.insert( insert_position+insert_position_offset, insert_result )
+                    insert_stash = None     # empty it after use
 
-                        action_name = pos_params[0]                                         # pos_params[] must have at least 1 element
-                        pos_params  = pre_params + pos_params[1:]
-                        result      = self.func(action_name, *pos_params, **edit_dict)
-                    else:                                                               # a non-axs Object method
-                        action_object   = getattr(entry, action_name)
-
-                        result      = function_access.feed(action_object, pos_params, edit_dict)
+                if hasattr(entry, 'call'):                                  # an Entry-specific or Runnable-generic method ("func" called on an Entry will fire here)
+                    # print(f"Before call({action_name}, {pos_params}, {edit_dict}, export:{export_params}, rel:+++{self}---)")
+                    result = entry.call(action_name, pos_params, edit_dict, export_params, slice_relative_to=self, call_record_entry_ptr=call_record_entry_ptr, nested_context=local_context)
+                else:                                                       # a non-axs Object method
+                    action_object   = getattr(entry, action_name)
+                    result          = function_access.feed(action_object, pos_params, edit_dict)
 
                 if input_label:
                     rt_pipeline_wide[input_label] = call_record_entry_ptr[0]
