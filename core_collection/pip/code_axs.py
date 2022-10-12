@@ -6,6 +6,7 @@
 import logging
 import os
 import sys
+import ufun
 
 
 def install(package_name, package_version=None, pip_options=None, installable=None, tool_entry=None, tags=None, entry_name=None, __record_entry__=None):
@@ -74,3 +75,17 @@ Usage examples :
     __record_entry__.save( entry_name )
 
     return __record_entry__
+
+
+def available_versions(package_name, tool_entry):
+
+    output_string = tool_entry.call('run', [], {
+        "shell_cmd": [ "^^", "substitute", "#{tool_path}#"+f" -m pip install {package_name}==99.99.99 --user" ],
+        "capture_output": False,
+        "capture_stderr": True,
+    } )
+
+    extracted = ufun.rematch(output_string, '\(from versions:\s(.*?)\)')
+    versions_list = extracted.split(', ')
+
+    return versions_list
