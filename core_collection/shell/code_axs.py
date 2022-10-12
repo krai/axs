@@ -9,7 +9,7 @@ import os
 import subprocess
 import sys
 
-def run(shell_cmd, env=None, in_dir=None, capture_output=False, errorize_output=False, split_to_lines=False, return_saved_record_entry=False, return_this_entry=None, __record_entry__=None):
+def run(shell_cmd, env=None, in_dir=None, capture_output=False, errorize_output=False, capture_stderr=False, split_to_lines=False, return_saved_record_entry=False, return_this_entry=None, __record_entry__=None):
     """Run the given shell command in the given environment
 
 Usage examples:
@@ -29,7 +29,7 @@ Usage examples:
     if type(shell_cmd)==list:   # making sure all components are strings
         shell_cmd = [str(x) for x in shell_cmd]
 
-    logging.warning(f"shell.run() about to execute (with env={env}, in_dir={in_dir}, capture_output={capture_output}, errorize_output={errorize_output}, split_to_lines={split_to_lines}):\n\t{shell_cmd}\n" + (' '*8 + '^'*len(shell_cmd)) )
+    logging.warning(f"shell.run() about to execute (with env={env}, in_dir={in_dir}, capture_output={capture_output}, errorize_output={errorize_output}, capture_stderr={capture_stderr}, split_to_lines={split_to_lines}):\n\t{shell_cmd}\n" + (' '*8 + '^'*len(shell_cmd)) )
 
     if in_dir:
         prev_dir = os.getcwd()
@@ -42,13 +42,15 @@ Usage examples:
     else:
         stdout_target = None
 
-    completed_process = subprocess.run(shell_cmd, shell = (type(shell_cmd)!=list), env=env, stdout=stdout_target)
+    stderr_target = subprocess.PIPE if capture_stderr else None
+
+    completed_process = subprocess.run(shell_cmd, shell = (type(shell_cmd)!=list), env=env, stdout=stdout_target, stderr=stderr_target)
 
     if in_dir:
         os.chdir( prev_dir )
 
-    if capture_output:
-        output  = completed_process.stdout.decode('utf-8').rstrip()
+    if capture_output or capture_stderr:    # FIXME: assuming XOR at the moment
+        output  = (completed_process.stderr if capture_stderr else completed_process.stdout).decode('utf-8').rstrip()
 
         if split_to_lines:
             output = output.split('\n')
