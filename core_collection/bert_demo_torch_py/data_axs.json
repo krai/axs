@@ -1,0 +1,31 @@
+{
+    "_parent_entries": [ [ "^", "byname", "python_script" ] ],
+    "_producer_rules": [
+        [ [ "script_output", "bert-demo", "framework=pytorch" ], [["run"]], { "return_saved_record_entry": true } ]
+    ],
+
+    "num_gpus": [ "^", "execute", [[
+                       [ "byquery", "shell_tool,can_gpu" ],
+                       [ "run" ]
+                ]] ],
+    "torch_query": [ "^^", "case", [ [ "^^", "get", "num_gpus"] , "0" ,["python_package", "package_name=torch"] ], {"default_value": ["python_package", "package_name=torch", "with_cuda"] } ],
+    "transformers_query_2": [ "^^", "case", [ [ "^^", "get", "num_gpus"] , "0" ,["python_package", "package_name=transformers"] ], {"default_value": ["python_package", "package_name=transformers", "with_cuda"] } ],
+    "transformers_query": ["python_package", "package_name=transformers"],
+    
+    "python_deps": [
+        [ "^", "byquery", [ [ "^^", "get", "torch_query" ] ], {}, ["torch_query"] ],
+        [ "^", "byquery", [ [ "^^", "get", "transformers_query" ] ], {}, ["transformers_query"] ]
+    ],
+    "model_name": "bert-large-uncased-whole-word-masking-finetuned-squad",
+
+    "bert_data_context_path": "context.txt",
+    "bert_data_questions_path": "questions.txt",
+    "bert_debug": 0,
+    "framework": "pytorch",
+
+    "execution_device_2": "cpu",
+    "execution_device": "",
+    "rel_script_path": "bert_qa_demo.py",
+
+    "script_extra_params": [ "^^", "substitute", "\"#{model_name}#\" \"#{bert_data_context_path}#\" \"#{bert_data_questions_path}#\" #{bert_debug}# \"#{execution_device}#\"" ]
+}
