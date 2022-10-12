@@ -50,9 +50,6 @@ Usage examples :
     os.makedirs( os.path.join(extra_python_site_dir, 'lib') )
     os.symlink( 'lib', os.path.join(extra_python_site_dir, 'lib64') )
 
-    version_suffix_cmd  = f"=={package_version}" if package_version is not None else ''
-    installable = installable or package_name + version_suffix_cmd
-
     if pip_options:
         if type(pip_options)==dict:
             pip_options = [ k+'='+pip_options[k] for k in pip_options ]
