@@ -7,14 +7,47 @@ Currently it supports the following models:
 - RetinaNet_COCO (used from the v2.1 round; originally for the Open Images dataset, finetuned on the COCO dataset by Krai) on COCO-2017 validation dataset
 - RetinaNet_OpenImages (used from the v2.1 round) on OpenImages validation dataset.
 
+## Quick Demo with Docker
+
+Below is a self-contained demonstration of our object detection workflow, which installs `axs`, downloads some necessary Python packages, the SSD-ResNet34 model, the RetinaNet model, the original COCO dataset and a short partial resized subset of 20 images.
+
+Build the Docker image. It takes ~12 minutes on our server and is ~4.89GB in size.
+```
+time docker build -t axs:object-detection -f Dockerfile .
+```
+
+Launch a short accuracy run of the SSD-ResNet34 model.
+```
+docker run -it --rm axs:object-detection -c "time axs byquery loadgen_output,detected_coco,framework=onnx,loadgen_dataset_size=20 , get accuracy"
+```
+
+Launch a short accuracy run of the RetinaNet model.
+```
+docker run -it --rm axs:object-detection -c "time axs byquery loadgen_output,detected_coco,framework=onnx,loadgen_dataset_size=20,model_name=retinanet_coco , get accuracy"
+```
+
+The mAP value and running time should be printed after a successful run. To install `axs` locally and to explore its full potential please read below.
+
 ## Prerequisites
 
 This workflow is designed to showcase the `axs` workflow management system.
 So the only prerequisite from the user's point of view is a sufficiently fresh version of `axs` system.
 
-<details><pre>
+<details>
+
+```
 git clone https://github.com/krai/axs
-</pre></details>
+```
+
+And add the path to `bashrc`.
+```
+echo "export PATH='$PATH:$HOME/axs'" >> ~/.bashrc
+```
+
+```
+source ~/.bashrc
+```
+</details>
 
 The dependencies of various components (on Python code and external utilities) as well as interdependencies of the workflow's main components (original dataset, preprocessed dataset, model and its parameters) have been described in `axs`'s internal language to achieve the fullest automation we could.
 
@@ -42,7 +75,7 @@ The following test run should trigger downloading and installation of the necess
 ```
 axs byquery loadgen_output,detected_coco,framework=onnx,loadgen_dataset_size=20 , get accuracy
 ```
-The mAP value should be printed after a succesful run.
+The mAP value should be printed after a successful run.
 
 
 ## Performing a short Accuracy run (specifying the model)
@@ -51,7 +84,7 @@ The following test run should trigger (in addition to the above) downloading and
 ```
 axs byquery loadgen_output,detected_coco,framework=onnx,loadgen_dataset_size=20,model_name=retinanet_coco , get accuracy
 ```
-The mAP value should be printed after a succesful run.
+The mAP value should be printed after a successful run.
 
 
 ## Benchmarking SSD-ResNet34 model in the Accuracy mode
@@ -61,7 +94,7 @@ The following command may trigger (in addition to the above) resizing of the who
 ```
 time axs byquery loadgen_output,detected_coco,framework=onnx,model_name=ssd_resnet34,loadgen_dataset_size=5000,loadgen_buffer_size=100 , get accuracy
 ```
-The mAP value and running time should be printed after a succesful run.
+The mAP value and running time should be printed after a successful run.
 <details><pre>
 ...
  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.200
@@ -106,7 +139,7 @@ The following command may trigger (in addition to the above) resizing of the who
 ```
 time axs byquery loadgen_output,detected_coco,framework=onnx,model_name=retinanet_coco,loadgen_dataset_size=5000,loadgen_buffer_size=100 , get accuracy
 ```
-The mAP value and running time should be printed after a succesful run.
+The mAP value and running time should be printed after a successful run.
 <details><pre>
 ...
  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.353
@@ -150,7 +183,7 @@ The following command may trigger resizing of the whole OpenImages validation da
 ```
 time axs byquery loadgen_output,detected_coco,framework=onnx,model_name=retinanet_openimages,loadgen_dataset_size=24781,loadgen_buffer_size=200 , get accuracy
 ```
-The mAP value and running time should be printed after a succesful run.
+The mAP value and running time should be printed after a successful run.
 <details><pre>
 ...
  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.375
