@@ -18,8 +18,8 @@
     ],
     "model_name": "bert-large-uncased-whole-word-masking-finetuned-squad",
 
-    "bert_data_context_path": "context.txt",
-    "bert_data_questions_path": "questions.txt",
+    "bert_data_context_path": [ "^^", "get_path", "context.txt" ],
+    "bert_data_questions_path": [ "^^", "get_path", "questions.txt" ],
     "bert_debug": 0,
     "framework": "pytorch",
 
