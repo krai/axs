@@ -57,6 +57,7 @@
         "bboxes_for_onnx_object_detector": "bboxes_for_onnx_object_detector",
         "rule_matching_producer": "rule_matching_producer",
         "rule_matching_advertiser": "rule_matching_advertiser",
-        "bert_demo_torch_py": "bert_demo_torch_py"
+        "bert_demo_torch_py": "bert_demo_torch_py",
+        "model_onnx_mlperf_bert_large_recipe": "model_onnx_mlperf_bert_large_recipe"
     }
 }
