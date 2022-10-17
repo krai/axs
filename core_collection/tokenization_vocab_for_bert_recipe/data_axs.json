@@ -1,0 +1,10 @@
+{
+    "_producer_rules": [
+        [ [ "downloaded", "tokenization", "vocab_for_bert" ], [["get_kernel"],["byname","downloader"],["download"]], {
+            "url": "https://zenodo.org/record/3733896/files/vocab.txt",
+            "md5":"64800d5d8528ce344256daf115d4965e",
+            "entry_name": "downloaded_tokenization_vocab_for_bert"
+
+        } ]
+    ]
+}
