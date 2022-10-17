@@ -1,7 +1,7 @@
 {
     "_parent_entries": [ [ "^", "byname", "python_script" ] ],
     "_producer_rules": [
-        [ [ "script_output", "bert_demo", "framework=pytorch" ], [["run"]], { "return_saved_record_entry": false } ]
+        [ [ "bert_demo", "framework=pytorch" ], [["run"]], { "return_saved_record_entry": false } ]
     ],
 
     "num_gpus": [ "^", "execute", [[
