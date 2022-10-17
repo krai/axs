@@ -1,7 +1,7 @@
 {
     "_parent_entries": [ [ "^", "byname", "python_script" ] ],
     "_producer_rules": [
-        [ [ "script_output", "bert-demo", "framework=pytorch" ], [["run"]], { "return_saved_record_entry": true } ]
+        [ [ "script_output", "bert_demo", "framework=pytorch" ], [["run"]], { "return_saved_record_entry": false } ]
     ],
 
     "num_gpus": [ "^", "execute", [[
@@ -9,7 +9,6 @@
                        [ "run" ]
                 ]] ],
     "torch_query": [ "^^", "case", [ [ "^^", "get", "num_gpus"] , "0" ,["python_package", "package_name=torch"] ], {"default_value": ["python_package", "package_name=torch", "with_cuda"] } ],
-    "transformers_query_2": [ "^^", "case", [ [ "^^", "get", "num_gpus"] , "0" ,["python_package", "package_name=transformers"] ], {"default_value": ["python_package", "package_name=transformers", "with_cuda"] } ],
     "transformers_query": ["python_package", "package_name=transformers"],
     
     "python_deps": [
