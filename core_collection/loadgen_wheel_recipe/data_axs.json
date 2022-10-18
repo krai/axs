@@ -5,10 +5,15 @@
         [ [ "package_wheel", "package_name=mlperf_loadgen" ], [["get","populated_wheel_entry"]] ]
     ],
 
+    "python_major_dot_minor": [ "^^", "dig", "tool_entry.major_dot_minor" ],
     "wheel_entry": [ "^^", "execute", [[
         [ "get", "__record_entry__" ],
-        [ "set_path", "loadgen_package_wheel" ],
-        [ "plant", [ "tags", ["package_wheel"], "package_name", "mlperf_loadgen" ] ],
+        [ "set_path", [ "^^", "substitute", "loadgen_package_wheel_for_python#{python_major_dot_minor}#" ] ],
+        [ "plant", [ "^^", "substitute", [[
+            "package_name", "mlperf_loadgen",
+            "python_major_dot_minor", "#{python_major_dot_minor}#",
+            "tags", ["package_wheel"]
+          ]] ] ],
         [ "attach", [ "^", "work_collection" ] ],
         [ "save" ]
     ]] ],
