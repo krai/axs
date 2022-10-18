@@ -27,7 +27,7 @@ environment:
       ONNX_CLASSIFY: on
 
 init:
-    - cmd: reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem" /v LongPathsEnabled /t REG_DWORD /d 1
+    - cmd: reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem" /v LongPathsEnabled /t REG_DWORD /d 1 /f
     - cmd: set PYTHON_EXE=python3
     - cmd: set PATH=%PYTHON_DIR%;%PYTHON_DIR%\\Scripts;%cd%;%PATH%
     - sh: export PATH=$APPVEYOR_BUILD_FOLDER:$PATH
