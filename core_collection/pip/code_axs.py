@@ -9,7 +9,7 @@ import sys
 import ufun
 
 
-def install(package_name, package_version=None, pip_options=None, installable=None, tool_entry=None, tags=None, entry_name=None, __record_entry__=None):
+def install(package_name, package_version=None, pip_options=None, installable=None, python_tool_entry=None, pip_entry_name=None, python_major_dot_minor=None, tags=None,  __record_entry__=None):
     """Install a pip package into a separate entry, so that it could be easily use'd.
 
 Usage examples :
@@ -26,26 +26,21 @@ Usage examples :
     """
 
     rel_install_dir = 'install'
-    logging.warning(f"The resolved tool_entry '{tool_entry.get_name()}' located at '{tool_entry.get_path()}' uses the shell tool '{tool_entry['tool_path']}'")
+    logging.warning(f"The resolved python_tool_entry '{python_tool_entry.get_name()}' located at '{python_tool_entry.get_path()}' uses the shell tool '{python_tool_entry['tool_path']}'")
 
     if sys.platform.startswith('win'):
         rel_packages_dir    = os.path.join( rel_install_dir, 'lib', 'site-packages' )
     else:
-        version_label       = tool_entry.call('run', [], { "shell_cmd": [ "^^", "substitute", "#{tool_path}# -c \"import sys;print(f'python{sys.version_info.major}.{sys.version_info.minor}')\""], "capture_output": True } )
-        rel_packages_dir    = os.path.join( rel_install_dir, 'lib', version_label, 'site-packages' )
+        rel_packages_dir    = os.path.join( rel_install_dir, 'lib', 'python'+python_major_dot_minor, 'site-packages' )
 
-    if not entry_name:
-        version_suffix_name = f"_{package_version}" if package_version is not None else ''
-        entry_name = f"{package_name}{version_suffix_name}_pip_package"
-
-    __record_entry__.pluck("entry_name")
+    __record_entry__.pluck("pip_entry_name")
 
     __record_entry__["tags"]                = tags or ["python_package"]
     __record_entry__["_parent_entries"]     = [ [ "^", "byname", "base_pip_package" ] ]
     __record_entry__.parent_objects         = None      # reload parents
 
     __record_entry__["rel_packages_dir"]    = rel_packages_dir
-    __record_entry__.save( entry_name )
+    __record_entry__.save( pip_entry_name )
 
     extra_python_site_dir   = __record_entry__.get_path( rel_install_dir )
     os.makedirs( os.path.join(extra_python_site_dir, 'lib') )
@@ -61,7 +56,7 @@ Usage examples :
     else:
         pip_options=''
 
-    tool_entry.call('run', [], {
+    python_tool_entry.call('run', [], {
         "shell_cmd": [ "^^", "substitute", "#{tool_path}#"+f" -m pip install {installable} --prefix={extra_python_site_dir} --ignore-installed {pip_options}" ],
         "capture_output": False,
         "errorize_output": True,
@@ -71,21 +66,20 @@ Usage examples :
     __record_entry__.parent_objects = None
     version_from_metadata = __record_entry__.call('get_metadata', [], {'header_name': 'Version'})[0]
     __record_entry__["package_version"] = version_from_metadata
-    __record_entry__["python_version"]  = tool_entry["tool_version"]
-    __record_entry__.save( entry_name )
+    __record_entry__["python_version"]  = python_tool_entry["tool_version"]
+    __record_entry__.save( pip_entry_name )
 
     return __record_entry__
 
 
-def available_versions(package_name, tool_entry):
+def available_versions(package_name, python_tool_entry):
 
-    output_string = tool_entry.call('run', [], {
+    output_string = python_tool_entry.call('run', [], {
         "shell_cmd": [ "^^", "substitute", "#{tool_path}#"+f" -m pip install {package_name}==99.99.99 --user" ],
         "capture_output": False,
         "capture_stderr": True,
     } )
 
-    extracted = ufun.rematch(output_string, '\(from versions:\s(.*?)\)')
-    versions_list = extracted.split(', ')
+    versions_list = ufun.rematch(output_string, '\(from versions:\s(.*?)\)').split(', ')
 
     return versions_list

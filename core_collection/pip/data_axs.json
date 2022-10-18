@@ -17,8 +17,11 @@
     ],
 
     "version_suffix_cmd": [ "^^", "case", [ [ "^^", "get", ["package_version", ""]] , "" , "" ], {"default_value":  [ "^^", "substitute", "==#{package_version}#"] } ],
-
     "installable": [ "^^", "substitute", "#{package_name}##{version_suffix_cmd}#"],
 
-    "tool_entry": [ "^", "byquery", "shell_tool,can_python" ]
+    "python_tool_entry": [ "^", "byquery", "shell_tool,can_python" ],
+
+    "version_suffix_name": [ "^^", "case", [ [ "^^", "get", ["package_version", ""]] , "" , "" ], {"default_value":  [ "^^", "substitute", "_#{package_version}#"] } ],
+    "python_major_dot_minor": [ "^^", "dig", "python_tool_entry.major_dot_minor" ],
+    "pip_entry_name": [ "^^", "substitute", "#{package_name}##{version_suffix_name}#_package_for_python#{python_major_dot_minor}#"]
 }
