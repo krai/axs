@@ -51,9 +51,14 @@
                 "shell_cmd_with_subs": "\"#{tool_path}#\" --version",
                 "capture_output": true,
                 "tool_version": [ "AS^IS", "AS^IS", "^^", "execute", [[
-                    [ "run" ],
+                    [ "run", [], { "shell_cmd_with_subs": "\"#{tool_path}#\" --version" } ],
                     [ "split", " " ],
                     [ "__getitem__", 1 ]
+                ]] ],
+                "major_dot_minor": [ "AS^IS", "AS^IS", "^^", "execute", [[
+                    [ "get", "tool_version"],
+                    [ "rsplit", [".", 1] ],
+                    [ "__getitem__", 0 ]
                 ]] ]
             }
         ],
@@ -63,9 +68,14 @@
                 "shell_cmd_with_subs": "\"#{tool_path}#\" --version",
                 "capture_output": true,
                 "tool_version": [ "AS^IS", "AS^IS", "^^", "execute", [[
-                    [ "run" ],
+                    [ "run", [], { "shell_cmd_with_subs": "\"#{tool_path}#\" --version" } ],
                     [ "split", " " ],
                     [ "__getitem__", 1 ]
+                ]] ],
+                "major_dot_minor": [ "AS^IS", "AS^IS", "^^", "execute", [[
+                    [ "get", "tool_version"],
+                    [ "rsplit", [".", 1] ],
+                    [ "__getitem__", 0 ]
                 ]] ]
             }
         ],
