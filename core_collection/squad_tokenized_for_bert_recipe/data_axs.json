@@ -1,0 +1,54 @@
+ {
+    "_parent_entries": [ [ "^", "byname", "python_script" ] ],
+    "_producer_rules": [
+        [ [ "tokenized", "squad_v1_1" ], [["run"],[],["get","tokenized_entry"]] ]
+    ],
+
+    "tokenized_entry": [ "^^", "execute", [[
+        [ "get", "__record_entry__" ],
+        [ "set_path", "tokenized_squad_v1_1" ],
+        [ "plant", [ "tags", ["tokenized", "squad_v1_1"], "file_name", "tokenized_squad_v1.1.pickled" ] ],
+        [ "attach", [ "^", "work_collection" ] ],
+        [ "save" ]
+    ]] ],
+    "tokenized_squad_path": [ "^^", "execute", [[
+        [ "get", "tokenized_entry" ],
+        [ "get_path" ]
+    ]] ],
+
+    "tensorflow_query": ["python_package", "package_name=tensorflow"],
+    "absl_query": ["python_package", "package_name=absl-py"],
+    "transformers_query": ["python_package", "package_name=transformers"],
+
+    "python_deps": [
+        [ "^", "byquery", [ [ "^^", "get", "absl_query" ] ], {}, ["absl_query"] ],
+        [ "^", "byquery", [ [ "^^", "get", "tensorflow_query" ] ], {}, ["tensorflow_query"] ],
+        [ "^", "byquery", [ [ "^^", "get", "transformers_query" ] ], {}, ["transformers_query"] ]
+    ],
+    "mlperf_inference_git_entry": [ "^", "byquery", "git_repo,repo_name=mlperf_inference_git" ],
+
+    "mlperf_inference_path": [ "^^", "execute", [[
+        [ "get", "mlperf_inference_git_entry" ],
+        [ "get_path", [[""]] ]
+    ]], {}, ["mlperf_inference_git_entry"] ],
+
+    "squad_dataset_query":[ "downloaded", "squad_original" ],
+    "squad_dataset_entry": [ "^", "byquery", [[ "^^", "get", "squad_dataset_query" ]], {}, ["squad_dataset_query"] ],
+    "squad_dataset_original_path": [ "^^", "execute", [[
+        [ "get", "squad_dataset_entry" ],
+        [ "get_path" ]
+    ]] ],
+
+    "squad_tokenization_vocab_query":[ "downloaded", "tokenization", "vocab_for_bert" ],
+    "squad_tokenization_vocab_entry": [ "^", "byquery", [[ "^^", "get", "squad_tokenization_vocab_query" ]], {}, ["squad_tokenization_vocab_query"] ],
+    "squad_tokenization_vocab_path": [ "^^", "execute", [[
+        [ "get", "squad_tokenization_vocab_entry" ],
+        [ "get_path" ]
+    ]] ],
+    "dataset_max_seq_length": "384",
+    "dataset_max_query_length": "64",
+    "dataset_doc_stride": "128",
+    "dataset_raw": "no",
+    "rel_script_path": "tokenize_and_pack.py",
+    "script_extra_params": [ "^^", "substitute", "\"#{squad_dataset_original_path}#\" \"#{squad_tokenization_vocab_path}#\" \"#{tokenized_squad_path}#\" #{dataset_max_seq_length}# \"#{dataset_max_query_length}#\" \"#{dataset_doc_stride}#\" \"#{dataset_raw}#\" \"#{mlperf_inference_path}#\"" ]
+}
