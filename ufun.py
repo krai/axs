@@ -22,6 +22,22 @@ Usage examples :
         return data_structure
 
 
+def save_json(data_structure, json_file_path, indent=None):
+    """Store a data structure in a JSON file.
+
+Usage examples :
+                axs func ufun.save_json ---='{"hello":"world"}' hello.json
+                axs work_collection , get contained_entries , keys ,0 func list ,0 func ufun.save_json work_entries.json
+    """
+
+    json_string   = json.dumps( data_structure , indent=indent)
+
+    with open(json_file_path, "w") as json_fd:
+        json_fd.write( json_string+"\n" )
+
+    return json_string
+
+
 def rematch(input_string, regex, group=1):
     """Find a substring matching a given regular expression and return it
 

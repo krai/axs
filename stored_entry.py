@@ -276,11 +276,9 @@ Usage examples :
         if parameters_dirname and not os.path.exists(parameters_dirname):
             os.makedirs(parameters_dirname)
 
-        json_data   = json.dumps( self.pickle_struct(self.own_data()) , indent=4)
-        with open(parameters_full_path, "w") as json_fd:
-            json_fd.write( json_data+"\n" )
+        json_string = ufun.save_json( self.pickle_struct(self.own_data()), parameters_full_path, indent=4 )
 
-        logging.warning(f"[{self.get_name()}] parameters {json_data} saved to '{parameters_full_path}'")
+        logging.warning(f"[{self.get_name()}] parameters {json_string} saved to '{parameters_full_path}'")
 
         self.call('attach')
 
