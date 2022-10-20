@@ -38,6 +38,9 @@ Usage examples:
     # Clean up:
             axs byquery downloaded,file_name=example.html , remove
 
+    # Using a generic rule:
+            axs byquery downloaded,url=http://example.com,file_name=example.html
+
     # Downloading from GoogleDrive (needs a specialized tool):
             axs byname downloader , download --downloading_tool_query+=_from_google_drive --url=https://drive.google.com/uc?id=1XRfiA8wtZEo6SekkJppcnfEr4ghQAS4g --file_name=hello2.text
     """

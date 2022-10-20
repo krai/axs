@@ -41,6 +41,9 @@ Usage examples:
     # Clean up:
             axs byquery extracted,archive_name=ILSVRC2012_img_val_500.tar --- , remove
             axs byquery downloaded,file_name=ILSVRC2012_img_val_500.tar --- , remove
+
+    # Using a generic rule:
+            axs byquery extracted,archive_path=$HOME/tmp/ziptest.zip
     """
 
     __record_entry__["tags"] = tags or ["extracted"]

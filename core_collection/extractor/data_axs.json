@@ -1,4 +1,8 @@
 {
+    "_producer_rules": [
+        [ [ "extracted"], [["get_kernel"],["byname","extractor"],["extract"]], {} ]
+    ],
+
     "action_name": "extract",
     "archive_format": ["^^", "detect_archive_format"],
     "tar_tool_query": "shell_tool,can_extract_tar",

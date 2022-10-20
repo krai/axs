@@ -1,4 +1,8 @@
 {
+    "_producer_rules": [
+        [ [ "downloaded"], [["get_kernel"],["byname","downloader"],["download"]], {} ]
+    ],
+
     "action_name": "download",
     "uncompress_format": "",
 
