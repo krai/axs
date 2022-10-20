@@ -3,12 +3,29 @@
         [ [ "git_repo", "collection" ], [["clone"]], {} ]
     ],
 
-    "url_prefix": "https://github.com/ens-lg4",
+    "git_tool_entry":   [ "^", "byquery", "shell_tool,can_git" ],
+
+    "kernel_git_url": [ "^^", "execute", [[
+        [ "get_kernel" ],
+        [ "byname", "shell" ],
+        [ "run", [], {
+            "shell_cmd_with_subs": "#{git_tool_path}# -C #{kernel_path}# config --get remote.origin.url",
+            "git_tool_path": [ "^^", "dig", "git_tool_entry.tool_path" ],
+            "kernel_path": [ "^", "kernel_path" ],
+            "capture_output": true
+        } ]
+    ]] ],
+
+    "url_prefix": [ "^^", "execute", [[
+        [ "get", "kernel_git_url" ],
+        0,
+        [ "func", "os.path.dirname" ]
+    ]] ],
+
     "url": [ "^^", "substitute", "#{url_prefix}#/#{repo_name}#" ],
     "repo_name": [ "^^", "url_2_repo_name" ],
 
     "repo_path": [ "^^", "get_path", "" ],
 
-    "git_tool_entry":   [ "^", "byquery", "shell_tool,can_git" ],
     "container_entry":  [ "^", "work_collection" ]
 }

@@ -5,6 +5,7 @@
 """
 
 import os
+import logging
 
 
 def url_2_repo_name(url=None):
@@ -30,9 +31,12 @@ def clone(repo_name=None, url=None, git_tool_entry=None, container_entry=None, c
 Usage examples :
                 axs byname git , clone --repo_name=counting_collection
             # or
-                axs byname git , clone --url=https://github.com/user_x/counting_collection
+                axs byname git , clone --url=https://github.com/ens-lg4/counting_collection
             # or
-                axs byquery git_repo,repo_name=counting_collection
+                axs byquery git_repo,collection,repo_name=axs2mlperf                                                    # default url_prefix
+            # or
+                axs byquery git_repo,collection,repo_name=counting_collection,url_prefix=https://github.com/ens-lg4     # specific url_prefix
+
 Clean-up:
                 axs byname counting_collection , remove
     """
@@ -44,22 +48,25 @@ Clean-up:
     container_path  = container_entry.get_path('')
     entry_path      = container_entry.get_path( repo_name )
     tool_path       = git_tool_entry["tool_path"]
-    git_tool_entry.call('run', f"\"{tool_path}\" -C \"{container_path}\" clone {url} {repo_name}" )
+    retval = git_tool_entry.call('run', f"\"{tool_path}\" -C \"{container_path}\" clone {url} {repo_name}", {"capture_output": False} )
+    if retval == 0:
+        if checkout:
+            git_tool_entry.call('run', f"\"{tool_path}\" -C \"{entry_path}\" checkout \"{checkout}\"" )
 
-    if checkout:
-        git_tool_entry.call('run', f"\"{tool_path}\" -C \"{entry_path}\" checkout \"{checkout}\"" )
+        if submodules:
+            git_tool_entry.call('run', f"\"{tool_path}\" -C \"{entry_path}\" submodule init" )
+            git_tool_entry.call('run', f"\"{tool_path}\" -C \"{entry_path}\" submodule update" )
 
-    if submodules:
-        git_tool_entry.call('run', f"\"{tool_path}\" -C \"{entry_path}\" submodule init" )
-        git_tool_entry.call('run', f"\"{tool_path}\" -C \"{entry_path}\" submodule update" )
+        result_entry                = ak.bypath( entry_path )   # "discover" the Entry after cloning, then either create or augment the data
+        result_entry['repo_name']   = repo_name
+        result_entry['tags']        = tags or [ 'git_repo' ]
+        result_entry.attach( container_entry ).save()
 
-    result_entry                = ak.bypath( entry_path )   # "discover" the Entry after cloning, then either create or augment the data
-    result_entry['repo_name']   = repo_name
-    result_entry['tags']        = tags or [ 'git_repo' ]
-    result_entry.attach( container_entry ).save()
+        return result_entry
 
-    return result_entry
-
+    else:
+        logging.error(f"A problem (retval={retval}) occured when trying to clone '{repo_name}' at {url} , bailing out")
+        return None
 
 
 def pull(repo_path, git_tool_entry, __entry__=None):
