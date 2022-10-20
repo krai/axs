@@ -208,8 +208,9 @@ Usage examples :
     if produce_if_not_found and len(parsed_query.posi_tag_set):
         logging.warning(f"[{__entry__.get_name()}] byquery({query}) did not find anything, but there are tags: {parsed_query.posi_tag_set} , trying to find a producer...")
 
+        matched_rules = []
         for advertising_entry in walk(__entry__):
-            for rule_index, unprocessed_rule in enumerate( advertising_entry.own_data().get('_producer_rules', []) ):   # block processing some params until they are really needed
+            for unprocessed_rule in advertising_entry.own_data().get('_producer_rules', []):        # block processing some params until they are really needed
                 rule_conditions = unprocessed_rule[0]
                 parsed_rule     = FilterPile( rule_conditions, f"Entry: {advertising_entry.get_name()}" )
 
@@ -236,45 +237,34 @@ Usage examples :
                             if not qr_conditions_ok: break
 
                     if qr_conditions_ok:
-                        all_processed_rules = advertising_entry.get('_producer_rules')
-                        if type(all_processed_rules)!=list:
-                            raise(KeyError(f"{advertising_entry.get_name()}'s _producer_rules[] is incomplete, please check all substitutions work"))
+                        matched_rules.append( (unprocessed_rule, advertising_entry, parsed_rule) )
 
-                        rule_vector = all_processed_rules[rule_index]
-                        if type(rule_vector[1])==list:      # new rule format
-                            producer_pipeline   = rule_vector[1]
-                            extra_params        = rule_vector[2] if len(rule_vector)>2 else {}
-                            export_params       = rule_vector[3] if len(rule_vector)>3 else []
+        logging.warning(f"[{__entry__.get_name()}] A total of {len(matched_rules)} matched rules found.\n")
 
-                            logging.warning(f"Entry '{advertising_entry.get_name()}' advertises producer pipeline matching tags {parsed_rule.posi_tag_set} that may work with {parsed_query.posi_val_dict}")
-                            cumulative_params = advertising_entry.slice( *export_params )   # default slice
-                            cumulative_params.update( deepcopy( extra_params ) )            # extra_params on top
-                            cumulative_params.update( parsed_rule.posi_val_dict )           # rules on top (may override some defaults)
-                            cumulative_params.update( parsed_query.posi_val_dict )          # query on top (may override some defaults)
-                            cumulative_params["tags"] = list(parsed_query.posi_tag_set)     # FIXME:  parsed_rule.posi_tag_set should include it
-                            logging.warning(f"Pipeline: {producer_pipeline}, Cumulative params: {cumulative_params}")
+        match_idx = 0
+        for unprocessed_rule, advertising_entry, parsed_rule in sorted( matched_rules, key = lambda x: len(x[0][0]), reverse=True):
+            match_idx += 1  # matches are 1-based
+            logging.warning(f"Matched Rule #{match_idx}/{len(matched_rules)}: {unprocessed_rule[0]} from Entry '{advertising_entry.get_name()}'...")
 
-                            new_entry = advertising_entry.execute(producer_pipeline, cumulative_params)
+            rule_vector         = advertising_entry.nested_calls(unprocessed_rule)
+            producer_pipeline   = rule_vector[1]
+            extra_params        = rule_vector[2] if len(rule_vector)>2 else {}
+            export_params       = rule_vector[3] if len(rule_vector)>3 else []
 
-                        else:   # legacy format
-                            print( type(rule_vector[1]) )
-                            _, producer_entry, producer_method, extra_params, *rest = rule_vector
-                            export_params = rest[0] if len(rest) else []
-                            #extra_params    = advertising_entry.nested_calls( unprocessed_rule[3] )
+            cumulative_params = advertising_entry.slice( *export_params )   # default slice
+            cumulative_params.update( deepcopy( extra_params ) )            # extra_params on top
+            cumulative_params.update( parsed_rule.posi_val_dict )           # rules on top (may override some defaults)
+            cumulative_params.update( parsed_query.posi_val_dict )          # query on top (may override some defaults)
+            cumulative_params["tags"] = list(parsed_query.posi_tag_set)     # FIXME:  parsed_rule.posi_tag_set should include it
+            logging.warning(f"Pipeline: {producer_pipeline}, Cumulative params: {cumulative_params}")
 
-                            logging.warning(f"Entry '{advertising_entry.get_name()}' advertises producer '{producer_entry.get_name()}' with action {producer_method}({extra_params}) and matching tags {parsed_rule.posi_tag_set} that may work with {parsed_query.posi_val_dict}")
-                            cumulative_params = advertising_entry.slice( *export_params )   # default slice
-                            cumulative_params.update( deepcopy( extra_params ) )            # extra_params on top
-                            cumulative_params.update( parsed_rule.posi_val_dict )           # rules on top (may override some defaults)
-                            cumulative_params.update( parsed_query.posi_val_dict )          # query on top (may override some defaults)
-                            cumulative_params["tags"] = list(parsed_query.posi_tag_set)     # FIXME:  parsed_rule.posi_tag_set should include it
-                            new_entry = producer_entry.call(producer_method, [], {'AS^IS':cumulative_params})
+            new_entry = advertising_entry.execute(producer_pipeline, cumulative_params)
 
-                        if new_entry:
-                            logging.warning("The rule selected produced an entry.")
-                            return new_entry
-                        else:
-                            logging.warning("The rule selected didn't produce an entry, but maybe there is a better rule...")
+            if new_entry:
+                logging.warning(f"Matched Rule #{match_idx}/{len(matched_rules)} produced a result.\n")
+                return new_entry
+            else:
+                logging.warning(f"Matched Rule #{match_idx}/{len(matched_rules)} didn't produce a result, {len(matched_rules)-match_idx} more matched rules to try...\n")
 
     else:
         logging.debug(f"[{__entry__.get_name()}] byquery({query}) did not find anything, and no matching _producer_rules => returning None")
