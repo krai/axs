@@ -91,6 +91,11 @@ axs byquery --:=python_package:package_name=numpy --- , remove
 axs byquery --/=shell_tool/can_python --- , remove
 assert_end dependency_installation_and_resolution_for_internal_code
 
+if [ "$C_COMPILE_AND_RUN" == "on" ]; then
+    axs byquery compiled,hello_world
+    assert 'axs byquery compiled,hello_world , run' "When square's area is 4.0 its side is 2.0"
+    assert_end c_code_compilation_and_execution
+fi
 
 if [ "$PYTORCH_CLASSIFY" == "on" ] || [ "$ONNX_CLASSIFY" == "on" ] || [ "$TF_CLASSIFY" == "on" ]; then
     if [ "$PYTORCH_CLASSIFY" == "on" ]; then

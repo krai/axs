@@ -18,24 +18,28 @@ matrix:
       env:
         - PYTORCH_CLASSIFY=on
         - PYTHON_EXE=python
+        - C_COMPILE_AND_RUN=on
 
     - language: python
       python: 3.7
       env:
         - ONNX_CLASSIFY=on
         - PYTHON_EXE=python
+        - C_COMPILE_AND_RUN=on
 
     - language: python
       python: 3.8
       env:
         - TF_CLASSIFY=on
         - PYTHON_EXE=python
+        - C_COMPILE_AND_RUN=on
 
     - language: python
       python: 3.9
       env:
         - PYTORCH_CLASSIFY=on
         - PYTHON_EXE=python
+        - C_COMPILE_AND_RUN=on
 
     - os: osx
       osx_image: xcode11.2  # Python 3.7, but may change with time
@@ -43,6 +47,7 @@ matrix:
       env:
         - ONNX_CLASSIFY=on
         - PYTHON_EXE=python3
+        - C_COMPILE_AND_RUN=on
 
     - name: "Python 3.6 on FreeBSD"
       os: freebsd
@@ -74,6 +79,7 @@ matrix:
       python: 3.6
       env:
         - PYTHON_EXE=python
+        - C_COMPILE_AND_RUN=on
 
     - name: "Python 3.6 on IBM Z"
       arch: s390x
@@ -82,6 +88,7 @@ matrix:
       python: 3.6
       env:
         - PYTHON_EXE=python
+        - C_COMPILE_AND_RUN=on
       before_install:
         # work around cache dir owned by root (see https://travis-ci.community/t/7822/6)
         - sudo chown -fR $USER:$GROUP ~/.cache/pip/wheels

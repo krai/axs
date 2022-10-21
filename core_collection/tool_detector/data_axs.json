@@ -90,7 +90,10 @@
         [ [ "shell_tool", "can_gpu" ], [["detect"]], { "tool_name": "nvidia-smi", "shell_cmd_with_subs": "\"#{tool_path}#\" -L | grep -c GPU" ,  "capture_output": true} ],
         [ [ "shell_tool", "can_gpu" ], [["detect"]], { "tool_name": "echo", "shell_cmd": "echo 0" ,  "capture_output": true} ],
 
-        [ [ "shell_tool", "can_compile_c" ], [["detect"]], { "tool_name": "gcc", "shell_cmd_with_subs": "\"#{tool_path}#\" --version", "capture_output": true } ]
+        [ [ "shell_tool", "can_compile_c" ], [["detect"]], { "tool_name": "gcc", "shell_cmd_with_subs": "\"#{tool_path}#\" --version", "capture_output": true } ],
+        [ [ "shell_tool", "can_compile_c" ], [["detect"]], { "tool_name": "clang", "shell_cmd_with_subs": "\"#{tool_path}#\" --version", "capture_output": true } ],
+        [ [ "shell_tool", "can_compile_c" ], [["detect"]], { "tool_name": "cc", "shell_cmd_with_subs": "\"#{tool_path}#\" --version", "capture_output": true } ],
+        [ [ "shell_tool", "can_compile_c" ], [["detect"]], { "tool_name": "cl.exe", "shell_cmd_with_subs": "\"#{tool_path}#\" --version", "capture_output": true } ]
     ],
 
 
