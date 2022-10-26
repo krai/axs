@@ -53,6 +53,7 @@
         "squad_original_recipe": "squad_original_recipe",
         "tokenization_vocab_for_bert_recipe": "tokenization_vocab_for_bert_recipe",
         "squad_tokenized_for_bert_recipe": "squad_tokenized_for_bert_recipe",
-        "bert_squad_onnxruntime_py": "bert_squad_onnxruntime_py"
+        "bert_squad_onnxruntime_py": "bert_squad_onnxruntime_py",
+        "base_bert_experiment": "base_bert_experiment"
     }
 }

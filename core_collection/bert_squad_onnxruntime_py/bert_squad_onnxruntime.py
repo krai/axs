@@ -9,7 +9,7 @@ import sys
 import numpy as np
 import onnxruntime
 
-bert_code_root = sys.argv[1] +'/language/bert'
+bert_code_root = sys.argv[1] +'language/bert'
 
 sys.path.insert(0, bert_code_root)
 sys.path.insert(0, bert_code_root + '/DeepLearningExamples/TensorFlow/LanguageModeling/BERT')
@@ -29,6 +29,9 @@ bert_model_path = sys.argv[4]
 batch_size       = int(sys.argv[5])
 batch_count      = int(sys.argv[6])
 execution_device = sys.argv[7]
+output_file_path = sys.argv[8]
+
+output_logits_dict = {}
 
 sess_options = onnxruntime.SessionOptions()
 
@@ -88,18 +91,20 @@ for batch_index in range(batch_count):
         "segment_ids":  np.stack( segment_ids_stack ).astype(np.int64),
     }
     scores = sess.run([o.name for o in sess.get_outputs()], batch_input_dict)
-
-    batch_output = np.stack(scores, axis=-1)
+    output_logits = np.stack(scores, axis=-1)
 
     for index_in_batch in range(this_batch_size):
         global_index = batch_index * batch_size + index_in_batch
-        encoded_accuracy_log.append({'qsl_idx': global_index, 'data': batch_output[index_in_batch].tobytes().hex()})
+        output_logits_dict[ global_index ] = output_logits[index_in_batch].tolist()
 
-    print("Batch[{}] #{}/{} done".format(this_batch_size, batch_index+1, batch_count))
+if output_file_path:
+    output_dict = {
+        "squad_dataset_original_path": squad_dataset_original_path ,
+        "squad_dataset_tokenized_path": squad_dataset_tokenized_path ,
+        "selected_size": selected_size,
+        "output_logits": output_logits_dict
+        }
 
-
-with open('accuracy_log.json', 'w') as accuracy_log_file:
-    json.dump(encoded_accuracy_log, accuracy_log_file)
-
-cmd = "python3 "+bert_code_root+"/accuracy-squad.py --val_data={} --features_cache_file={} --log_file=accuracy_log.json --out_file=predictions.json --max_examples={}".format(squad_dataset_original_path, squad_dataset_tokenized_path, selected_size)
-subprocess.check_call(cmd, shell=True)
+    json_string = json.dumps( output_dict , indent=4)
+    with open(output_file_path, "w") as json_fd:
+        json_fd.write( json_string+"\n" )
