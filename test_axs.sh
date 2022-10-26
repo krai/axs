@@ -95,6 +95,8 @@ if [ "$C_COMPILE_AND_RUN" == "on" ]; then
     axs byquery compiled,hello_world
     assert 'axs byquery compiled,hello_world , run' "When square's area is 4.0 its side is 2.0"
     assert_end c_code_compilation_and_execution
+else
+    echo "Skipping the C_COMPILE_AND_RUN test"
 fi
 
 if [ "$PYTORCH_CLASSIFY" == "on" ] || [ "$ONNX_CLASSIFY" == "on" ] || [ "$TF_CLASSIFY" == "on" ]; then
