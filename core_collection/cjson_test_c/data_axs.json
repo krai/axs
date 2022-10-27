@@ -1,0 +1,33 @@
+{
+    "_parent_entries": [ [ "^", "byname", "shell" ] ],
+    "_producer_rules": [
+            [ [ "compiled", "cjson_test" ], [["run"]], {}, ["compiler_entry", "shell_cmd_with_subs", "cjson_lib_entry", "return_this_entry", "abs_source_path"] ]
+    ],
+    "tags": [ "source_code", "cjson_test" ],
+    "file_name": "cjson_test.c",
+    "abs_source_path": [ "^^", "get_path" ],
+
+    "dictionary_file_name": "values.json",
+    "abs_dictionary_path": [ "^^", "get_path_from", "dictionary_file_name" ],
+
+    "return_this_entry": [ "^^", "execute", [[
+        [ "get_kernel" ],
+        [ "work_collection" ],
+        [ "attached_entry", [ "cjson_test_compiled", {
+                "_parent_entries": [ [ "AS^IS", "AS^IS", "^", "byname", "shell" ] ],
+                "tags": [ "compiled", "cjson_test"] ,
+                "binary_name": "cjson_test",
+                "abs_binary_path": ["AS^IS", "AS^IS", "^^", "get_path_from", "binary_name"],
+                "capture_output": true,
+                "dictionary_path": [ "^^", "get", "abs_dictionary_path" ],
+                "shell_cmd_with_subs": "#{abs_binary_path}# #{dictionary_path}#"
+            } ] ],
+        [ "save" ]
+    ]] ],
+
+    "compiler_entry": [ "^", "byquery", "shell_tool,can_compile_c" ],
+
+    "cjson_lib_entry": [ "^", "byquery", "lib,lib_name=cjson" ],
+
+    "shell_cmd_with_subs": "#{compiler_entry.tool_path}# -I#{cjson_lib_entry.include_path}# -o #{return_this_entry.abs_binary_path}# #{abs_source_path}# #{cjson_lib_entry.cjson_o_path}#"
+}
