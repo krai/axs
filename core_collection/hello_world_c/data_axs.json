@@ -9,7 +9,7 @@
 
     "return_this_entry": [ "^", "execute", [[
         [ "work_collection" ],
-        [ "attached_entry", [ "compiled_hello_world", {
+        [ "attached_entry", [ "hello_world_compiled", {
                 "_parent_entries": [ [ "AS^IS", "AS^IS", "^", "byname", "shell" ] ],
                 "tags": [ "compiled", "hello_world"] ,
                 "binary_name": "hello",
