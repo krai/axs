@@ -1,0 +1,39 @@
+{
+    "_producer_rules": [
+        [["git_repo","repo_name=cjson_source_git"], [["get_kernel"],["byname","git"],["clone"]], {}, ["url"] ],
+        [["lib","lib_name=cjson"], [
+            [ "get", "compiler_entry" ],
+            [ "run", [], {
+                "shell_cmd_with_subs": "#{compiler_entry.tool_path}# -c -o #{return_this_entry.cjson_o_path}# #{cjson_c_path}#",
+                "capture_output": false
+                } ]
+        ], {}, [ "compiler_entry", "return_this_entry", "cjson_c_path" ] ]
+    ],
+
+    "url": "https://github.com/DaveGamble/cJSON",
+
+    "compiler_entry": [ "^", "byquery", "shell_tool,can_compile_c" ],
+
+    "return_this_entry": [ "^^", "execute", [[
+        [ "get_kernel" ],
+        [ "work_collection" ],
+        [ "attached_entry", [ "cjson_lib", {
+                "tags": [ "lib" ] ,
+                "lib_name": "cjson",
+                "cjson_o_path": ["AS^IS", "AS^IS", "^^", "get_path", "cJSON.o"],
+                "compiler_path": ["^^", "substitute", "#{compiler_entry.tool_path}#"],
+                "include_path": ["^^", "get", "cjson_include_path"]
+            } ] ],
+        [ "save" ]
+    ]] ],
+
+    "cjson_c_path": ["^", "execute", [[
+        ["byquery", "git_repo,repo_name=cjson_source_git"],
+        ["get_path", "cJSON.c"]
+    ]] ],
+
+    "cjson_include_path": ["^", "execute", [[
+        ["byquery", "git_repo,repo_name=cjson_source_git"],
+        ["get_path", ""]
+    ]] ]
+}
