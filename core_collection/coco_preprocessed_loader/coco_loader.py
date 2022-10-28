@@ -19,6 +19,7 @@ class CocoLoader:
         self.given_channel_stds         = given_channel_stds  or []
         self.image_filenames            = []
         self.original_w_h               = []
+        self.data_type                  = np.float32
 
         with open(original_dims_file_path, 'r') as f:
             image_list = [s.strip() for s in f]
@@ -28,6 +29,8 @@ class CocoLoader:
                 self.image_filenames.append( file_name )
                 self.original_w_h.append( (int(width_orig), int(height_orig)) )
 
+    def set_data_type(self, data_type):
+        self.data_type = data_type
 
     def load_image_by_index_and_normalize(self, image_index):
         image_filename = self.image_filenames[image_index]
@@ -55,16 +58,14 @@ class CocoLoader:
         if len(self.given_channel_stds):
             input_data /= self.given_channel_stds
 
-    #    print(np.array(img_rgb8).shape)
+        input_data = self.data_type(input_data)
+
         nhwc_data = np.expand_dims(input_data, axis=0)
 
         if self.data_layout == 'NHWC':
-            # print(nhwc_data.shape)
             return nhwc_data, image_filename
         else:
             nchw_data = nhwc_data.transpose(0,3,1,2)
-
-            # print(nchw_data.shape)
             return nchw_data, image_filename
 
 
@@ -78,4 +79,3 @@ class CocoLoader:
         batch_data = np.concatenate(unconcatenated_batch_data, axis=0)
 
         return batch_data, batch_filenames
-
