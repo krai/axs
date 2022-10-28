@@ -20,6 +20,5 @@
 
     "pillow_query": [ "python_package", "package_name=pillow" ],
 
-    "file_name": "bboxed",
-    "n": 3
+    "file_name": "bboxed"
 }
