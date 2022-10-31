@@ -10,3 +10,26 @@ here we attempt to re-design certain assumptions central to the CK framework's k
 which cannot be simply evolved from its current state due to the requirement of code's backwards compatibility.
 
 The goal here is to retain compatibility with the core ideas and the spirit of CK.
+
+# Installation
+Simply download the repository.
+```
+git clone https://github.com/krai/axs ~/axs
+```
+
+Add the path to `bashrc`.
+```
+echo "export PATH='$PATH:$HOME/axs'" >> ~/.bashrc
+```
+
+And source it.
+```
+source ~/.bashrc
+```
+
+Upon sucessful installation.
+```
+user@laptop:~/axs$ axs
+DefaultKernel{}
+```
+The dependencies of various components are managed through `axs` entries. To start with, entries can be found in `~/axs/core_collection`. When programs are being executed for the first time, new entries will be automatically stored in work collection. By default, they are located at `~/work_collection`.
