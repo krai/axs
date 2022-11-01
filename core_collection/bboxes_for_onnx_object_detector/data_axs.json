@@ -14,11 +14,13 @@
                 ["dig", "experiment_entry.script_output"],
                 ["get","detections" ]
             ]] ]
-        }, [ "file_name", "n" ]
+        }
         ]
     ],
 
     "pillow_query": [ "python_package", "package_name=pillow" ],
 
-    "file_name": "bboxed"
+    "file_name": "bboxed",
+    
+    "num_of_bboxes": ""
 }
