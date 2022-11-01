@@ -25,6 +25,7 @@
         "model_onnx_resnet50_recipe": "model_onnx_resnet50_recipe",
         "onnx_image_classifier": "onnx_image_classifier",
         "model_onnx_mobilenet_recipe": "model_onnx_mobilenet_recipe",
+        "base_experiment": "base_experiment",
         "base_imagenet_experiment": "base_imagenet_experiment",
         "model_tf_mobilenet_v2_recipe": "model_tf_mobilenet_v2_recipe",
         "tf_image_classifier": "tf_image_classifier",

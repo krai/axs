@@ -1,9 +1,5 @@
 {
-    "program_output": [ "^^", "execute", [[
-        [ "get_path_from", "output_file_name" ],
-        0,
-        [ "func", "ufun.load_json" ]
-    ]] ],
+    "_parent_entries": [ [ "^", "byname", "base_experiment" ] ],
 
     "detection_results": [ "^^", "dig", "program_output.detections" ],
     "detection_times": [ "^^", "dig", "program_output.times" ],

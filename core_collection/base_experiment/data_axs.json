@@ -1,0 +1,7 @@
+{
+    "program_output": [ "^^", "execute", [[
+        [ "get_path_from", "output_file_name" ],
+        0,
+        [ "func", "ufun.load_json" ]
+    ]] ]
+}
