@@ -33,7 +33,7 @@
         "coco_images_recipe": "coco_images_recipe",
         "pillow_resize_for_object_detection": "pillow_resize_for_object_detection",
         "onnx_object_detector": "onnx_object_detector",
-        "base_coco_experiment": "base_coco_experiment",
+        "base_object_detection_experiment": "base_object_detection_experiment",
         "mlperf_inference_git_recipe": "mlperf_inference_git_recipe",
         "imagenet_preprocessed_loader": "imagenet_preprocessed_loader",
         "coco_preprocessed_loader": "coco_preprocessed_loader",
