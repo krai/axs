@@ -10,7 +10,7 @@ def load_json(json_file_path):
 
 Usage examples :
                 axs func ufun.load_json ab.json , keys ,0 func list
-                axs byquery script_output,detected_coco,framework=onnx,model_name=ssd_resnet34,num_of_images=5 , get_path_from output_file_name ,0 func ufun.load_json
+                axs byquery program_output,detected_coco,framework=onnx,model_name=ssd_resnet34,num_of_images=5 , get_path_from output_file_name ,0 func ufun.load_json
     """
     with open( json_file_path, encoding='utf-8' ) as json_fd:
         try:

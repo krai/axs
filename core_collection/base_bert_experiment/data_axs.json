@@ -26,9 +26,9 @@
         
     "encoded_accuracy_log": [ "^^", "get", "get_accuracy_log" ],
    
-    "squad_dataset_original_path": [ "^^", "dig", "script_output.squad_dataset_original_path" ],
-    "squad_dataset_tokenized_path": [ "^^", "dig", "script_output.squad_dataset_tokenized_path" ],
-    "selected_size": [ "^^", "dig", "script_output.selected_size" ],
+    "squad_dataset_original_path": [ "^^", "dig", "program_output.squad_dataset_original_path" ],
+    "squad_dataset_tokenized_path": [ "^^", "dig", "program_output.squad_dataset_tokenized_path" ],
+    "selected_size": [ "^^", "dig", "program_output.selected_size" ],
 
     "accuracy": [ "^^", "execute", [[
         [ "get_kernel" ],
@@ -45,7 +45,7 @@
             } ]
     ]], {} ],
 
-    "script_output": [ "^^", "execute", [[
+    "program_output": [ "^^", "execute", [[
         [ "get_path_from", "output_file_name" ],
         0,
         [ "func", "ufun.load_json" ]
@@ -58,5 +58,5 @@
         [ "get_path" ]
     ]] ],
     
-    "output_logits": [ "^^", "dig", "script_output.output_logits" ]
+    "output_logits": [ "^^", "dig", "program_output.output_logits" ]
 }

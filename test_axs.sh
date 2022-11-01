@@ -107,8 +107,8 @@ if [ "$PYTORCH_CLASSIFY" == "on" ] || [ "$ONNX_CLASSIFY" == "on" ] || [ "$TF_CLA
         axs byname pytorch_image_classifier , run --torchvision_query+=package_version=0.9.0 ---capture_output=false --output_file_path=
         export INFERENCE_OUTPUT=`axs byname pytorch_image_classifier , run --torchvision_query+=package_version=0.9.0 ---capture_output=true --output_file_path=`
         assert 'echo $INFERENCE_OUTPUT' 'batch 1/1: (1..20) [65, 795, 230, 809, 520, 65, 334, 852, 674, 332, 109, 286, 370, 757, 595, 147, 327, 23, 478, 517]'
-        axs byquery script_output,classified_imagenet,framework=pytorch,num_of_images=32
-        export ACCURACY_OUTPUT=`axs byquery script_output,classified_imagenet,framework=pytorch,num_of_images=32 , get accuracy`
+        axs byquery program_output,classified_imagenet,framework=pytorch,num_of_images=32
+        export ACCURACY_OUTPUT=`axs byquery program_output,classified_imagenet,framework=pytorch,num_of_images=32 , get accuracy`
         echo "Accuracy: $ACCURACY_OUTPUT"
         assert 'echo $ACCURACY_OUTPUT' '0.71875'
 
@@ -125,9 +125,9 @@ if [ "$PYTORCH_CLASSIFY" == "on" ] || [ "$ONNX_CLASSIFY" == "on" ] || [ "$TF_CLA
         export INFERENCE_OUTPUT=`axs byname onnx_image_classifier , run --onnxruntime_prequery+=package_version=1.9.0 ---capture_output=true --output_file_path=`
         assert 'echo $INFERENCE_OUTPUT' 'batch 1/1: (1..20) [65, 795, 230, 809, 516, 67, 334, 415, 674, 332, 109, 286, 370, 757, 595, 147, 327, 23, 478, 517]'
 
-        axs byquery script_output,classified_imagenet,framework=onnx,num_of_images=32
+        axs byquery program_output,classified_imagenet,framework=onnx,num_of_images=32
 
-        export ACCURACY_OUTPUT=`axs byquery script_output,classified_imagenet,framework=onnx,num_of_images=32 , get accuracy`
+        export ACCURACY_OUTPUT=`axs byquery program_output,classified_imagenet,framework=onnx,num_of_images=32 , get accuracy`
         echo "Accuracy: $ACCURACY_OUTPUT"
         assert 'echo $ACCURACY_OUTPUT' '0.84375'
 
@@ -148,9 +148,9 @@ if [ "$PYTORCH_CLASSIFY" == "on" ] || [ "$ONNX_CLASSIFY" == "on" ] || [ "$TF_CLA
         export INFERENCE_OUTPUT=`axs byname tf_image_classifier , run ---capture_output=true --output_file_path=`
         assert 'echo $INFERENCE_OUTPUT' 'batch 1/1: (1..20) [65, 795, 230, 809, 529, 57, 334, 434, 674, 332, 109, 286, 370, 757, 595, 147, 327, 23, 478, 517]'
 
-        axs byquery script_output,classified_imagenet,framework=tf,num_of_images=32
+        axs byquery program_output,classified_imagenet,framework=tf,num_of_images=32
 
-        export ACCURACY_OUTPUT=`axs byquery script_output,classified_imagenet,framework=tf,num_of_images=32 , get accuracy`
+        export ACCURACY_OUTPUT=`axs byquery program_output,classified_imagenet,framework=tf,num_of_images=32 , get accuracy`
         echo "Accuracy: $ACCURACY_OUTPUT"
         assert 'echo $ACCURACY_OUTPUT' '0.8125'
 
@@ -166,7 +166,7 @@ if [ "$PYTORCH_CLASSIFY" == "on" ] || [ "$ONNX_CLASSIFY" == "on" ] || [ "$TF_CLA
     axs byquery python_package,package_name=pillow --- , remove
     axs byquery python_package,package_name=numpy --- , remove
 
-    axs byquery script_output,classified_imagenet --- , remove
+    axs byquery program_output,classified_imagenet --- , remove
     axs byquery imagenet_annotation,extracted --- , remove
     axs byquery imagenet_annotation,downloaded --- , remove
 

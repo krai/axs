@@ -17,7 +17,7 @@ Usage examples :
                 axs byname pytorch_image_classifier , run --preprocessed_imagenet_dir=/datasets/imagenet/pillow_sq.224_cropped_resized_imagenet50000 --num_of_images=800 --dataset_size=50000
 
                     # same, but in query mode (full dataset), computing the accuracy as well:
-                axs byquery script_output,classified_imagenet,framework=pytorch,preprocessed_imagenet_dir=/datasets/imagenet/pillow_sq.224_cropped_resized_imagenet50000,num_of_images=50000,max_batch_size=1000 , get accuracy
+                axs byquery program_output,classified_imagenet,framework=pytorch,preprocessed_imagenet_dir=/datasets/imagenet/pillow_sq.224_cropped_resized_imagenet50000,num_of_images=50000,max_batch_size=1000 , get accuracy
 
                     # assuming Imagenet50k in a tarball:
                 axs byname extractor , extract --archive_path=/datasets/dataset-imagenet-ilsvrc2012-val.tar --tags,=extracted,imagenet --strip_components=1 --dataset_size=50000
@@ -30,13 +30,13 @@ Usage examples :
                 axs byname pytorch_image_classifier , run --execution_device=gpu --num_of_images=100 --output_file_path=experiment.json
 
                     # set top_n_max ( number of predictions for each image ) which is added to output_file. By default top_n_max = 10
-                axs byquery script_output,classified_imagenet,framework=pytorch,num_of_images=32 , top_n_max=6
+                axs byquery program_output,classified_imagenet,framework=pytorch,num_of_images=32 , top_n_max=6
 
                     # get accuracy
-                axs byquery script_output,classified_imagenet,framework=pytorch,num_of_images=32 , get accuracy
+                axs byquery program_output,classified_imagenet,framework=pytorch,num_of_images=32 , get accuracy
 
                     # get n predictions for each image
-                axs byquery script_output,classified_imagenet,framework=pytorch,num_of_images=32 , get print_top_n_predictions
+                axs byquery program_output,classified_imagenet,framework=pytorch,num_of_images=32 , get print_top_n_predictions
 
 """
 

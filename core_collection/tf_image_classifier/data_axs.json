@@ -1,7 +1,7 @@
 {
     "_parent_entries": [ [ "^", "byname", "python_script" ] ],
     "_producer_rules": [
-        [ [ "script_output", "classified_imagenet", "framework=tf" ], [["run"]], { "return_saved_record_entry": true } ]
+        [ [ "program_output", "classified_imagenet", "framework=tf" ], [["run"]], { "return_saved_record_entry": true } ]
     ],
 
     "python_version": [ "^", "execute", [[
@@ -31,7 +31,7 @@
     ]], {}, ["preprocessed_images_query"] ],
 
     "num_of_images": 20,
-    "output_file_name": "script_output.json",
+    "output_file_name": "program_output.json",
     "framework": "tf",
 
     "execution_device": "",
@@ -44,7 +44,7 @@
         [ "attach", [ "^", "work_collection" ] ],
         [ "plant", [ "^^", "substitute", [[
             "_parent_entries", [ "AS^IS", "AS^IS", [ "^", "byname", "base_imagenet_experiment" ] ],
-            "tags", [ "script_output", "classified_imagenet" ],
+            "tags", [ "program_output", "classified_imagenet" ],
             "num_of_images", "#{num_of_images}#",
             "model_name", "#{model_name}#",
             "framework", "#{framework}#",

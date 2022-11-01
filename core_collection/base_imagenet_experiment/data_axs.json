@@ -1,5 +1,5 @@
 {
-    "script_output": [ "^^", "execute", [[
+    "program_output": [ "^^", "execute", [[
         [ "get_path_from", "output_file_name" ],
         0,
         [ "func", "ufun.load_json" ]
@@ -22,7 +22,7 @@
     "class_names": [ "^^", "load_class_names" ],
 
 
-    "accuracy": [ "^^", "measure_accuracy", [[ "^^", "dig", "script_output.predictions" ]] ],
+    "accuracy": [ "^^", "measure_accuracy", [[ "^^", "dig", "program_output.predictions" ]] ],
     "top_number": 3,
-    "print_top_n_predictions": [ "^^", "full_print_predictions", [[ "^^", "dig", "script_output.top_n" ]], {}, ["top_number"] ]
+    "print_top_n_predictions": [ "^^", "full_print_predictions", [[ "^^", "dig", "program_output.top_n" ]], {}, ["top_number"] ]
 }

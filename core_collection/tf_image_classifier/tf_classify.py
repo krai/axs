@@ -4,7 +4,7 @@
 
 Usage examples :
                     # Compute accuracy on the full ImageNet50k preprocessed dataset:
-                axs byquery script_output,classified_imagenet,framework=tf,preprocessed_imagenet_dir=/datasets/imagenet/pillow_sq.224_cropped_resized_imagenet50000,num_of_images=50000,max_batch_size=1000 , get accuracy
+                axs byquery program_output,classified_imagenet,framework=tf,preprocessed_imagenet_dir=/datasets/imagenet/pillow_sq.224_cropped_resized_imagenet50000,num_of_images=50000,max_batch_size=1000 , get accuracy
 """
 
 import os

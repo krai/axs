@@ -1,12 +1,12 @@
 {
-    "script_output": [ "^^", "execute", [[
+    "program_output": [ "^^", "execute", [[
         [ "get_path_from", "output_file_name" ],
         0,
         [ "func", "ufun.load_json" ]
     ]] ],
 
-    "detection_results": [ "^^", "dig", "script_output.detections" ],
-    "detection_times": [ "^^", "dig", "script_output.times" ],
+    "detection_results": [ "^^", "dig", "program_output.detections" ],
+    "detection_times": [ "^^", "dig", "program_output.times" ],
 
     "pycocotools_query":["python_package", "package_name=pycocotools"],
     "_BEFORE_CODE_LOADING": [ "^^", "execute", [[
@@ -19,7 +19,7 @@
 
     "num_of_bboxes": "",
 
-    "times_file_path": [ "^^", "get_path", "script_output.json"],
+    "times_file_path": [ "^^", "get_path", "program_output.json"],
 
     "dataset_entry": [ "^", "byquery", [[ "^^", "substitute", "dataset,dataset_name=#{dataset_name}#" ]], {}, [ "dataset_name"] ],
 
