@@ -1,0 +1,38 @@
+{
+    "_parent_entries": [ [ "^", "byname", "python_script" ] ],
+    "_producer_rules": [
+        [ [ "program_output", "calendar" ], [["run"]], { "return_saved_record_entry": false } ]
+    ],
+    
+    "python_deps": [ ],
+
+    "first_weekday": 0,
+    "month": 10,
+    "year": 2022,
+    "output_file_name": "program_output.json",
+    
+    "return_this_entry": [ "^^", "execute", [[
+        [ "get_kernel" ],
+        [ "work_collection" ],
+        [ "attached_entry", [ ["^^", "substitute", "calendar_#{year}#_#{month}#_#{first_weekday}#" ],["^^", "substitute", {
+            "_parent_entries": [ "AS^IS", [ "^", "byname", "base_experiment" ] ],
+            "tags": [ "program_output", "calendar" ],
+            "first_weekday": "#{first_weekday}#",
+            "month": "#{month}#",
+            "year": "#{year}#",
+            "output_file_name": "#{output_file_name}#"
+         } ] ] ],
+         [ "save" ]
+      ]] ],
+     "input_json_file_path": ["^^", "execute", [[
+        [ "get", "return_this_entry" ],
+        [ "get_path", "data_axs.json" ] 
+     ]] ],
+     "output_json_file_path": ["^^", "execute", [[
+        [ "get", "return_this_entry" ],
+        [ "get_path_from", "output_file_name" ]
+     ]] ],
+     
+    "rel_script_path": "generate_calendar.py",
+    "script_extra_params": [ "^^", "substitute", "\"#{input_json_file_path}#\" \"#{output_json_file_path}#\" " ]   
+}
