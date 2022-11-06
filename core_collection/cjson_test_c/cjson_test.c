@@ -6,7 +6,8 @@
 char *convert_to_uppercase(char *str) {
     char *newstr = malloc(strlen(str));
     strcpy(newstr, str);
-    newstr[0] = newstr[0] + 'A' - 'a';
+    if ( newstr[0] >= 'a' && newstr[0] <= 'z' )
+        newstr[0] = newstr[0] + 'A' - 'a';
     return newstr;
 }
 
