@@ -303,7 +303,8 @@ Usage examples :
             pos_params = []                                 # allow pos_params to be missing
         elif type(pos_params)==list:
             pos_params = self.nested_calls(pos_params)      # perform all nested calls if there are any
-        else:
+
+        if type(pos_params)!=list:
             pos_params = [ pos_params ]                     # simplified syntax for single positional parameter actions
 
         action_object       = self.reach_action(action_name)
