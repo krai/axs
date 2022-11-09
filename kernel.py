@@ -135,6 +135,7 @@ Usage examples :
 
 Usage examples :
                 axs core_collection , help
+                axs core_collection , entry_path: get_path , , byname shell , run --shell_cmd_with_subs='ls -1 #{entry_path}#'
         """
         return self.bypath( self.kernel_path( 'core_collection' ) )
 
@@ -151,6 +152,7 @@ Usage examples :
 Usage examples :
                 axs work_collection , get_path
                 AXS_WORK_COLLECTION=~/alt_wc axs work_collection , get_path
+                axs work_collection , entry_path: get_path , , byname shell , run --shell_cmd_with_subs='ls -1 #{entry_path}#'
         """
         work_collection_path = os.getenv('AXS_WORK_COLLECTION') or os.path.join(os.path.expanduser('~'), 'work_collection')
         if os.path.exists(work_collection_path):
