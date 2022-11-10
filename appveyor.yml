@@ -9,22 +9,26 @@ environment:
       PYTORCH_CLASSIFY: on
       ONNX_CLASSIFY: on
       TF_CLASSIFY: on
+      ONNX_DETECTION: on
 
     - job_name: MacOS onnx
       appveyor_build_worker_image: macos
       ONNX_CLASSIFY: on
+      ONNX_DETECTION: on
 
     - job_name: Linux pytorch+onnx+tf
       appveyor_build_worker_image: Ubuntu
       PYTORCH_CLASSIFY: on
       ONNX_CLASSIFY: on
       TF_CLASSIFY: on
+      ONNX_DETECTION: on
 
     - job_name: Windows pytorch+onnx Py=3.6
       appveyor_build_worker_image: Visual Studio 2019
       PYTHON_DIR: C:\Python36-x64
       PYTORCH_CLASSIFY: on
       ONNX_CLASSIFY: on
+      ONNX_DETECTION: on
 
 init:
     - cmd: reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem" /v LongPathsEnabled /t REG_DWORD /d 1 /f

@@ -17,6 +17,7 @@ matrix:
       python: 3.6
       env:
         - PYTORCH_CLASSIFY=on
+        - ONNX_DETECTION=on
         - PYTHON_EXE=python
         - C_COMPILE_AND_RUN=on
 
@@ -24,6 +25,7 @@ matrix:
       python: 3.7
       env:
         - ONNX_CLASSIFY=on
+        - ONNX_DETECTION=on
         - PYTHON_EXE=python
         - C_COMPILE_AND_RUN=on
 
@@ -31,6 +33,7 @@ matrix:
       python: 3.8
       env:
         - TF_CLASSIFY=on
+        - ONNX_DETECTION=on
         - PYTHON_EXE=python
         - C_COMPILE_AND_RUN=on
 
@@ -38,6 +41,7 @@ matrix:
       python: 3.9
       env:
         - PYTORCH_CLASSIFY=on
+        - ONNX_DETECTION=on
         - PYTHON_EXE=python
         - C_COMPILE_AND_RUN=on
 
@@ -46,6 +50,7 @@ matrix:
       language: shell       # 'language: python' is an error on Travis CI macOS
       env:
         - ONNX_CLASSIFY=on
+        - ONNX_DETECTION=on
         - PYTHON_EXE=python3
         - C_COMPILE_AND_RUN=on
 
@@ -63,6 +68,7 @@ matrix:
       language: shell       # 'language: python' is an error on Travis CI Windows
       env:
         - ONNX_CLASSIFY=on
+        - ONNX_DETECTION=on
         - PYTHON_EXE=python3
         - PATH=/c/Python38:/c/Python38/Scripts:$PATH
       before_install:

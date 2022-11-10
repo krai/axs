@@ -184,8 +184,18 @@ if [ "$PYTORCH_CLASSIFY" == "on" ] || [ "$ONNX_CLASSIFY" == "on" ] || [ "$TF_CLA
     assert_end dependency_installation_and_resolution_for_external_python_script
 fi
 
-axs byquery program_output,calendar , get program_output
-assert `axs byquery program_output,calendar , get program_output` "{'calendar': '    October 2022\nMo Tu We Th Fr Sa Su\n                1  2\n 3  4  5  6  7  8  9\n10 11 12 13 14 15 16\n17 18 19 20 21 22 23\n24 25 26 27 28 29 30\n31\n'}"
-axs byquery program_output,calendar --- , remove
+#axs byquery program_output,calendar , get program_output
+#assert `axs byquery program_output,calendar , get program_output` "{'calendar': '    October 2022\nMo Tu We Th Fr Sa Su\n                1  2\n 3  4  5  6  7  8  9\n10 11 12 13 14 15 16\n17 18 19 20 21 22 23\n24 25 26 27 28 29 30\n31\n'}"
+#axs byquery program_output,calendar --- , remove
+
+if [ "$ONNX_DETECTION" == "on" ]; then
+    axs byquery program_output,detected_coco,framework=onnx
+    export ACCURACY_OUTPUT=$(eval "axs byquery program_output,detected_coco,framework=onnx , get accuracy" | tail -1)
+    echo "Accuracy: $ACCURACY_OUTPUT"
+    export ROUND_ACCURACY_OUTPUT=$(echo $ACCURACY_OUTPUT | awk '{printf("%.3f \n",$1)}')
+    assert 'echo $ROUND_ACCURACY_OUTPUT' '0.230'
+    axs byquery program_output,detected_coco,framework=onnx --- , remove
+    assert_end onnx_object_detection
+fi
 
 echo "axs tests done"
