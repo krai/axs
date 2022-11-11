@@ -198,4 +198,15 @@ if [ "$ONNX_DETECTION" == "on" ]; then
     assert_end onnx_object_detection
 fi
 
+if [ "$ONNX_BERT_SQUAD" == "on" ]; then
+    axs byquery tokenized,squad_v1_1
+    axs byquery program_output,bert_squad,framework=onnx,batch_count=20
+    export ACCURACY_OUTPUT=$(eval "axs byquery program_output,bert_squad,framework=onnx,batch_count=20 , get accuracy" | tail -7 | head -n1)
+    echo "Accuracy: $ACCURACY_OUTPUT"
+    assert 'echo $ACCURACY_OUTPUT' '{"exact_match": 85.0, "f1": 85.0}'
+    axs byquery program_output,bert_squad,framework=onnx,batch_count=20 --- , remove
+    axs byquery tokenized,squad_v1_1 --- , remove
+    assert_end onnx_bert_squad
+fi
+
 echo "axs tests done"
