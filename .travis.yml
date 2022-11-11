@@ -18,6 +18,7 @@ matrix:
       env:
         - PYTORCH_CLASSIFY=on
         - ONNX_DETECTION=on
+        - ONNX_BERT_SQUAD=on
         - PYTHON_EXE=python
         - C_COMPILE_AND_RUN=on
 
@@ -26,6 +27,7 @@ matrix:
       env:
         - ONNX_CLASSIFY=on
         - ONNX_DETECTION=on
+        - ONNX_BERT_SQUAD=on
         - PYTHON_EXE=python
         - C_COMPILE_AND_RUN=on
 
@@ -34,6 +36,7 @@ matrix:
       env:
         - TF_CLASSIFY=on
         - ONNX_DETECTION=on
+        - ONNX_BERT_SQUAD=on
         - PYTHON_EXE=python
         - C_COMPILE_AND_RUN=on
 
@@ -42,6 +45,7 @@ matrix:
       env:
         - PYTORCH_CLASSIFY=on
         - ONNX_DETECTION=on
+        - ONNX_BERT_SQUAD=on
         - PYTHON_EXE=python
         - C_COMPILE_AND_RUN=on
 
@@ -51,6 +55,7 @@ matrix:
       env:
         - ONNX_CLASSIFY=on
         - ONNX_DETECTION=on
+        - ONNX_BERT_SQUAD=on
         - PYTHON_EXE=python3
         - C_COMPILE_AND_RUN=on
 
@@ -69,6 +74,7 @@ matrix:
       env:
         - ONNX_CLASSIFY=on
         - ONNX_DETECTION=on
+        - ONNX_BERT_SQUAD=on
         - PYTHON_EXE=python3
         - PATH=/c/Python38:/c/Python38/Scripts:$PATH
       before_install:
