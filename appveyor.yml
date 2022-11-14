@@ -15,6 +15,7 @@ environment:
 
     - job_name: MacOS onnx
       appveyor_build_worker_image: macos
+      C_COMPILE_AND_RUN: on
       ONNX_CLASSIFY: on
       ONNX_DETECTION: on
       ONNX_BERT_SQUAD: on
@@ -22,6 +23,7 @@ environment:
 
     - job_name: Linux pytorch+onnx+tf
       appveyor_build_worker_image: Ubuntu
+      C_COMPILE_AND_RUN: on
       PYTORCH_CLASSIFY: on
       ONNX_CLASSIFY: on
       TF_CLASSIFY: on

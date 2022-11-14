@@ -7,14 +7,16 @@
     "tags": [ "source_code", "square_root" ],
     "file_name": "square_rooter.c",
     "abs_source_path": [ "^^", "get_path" ],
+    "area": 9,
 
-    "return_this_entry": [ "^", "execute", [[
+    "return_this_entry": [ "^^", "execute", [[
+        [ "get_kernel" ],
         [ "work_collection" ],
         [ "attached_entry", [ "square_root_compiled", {
                 "_parent_entries": [ [ "AS^IS", "AS^IS", "^", "byname", "shell" ] ],
                 "tags": [ "compiled", "square_root"] ,
                 "binary_name": "square_rooter",
-                "area": 9.0,
+                "area": [ "^^", "get", "area" ],
                 "abs_binary_path": ["AS^IS", "AS^IS", "^^", "get_path_from", "binary_name"],
                 "capture_output": true,
                 "shell_cmd_with_subs": "#{abs_binary_path}# #{area}#"
