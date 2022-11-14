@@ -9,11 +9,10 @@ import sys
 import numpy as np
 import onnxruntime
 
-bert_code_root = sys.argv[1] +'language/bert'
+bert_code_root = os.path.join(sys.argv[1], 'language', 'bert')
 
 sys.path.insert(0, bert_code_root)
-sys.path.insert(0, bert_code_root + '/DeepLearningExamples/TensorFlow/LanguageModeling/BERT')
-
+sys.path.insert(0, os.path.join(bert_code_root,'DeepLearningExamples','TensorFlow','LanguageModeling','BERT'))
 
 ## SQuAD dataset - original and tokenized
 #

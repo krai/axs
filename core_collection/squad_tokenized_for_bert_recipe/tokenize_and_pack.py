@@ -19,14 +19,13 @@ convert_to_raw          = sys.argv[7] == "yes"
 #calibration_dataset     = sys.argv[8]
 #calibration_dataset_id  = int(sys.argv[9])
 
-#BERT_CODE_ROOT=os.environ['CK_ENV_MLPERF_INFERENCE']+'/language/bert'
-bert_code_root= sys.argv[8] + 'language/bert/'
+bert_code_root= os.path.join(sys.argv[8], 'language', 'bert')
 
 sys.path.insert(0, bert_code_root)
 
 print("bert_code_root= ", bert_code_root)
 
-sys.path.insert(0, bert_code_root + 'DeepLearningExamples/TensorFlow/LanguageModeling/BERT')
+sys.path.insert(0, os.path.join(bert_code_root, 'DeepLearningExamples','TensorFlow','LanguageModeling','BERT'))
 #sys.path.insert(0, bert_code_root + 'DeepLearningExamples/TensorFlow/LanguageModeling/BERT/utils')
 
 print("path= ", sys.path)

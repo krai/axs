@@ -29,7 +29,7 @@
 
     "mlperf_inference_path": [ "^^", "execute", [[
         [ "get", "mlperf_inference_git_entry" ],
-        [ "get_path", [[""]] ]
+        [ "get_path" ]
     ]], {}, ["mlperf_inference_git_entry"] ],
 
     "squad_dataset_query":[ "downloaded", "squad_original" ],
