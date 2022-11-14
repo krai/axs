@@ -1,21 +1,23 @@
 {
     "_parent_entries": [ [ "^", "byname", "shell" ] ],
     "_producer_rules": [
-            [ [ "compiled", "hello_world" ], [["run"]] ]
+            [ [ "compiled", "square_root" ], [["run"]] ],
+            [ [ "compute",  "square_root" ], [["get_kernel"],["byquery","compiled,square_root"],["run"]] ]
     ],
-    "tags": [ "source_code", "hello_world" ],
-    "file_name": "hello.c",
+    "tags": [ "source_code", "square_root" ],
+    "file_name": "square_rooter.c",
     "abs_source_path": [ "^^", "get_path" ],
 
     "return_this_entry": [ "^", "execute", [[
         [ "work_collection" ],
-        [ "attached_entry", [ "hello_world_compiled", {
+        [ "attached_entry", [ "square_root_compiled", {
                 "_parent_entries": [ [ "AS^IS", "AS^IS", "^", "byname", "shell" ] ],
-                "tags": [ "compiled", "hello_world"] ,
-                "binary_name": "hello",
+                "tags": [ "compiled", "square_root"] ,
+                "binary_name": "square_rooter",
+                "area": 9.0,
                 "abs_binary_path": ["AS^IS", "AS^IS", "^^", "get_path_from", "binary_name"],
                 "capture_output": true,
-                "shell_cmd_with_subs": "#{abs_binary_path}#"
+                "shell_cmd_with_subs": "#{abs_binary_path}# #{area}#"
             } ] ],
         [ "save" ]
     ]] ],

@@ -42,7 +42,7 @@
         "python_in_shell": "python_in_shell",
         "model_onnx_retinanet_openimages_recipe": "model_onnx_retinanet_openimages_recipe",
         "openimages_mlperf_recipe": "openimages_mlperf_recipe",
-        "hello_world_c": "hello_world_c",
+        "square_root_c": "square_root_c",
         "base_dataset": "base_dataset",
         "dataset_coco": "dataset_coco",
         "dataset_openimages": "dataset_openimages",

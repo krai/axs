@@ -92,8 +92,8 @@ axs byquery --/=shell_tool/can_python --- , remove
 assert_end dependency_installation_and_resolution_for_internal_code
 
 if [ "$C_COMPILE_AND_RUN" == "on" ]; then
-    axs byquery compiled,hello_world
-    assert 'axs byquery compiled,hello_world , run' "When square's area is 4.0 its side is 2.0"
+    axs byquery compiled,square_root , run --area=36
+    assert 'axs byquery compute,square_root,area=64' "When square's area is 64.0 its side is 8.0"
     assert_end c_code_compilation_and_execution
 else
     echo "Skipping the C_COMPILE_AND_RUN test"
