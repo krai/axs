@@ -2,6 +2,13 @@
 
 source assert.sh
 
+# To enable compilation of source-only pip wheels on Intel Macs:
+#   https://github.com/facebookresearch/detectron2/issues/2288
+#   https://github.com/gorakhargosh/watchdog/issues/689
+if [ `axs func platform.system` == "Darwin" ] && [ `axs func platform.machine` == "x86_64" ]; then
+    export ARCHFLAGS="-arch x86_64"
+fi
+
 assert 'echo "Hello, world!"' 'Hello, world!'
 assert_end testing_assert_itself
 
