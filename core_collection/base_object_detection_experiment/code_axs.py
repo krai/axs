@@ -4,6 +4,7 @@ import os
 import json
 import sys
 from time import time
+from contextlib import redirect_stdout
 
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
@@ -93,16 +94,19 @@ def postprocess(num_of_images, annotation_file, preprocessed_files, times_file_p
 
 
 def mAP(num_of_images, annotation_file, preprocessed_files, times_file_path, detection_results):
-    r = postprocess(num_of_images, annotation_file, preprocessed_files, times_file_path, detection_results )
-    return r['mAP']
+    with redirect_stdout(sys.stderr):
+        r = postprocess(num_of_images, annotation_file, preprocessed_files, times_file_path, detection_results )
+    return float(r['mAP'])
 
 def recall(num_of_images, annotation_file, preprocessed_files, times_file_path, detection_results):
-    r = postprocess(num_of_images, annotation_file, preprocessed_files, times_file_path, detection_results )
-    return r['recall']
+    with redirect_stdout(sys.stderr):
+        r = postprocess(num_of_images, annotation_file, preprocessed_files, times_file_path, detection_results )
+    return float(['recall'])
 
 def execution_time(num_of_images, annotation_file, preprocessed_files, times_file_path, detection_results):
-     r = postprocess(num_of_images, annotation_file, preprocessed_files, times_file_path, detection_results )
-     return r['execution_time']
+    with redirect_stdout(sys.stderr):
+        r = postprocess(num_of_images, annotation_file, preprocessed_files, times_file_path, detection_results )
+    return r['execution_time']
 
 def print_times(detection_times):
     print ('\nmodel_loading_s        = ', detection_times['model_loading_s'])
