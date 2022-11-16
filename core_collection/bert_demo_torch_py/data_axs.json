@@ -22,7 +22,6 @@
     "bert_debug": 0,
     "framework": "pytorch",
 
-    "execution_device_2": "cpu",
     "execution_device": "",
     "rel_script_path": "bert_qa_demo.py",
 
