@@ -30,7 +30,7 @@
     "squad_dataset_tokenized_path": [ "^^", "dig", "program_output.squad_dataset_tokenized_path" ],
     "selected_size": [ "^^", "dig", "program_output.selected_size" ],
 
-    "accuracy": [ "^^", "execute", [[
+    "accuracy_dict": [ "^^", "execute", [[
         [ "get_kernel" ],
         [ "byname", "python_script" ],
         [ "run", [], {
@@ -41,9 +41,16 @@
                 ],
                 "abs_script_path": ["^^", "get", "abs_script_path"],
                 "script_extra_params": [ "^^", "substitute", "--vocab_file=\"#{tokenization_vocab_path}#\" --val_data=\"#{squad_dataset_original_path}#\" --features_cache_file=\"#{squad_dataset_tokenized_path}#\" --log_file=\"#{guaranteed_accuracy_log_path}#\" --out_file=\"#{predictions_path}#\" --max_examples=\"#{selected_size}#\" " ],
-                "capture_output": true
-            } ]
+                "capture_output": true,
+                "split_to_lines": true
+            } ],
+        [ "__getitem__", 0 ],
+        0,
+        [ "func", "eval" ]
     ]], {} ],
+    "f1": [ "^^" , "dig","accuracy_dict.f1" ],
+    "exact_match": [ "^^" , "dig","accuracy_dict.exact_match" ],
+    "accuracy": [ "^^" , "get","f1" ],
 
     "program_output": [ "^^", "execute", [[
         [ "get_path_from", "output_file_name" ],

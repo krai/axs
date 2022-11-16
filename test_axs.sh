@@ -190,10 +190,10 @@ fi
 
 if [ "$ONNX_DETECTION" == "on" ]; then
     axs byquery program_output,detected_coco,framework=onnx
-    export ACCURACY_OUTPUT=$(eval "axs byquery program_output,detected_coco,framework=onnx , get accuracy" | tail -1)
+    #export ACCURACY_OUTPUT=$(eval "axs byquery program_output,detected_coco,framework=onnx , get accuracy" | tail -1)
+    export ACCURACY_OUTPUT=`axs byquery program_output,detected_coco,framework=onnx , get accuracy ,0 func round 4`
     echo "Accuracy: $ACCURACY_OUTPUT"
-    export ROUND_ACCURACY_OUTPUT=$(echo $ACCURACY_OUTPUT | awk '{printf("%.3f \n",$1)}')
-    assert 'echo $ROUND_ACCURACY_OUTPUT' '0.230'
+    assert 'echo $ACCURACY_OUTPUT' '0.2302'
     axs byquery program_output,detected_coco,framework=onnx --- , remove
     assert_end onnx_object_detection
 fi
@@ -201,9 +201,9 @@ fi
 if [ "$ONNX_BERT_SQUAD" == "on" ]; then
     axs byquery tokenized,squad_v1_1
     axs byquery program_output,bert_squad,framework=onnx,batch_count=20
-    export ACCURACY_OUTPUT=$(eval "axs byquery program_output,bert_squad,framework=onnx,batch_count=20 , get accuracy" | tail -7 | head -n1)
+    export ACCURACY_OUTPUT=`axs byquery program_output,bert_squad,framework=onnx,batch_count=20 , get accuracy_dict`
     echo "Accuracy: $ACCURACY_OUTPUT"
-    assert 'echo $ACCURACY_OUTPUT' '{"exact_match": 85.0, "f1": 85.0}'
+    assert 'echo $ACCURACY_OUTPUT' "{'exact_match': 85.0, 'f1': 85.0}"
     axs byquery program_output,bert_squad,framework=onnx,batch_count=20 --- , remove
     axs byquery tokenized,squad_v1_1 --- , remove
     assert_end onnx_bert_squad
