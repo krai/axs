@@ -209,9 +209,9 @@ if [ "$ONNX_BERT_SQUAD" == "on" ]; then
     assert_end onnx_bert_squad
 fi
 
-if [ "$PYTORTH_BERT_DEMO" == "on" ]; then
-    axs byquery bert_demo,framework=pytorch
-    export BERT_DEMO_OUTPUT=$(eval "axs byquery bert_demo,framework=pytorch" | grep "Question_\|Answer_")
+if [ "$PYTORCH_BERT_DEMO" == "on" ]; then
+    axs byname bert_demo_torch_py , run
+    export BERT_DEMO_OUTPUT=`axs byname bert_demo_torch_py , run --capture_output+`
     assert "echo $BERT_DEMO_OUTPUT" "Question_1: Which country has Moscow as the capital? Answer_1: the soviet union Question_2: How old is the capital of the Soviet Union? Answer_2: more than 800 years Question_3: Where is the Bolshoi Theater? Answer_3: moscow Question_4: How many museums are there in the capital of the Soviet Union? Answer_4: 150 Question_5: What is the Kremlin? Answer_5: a fortress surrounded by red stone walls Question_6: Where is the Kremlin? Answer_6: in the heart of moscow Question_7: What is inside the Kremlin? Answer_7: palaces , cathedrals and buildings housing the seat of the soviet government Question_8: What colour are the stones of the Kremlin? Answer_8: red"
     assert_end pytorch_bert_demo
 fi

@@ -19,7 +19,7 @@ matrix:
         - PYTORCH_CLASSIFY=on
         - ONNX_DETECTION=on
         - ONNX_BERT_SQUAD=on
-        - PYTORTH_BERT_DEMO=on
+        - PYTORCH_BERT_DEMO=on
         - PYTHON_EXE=python
         - C_COMPILE_AND_RUN=on
 
@@ -29,7 +29,7 @@ matrix:
         - ONNX_CLASSIFY=on
         - ONNX_DETECTION=on
         - ONNX_BERT_SQUAD=on
-        - PYTORTH_BERT_DEMO=on
+        - PYTORCH_BERT_DEMO=on
         - PYTHON_EXE=python
         - C_COMPILE_AND_RUN=on
 
@@ -39,7 +39,7 @@ matrix:
         - TF_CLASSIFY=on
         - ONNX_DETECTION=on
         - ONNX_BERT_SQUAD=on
-        - PYTORTH_BERT_DEMO=on
+        - PYTORCH_BERT_DEMO=on
         - PYTHON_EXE=python
         - C_COMPILE_AND_RUN=on
 
@@ -49,7 +49,7 @@ matrix:
         - PYTORCH_CLASSIFY=on
         - ONNX_DETECTION=on
         - ONNX_BERT_SQUAD=on
-        - PYTORTH_BERT_DEMO=on
+        - PYTORCH_BERT_DEMO=on
         - PYTHON_EXE=python
         - C_COMPILE_AND_RUN=on
 
@@ -60,7 +60,7 @@ matrix:
         - ONNX_CLASSIFY=on
         - ONNX_DETECTION=on
         - ONNX_BERT_SQUAD=on
-        - PYTORTH_BERT_DEMO=on
+        - PYTORCH_BERT_DEMO=on
         - PYTHON_EXE=python3
         - C_COMPILE_AND_RUN=on
 
@@ -80,7 +80,7 @@ matrix:
         - ONNX_CLASSIFY=on
         - ONNX_DETECTION=on
         - ONNX_BERT_SQUAD=on
-        - PYTORTH_BERT_DEMO=on
+        - PYTORCH_BERT_DEMO=on
         - PYTHON_EXE=python3
         - PATH=/c/Python38:/c/Python38/Scripts:$PATH
       before_install:

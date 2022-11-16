@@ -38,24 +38,24 @@ else:
     TORCH_DEVICE = 'cpu'
     print("Torch execution device: CPU", file=sys.stderr)
 
-print(f"Loading BERT model '{BERT_MODEL_NAME}' from the HuggingFace transformers' hub ...")
+print(f"Loading BERT model '{BERT_MODEL_NAME}' from the HuggingFace transformers' hub ...", file=sys.stderr)
 model = BertForQuestionAnswering.from_pretrained(BERT_MODEL_NAME)
 tokenizer = BertTokenizer.from_pretrained(BERT_MODEL_NAME)
 bert_config_obj = model.config
 model.eval()
 #model.to(TORCH_DEVICE)
 model.to(EXECUTION_DEVICE)
-print(f"Vocabulary size: {bert_config_obj.vocab_size}")
+print(f"Vocabulary size: {bert_config_obj.vocab_size}", file=sys.stderr)
 
 with open(BERT_DATA_CONTEXT_PATH, 'r') as context_file:
     context = ''.join( context_file.readlines() ).rstrip()
-print(f"\nContext taken from '{BERT_DATA_CONTEXT_PATH}':")
-print(context)
-print('-'*64 )
+print(f"\nContext taken from '{BERT_DATA_CONTEXT_PATH}':", file=sys.stderr)
+print(context, file=sys.stderr)
+print('-'*64, file=sys.stderr)
 
 with open(BERT_DATA_QUESTIONS_PATH, 'r') as questions_file:
     questions = questions_file.readlines()
-print(f"Questions taken from '{BERT_DATA_QUESTIONS_PATH}':\n")
+print(f"Questions taken from '{BERT_DATA_QUESTIONS_PATH}':\n", file=sys.stderr)
 
 with torch.no_grad():
     for i, question in enumerate( questions ):

@@ -11,7 +11,7 @@ environment:
       TF_CLASSIFY: on
       ONNX_DETECTION: on
       ONNX_BERT_SQUAD: on
-      PYTORTH_BERT_DEMO: on
+      PYTORCH_BERT_DEMO: on
 
     - job_name: MacOS onnx
       appveyor_build_worker_image: macos
@@ -19,7 +19,7 @@ environment:
       ONNX_CLASSIFY: on
       ONNX_DETECTION: on
       ONNX_BERT_SQUAD: on
-      PYTORTH_BERT_DEMO: on
+      PYTORCH_BERT_DEMO: on
 
     - job_name: Linux pytorch+onnx+tf
       appveyor_build_worker_image: Ubuntu
@@ -29,7 +29,7 @@ environment:
       TF_CLASSIFY: on
       ONNX_DETECTION: on
       ONNX_BERT_SQUAD: on
-      PYTORTH_BERT_DEMO: on
+      PYTORCH_BERT_DEMO: on
 
     - job_name: Windows pytorch+onnx Py=3.6
       appveyor_build_worker_image: Visual Studio 2019
@@ -38,7 +38,7 @@ environment:
       ONNX_CLASSIFY: on
       ONNX_DETECTION: on
       ONNX_BERT_SQUAD: on
-      PYTORTH_BERT_DEMO: on
+      PYTORCH_BERT_DEMO: on
 
 init:
     - cmd: reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem" /v LongPathsEnabled /t REG_DWORD /d 1 /f
