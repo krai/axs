@@ -9,6 +9,11 @@ if [ `axs func platform.system` == "Darwin" ] && [ `axs func platform.machine` =
     export ARCHFLAGS="-arch x86_64"
 fi
 
+# On Windows: avoid installing wheels that need compilation:
+if [ `axs func platform.system` == "Windows" ]; then
+    export PIP_ONLY_BINARY=:all:
+fi
+
 assert 'echo "Hello, world!"' 'Hello, world!'
 assert_end testing_assert_itself
 
