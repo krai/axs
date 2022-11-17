@@ -227,4 +227,12 @@ if [ "$PYTORCH_BERT_DEMO" == "on" ]; then
     assert "echo $BERT_DEMO_OUTPUT" "Question_1: Which country has Moscow as the capital? Answer_1: the soviet union Question_2: How old is the capital of the Soviet Union? Answer_2: more than 800 years Question_3: Where is the Bolshoi Theater? Answer_3: moscow Question_4: How many museums are there in the capital of the Soviet Union? Answer_4: 150 Question_5: What is the Kremlin? Answer_5: a fortress surrounded by red stone walls Question_6: Where is the Kremlin? Answer_6: in the heart of moscow Question_7: What is inside the Kremlin? Answer_7: palaces , cathedrals and buildings housing the seat of the soviet government Question_8: What colour are the stones of the Kremlin? Answer_8: red"
     assert_end pytorch_bert_demo
 fi
+
+# generate primes
+axs byquery compiled,generate_primes
+axs byquery program_output,generate_primes,up_to=20
+assert 'axs byname primes_up_to_20 , dig program_output.primes' '[2, 3, 5, 7, 11, 13, 17, 19]'
+axs byquery program_output,generate_primes,up_to=20 --- , remove
+axs byquery compiled,generate_primes --- , remove
+assert_end generate_primes
 echo "axs tests done"
