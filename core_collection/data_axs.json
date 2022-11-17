@@ -58,6 +58,7 @@
         "base_bert_experiment": "base_bert_experiment",
         "cjson_lib_recipe": "cjson_lib_recipe",
         "cjson_test_c": "cjson_test_c",
-        "generate_calendar_py": "generate_calendar_py"
+        "generate_calendar_py": "generate_calendar_py",
+        "generate_primes_c": "generate_primes_c"
     }
 }

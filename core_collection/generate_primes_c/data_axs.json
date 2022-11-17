@@ -1,0 +1,49 @@
+{                                                                                                                                                                                                    "_parent_entries": [ [ "^", "byname", "shell" ] ],
+
+    "_producer_rules": [   
+        [ [ "compiled", "generate_primes" ], [["run"]], {}, ["compiler_entry", "shell_cmd_with_subs", "cjson_lib_entry", "return_this_entry", "abs_source_path"]],
+        [ [ "program_output",  "generate_primes" ], [["get_kernel"],["byquery","compiled,generate_primes"],["run"]] ]
+    ],
+
+    "tags": [ "source_code", "generate_primes" ],     
+    "file_name": "generate_primes.c",
+    "abs_source_path": [ "^^", "get_path" ],
+    "up_to": 12,
+
+    "output_file_name": "program_output.json",
+
+    "return_this_entry": [ "^^", "execute", [[
+        [ "get_kernel" ],
+        [ "work_collection" ],
+        [ "attached_entry", [ ["^^", "substitute", "generate_primes_compiled" ], {
+            "_parent_entries": [ [ "AS^IS", "AS^IS", "^", "byname", "shell" ] ],
+            "tags": [ "compiled", "generate_primes"] ,
+            "binary_name": "generate_primes",
+            "abs_binary_path": ["AS^IS", "AS^IS", "^^", "get_path_from", "binary_name"],
+            "capture_output": true,
+            "up_to": ["^^", "get", "up_to"],
+            "output_file_name": [ "^^", "get","output_file_name" ],
+            "abs_output_file_path": [ "AS^IS", "AS^IS","^^", "execute", [[
+                [ "get", "experiment_entry" ],
+                [ "get_path",[["^^", "get","output_file_name" ]] ]
+            ]] ],
+            "experiment_entry": [ "AS^IS", "AS^IS", "^^", "execute", [[
+                [ "get_kernel" ],
+                [ "work_collection" ],
+                [ "attached_entry", [ [ "^^", "substitute", "primes_up_to_#{up_to}#" ],["^^", "substitute", {
+                    "_parent_entries": [ "AS^IS", [ "^", "byname", "base_experiment" ] ],
+                    "tags": [ "program_output", "generate_primes" ],
+                    "up_to": "#{up_to}#",
+                    "output_file_name": "#{output_file_name}#"
+                } ] ] ],
+                [ "save" ]
+            ]] ],
+            "shell_cmd_with_subs": "#{abs_binary_path}# #{up_to}# #{abs_output_file_path}#"
+        } ] ], 
+        [ "save" ] 
+    ]] ],
+
+    "compiler_entry": [ "^", "byquery", "shell_tool,can_compile_c" ],
+    "cjson_lib_entry": [ "^", "byquery", "lib,lib_name=cjson" ],
+    "shell_cmd_with_subs": "#{compiler_entry.tool_path}# -I#{cjson_lib_entry.include_path}# -o #{return_this_entry.abs_binary_path}# #{abs_source_path}# #{cjson_lib_entry.cjson_o_path}# -lm"
+}
