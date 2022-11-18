@@ -16,19 +16,20 @@ sys.path.insert(0, os.path.join(bert_code_root,'DeepLearningExamples','TensorFlo
 
 ## SQuAD dataset - original and tokenized
 #
-squad_dataset_original_path  = sys.argv[2]
-squad_dataset_tokenized_path = sys.argv[3]
+squad_dataset_original_path     = sys.argv[2]
+squad_dataset_tokenized_path    = sys.argv[3]
 
 ## BERT model:
 #
-bert_model_path = sys.argv[4]
+bert_model_path                 = sys.argv[4]
+model_input_layers_tms          = eval(sys.argv[5])
 
 ## Processing by batches:
 #
-batch_size       = int(sys.argv[5])
-batch_count      = int(sys.argv[6])
-execution_device = sys.argv[7]
-output_file_path = sys.argv[8]
+batch_size       = int(sys.argv[6])
+batch_count      = int(sys.argv[7])
+execution_device = sys.argv[8]
+output_file_path = sys.argv[9]
 
 output_logits_dict = {}
 
@@ -84,11 +85,14 @@ for batch_index in range(batch_count):
         input_mask_stack.append( np.array(selected_feature.input_mask) )
         segment_ids_stack.append( np.array(selected_feature.segment_ids) )
 
-    batch_input_dict = {
-        "input_ids":    np.stack( input_ids_stack ).astype(np.int64),
-        "input_mask":   np.stack( input_mask_stack ).astype(np.int64),
-        "segment_ids":  np.stack( segment_ids_stack ).astype(np.int64),
-    }
+    batch_input_dict = dict(zip(
+        model_input_layers_tms,
+        [
+            np.stack( input_ids_stack ).astype(np.int64),
+            np.stack( input_mask_stack ).astype(np.int64),
+            np.stack( segment_ids_stack ).astype(np.int64),
+        ]
+    ))
     scores = sess.run([o.name for o in sess.get_outputs()], batch_input_dict)
     output_logits = np.stack(scores, axis=-1)
 

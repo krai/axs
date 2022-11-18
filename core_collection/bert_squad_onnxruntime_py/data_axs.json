@@ -37,6 +37,7 @@
         [ "get", "model_entry" ],
         [ "get_path" ]
     ]] ],
+    "model_input_layers_tms": [ "^^", "dig", "model_entry.input_layers_tms" ],
 
     "squad_dataset_query":[ "downloaded", "squad_original" ],
     "squad_dataset_entry": [ "^", "byquery", [[ "^^", "get", "squad_dataset_query" ]], {}, ["squad_dataset_query"] ],
@@ -74,5 +75,5 @@
 
     "rel_script_path": "bert_squad_onnxruntime.py",
 
-    "script_extra_params": [ "^^", "substitute", "\"#{mlperf_inference_path}#\" \"#{squad_dataset_original_path}#\" \"#{tokenized_squad_path}#\" \"#{model_path}#\" \"#{batch_size}#\" \"#{batch_count}#\" \"#{execution_device}#\" \"#{output_file_path}#\"" ]
+    "script_extra_params": [ "^^", "substitute", "\"#{mlperf_inference_path}#\" \"#{squad_dataset_original_path}#\" \"#{tokenized_squad_path}#\" \"#{model_path}#\" \"#{model_input_layers_tms}#\" \"#{batch_size}#\" \"#{batch_count}#\" \"#{execution_device}#\" \"#{output_file_path}#\"" ]
 }
