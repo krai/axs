@@ -1,3 +1,12 @@
 {
-    "abs_packages_dir": [ "^^", "get_path_from", "rel_packages_dir" ]
+    "abs_install_dir": [ "^^", "get_path_from", "rel_install_dir" ],
+
+    "abs_packages_dir": [ "^^", "get_path_from", "rel_packages_dir" ],
+
+    "package_version": [ "^^", "execute", [[
+        [ "get_metadata", [], {"header_name": "Version"} ],
+        [ "__getitem__", 0 ]
+    ]], {}, ["mlperf_inference_git_entry"] ],
+
+    "python_version": [ "^^", "get", "python_major_dot_minor" ]
 }
