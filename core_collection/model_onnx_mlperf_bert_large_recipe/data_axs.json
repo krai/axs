@@ -1,11 +1,12 @@
 {
     "_producer_rules": [
         [ [ "downloaded", "onnx_model", "model_name=bert_large" ], [["get_kernel"],["byname","downloader"],["download"]], {
-            "url": "https://zenodo.org/record/3733910/files/model.onnx",
-            "md5": "819b25b19cd8e59080c10892689750ca",
-            "entry_name": "downloaded_bert_large.onnx",
-
             "input_layers_tms": "['input_ids', 'input_mask', 'segment_ids']"
-        } ]
-    ]
+        }, ["url", "md5", "entry_name", "with_tags"] ]
+    ],
+
+    "url": "https://zenodo.org/record/3733910/files/model.onnx",
+    "md5": "model.onnx",
+    "entry_name": "downloaded_bert_large.onnx",
+    "with_tags": ["inference_ready", "downloaded", "onnx_model"]
 }
