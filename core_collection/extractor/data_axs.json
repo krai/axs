@@ -8,8 +8,9 @@
     "tar_tool_query": "shell_tool,can_extract_tar",
     "zip_tool_query": "shell_tool,can_extract_zip",
     "tool_query": ["^^", "get", [[ "^^", "case",   [ ["^^", "get", "archive_format"],
-                        ["tar", "tgz"], "tar_tool_query",
-                        "zip" , "zip_tool_query" ]]] ],
+                                    "zip" , "zip_tool_query" ],
+                                    { "default_value": "tar_tool_query" }
+                                ]] ],
     "extraction_tool_entry": [ "^", "byquery", [["^^", "get", "tool_query"]], {}, ["tool_query"] ],
     "extra_dir_prefix": "extracted",
     "file_name": ["^^", "join_paths"]

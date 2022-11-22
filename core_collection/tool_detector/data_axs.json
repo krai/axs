@@ -27,7 +27,8 @@
         [ [ "shell_tool", "can_extract_tar" ], [["detect"]], { "tool_name": "tar", "strip_components": 0,
             "uncompression_insert": [ "AS^IS", "AS^IS", "^^", "case",   [ ["^^", "get", "archive_format"],
                 "tar", "",
-                "tgz", "z"
+                "tgz", "z",
+                "txz", "J"
             ] ],
             "strip_components_insert": [ "AS^IS", "AS^IS", "^^", "case",   [ ["^^", "get", "strip_components"],
                 0, ""

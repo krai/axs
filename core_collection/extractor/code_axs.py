@@ -13,6 +13,8 @@ def detect_archive_format(archive_path):
         archive_format = 'tgz'
     elif archive_path.lower().endswith('.zip'):
         archive_format = 'zip'
+    elif archive_path.lower().endswith('.tar.xz'):
+        archive_format = 'txz'
     return archive_format
 
 
