@@ -13,5 +13,6 @@
                                 ]] ],
     "extraction_tool_entry": [ "^", "byquery", [["^^", "get", "tool_query"]], {}, ["tool_query"] ],
     "extra_dir_prefix": "extracted",
-    "file_name": ["^^", "join_paths"]
+    "file_name": ["^^", "join_paths"],
+    "with_tags": ["extracted"]
 }

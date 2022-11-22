@@ -22,13 +22,13 @@ def join_paths(extra_dir_prefix="", internal_file_name=""):
     return os.path.join(extra_dir_prefix, internal_file_name)
 
 
-def extract(archive_path, archive_format=None, extra_dir_prefix=None, file_name=None, extraction_tool_entry=None, strip_components=0, tags=None, entry_name=None, __record_entry__=None):
+def extract(archive_path, archive_format=None, extra_dir_prefix=None, file_name=None, extraction_tool_entry=None, strip_components=0, with_tags=None, entry_name=None, __record_entry__=None):
     """Create a new entry and extract the archive into it
 
 Usage examples:
     # Extracting an arbitrary tarball (zipped or otherwise) into an Entry:
             axs byname extractor , extract two_points.tar
-            axs byname extractor , extract --archive_path=/datasets/dataset-imagenet-ilsvrc2012-val.tar --tags,=extracted,imagenet50k --strip_components=1
+            axs byname extractor , extract --archive_path=/datasets/dataset-imagenet-ilsvrc2012-val.tar --with_tags,=extracted,imagenet50k --strip_components=1
 
     # Downloading the archive tarball:
             axs byname downloader , download 'http://cKnowledge.org/ai/data/ILSVRC2012_img_val_500.tar'
@@ -48,7 +48,8 @@ Usage examples:
             axs byquery extracted,archive_path=$HOME/tmp/ziptest.zip
     """
 
-    __record_entry__["tags"] = tags or ["extracted"]
+    __record_entry__["tags"] = with_tags
+    __record_entry__.pluck( "with_tags" )
 
     import os
 
