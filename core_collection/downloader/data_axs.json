@@ -5,7 +5,7 @@
 
     "action_name": "download",
     "uncompress_format": "",
-    "with_tags": ["downloaded"],
+    "extra_tags": ["downloaded"],
 
     "downloading_tool_query": "shell_tool,can_download_url",
     "downloading_tool_entry": [ "^", "byquery", [[ "^^", "get", "downloading_tool_query" ]], {}, ["downloading_tool_query"] ],

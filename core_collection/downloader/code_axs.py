@@ -21,12 +21,12 @@ Cleaning up:
 import logging
 
 
-def download(url, file_name=None, md5=None, downloading_tool_entry=None, uncompress_format=None, with_tags=None, entry_name=None, __entry__=None, __record_entry__=None):
+def download(url, file_name=None, md5=None, downloading_tool_entry=None, uncompress_format=None, tags=None, extra_tags=None, entry_name=None, __entry__=None, __record_entry__=None):
     """Create a new entry and download the url into it
 
 Usage examples:
     # Manual downloading into a new entry:
-            axs byname downloader , download 'https://example.com/' example.html --with_tags,=downloaded,example
+            axs byname downloader , download 'https://example.com/' example.html --tags,=example
     # Replay of the same command at a later time, stored in a different entry:
             axs byquery downloaded,file_name=example.html , get _replay --entry_name=replay_downloading_example.html
     # Resulting entry path (counter-intuitively) :
@@ -55,8 +55,8 @@ Usage examples:
 
     __record_entry__.pluck("entry_name")
 
-    __record_entry__["tags"] = with_tags
-    __record_entry__.pluck( "with_tags" )
+    __record_entry__["tags"] = (tags or []) + extra_tags 
+    __record_entry__.pluck( "extra_tags" )
     __record_entry__.save( entry_name )
     target_path         = __record_entry__.get_path(file_name)
     record_entry_path   = __record_entry__.get_path( "" )
