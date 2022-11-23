@@ -48,7 +48,7 @@ Usage examples:
             axs byquery extracted,archive_path=$HOME/tmp/ziptest.zip
     """
 
-    __record_entry__["tags"] = (tags or []) + extra_tags 
+    __record_entry__["tags"] = list(set( (tags or []) + extra_tags ))
     __record_entry__.pluck( "extra_tags" )
     __record_entry__.save( entry_name )
 

@@ -53,9 +53,7 @@ Usage examples:
     if not entry_name:
         entry_name = 'downloaded_' + file_name
 
-    __record_entry__.pluck("entry_name")
-
-    __record_entry__["tags"] = (tags or []) + extra_tags 
+    __record_entry__["tags"] = list(set( (tags or []) + extra_tags ))
     __record_entry__.pluck( "extra_tags" )
     __record_entry__.save( entry_name )
     target_path         = __record_entry__.get_path(file_name)
