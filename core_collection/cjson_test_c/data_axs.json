@@ -33,5 +33,5 @@
 
     "cjson_lib_entry": [ "^", "byquery", "lib,lib_name=cjson" ],
 
-    "shell_cmd_with_subs": "#{compiler_entry.tool_path}# -I#{cjson_lib_entry.include_path}# -o #{return_this_entry.abs_binary_path}# #{abs_source_path}# #{cjson_lib_entry.cjson_o_path}#"
+    "shell_cmd_with_subs": "\"#{compiler_entry.tool_path}#\" -I#{cjson_lib_entry.include_path}# -o #{return_this_entry.abs_binary_path}# #{abs_source_path}# #{cjson_lib_entry.cjson_o_path}#"
 }

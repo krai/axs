@@ -26,5 +26,5 @@
 
     "compiler_entry": [ "^", "byquery", "shell_tool,can_compile_c" ],
 
-    "shell_cmd_with_subs": "#{compiler_entry.tool_path}# -o #{return_this_entry.abs_binary_path}# #{abs_source_path}# -lm"
+    "shell_cmd_with_subs": "\"#{compiler_entry.tool_path}#\" -o #{return_this_entry.abs_binary_path}# #{abs_source_path}# -lm"
 }

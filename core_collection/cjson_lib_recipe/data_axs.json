@@ -4,7 +4,7 @@
         [["lib","lib_name=cjson"], [
             [ "get", "compiler_entry" ],
             [ "run", [], {
-                "shell_cmd_with_subs": "#{compiler_entry.tool_path}# -c -o #{return_this_entry.cjson_o_path}# #{cjson_c_path}#",
+                "shell_cmd_with_subs": "\"#{compiler_entry.tool_path}#\" -c -o #{return_this_entry.cjson_o_path}# #{cjson_c_path}#",
                 "capture_output": false
                 } ]
         ], {}, [ "compiler_entry", "return_this_entry", "cjson_c_path" ] ]
