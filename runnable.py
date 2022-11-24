@@ -465,7 +465,7 @@ Usage examples :
                 if insert_stash:                # insert the previous call's result into pos_params of the current call
                     insert_position, insert_result = insert_stash
                     insert_position_offset = 1 if action_name=='func' else 0
-                    pos_params.insert( insert_position+insert_position_offset, insert_result )
+                    pos_params.insert( insert_position+insert_position_offset, { self.ESCAPE_do_not_process : insert_result } )
                     insert_stash = None     # empty it after use
 
                 if hasattr(entry, 'call'):                                  # an Entry-specific or Runnable-generic method ("func" called on an Entry will fire here)
