@@ -235,4 +235,16 @@ assert 'axs byname primes_up_to_20 , dig program_output.primes' '[2, 3, 5, 7, 11
 axs byquery program_output,generate_primes,up_to=20 --- , remove
 axs byquery compiled,generate_primes --- , remove
 assert_end generate_primes
+
+# factorized numbers
+axs byquery program_output,factorizer,up_to=172
+export FACTORIZED_NUM=`axs byquery program_output,factorizer,up_to=172 , dig program_output`
+assert "echo $FACTORIZED_NUM" "{factorized_number: [2, 2, 43]}"
+axs byquery program_output,factorizer,up_to=172 --- , remove
+axs byquery compiled,factorizer --- , remove
+axs byquery program_output,generate_primes,up_to=172 --- , remove
+axs byquery compiled,generate_primes --- , remove
+assert_end factorized_numbers
 echo "axs tests done"
+
+
