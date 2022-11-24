@@ -55,3 +55,12 @@ Usage examples :
     else:
         return False
 
+
+def join_with(things, separator=' '):
+    """Reverse the order of arguments for String.join() to simplify its use in pipelines
+
+Usage examples :
+                axs work_collection , get contained_entries , keys ,0 func ufun.join_with
+    """
+
+    return separator.join(things)
