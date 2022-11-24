@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
-import numpy as np
 import ufun as uf
 
 def generate_accuracy_log(output_logits, accuracy_log_path):
+    import numpy as np
+
     encoded_accuracy_log = []
     for k in output_logits.keys():
         encoded_accuracy_log.append({'qsl_idx': int(k), 'data': np.array(output_logits[k], np.float32).tobytes().hex()})
