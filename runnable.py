@@ -117,9 +117,11 @@ _axs_comp()
     cur="${COMP_WORDS[COMP_CWORD]}"     # the so-far-typed part of the (first) action
     prev="${COMP_WORDS[COMP_CWORD-1]}"
     if [[ $COMP_CWORD -eq 1 ]] ; then   # if we just started, it should be the kernel
-        COMPREPLY=($(compgen -W "$(axs possible_actions)" -- "$cur" ))
+        COMPREPLY=($(compgen -W "$(axs possible_actions ,0 func ufun.join_with)" -- "$cur" ))
+    elif [[ "$prev" == "byname" ]] ; then
+        COMPREPLY=($(compgen -W "$(axs work_collection , get contained_entries , keys ,0 func ufun.join_with)" -- "$cur" ))
     elif [[ "$prev" == "," ]] ; then    # hoping this assumption is more frequently right than wrong!
-        COMPREPLY=($(compgen -W "$(axs fresh_entry , possible_actions)" -- "$cur" ))
+        COMPREPLY=($(compgen -W "$(axs fresh_entry , possible_actions ,0 func ufun.join_with)" -- "$cur" ))
     else
         COMPREPLY=()
     fi
@@ -133,7 +135,7 @@ Usage examples :
                 axs fresh_entry , <tab><tab>
 
         """
-        return ' '.join( function_access.list_function_names( self.__class__ ) + self.list_own_functions() )
+        return function_access.list_function_names( self.__class__ ) + self.list_own_functions()
 
 
     def help(self, action_name=None):
