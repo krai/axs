@@ -5,6 +5,7 @@
 
     "action_name": "download",
     "uncompress_format": "",
+    "entry_name": "",
     "extra_tags": ["downloaded"],
 
     "downloading_tool_query": "shell_tool,can_download_url",
