@@ -1,8 +1,8 @@
-{                                                                                                                                                                                                    "_parent_entries": [ [ "^", "byname", "shell" ] ],
-
+{
+    "_parent_entries": [ [ "^", "byname", "shell" ] ],
     "_producer_rules": [   
         [ [ "compiled", "generate_primes" ], [["run"]], {}, ["compiler_entry", "shell_cmd_with_subs", "cjson_lib_entry", "return_this_entry", "abs_source_path"]],
-        [ [ "program_output",  "generate_primes" ], [["get_kernel"],["byquery","compiled,generate_primes"],["run"]] ]
+        [ [ "program_output",  "generate_primes" ], [["get_kernel"],["byquery","compiled,generate_primes"],["run"]]  ]
     ],
 
     "tags": [ "source_code", "generate_primes" ],     
@@ -20,14 +20,13 @@
             "tags": [ "compiled", "generate_primes"] ,
             "binary_name": "generate_primes",
             "abs_binary_path": ["AS^IS", "AS^IS", "^^", "get_path_from", "binary_name"],
-            "capture_output": true,
             "up_to": ["^^", "get", "up_to"],
             "output_file_name": [ "^^", "get","output_file_name" ],
             "abs_output_file_path": [ "AS^IS", "AS^IS","^^", "execute", [[
-                [ "get", "experiment_entry" ],
+                [ "get", "return_this_entry" ],
                 [ "get_path",[["^^", "get","output_file_name" ]] ]
             ]] ],
-            "experiment_entry": [ "AS^IS", "AS^IS", "^^", "execute", [[
+            "return_this_entry": [ "AS^IS", "AS^IS", "^^", "execute", [[
                 [ "get_kernel" ],
                 [ "work_collection" ],
                 [ "attached_entry", [ [ "^^", "substitute", "primes_up_to_#{up_to}#" ],["^^", "substitute", {
