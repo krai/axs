@@ -11,14 +11,17 @@
     "up_to": 12,
 
     "output_file_name": "program_output.json",
-
+    "binary_name_def": [ "^^", "case", [ [ "^", "func", "platform.system"] ,
+       "Windows" , "generate_primes.exe" ],
+       { "default_value": "generate_primers"  }
+    ],
     "return_this_entry": [ "^^", "execute", [[
         [ "get_kernel" ],
         [ "work_collection" ],
         [ "attached_entry", [ ["^^", "substitute", "generate_primes_compiled" ], {
             "_parent_entries": [ [ "AS^IS", "AS^IS", "^", "byname", "shell" ] ],
             "tags": [ "compiled", "generate_primes"] ,
-            "binary_name": "generate_primes",
+            "binary_name": ["^^", "get", "binary_name_def"],
             "abs_binary_path": ["AS^IS", "AS^IS", "^^", "get_path_from", "binary_name"],
             "up_to": ["^^", "get", "up_to"],
             "output_file_name": [ "^^", "get","output_file_name" ],

@@ -9,7 +9,10 @@
     "file_name": "factorizer.c",
     "abs_source_path": [ "^^", "get_path" ],
     "up_to": 12,
-   
+    "binary_name_def": [ "^^", "case", [ [ "^", "func", "platform.system"] ,
+        "Windows" , "factorizer.exe" ],
+        { "default_value": "factorizer" }
+    ],
     "output_file_name": "program_output.json",
 
     "return_this_entry": [ "^^", "execute", [[
@@ -18,7 +21,7 @@
         [ "attached_entry", [ "factorizer_compiled", {
             "_parent_entries": [ [ "AS^IS", "AS^IS", "^", "byname", "shell" ] ],
             "tags": [ "compiled", "factorizer"],
-            "binary_name": "factorizer",
+            "binary_name": ["^^", "get", "binary_name_def"],
             "abs_binary_path": ["AS^IS", "AS^IS", "^^", "get_path_from", "binary_name"],
             "up_to": ["^^", "get", "up_to"],
             "abs_input_file_path": [ "AS^IS", "AS^IS", "^^", "execute", [[
