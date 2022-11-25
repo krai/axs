@@ -2,32 +2,25 @@
 #include <stdlib.h>
 #include <string.h>
 #include "cJSON.h"
-#include <math.h>
 
 int *sieve_of_eratosthenes(int n, int * size)
 {
-    int arr[n];
+    int arr[n + 1];
+    int j = 0;
     int *r = malloc(sizeof(int) * n);
-    for (int i = 0; i <= n; i++) {
-        arr[i] = 1;
-    }
-
-    for (int i = 2; i <= sqrt(n); i++)
-    {
-        if ( arr[i] == 1){
-            for (int j = 2; i * j <= n; j++) {
-                arr[ i * j ] = 0;
+    
+    for (int i = 0; i <= n; i++)
+        arr[i] = i;
+    for (int p = 2; p <= n; p++)
+        {
+            if (arr[p] != 0)
+            {
+                r[j] = arr[p];
+                j++;
+                for (int k = p*p; k < n + 1; k += p)
+                    arr[k] = 0;
             }
         }
-    }
-    int j = 0;
-    for (int i = 2; i <= n; i++)
-    {
-        if (arr[i] == 1) {
-            r[j] = i;
-            j++;
-        }
-    }
     *size = j;
     int *result = malloc(sizeof(int) * j);
     memcpy(result, r, sizeof(int) * j);
