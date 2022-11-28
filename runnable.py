@@ -309,8 +309,14 @@ Usage examples :
         if type(pos_params)!=list:
             pos_params = [ pos_params ]                     # simplified syntax for single positional parameter actions
 
+
         action_object       = self.reach_action(action_name)
-        action_object, joint_arg_tuple, optional_arg_dict   = function_access.prep(action_object, pos_params, self, captured_mapping)
+
+        if action_name=='func':         # at least propagate edit_dict.  FIXME: maybe rely on func's signature if available?
+            joint_arg_tuple     = pos_params
+            optional_arg_dict   = edit_dict
+        else:
+            action_object, joint_arg_tuple, optional_arg_dict   = function_access.prep(action_object, pos_params, self, captured_mapping)
 
         if ak:
             # adding all key-value pairs that were mentioned in the edit_dict, but not needed by the call(), to make sure they also get recorded
