@@ -1,18 +1,22 @@
  {
     "_parent_entries": [ [ "^", "byname", "python_script" ] ],
     "_producer_rules": [
-        [ [ "tokenized", "squad_v1_1" ], [["run"],[],["get","tokenized_entry"]] ]
+        [ [ "tokenized", "squad_v1_1" ], [["run"]], {}, ["rel_script_path", "script_extra_params"] ]
     ],
 
-    "tokenized_entry": [ "^^", "execute", [[
-        [ "get", "__record_entry__" ],
-        [ "set_path", "tokenized_squad_v1_1" ],
-        [ "plant", [ "tags", ["tokenized", "squad_v1_1"], "file_name", "tokenized_squad_v1.1.pickled" ] ],
-        [ "attach", [ "^", "work_collection" ] ],
-        [ "save" ]
+    "return_saved_record_entry": false,
+    "return_this_entry": [ "^^", "execute", [[
+        [ "get_kernel" ],
+        [ "work_collection" ],
+        [ "attached_entry", [ "tokenized_squad_v1_1", {
+            "_parent_entries": [ "AS^IS", [ "^", "byname", "base_experiment" ] ],
+            "tags": ["tokenized", "squad_v1_1"],
+            "file_name": "tokenized_squad_v1.1.pickled"
+         } ] ],
+         [ "save" ]
     ]] ],
     "tokenized_squad_path": [ "^^", "execute", [[
-        [ "get", "tokenized_entry" ],
+        [ "get", "return_this_entry" ],
         [ "get_path" ]
     ]] ],
 
