@@ -56,7 +56,7 @@ Usage examples :
 
         new_path = new_path or self.name or self.generate_name( self.generated_name_prefix )
 
-        if new_path.startswith(os.path.sep):    # absolute path
+        if os.path.isabs( new_path ):           # absolute path
             self.entry_path = new_path
 
         elif self.container_object:             # relative to container
@@ -84,9 +84,9 @@ Usage examples :
 
         if file_name:
             if type(file_name)==list:
-                file_name = os.path.sep.join(file_name)
+                file_name = os.path.sep.join( file_name )
 
-            if file_name.startswith(os.path.sep):
+            if os.path.isabs( file_name ):
                 return file_name
             else:
                 return os.path.join(ensure_path(), file_name)
@@ -107,7 +107,7 @@ Usage examples :
     def trim_path(self, input_path):
         """Transform path to relative-to-entry if inside entry, or absolute if outside
         """
-        if input_path.startswith( os.path.sep ):                    # given as absolute
+        if os.path.isabs( input_path ):                             # given as absolute
             real_input_path     = os.path.realpath( input_path )
             real_entry_path_tr  = os.path.realpath( self.entry_path ) + os.path.sep
 
