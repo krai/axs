@@ -244,7 +244,11 @@ axs byquery program_output,factorizer,up_to=172 --- , remove
 axs byquery compiled,factorizer --- , remove
 axs byquery program_output,generate_primes,up_to=172 --- , remove
 axs byquery compiled,generate_primes --- , remove
+
+axs byquery lib,lib_name=cjson --- , remove
+axs byquery shell_tool,can_compile_c --- , remove
+axs byquery git_repo,repo_name=cjson_source_git --- , remove
+
 assert_end factorized_numbers
 echo "axs tests done"
-
 
