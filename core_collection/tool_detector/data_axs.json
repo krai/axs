@@ -99,5 +99,5 @@
 
 
     "tool_path": [ "^^", "which" ],
-    "tool_name": [ "^^", "basename" ]
+    "tool_name": [ "^^", "func", [ "os.path.basename", ["^^", "get", "tool_path"] ] ]
 }

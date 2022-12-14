@@ -34,15 +34,6 @@ Usage examples:
     return None
 
 
-def basename(tool_path):
-    """Turn full tool_path into tool_name
-
-Usage examples:
-            axs byname tool_detector , basename /usr/bin/gcc
-    """
-    return os.path.basename(tool_path)
-
-
 def detect(tool_name=None, tool_path=None, tags=None, entry_name=None, __record_entry__=None):
     """Detect/select an installed shell tool and create an entry to point at it
 
