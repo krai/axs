@@ -1,12 +1,22 @@
 {
     "_producer_rules": [
-        [ [ "downloaded"], [["get_kernel"],["byname","downloader"],["download"]], {} ]
+        [ [ "downloaded" ], [["get_kernel"],["byname","downloader"],["download"]], {} ]
     ],
 
     "action_name": "download",
     "uncompress_format": "",
-    "entry_name": "",
     "extra_tags": ["downloaded"],
+
+    "split_file_path": [ "^^", "get_split_file_path" ],
+    "file_name": [ "^^", "get_uncompressed_split_file_path" ],
+    "entry_name": [ "^^", "execute", [[
+        [ "noop", "_" ],
+        [ "join", [[ "^^", "execute", [[
+                        [ "noop", [[ "^^", "get", "extra_tags" ]] ],
+                        [ "__add__", [[ "^^", "get_uncompressed_split_file_path" ]] ]
+                    ]] ]]
+        ]
+    ]] ],
 
     "downloading_tool_query": "shell_tool,can_download_url",
     "downloading_tool_entry": [ "^", "byquery", [[ "^^", "get", "downloading_tool_query" ]], {}, ["downloading_tool_query"] ],

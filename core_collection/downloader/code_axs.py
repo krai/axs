@@ -21,6 +21,26 @@ Cleaning up:
 import logging
 
 
+def get_split_file_path(url=None, file_path=None):
+    import os
+
+    if file_path:                           # prefer if given
+        if type(file_path) == list:
+            return file_path
+        else:
+            return file_path.split(os.sep)
+    else:                                   # infer from url otherwise
+        return [ os.path.basename(url) ]
+
+
+def get_uncompressed_split_file_path(split_file_path, uncompress_format):
+
+    if uncompress_format:
+        return split_file_path[0:-1] + [ split_file_path[-1].rsplit('.', 1)[0] ]    # trim one .extension off the last syllable
+    else:
+        return split_file_path
+
+
 def download(url, file_name=None, md5=None, downloading_tool_entry=None, uncompress_format=None, tags=None, extra_tags=None, entry_name=None, __entry__=None, __record_entry__=None):
     """Create a new entry and download the url into it
 
@@ -28,30 +48,23 @@ Usage examples:
     # Manual downloading into a new entry:
             axs byname downloader , download 'https://example.com/' example.html --tags,=example
     # Replay of the same command at a later time, stored in a different entry:
-            axs byquery downloaded,file_name=example.html , get _replay --entry_name=replay_downloading_example.html
+            axs byquery downloaded,file_path=example.html , get _replay --entry_name=replay_downloading_example.html
     # Resulting entry path (counter-intuitively) :
-            axs byquery downloaded,file_name=example.html , get_path ''
+            axs byquery downloaded,file_path=example.html , get_path ''
     # Downloaded file path:
-            axs byquery downloaded,file_name=example.html , get_path
+            axs byquery downloaded,file_path=example.html , get_path
     # Reaching to the original tool used for downloading:
-            axs byquery downloaded,file_name=example.html , get downloading_tool_entry , get tool_path
+            axs byquery downloaded,file_path=example.html , get downloading_tool_entry , get tool_path
     # Clean up:
-            axs byquery downloaded,file_name=example.html , remove
+            axs byquery downloaded,file_path=example.html , remove
 
     # Using a generic rule:
-            axs byquery downloaded,url=http://example.com,file_name=example.html
+            axs byquery downloaded,url=http://example.com,file_path=example.html
 
     # Downloading from GoogleDrive (needs a specialized tool):
-            axs byname downloader , download --downloading_tool_query+=_from_google_drive --url=https://drive.google.com/uc?id=1XRfiA8wtZEo6SekkJppcnfEr4ghQAS4g --file_name=hello2.text
+            axs byname downloader , download --downloading_tool_query+=_from_google_drive --url=https://drive.google.com/uc?id=1XRfiA8wtZEo6SekkJppcnfEr4ghQAS4g --file_path=hello2.text
     """
 
-    if not file_name:
-        import os
-        file_name = os.path.basename(url)
-        __record_entry__["file_name"] = file_name
-
-    if not entry_name:
-        entry_name = 'downloaded_' + file_name
     __record_entry__.pluck( "entry_name" )
 
     __record_entry__["tags"] = list(set( (tags or []) + extra_tags ))
@@ -86,7 +99,6 @@ Usage examples:
                 retval = uncompress_tool_entry.call('run', [], {"target_path": target_path, "in_dir": record_entry_path})
                 if retval == 0:
                     __record_entry__['uncompress_tool_entry'] = uncompress_tool_entry
-                    __record_entry__["file_name"] = file_name.rsplit('.', 1)[0]
                 else:
                     logging.error(f"could not uncompress {target_path}, bailing out")
                     __record_entry__.remove()
