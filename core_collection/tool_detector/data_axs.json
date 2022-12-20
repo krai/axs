@@ -12,7 +12,7 @@
                     [ "byquery", "python_package,package_name=gdown" ],
                     [ "get_path", [["install", "bin", "gdown"]] ]
                 ]] ],
-                "env": { "PYTHONPATH": [ "AS^IS", "AS^IS", "^", "execute", [[
+                "env": { "PYTHONPATH": [ "AS^IS", "^", "execute", [[
                     [ "byquery", "python_package,package_name=gdown" ],
                     [ "get_path_from", "abs_packages_dir" ]
                 ]] ] },
