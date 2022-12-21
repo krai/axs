@@ -4,7 +4,7 @@
     The resulting file may either become a collection or a regular entry.
 
 Creating a recipe entry:
-    axs work_collection , attached_entry examplepage_recipe , plant url http://example.com/  entry_name examplepage_downloaded  file_name example.html  _parent_entries --,:=AS^IS:^:byname:downloader , save
+    axs work_collection , attached_entry examplepage_recipe , plant url http://example.com/  entry_name examplepage_downloaded  dl_file_name example.html  _parent_entries --,:=AS^IS:^:byname:downloader , save
 
 Activating the recipe, performing the actual downloading:
     axs byname examplepage_recipe , download
@@ -21,27 +21,16 @@ Cleaning up:
 import logging
 
 
-def get_split_file_path(url=None, file_path=None):
+def get_split_file_name(dl_file_name):
     import os
 
-    if file_path:                           # prefer if given
-        if type(file_path) == list:
-            return file_path
-        else:
-            return file_path.split(os.sep)
-    else:                                   # infer from url otherwise
-        return [ os.path.basename(url) ]
-
-
-def get_uncompressed_split_file_path(split_file_path, uncompress_format):
-
-    if uncompress_format:
-        return split_file_path[0:-1] + [ split_file_path[-1].rsplit('.', 1)[0] ]    # trim one .extension off the last syllable
+    if type(dl_file_name) == list:
+        return dl_file_name
     else:
-        return split_file_path
+        return dl_file_name.split(os.sep)
 
 
-def download(url, file_name=None, md5=None, downloading_tool_entry=None, uncompress_format=None, tags=None, extra_tags=None, entry_name=None, __entry__=None, __record_entry__=None):
+def download(url, dl_file_name=None, uncompressed_split_file_path=None, md5=None, downloading_tool_entry=None, uncompress_format=None, tags=None, extra_tags=None, entry_name=None, __entry__=None, __record_entry__=None):
     """Create a new entry and download the url into it
 
 Usage examples:
@@ -65,6 +54,8 @@ Usage examples:
             axs byname downloader , download --downloading_tool_query+=_from_google_drive --url=https://drive.google.com/uc?id=1XRfiA8wtZEo6SekkJppcnfEr4ghQAS4g --file_path=hello2.text
     """
 
+    __record_entry__["file_name"] = uncompressed_split_file_path
+
     __record_entry__.pluck( "entry_name" )
 
     __record_entry__["tags"] = list(set( (tags or []) + extra_tags ))
@@ -72,7 +63,7 @@ Usage examples:
 
     __record_entry__.save( entry_name )
 
-    target_path         = __record_entry__.get_path(file_name)
+    target_path         = __record_entry__.get_path( uncompressed_split_file_path )
     record_entry_path   = __record_entry__.get_path( "" )
 
     logging.warning(f"The resolved downloading_tool_entry '{downloading_tool_entry.get_name()}' located at '{downloading_tool_entry.get_path()}' uses the shell tool '{downloading_tool_entry['tool_path']}'")
