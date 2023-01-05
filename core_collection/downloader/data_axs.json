@@ -6,28 +6,14 @@
     "action_name": "download",
     "uncompress_format": "",
     "extra_tags": ["downloaded"],
-    "dl_file_name": [ "^^", "func", ["os.path.basename", [ "^^", "get", "url" ]] ],
 
-    "split_file_path": [ "^^", "get_split_file_name" ],
-    "uncompressed_last_syll": [ "^^", "case", [ [ "^^", "get", "uncompress_format" ],
-                                                "", [ "^^", "dig", "split_file_path.-1" ] ],
-                                                { "default_value": ["^^", "execute", [[
-                                                    [ "dig", "split_file_path.-1" ],
-                                                    [ "rsplit", [".", 1] ],
-                                                    [ "__getitem__", 0 ]
-                                                ]] ] } ],
-
-    "uncompressed_split_file_path": [ "^^", "execute", [[
-                        [ "get", "split_file_path" ],
-                        [ "__getitem__", [ "^^", "func", ["slice", 0, -1] ] ],
-                        [ "__add__", [[[ "^^", "get", "uncompressed_last_syll" ]]] ]
-                    ]] ],
-
+    "split_file_path": [ "^^", "get_split_file_path" ],
+    "file_name": [ "^^", "get_uncompressed_split_file_path" ],
     "entry_name": [ "^^", "execute", [[
         [ "noop", "_" ],
         [ "join", [[ "^^", "execute", [[
-                        [ "get", "extra_tags" ],
-                        [ "__add__", [[[ "^^", "get", "uncompressed_last_syll" ]]] ]
+                        [ "noop", [[ "^^", "get", "extra_tags" ]] ],
+                        [ "__add__", [[ "^^", "get_uncompressed_split_file_path" ]] ]
                     ]] ]]
         ]
     ]] ],
