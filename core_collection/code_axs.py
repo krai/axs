@@ -66,30 +66,35 @@ class FilterPile:
             import re
             from function_access import to_num_or_not_to_num
 
-            binary_op_match = re.match('([\w\.]*\w)(==|=|!=|<>|<=|>=|<|>|:|!:)(.*)$', condition)
+            binary_op_match = re.match('([\w\.]*\w)(===|==|=|!==|!=|<>|<=|>=|<|>|:|!:)(.*)$', condition)
             if binary_op_match:
                 key_path    = binary_op_match.group(1)
                 op          = binary_op_match.group(2)
                 pre_val     = binary_op_match.group(3)
                 val         = to_num_or_not_to_num(pre_val)
 
-                if op in ('=', '=='):
+                if op in ('=', '=='):       # with auto-conversion to numbers
                     op = '='
-                    comparison_lambda   = lambda x, y : x==y
-                elif op in ('!=', '<>'):
-                    comparison_lambda   = lambda x, y : x!=y
+                    comparison_lambda   = lambda x: x==val
+                elif op in ('==='):         # no auto-conversion
+                    op = '='
+                    comparison_lambda   = lambda x: x==pre_val
+                elif op in ('<>', '!='):    # with auto-conversion to numbers
+                    comparison_lambda   = lambda x: x!=val
+                elif op in ('!=='):         # no auto-conversion
+                    comparison_lambda   = lambda x: x!=pre_val
                 elif op=='<' and len(pre_val)>0:
-                    comparison_lambda   = lambda x, y : x!=None and x<y
+                    comparison_lambda   = lambda x: x!=None and x<val
                 elif op=='>' and len(pre_val)>0:
-                    comparison_lambda   = lambda x, y : x!=None and x>y
+                    comparison_lambda   = lambda x: x!=None and x>val
                 elif op=='<=' and len(pre_val)>0:
-                    comparison_lambda   = lambda x, y : x!=None and x<=y
+                    comparison_lambda   = lambda x: x!=None and x<=val
                 elif op=='>=' and len(pre_val)>0:
-                    comparison_lambda   = lambda x, y : x!=None and x>=y
+                    comparison_lambda   = lambda x: x!=None and x>=val
                 elif op==':' and len(pre_val)>0:
-                    comparison_lambda   = lambda x, y : type(x)==list and y in x
+                    comparison_lambda   = lambda x: type(x)==list and val in x
                 elif op=='!:' and len(pre_val)>0:
-                    comparison_lambda   = lambda x, y : type(x)==list and y not in x
+                    comparison_lambda   = lambda x: type(x)==list and val not in x
                 else:
                     raise SyntaxError(f"Could not parse the condition '{condition}' in {context}")
             else:
@@ -99,13 +104,13 @@ class FilterPile:
                     op          = unary_op_match.group(2)
                     val         = None
                     if op=='.':               # path exists
-                        comparison_lambda   = lambda x, y: x is not None
+                        comparison_lambda   = lambda x: x is not None
                     elif op=='!.':            # path does not exist
-                        comparison_lambda   = lambda x, y: x is None
+                        comparison_lambda   = lambda x: x is None
                     elif op in ('?', '+'):    # computes to True
-                        comparison_lambda   = lambda x, y: bool(x)
+                        comparison_lambda   = lambda x: bool(x)
                     elif op=='-':             # computes to False
-                        comparison_lambda   = lambda x, y: not bool(x)
+                        comparison_lambda   = lambda x: not bool(x)
                     else:
                         raise SyntaxError(f"Could not parse the condition '{condition}' in {context}")
                 else:
@@ -115,10 +120,10 @@ class FilterPile:
                         val         = tag_match.group(2)
                         if tag_match.group(1):
                             op = "tag-"
-                            comparison_lambda   = lambda x, y : type(x)!=list or y not in x
+                            comparison_lambda   = lambda x: type(x)!=list or val not in x
                         else:
                             op = "tag+"
-                            comparison_lambda   = lambda x, y : type(x)==list and y in x
+                            comparison_lambda   = lambda x: type(x)==list and val in x
                     else:
                         raise SyntaxError(f"Could not parse the condition '{condition}' in {context}")
 
@@ -150,7 +155,7 @@ class FilterPile:
 
         candidate_still_ok = True
         for key_path, op, val, query_comparison_lambda, split_key_path in self.filter_list:
-            if not query_comparison_lambda( candidate_entry.dig(split_key_path, safe=True, parent_recursion=parent_recursion), val ):
+            if not query_comparison_lambda( candidate_entry.dig(split_key_path, safe=True, parent_recursion=parent_recursion) ):
                 candidate_still_ok = False
                 break
         return candidate_still_ok
@@ -223,7 +228,7 @@ Usage examples :
                         if op=='tag+': continue     # we have matched them directly above
 
                         # we allow (only) equalities on the rule side not to have a match on the query side
-                        qr_conditions_ok = rule_comparison_lambda( parsed_query.posi_val_dict[key_path], rule_val ) if (key_path in parsed_query.posi_val_dict) else ((op=='=') and (key_path in parsed_query.mentioned_set))
+                        qr_conditions_ok = rule_comparison_lambda( parsed_query.posi_val_dict[key_path] ) if (key_path in parsed_query.posi_val_dict) else ((op=='=') and (key_path in parsed_query.mentioned_set))
                         if not qr_conditions_ok: break
 
                     if qr_conditions_ok:
@@ -233,7 +238,7 @@ Usage examples :
                             if op=='tag+': continue     # we have matched them directly above
 
                             # we allow (only) equalities on the query side not to have a match on the rule side
-                            qr_conditions_ok = query_comparison_lambda( parsed_rule.posi_val_dict[key_path], query_val ) if (key_path in parsed_rule.posi_val_dict) else (op=='=')
+                            qr_conditions_ok = query_comparison_lambda( parsed_rule.posi_val_dict[key_path] ) if (key_path in parsed_rule.posi_val_dict) else (op=='=')
                             if not qr_conditions_ok: break
 
                     if qr_conditions_ok:
@@ -294,7 +299,6 @@ def remove_entry_name(old_entry_name, __entry__):
 
     contained_entries       = __entry__.pluck(['contained_entries', old_entry_name])
     return __entry__.save()
-
 
 
 if __name__ == '__main__':
