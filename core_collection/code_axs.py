@@ -63,73 +63,80 @@ class FilterPile:
 
         def parse_condition(condition, context):
 
-            import re
-            from function_access import to_num_or_not_to_num
+            if type(condition)==list:   # pre-parsed equality
+                key_path, val = condition
+                op = '='
+                comparison_lambda   = lambda x: x==val
 
-            binary_op_match = re.match('([\w\.]*\w)(===|==|=|!==|!=|<>|<=|>=|<|>|:|!:)(.*)$', condition)
-            if binary_op_match:
-                key_path    = binary_op_match.group(1)
-                op          = binary_op_match.group(2)
-                pre_val     = binary_op_match.group(3)
-                val         = to_num_or_not_to_num(pre_val)
+            else:   # assuming a string that needs to be parsed (even if a tag)
+                import re
+                from function_access import to_num_or_not_to_num
 
-                if op in ('=', '=='):       # with auto-conversion to numbers
-                    op = '='
-                    comparison_lambda   = lambda x: x==val
-                elif op in ('==='):         # no auto-conversion
-                    op = '='
-                    comparison_lambda   = lambda x: x==pre_val
-                elif op in ('<>', '!='):    # with auto-conversion to numbers
-                    comparison_lambda   = lambda x: x!=val
-                elif op in ('!=='):         # no auto-conversion
-                    comparison_lambda   = lambda x: x!=pre_val
-                elif op=='<' and len(pre_val)>0:
-                    comparison_lambda   = lambda x: x!=None and x<val
-                elif op=='>' and len(pre_val)>0:
-                    comparison_lambda   = lambda x: x!=None and x>val
-                elif op=='<=' and len(pre_val)>0:
-                    comparison_lambda   = lambda x: x!=None and x<=val
-                elif op=='>=' and len(pre_val)>0:
-                    comparison_lambda   = lambda x: x!=None and x>=val
-                elif op==':' and len(pre_val)>0:
-                    comparison_lambda   = lambda x: type(x)==list and val in x
-                elif op=='!:' and len(pre_val)>0:
-                    comparison_lambda   = lambda x: type(x)==list and val not in x
-                else:
-                    raise SyntaxError(f"Could not parse the condition '{condition}' in {context}")
-            else:
-                unary_op_match = re.match('([\w\.]*\w)(\.|!\.|\?|\+|-)$', condition)
-                if unary_op_match:
-                    key_path    = unary_op_match.group(1)
-                    op          = unary_op_match.group(2)
-                    val         = None
-                    if op=='.':               # path exists
-                        comparison_lambda   = lambda x: x is not None
-                    elif op=='!.':            # path does not exist
-                        comparison_lambda   = lambda x: x is None
-                    elif op in ('?', '+'):    # computes to True
-                        comparison_lambda   = lambda x: bool(x)
-                    elif op=='-':             # computes to False
-                        comparison_lambda   = lambda x: not bool(x)
+                binary_op_match = re.match('([\w\.]*\w)(===|==|=|!==|!=|<>|<=|>=|<|>|:|!:)(.*)$', condition)
+                if binary_op_match:
+                    key_path    = binary_op_match.group(1)
+                    op          = binary_op_match.group(2)
+                    pre_val     = binary_op_match.group(3)
+                    val         = to_num_or_not_to_num(pre_val)
+
+                    if op in ('=', '=='):       # with auto-conversion to numbers
+                        op = '='
+                        comparison_lambda   = lambda x: x==val
+                    elif op in ('==='):         # no auto-conversion
+                        op = '='
+                        comparison_lambda   = lambda x: x==pre_val
+                    elif op in ('<>', '!='):    # with auto-conversion to numbers
+                        comparison_lambda   = lambda x: x!=val
+                    elif op in ('!=='):         # no auto-conversion
+                        comparison_lambda   = lambda x: x!=pre_val
+                    elif op=='<' and len(pre_val)>0:
+                        comparison_lambda   = lambda x: x!=None and x<val
+                    elif op=='>' and len(pre_val)>0:
+                        comparison_lambda   = lambda x: x!=None and x>val
+                    elif op=='<=' and len(pre_val)>0:
+                        comparison_lambda   = lambda x: x!=None and x<=val
+                    elif op=='>=' and len(pre_val)>0:
+                        comparison_lambda   = lambda x: x!=None and x>=val
+                    elif op==':' and len(pre_val)>0:
+                        comparison_lambda   = lambda x: type(x)==list and val in x
+                    elif op=='!:' and len(pre_val)>0:
+                        comparison_lambda   = lambda x: type(x)==list and val not in x
                     else:
                         raise SyntaxError(f"Could not parse the condition '{condition}' in {context}")
                 else:
-                    tag_match = re.match('([!^-])?(\w+)$', condition)
-                    if tag_match:
-                        key_path    = 'tags'
-                        val         = tag_match.group(2)
-                        if tag_match.group(1):
-                            op = "tag-"
-                            comparison_lambda   = lambda x: type(x)!=list or val not in x
+                    unary_op_match = re.match('([\w\.]*\w)(\.|!\.|\?|\+|-)$', condition)
+                    if unary_op_match:
+                        key_path    = unary_op_match.group(1)
+                        op          = unary_op_match.group(2)
+                        val         = None
+                        if op=='.':               # path exists
+                            comparison_lambda   = lambda x: x is not None
+                        elif op=='!.':            # path does not exist
+                            comparison_lambda   = lambda x: x is None
+                        elif op in ('?', '+'):    # computes to True
+                            comparison_lambda   = lambda x: bool(x)
+                        elif op=='-':             # computes to False
+                            comparison_lambda   = lambda x: not bool(x)
                         else:
-                            op = "tag+"
-                            comparison_lambda   = lambda x: type(x)==list and val in x
+                            raise SyntaxError(f"Could not parse the condition '{condition}' in {context}")
                     else:
-                        raise SyntaxError(f"Could not parse the condition '{condition}' in {context}")
+                        tag_match = re.match('([!^-])?(\w+)$', condition)
+                        if tag_match:
+                            key_path    = 'tags'
+                            val         = tag_match.group(2)
+                            if tag_match.group(1):
+                                op = "tag-"
+                                comparison_lambda   = lambda x: type(x)!=list or val not in x
+                            else:
+                                op = "tag+"
+                                comparison_lambda   = lambda x: type(x)==list and val in x
+                        else:
+                            raise SyntaxError(f"Could not parse the condition '{condition}' in {context}")
 
             return key_path, op, val, comparison_lambda
 
-        self.conditions    = conditions
+
+        self.conditions    = conditions if type(conditions)==list else conditions.split(',')
         self.context       = context
         self.posi_tag_set  = set()
         self.posi_val_dict = {}
@@ -174,8 +181,7 @@ Usage examples :
     """
     assert __entry__ != None, "__entry__ should be defined"
 
-    query_conditions    = query if type(query)==list else query.split(',')
-    parsed_query        = FilterPile( query_conditions, "Query" )
+    parsed_query        = FilterPile( query, "Query" )
 
     # trying to match the Query in turn against each existing and walkable entry, gathering them all:
     matched_entries = []
@@ -201,8 +207,7 @@ Usage examples :
     """
     assert __entry__ != None, "__entry__ should be defined"
 
-    query_conditions    = query if type(query)==list else query.split(',')
-    parsed_query        = FilterPile( query_conditions, "Query" )
+    parsed_query        = FilterPile( query, "Query" )
 
     # trying to match the Query in turn against each existing and walkable entry, first match returns:
     for candidate_entry in walk(__entry__):
@@ -216,8 +221,7 @@ Usage examples :
         matched_rules = []
         for advertising_entry in walk(__entry__):
             for unprocessed_rule in advertising_entry.own_data().get('_producer_rules', []):        # block processing some params until they are really needed
-                rule_conditions = unprocessed_rule[0]
-                parsed_rule     = FilterPile( rule_conditions, f"Entry: {advertising_entry.get_name()}" )
+                parsed_rule     = FilterPile( unprocessed_rule[0], f"Entry: {advertising_entry.get_name()}" )
 
                 if parsed_rule.posi_tag_set.issubset(parsed_query.posi_tag_set):  # FIXME:  parsed_rule.posi_tag_set should include it
                     qr_conditions_ok  = True
