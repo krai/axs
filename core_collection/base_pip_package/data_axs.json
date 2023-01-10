@@ -3,10 +3,15 @@
 
     "abs_packages_dir": [ "^^", "get_path_from", "rel_packages_dir" ],
 
+    "rel_packages_dir": [ "^", "execute", [[
+        [ "byquery", "python_pathfinder" ],
+        [ "find_rel_packages_dir" ]
+    ]] ],
+
     "package_version": [ "^^", "execute", [[
         [ "get_metadata", [], {"header_name": "Version"} ],
         [ "__getitem__", 0 ]
-    ]], {}, ["mlperf_inference_git_entry"] ],
+    ]] ],
 
     "python_version": [ "^^", "get", "python_major_dot_minor" ]
 }
