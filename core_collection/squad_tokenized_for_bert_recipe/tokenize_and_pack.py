@@ -6,18 +6,18 @@ import sys
 from transformers import BertTokenizer
 
 # Input and output file paths:
-squad_original_path     = sys.argv[1]
-tokenization_vocab_path = sys.argv[2]
-tokenized_squad_path    = sys.argv[3]
+squad_original_path          = sys.argv[1]
+tokenization_vocab_path      = sys.argv[2]
+tokenized_squad_dir          = sys.argv[3]
+tokenized_squad_files_prefix = sys.argv[4]
 
 # Tokenization parameters:
-max_seq_length          = int(sys.argv[4])
-max_query_length        = int(sys.argv[5])
-doc_stride              = int(sys.argv[6])
+max_seq_length               = int(sys.argv[5])
+max_query_length             = int(sys.argv[6])
+doc_stride                   = int(sys.argv[7])
 
-convert_to_raw          = sys.argv[7] == "yes"
-#calibration_dataset     = sys.argv[8]
-#calibration_dataset_id  = int(sys.argv[9])
+#calibration_dataset         = sys.argv[8]
+#calibration_dataset_id      = int(sys.argv[9])
 
 bert_code_root= os.path.join(sys.argv[8], 'language', 'bert')
 
@@ -70,35 +70,35 @@ convert_examples_to_features(
     verbose_logging=False)
 
 
-if convert_to_raw:
+# raw
 
-    import numpy as np
+import numpy as np
 
-    print("Recording features to {} ...".format(tokenized_squad_path + "*.raw"))
+print("Recording features to {} ...".format(tokenized_squad_dir + "*.raw"))
 
-    num_features = len(eval_features)
-    input_ids = np.zeros((num_features, max_seq_length), dtype=np.int64)
-    input_mask = np.zeros((num_features, max_seq_length), dtype=np.int64)
-    segment_ids = np.zeros((num_features, max_seq_length), dtype=np.int64)
+num_features = len(eval_features)
+input_ids = np.zeros((num_features, max_seq_length), dtype=np.int64)
+input_mask = np.zeros((num_features, max_seq_length), dtype=np.int64)
+segment_ids = np.zeros((num_features, max_seq_length), dtype=np.int64)
 
-    for idx, feature in enumerate(eval_features):
+for idx, feature in enumerate(eval_features):
 
-        if len(feature.input_ids) != 384:
-            print(len(feature.input_ids))
-        input_ids[idx, :] = np.array(feature.input_ids, dtype=np.int64)
-        input_mask[idx, :] = np.array(feature.input_mask, dtype=np.int64)
-        segment_ids[idx, :] = np.array(feature.segment_ids, dtype=np.int64)
+    if len(feature.input_ids) != 384:
+        print(len(feature.input_ids))
+    input_ids[idx, :] = np.array(feature.input_ids, dtype=np.int64)
+    input_mask[idx, :] = np.array(feature.input_mask, dtype=np.int64)
+    segment_ids[idx, :] = np.array(feature.segment_ids, dtype=np.int64)
 
-    input_ids.astype('int64').tofile(tokenized_squad_path + "_input_ids.raw")
-    input_mask.astype('int64').tofile(tokenized_squad_path + "_input_mask.raw")
-    segment_ids.astype('int64').tofile(tokenized_squad_path + "_segment_ids.raw")
+input_ids.astype('int64').tofile(tokenized_squad_dir + tokenized_squad_files_prefix + "_input_ids.raw")
+input_mask.astype('int64').tofile(tokenized_squad_dir + tokenized_squad_files_prefix + "_input_mask.raw")
+segment_ids.astype('int64').tofile(tokenized_squad_dir + tokenized_squad_files_prefix + "_segment_ids.raw")
 
-else: # pickle
+# pickle
 
-    import pickle
+import pickle
     
-    print("Recording features to {} ...".format(tokenized_squad_path))
-    with open(tokenized_squad_path, 'wb') as cache_file:
-        pickle.dump(eval_features, cache_file)
+print("Recording features to {} ...".format(tokenized_squad_dir + tokenized_squad_files_prefix + ".pickled"))
+with open(tokenized_squad_dir + tokenized_squad_files_prefix + ".pickled", 'wb') as cache_file:
+    pickle.dump(eval_features, cache_file)
 
 

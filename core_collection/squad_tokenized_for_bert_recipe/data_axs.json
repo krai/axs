@@ -8,22 +8,29 @@
     "dataset_max_query_length": 64,
     "dataset_doc_stride": 128,
 
+    "tokenized_squad_files_prefix": "tokenized_squad_v1.1",
+
     "return_saved_record_entry": false,
     "return_this_entry": [ "^^", "execute", [[
         [ "get_kernel" ],
         [ "work_collection" ],
-        [ "attached_entry", [ ["^^", "substitute", "tokenized_squad_v1_1_msl_#{dataset_max_seq_length}#" ] , ["^^", "substitute", {
+        [ "attached_entry", [ ["^^", "substitute", "tokenized_squad_v1_1_msl_#{dataset_max_seq_length}#"] , ["^^", "substitute", {
             "_parent_entries": [ "AS^IS", [ "^", "byname", "base_experiment" ] ],
             "tags": ["tokenized", "squad_v1_1"],
             "dataset_max_seq_length": "#{dataset_max_seq_length}#",
-            "file_name": "tokenized_squad_v1.1.pickled"
+            "files_prefix": "#{tokenized_squad_files_prefix}#",
+            "file_name": "#{tokenized_squad_files_prefix}#.pickled"
          } ] ] ],
          [ "save" ]
     ]] ],
-    "tokenized_squad_path": [ "^^", "execute", [[
+
+    "tokenized_squad_dirname": [ "^^", "execute", [[
         [ "get", "return_this_entry" ],
-        [ "get_path" ]
+        [ "get_path" ],
+        0,
+        [ "func", "os.path.dirname" ]
     ]] ],
+    "tokenized_squad_dir": ["^^", "substitute", "#{tokenized_squad_dirname}#/" ],
 
     "tensorflow_query": ["python_package", "package_name=tensorflow"],
     "absl_query": ["python_package", "package_name=absl-py"],
@@ -54,7 +61,6 @@
         [ "get", "squad_tokenization_vocab_entry" ],
         [ "get_path" ]
     ]] ],
-    "dataset_raw": "no",
     "rel_script_path": "tokenize_and_pack.py",
-    "script_extra_params": [ "^^", "substitute", "\"#{squad_dataset_original_path}#\" \"#{squad_tokenization_vocab_path}#\" \"#{tokenized_squad_path}#\" #{dataset_max_seq_length}# #{dataset_max_query_length}# #{dataset_doc_stride}# \"#{dataset_raw}#\" \"#{mlperf_inference_path}#\"" ]
+    "script_extra_params": [ "^^", "substitute", "\"#{squad_dataset_original_path}#\" \"#{squad_tokenization_vocab_path}#\" \"#{tokenized_squad_dir}#\" \"#{tokenized_squad_files_prefix}#\" #{dataset_max_seq_length}# #{dataset_max_query_length}# #{dataset_doc_stride}# \"#{mlperf_inference_path}#\"" ]
 }
