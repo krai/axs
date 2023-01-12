@@ -72,22 +72,27 @@ class FilterPile:
                 import re
                 from function_access import to_num_or_not_to_num
 
-                binary_op_match = re.match('([\w\.]*\w)(===|==|=|!==|!=|<>|<=|>=|<|>|:|!:)(.*)$', condition)
+                binary_op_match = re.match('([\w\.\-]*\w)(:=|===|==|=|!==|!=|<>|<=|>=|<|>|:|!:)(.*)$', condition)
                 if binary_op_match:
                     key_path    = binary_op_match.group(1)
                     op          = binary_op_match.group(2)
                     pre_val     = binary_op_match.group(3)
                     val         = to_num_or_not_to_num(pre_val)
 
-                    if op in ('=', '=='):       # with auto-conversion to numbers
+                    if op in (':=',):           # auto-split
+                        op = '='
+                        pre_val = pre_val.split(':')
+                        val     = [ to_num_or_not_to_num(x) for x in pre_val ]
+                        comparison_lambda   = lambda x: x==val
+                    elif op in ('=', '=='):     # with auto-conversion to numbers
                         op = '='
                         comparison_lambda   = lambda x: x==val
-                    elif op in ('==='):         # no auto-conversion
+                    elif op in ('===',):        # no auto-conversion
                         op = '='
                         comparison_lambda   = lambda x: x==pre_val
                     elif op in ('<>', '!='):    # with auto-conversion to numbers
                         comparison_lambda   = lambda x: x!=val
-                    elif op in ('!=='):         # no auto-conversion
+                    elif op in ('!==',):        # no auto-conversion
                         comparison_lambda   = lambda x: x!=pre_val
                     elif op=='<' and len(pre_val)>0:
                         comparison_lambda   = lambda x: x!=None and x<val
