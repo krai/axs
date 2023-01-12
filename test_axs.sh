@@ -81,7 +81,7 @@ assert_end git_cloning_collection_access_and_removal
 
 axs work_collection , attached_entry examplepage_recipe , plant url http://example.com/ entry_name examplepage_downloaded file_path example.html _parent_entries --,:=AS^IS:^:byname:downloader , save
 axs byname examplepage_recipe , download
-assert 'axs byquery downloaded,file_path=example.html , file_path: get_path , , byquery shell_tool,can_compute_md5 , run' '84238dfc8092e5d9c0dac8ef93371a07'
+assert 'axs byquery downloaded,file_name:=example.html , file_path: get_path , , byquery shell_tool,can_compute_md5 , run' '84238dfc8092e5d9c0dac8ef93371a07'
 axs byquery shell_tool,can_compute_md5 --- , remove
 
 #axs byquery downloaded,file_path=example.html , get _replay --entry_name=replay_examplepage_downloaded
@@ -90,7 +90,7 @@ axs byquery shell_tool,can_compute_md5 --- , remove
 
 #axs byname replay_examplepage_downloaded , remove
 
-axs byquery downloaded,file_path=example.html --- , remove
+axs byquery downloaded,file_name:=example.html --- , remove
 axs byname examplepage_recipe , remove
 axs byquery shell_tool,can_download_url --- , remove
 assert_end url_downloading_recipe_activation_replay_and_removal
