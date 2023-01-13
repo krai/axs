@@ -41,7 +41,7 @@ def get_uncompressed_split_file_path(split_file_path, uncompress_format):
         return split_file_path
 
 
-def download(url, file_name=None, md5=None, downloading_tool_entry=None, uncompress_format=None, tags=None, extra_tags=None, entry_name=None, __entry__=None, __record_entry__=None):
+def download(url, file_name=None, split_file_path=None, md5=None, downloading_tool_entry=None, uncompress_format=None, tags=None, extra_tags=None, entry_name=None, __entry__=None, __record_entry__=None):
     """Create a new entry and download the url into it
 
 Usage examples:
@@ -72,8 +72,9 @@ Usage examples:
 
     __record_entry__.save( entry_name )
 
-    target_path         = __record_entry__.get_path(file_name)
     record_entry_path   = __record_entry__.get_path( "" )
+    target_path         = __record_entry__.get_path(split_file_path)
+
 
     logging.warning(f"The resolved downloading_tool_entry '{downloading_tool_entry.get_name()}' located at '{downloading_tool_entry.get_path()}' uses the shell tool '{downloading_tool_entry['tool_path']}'")
     retval = downloading_tool_entry.call('run', [], {"url": url, "target_path": target_path})
