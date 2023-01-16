@@ -2,6 +2,7 @@
 #   http://lint.travis-ci.org/
 
 os:         linux
+dist:       focal
 language:   python
 
 matrix:
@@ -13,6 +14,12 @@ matrix:
     - arch: s390x       # missing torchvision 0.10.1
 
   include:
+    - language: python
+      python: "3.7.15"
+      env:
+        - TF_CLASSIFY=on
+        - PYTHON_EXE=python
+
     - language: python
       python: 3.9
       env:
@@ -44,25 +51,16 @@ matrix:
         - PYTHON_EXE=python
 
     - language: python
-      python: 3.7
-      env:
-        - TF_CLASSIFY=on
-        - PYTHON_EXE=python
-
-    - language: python
       python: 3.6
       env:
         - PYTORCH_CLASSIFY=on
         - PYTHON_EXE=python
 
     - os: osx
-      osx_image: xcode11.2  # Python 3.7, but may change with time
+      osx_image: xcode12.5  # Python x.y.z
       language: shell       # 'language: python' is an error on Travis CI macOS
       env:
         - ONNX_CLASSIFY=on
-        - ONNX_DETECTION=on
-        - ONNX_BERT_SQUAD=on
-        - PYTORCH_BERT_DEMO=on
         - C_COMPILE_AND_RUN=on
         - PYTHON_EXE=python3
 
@@ -79,10 +77,7 @@ matrix:
       os: windows           # Windows 10.0.17134 N/A Build 17134
       language: shell       # 'language: python' is an error on Travis CI Windows
       env:
-        - ONNX_CLASSIFY=on
-        - ONNX_DETECTION=on
         - ONNX_BERT_SQUAD=on
-        - PYTORCH_BERT_DEMO=on
         - PYTHON_EXE=python3
         - PATH=/c/Python38:/c/Python38/Scripts:$PATH
       before_install:
