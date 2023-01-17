@@ -9,7 +9,7 @@ Usage examples:
 
 import os
 
-def ext_use_python_deps(python_deps=None, inherit_env_keys=None):
+def ext_use_python_deps(python_deps=None, inherit_env_keys=None, extra_env=None):
     """Build PYTHONPATH from a list of resolved Python dependencies.
     """
     new_env    = {}
@@ -17,6 +17,9 @@ def ext_use_python_deps(python_deps=None, inherit_env_keys=None):
     for env_key in (inherit_env_keys or []):
         if env_key in os.environ:
             new_env[env_key]    = os.environ[env_key]
+
+    if extra_env:   # FIXME: may need extra provision for interplay between inherited and extra environments
+        new_env.update( extra_env )
 
     if python_deps:     # Note the OS-independent way of joining individual paths
         new_env['PYTHONPATH']   = os.pathsep.join( [ dep if type(dep)==str else ( dep.get('abs_packages_dir') or dep.get_path(dep.get('file_name')) ) for dep in python_deps ] )
