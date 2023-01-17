@@ -9,7 +9,7 @@
         [ "get_kernel" ],
         [ "byname", "shell" ],
         [ "run", [], {
-            "shell_cmd_with_subs": "#{git_tool_path}# -C #{kernel_path}# config --get remote.origin.url",
+            "shell_cmd_with_subs": "\"#{git_tool_path}#\" -C #{kernel_path}# config --get remote.origin.url",
             "git_tool_path": [ "^^", "dig", "git_tool_entry.tool_path" ],
             "kernel_path": [ "^", "kernel_path" ],
             "capture_output": true
