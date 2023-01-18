@@ -37,6 +37,7 @@
         } ],
 
         [ [ "shell_tool", "can_extract_zip" ], [["detect"]], { "tool_name": "unzip", "shell_cmd_with_subs": "\"#{tool_path}#\" -d \"#{target_path}#\" \"#{archive_path}#\"" } ],
+        [ [ "shell_tool", "can_extract_zip" ], [["detect"]], { "tool_name": "7z.exe", "shell_cmd_with_subs": "\"#{tool_path}#\" x \"#{archive_path}#\" -o\"#{target_path}#\"" } ],
 
         [ [ "shell_tool", "can_uncompress_gz" ], [["detect"]], { "tool_name": "7z.exe", "shell_cmd_with_subs": "\"#{tool_path}#\" e \"#{target_path}#\"" } ],
         [ [ "shell_tool", "can_uncompress_gz" ], [["detect"]], { "tool_name": "gzip.exe", "shell_cmd_with_subs": "\"#{tool_path}#\" -d \"#{target_path}#\"" } ],
