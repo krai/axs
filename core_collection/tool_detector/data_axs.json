@@ -48,39 +48,27 @@
         [ [ "shell_tool", "can_compute_md5" ], [["detect"]], { "tool_name": "md5sum",     "shell_cmd_with_subs": "'#{tool_path}#' '#{file_path}#' | cut -f 1 -d ' '", "capture_output": true } ],
         [ [ "shell_tool", "can_compute_md5" ], [["detect"]], { "tool_name": "md5",        "shell_cmd_with_subs": "'#{tool_path}#' -r '#{file_path}#' | cut -f 1 -d ' '", "capture_output": true } ],
 
-        [ [ "shell_tool", "can_python" ], [["detect"]],
-            {   "tool_name": "custom_python",
-                "shell_cmd_with_subs": "\"#{tool_path}#\" --version",
-                "capture_output": true,
-                "tool_version": [ "AS^IS", "AS^IS", "^^", "execute", [[
-                    [ "run", [], { "shell_cmd_with_subs": "\"#{tool_path}#\" --version" } ],
-                    [ "split", " " ],
-                    [ "__getitem__", 1 ]
-                ]] ],
-                "major_dot_minor": [ "AS^IS", "AS^IS", "^^", "execute", [[
-                    [ "get", "tool_version"],
-                    [ "rsplit", [".", 1] ],
-                    [ "__getitem__", 0 ]
-                ]] ]
-            }
-        ],
+
         [ [ "shell_tool", "can_python" ], [["detect"]],
             {   "tool_name": "kernel_python",
-                "tool_path": [ "^", "python_path" ],
+                "tool_path": [ "AS^IS", "^^", "case", [ ["^^", "get", "tool_name"], "kernel_python", [ "^", "python_path" ] ], {"default_value": [ "^^", "which" ] } ],
                 "shell_cmd_with_subs": "\"#{tool_path}#\" --version",
                 "capture_output": true,
-                "tool_version": [ "AS^IS", "AS^IS", "^^", "execute", [[
+                "tool_version": [ "AS^IS", "^^", "execute", [[
                     [ "run", [], { "shell_cmd_with_subs": "\"#{tool_path}#\" --version" } ],
                     [ "split", " " ],
                     [ "__getitem__", 1 ]
                 ]] ],
-                "major_dot_minor": [ "AS^IS", "AS^IS", "^^", "execute", [[
+                "major_dot_minor": [ "AS^IS", "^^", "execute", [[
                     [ "get", "tool_version"],
                     [ "rsplit", [".", 1] ],
-                    [ "__getitem__", 0 ]
+                    [ "__getitem__", 0 ],
+                    0,
+                    [ "func", "float" ]
                 ]] ]
             }
         ],
+
 
         [ [ "shell_tool", "can_git"], [["detect"]], {
                 "tool_name": "git",
