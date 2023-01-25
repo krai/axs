@@ -12,9 +12,12 @@ Usage examples:
                 axs byname numpy_import_test , deps_versions --pillow_query+,=package_version=8.2.0     # list extension syntax
 """
 
+import sys
 import numpy as np
 import PIL
 import local_import     # testing an import inside the entry
+
+print("Running under Python " + sys.version + "\n")
 
 def deps_versions():
     """Reports the versions of currently used python dependencies.
