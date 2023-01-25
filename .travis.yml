@@ -8,18 +8,12 @@ language:   python
 matrix:
   fast_finish: true
   allow_failures:
-    - os: windows       # tar confused by colon in C:\... names - see https://steve-parker.org/linux/tar-colon-filename/
+    # - os: windows       # tar confused by colon in C:\... names - see https://steve-parker.org/linux/tar-colon-filename/
     - os: freebsd       # missing bash
     - arch: ppc64le     # missing torchvision 0.10.1
     - arch: s390x       # missing torchvision 0.10.1
 
   include:
-    - language: python
-      python: "3.7.15"
-      env:
-        - TF_CLASSIFY=on
-        - PYTHON_EXE=python
-
     - language: python
       python: 3.9
       env:
@@ -50,29 +44,6 @@ matrix:
         - ONNX_CLASSIFY=on
         - PYTHON_EXE=python
 
-    - language: python
-      python: 3.6
-      env:
-        - PYTORCH_CLASSIFY=on
-        - PYTHON_EXE=python
-
-    - os: osx
-      osx_image: xcode12.5  # Python x.y.z
-      language: shell       # 'language: python' is an error on Travis CI macOS
-      env:
-        - ONNX_CLASSIFY=on
-        - C_COMPILE_AND_RUN=on
-        - PYTHON_EXE=python3
-
-    - name: "Python 3.6 on FreeBSD"
-      os: freebsd
-      language: python
-      python: 3.6
-      env:
-        - PYTHON_EXE=python
-      before_install:
-        - sudo pkg install -y bash
-
     - name: "Python 3.8.0 on Windows"
       os: windows           # Windows 10.0.17134 N/A Build 17134
       language: shell       # 'language: python' is an error on Travis CI Windows
@@ -86,6 +57,35 @@ matrix:
         - choco install gzip
         - python -m pip install --upgrade pip
         - ln -s /c/Windows/System32/tar.exe /c/Python38
+
+    - language: python
+      python: "3.7.15"
+      env:
+        - TF_CLASSIFY=on
+        - PYTHON_EXE=python
+
+    - os: osx
+      osx_image: xcode12.5  # Python x.y.z
+      language: shell       # 'language: python' is an error on Travis CI macOS
+      env:
+        - ONNX_CLASSIFY=on
+        - C_COMPILE_AND_RUN=on
+        - PYTHON_EXE=python3
+
+    - language: python
+      python: 3.6
+      env:
+        - PYTORCH_CLASSIFY=on
+        - PYTHON_EXE=python
+
+    - name: "Python 3.6 on FreeBSD"
+      os: freebsd
+      language: python
+      python: 3.6
+      env:
+        - PYTHON_EXE=python
+      before_install:
+        - sudo pkg install -y bash
 
     - name: "Python 3.6 on IBM Power"
       arch: ppc64le
