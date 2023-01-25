@@ -37,9 +37,9 @@
     "transformers_query": ["python_package", "package_name=transformers"],
 
     "python_deps": [
-        [ "^", "byquery", [ [ "^^", "get", "absl_query" ] ], {}, ["absl_query"] ],
-        [ "^", "byquery", [ [ "^^", "get", "tensorflow_query" ] ], {}, ["tensorflow_query"] ],
-        [ "^", "byquery", [ [ "^^", "get", "transformers_query" ] ], {}, ["transformers_query"] ]
+        [ "^^", "python_sync_pip_package", [[ "^^", "get", "absl_query" ]] ],
+        [ "^^", "python_sync_pip_package", [[ "^^", "get", "tensorflow_query" ]] ],
+        [ "^^", "python_sync_pip_package", [[ "^^", "get", "transformers_query" ]] ]
     ],
     "mlperf_inference_git_entry": [ "^", "byquery", "git_repo,repo_name=mlperf_inference_git" ],
 

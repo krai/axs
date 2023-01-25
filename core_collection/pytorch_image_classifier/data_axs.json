@@ -44,10 +44,10 @@
 
     "rel_script_path": "pytorch_classify.py",
 
-    "torchvision_query": [ "^^", "case", [ [ "^^", "get", "num_gpus"] , "0" ,["python_package", "package_name=torchvision"] ], {"default_value": ["python_package", "package_name=torchvision", "with_cuda"] } ],
+    "torchvision_query": ["python_package", "package_name=torchvision", [ "^^", "case", [ [ "^^", "get", "num_gpus"] , "0" , null ], {"default_value": "with_cuda" } ] ],
 
     "python_deps": [
-        [ "^", "byquery", [[ "^^", "get", "torchvision_query" ]], {}, ["torchvision_query"] ],
+        [ "^^", "python_sync_pip_package", [[ "^^", "get", "torchvision_query" ]] ],
         [ "^", "byquery", "data_loader,imagenet" ]
     ]
 }

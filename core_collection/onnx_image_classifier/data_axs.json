@@ -8,20 +8,15 @@
                        [ "byquery", "shell_tool,can_gpu" ],
                        [ "run" ]
                 ]] ],
-    "python_version": [ "^", "execute", [[
-                             [ "byquery", "shell_tool,can_python" ],
-                             [ "run" ]
-                ]] ],
-
     "onnxruntime_name": [ "^", "case",[ ["^^", "get", "num_gpus"], "0", "onnxruntime" ], {"default_value": "onnxruntime-gpu"}, ["num_gpus"]],
-    "for_python36_option": [ "^^", "case", [ ["^^", "get", "python_version"], "Python 3.6.9", "for_python36" ], {"default_value": "" } ],
-    "onnxruntime_prequery": "python_package,package_name=#{onnxruntime_name}#,#{for_python36_option}#,",
-    "onnxruntime_query": [ "^^", "substitute", [[ "^^", "get", "onnxruntime_prequery" ]] ],
+    "for_python36_option": [ "^^", "case", [ ["^^", "dig", "python_tool_entry.tool_version"], "3.6.9", "for_python36" ], {"default_value": "" } ],
+    "onnxruntime_query": [ "python_package", ["package_name", ["^^", "get", "onnxruntime_name"]], ["^^", "get", "for_python36_option"]],
 
     "python_deps": [
-        [ "^", "byquery", [ [ "^^", "get", "onnxruntime_query" ] ], {}, ["onnxruntime_query"] ],
+        [ "^^", "python_sync_pip_package", [[ "^^", "get", "onnxruntime_query" ]] ],
         [ "^", "byquery", "data_loader,imagenet" ]
     ],
+
     "model_name": "resnet50",
     "model_query": [ "downloaded", "onnx_model", [ "^^", "substitute", "model_name=#{model_name}#" ] ],
     "model_entry": [ "^", "byquery", [[ "^^", "get", "model_query" ]], {}, ["model_query"] ],
