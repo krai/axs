@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.203'     # TODO: update with every kernel change
+__version__ = '0.2.204'     # TODO: update with every kernel change
 
 import logging
 import os
@@ -65,6 +65,17 @@ Usage examples :
                 axs python_path
         """
         return sys.executable
+
+
+    def kernel_python_major_dot_minor(self):
+        """Get the major.minor version of the Python executable that is used by the kernel itself
+
+Usage examples :
+                axs kernel_python_major_dot_minor
+        """
+        major_version, minor_version = sys.version_info[0:2]
+
+        return f"{major_version}.{minor_version}"
 
 
     def introduce(self):
