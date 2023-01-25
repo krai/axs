@@ -97,6 +97,9 @@ assert_end url_downloading_recipe_activation_replay_and_removal
 
 axs byname numpy_import_test , deps_versions --pillow_query+,=package_version=8.1.2
 assert 'axs byname numpy_import_test , deps_versions --pillow_query+,=package_version=8.1.2' 'numpy==1.19.4, pillow==8.1.2'
+export KERNEL_PYTHON_VERSION=`axs kernel_python_major_dot_minor`
+echo "kernel Python version: $KERNEL_PYTHON_VERSION"
+assert 'axs byname numpy_import_test , kernel_python_major_dot_minor' "$KERNEL_PYTHON_VERSION"
 assert 'axs byname numpy_import_test , multiply 1 2 3 4 5 6' '[17, 39]'
 axs byquery --,=python_package,package_name=pillow --- , remove
 axs byquery --:=python_package:package_name=numpy --- , remove

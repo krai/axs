@@ -17,7 +17,14 @@ import numpy as np
 import PIL
 import local_import     # testing an import inside the entry
 
-print("Running under Python " + sys.version + "\n")
+
+def kernel_python_major_dot_minor():
+    """Reports the major.minor version of the currently running Python
+    """
+    major_version, minor_version = sys.version_info[0:2]
+
+    return f"{major_version}.{minor_version}"
+
 
 def deps_versions():
     """Reports the versions of currently used python dependencies.
