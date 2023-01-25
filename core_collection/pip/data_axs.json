@@ -12,7 +12,13 @@
     "version_suffix_cmd": [ "^^", "case", [ [ "^^", "get", ["package_version", ""]] , "" , "" ], {"default_value":  [ "^^", "substitute", "==#{package_version}#"] } ],
     "installable": [ "^^", "substitute", "#{package_name}##{version_suffix_cmd}#"],
 
-    "python_tool_entry": [ "^", "byquery", "shell_tool,can_python" ],
+    "desired_python_version": null,
+    "python_tool_query": [ "shell_tool", "can_python",
+        [ "^^", "case", [ ["^^", "get", "desired_python_version"], null, null, "", null ],
+            { "default_value": [ "tool_name", ["^^", "substitute", "python#{desired_python_version}#" ] ] }
+        ]
+    ],
+    "python_tool_entry": [ "^", "byquery", [[ "^^", "get", "python_tool_query" ]], {}, ["desired_python_version", "python_tool_query"] ],
     "python_major_dot_minor": [ "^^", "dig", "python_tool_entry.major_dot_minor" ],
 
     "rel_install_dir": "install",

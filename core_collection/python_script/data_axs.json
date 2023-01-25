@@ -1,7 +1,6 @@
 {
     "_parent_entries": [ [ "^", "byname", "python_in_shell" ] ],
 
-    "python_tool_entry": [ "^", "byquery", "shell_tool,can_python" ],
     "abs_script_path": [ "^^", "get_path_from", "rel_script_path" ],
 
     "script_extra_params": "",
