@@ -40,6 +40,8 @@
         [ "get_path_from", "output_file_name" ]
     ]] ],
 
+    "errorize_output": true,
+
     "script_extra_params": [ "^^", "substitute", "\"#{preprocessed_images_dir}#\" #{resolution}# #{num_of_images}# #{model_name}# \"#{output_file_path}#\" \"#{execution_device}#\" #{max_batch_size}# #{top_n_max}#" ],
 
     "rel_script_path": "pytorch_classify.py",

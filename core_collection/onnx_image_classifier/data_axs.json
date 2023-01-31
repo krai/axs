@@ -62,6 +62,8 @@
          [ "get_path_from", "output_file_name" ]
       ]] ],
 
+    "errorize_output": true,
+
     "rel_script_path": "onnx_classify.py",
 
     "script_extra_params": [ "^^", "substitute", "\"#{model_path}#\" \"#{preprocessed_images_dir}#\" #{num_of_images}# #{max_batch_size}# #{cpu_threads}# \"#{output_file_path}#\" #{model_name}# \"#{normalize_symmetric}#\" \"#{subtract_mean_bool}#\" \"#{given_channel_means}#\" \"#{execution_device}#\" #{top_n_max}#" ]
