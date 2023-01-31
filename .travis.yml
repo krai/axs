@@ -14,21 +14,6 @@ matrix:
     - arch: s390x       # missing torchvision 0.10.1
 
   include:
-    - name: "Python 3.9 on Windows"
-      os: windows           # Windows 10.0.17134 N/A Build 17134
-      language: shell       # 'language: python' is an error on Travis CI Windows
-      env:
-        - ONNX_BERT_SQUAD=on
-        - PYTHON_EXE=python3
-        - PATH=/c/Python39:/c/Python39/Scripts:$PATH
-      before_install:
-        - choco install python39
-        - cmd <<< "mklink C:\\Python39\\python3.exe C:\\Python39\\python.exe"
-        - cmd <<< "mklink C:\\Python39\\python3.9.exe C:\\Python39\\python.exe"
-        - choco install gzip
-        - python -m pip install --upgrade pip
-        - ln -s /c/Windows/System32/tar.exe /c/Python39
-
     - language: python
       python: 3.9
       env:
@@ -46,6 +31,21 @@ matrix:
       env:
         - ONNX_BERT_SQUAD=on
         - PYTHON_EXE=python
+
+    - name: "Python 3.9 on Windows, ONNX_BERT_SQUAD"
+      os: windows           # Windows 10.0.17134 N/A Build 17134
+      language: shell       # 'language: python' is an error on Travis CI Windows
+      env:
+        - ONNX_BERT_SQUAD=on
+        - PYTHON_EXE=python3
+        - PATH=/c/Python39:/c/Python39/Scripts:$PATH
+      before_install:
+        - choco install python39
+        - cmd <<< "mklink C:\\Python39\\python3.exe C:\\Python39\\python.exe"
+        - cmd <<< "mklink C:\\Python39\\python3.9.exe C:\\Python39\\python.exe"
+        - choco install gzip
+        - python -m pip install --upgrade pip
+        - ln -s /c/Windows/System32/tar.exe /c/Python39
 
     - language: python
       python: 3.8
