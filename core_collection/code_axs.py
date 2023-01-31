@@ -119,8 +119,10 @@ class FilterPile:
                         elif op=='!.':            # path does not exist
                             comparison_lambda   = lambda x: x is None
                         elif op in ('?', '+'):    # computes to True
+                            op, val = '=', True
                             comparison_lambda   = lambda x: bool(x)
                         elif op=='-':             # computes to False
+                            op, val = '=', False
                             comparison_lambda   = lambda x: not bool(x)
                         else:
                             raise SyntaxError(f"Could not parse the condition '{condition}' in {context}")
