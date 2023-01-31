@@ -51,7 +51,7 @@
 
         [ [ "shell_tool", "can_python" ], [["detect"]],
             {   "tool_name": "kernel_python",
-                "tool_path": [ "AS^IS", "^^", "case", [ ["^^", "get", "tool_name"], "kernel_python", [ "^", "python_path" ] ], {"default_value": [ "^^", "which" ] } ],
+                "tool_path": [ "AS^IS", "^^", "case", [ ["^^", "get", "tool_name"], "kernel_python", [ "^", "python_path" ] ], { "default_value": [ "^^", "which" ] } ],
                 "shell_cmd_with_subs": "\"#{tool_path}#\" --version",
                 "capture_output": true,
                 "tool_version": [ "AS^IS", "^^", "execute", [[
@@ -66,7 +66,7 @@
                     0,
                     [ "func", "float" ]
                 ]] ]
-            }
+            }, ["exec_suffixes"]
         ],
 
 
@@ -86,6 +86,7 @@
         [ [ "shell_tool", "can_compile_c" ], [["detect"]], { "tool_name": "cl.exe", "shell_cmd_with_subs": "\"#{tool_path}#\" --version", "capture_output": true } ]
     ],
 
+    "exec_suffixes": [ "^^", "case", [ [ "^", "func", [ "sys.platform.startswith", "win" ] ], true, [ "", ".exe", ".bat", ".com" ], false, [ "" ] ]],
 
     "tool_path": [ "^^", "which" ],
     "tool_name": [ "^^", "func", [ "os.path.basename", ["^^", "get", "tool_path"] ] ]
