@@ -36,4 +36,4 @@ Usage examples:
     if type(package_query)!=list:
         package_query = package_query.split(',')
 
-    return python_tool_entry.get_kernel().byquery( package_query + [["python_tool_entry", python_tool_entry]])
+    return python_tool_entry.get_kernel().byquery( package_query + [[ "desired_python_version", python_tool_entry["desired_python_version"] ]] )

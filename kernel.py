@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.205'     # TODO: update with every kernel change
+__version__ = '0.2.206'     # TODO: update with every kernel change
 
 import logging
 import os
@@ -75,7 +75,7 @@ Usage examples :
         """
         major_version, minor_version = sys.version_info[0:2]
 
-        return f"{major_version}.{minor_version}"
+        return float(f"{major_version}.{minor_version}")
 
 
     def introduce(self):

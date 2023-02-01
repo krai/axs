@@ -1,13 +1,8 @@
 {
     "_parent_entries": [ [ "^", "byname", "shell" ] ],
 
-    "desired_python_version": null,
-    "python_tool_query": [ "shell_tool", "can_python",
-        [ "^^", "case", [ ["^^", "get", "desired_python_version"], null, null, "", null ],
-            { "default_value": [ "tool_name", ["^^", "substitute", "python#{desired_python_version}#" ] ] }
-        ]
-    ],
-    "python_tool_entry": [ "^", "byquery", [[ "^^", "get", "python_tool_query" ]], {}, ["desired_python_version", "python_tool_query"] ],
+    "desired_python_version": ["^", "kernel_python_major_dot_minor"],
+    "python_tool_entry": [ "^", "byquery", [[ "shell_tool", "can_python", ["desired_python_version", ["^^", "get", "desired_python_version"]] ]], {}, ["desired_python_version"] ],
     "python_major_dot_minor": [ "^^", "dig", "python_tool_entry.major_dot_minor" ],
 
     "inherit_env_keys": [ "PATH", "LD_LIBRARY_PATH", "DYLD_LIBRARY_PATH", "SYSTEMROOT", "HOME", "USERPROFILE", "USERNAME", "HOMEPATH", "HOMEDRIVE", "ProgramData", "ProgramFiles(x86)"],

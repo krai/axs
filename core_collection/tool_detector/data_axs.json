@@ -50,8 +50,8 @@
 
 
         [ [ "shell_tool", "can_python" ], [["detect"]],
-            {   "tool_name": "kernel_python",
-                "tool_path": [ "AS^IS", "^^", "case", [ ["^^", "get", "tool_name"], "kernel_python", [ "^", "python_path" ] ], { "default_value": [ "^^", "which" ] } ],
+            {   "desired_python_version": ["^", "kernel_python_major_dot_minor"],
+                "tool_name": [ "AS^IS", "^^", "substitute", "python#{desired_python_version}#" ],
                 "shell_cmd_with_subs": "\"#{tool_path}#\" --version",
                 "capture_output": true,
                 "tool_version": [ "AS^IS", "^^", "execute", [[
