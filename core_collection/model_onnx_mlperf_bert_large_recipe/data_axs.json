@@ -1,15 +1,23 @@
 {
     "_producer_rules": [
-        [ [ "inference_ready", "onnx_model", "model_name=bert_large" ], [["get_kernel"],["byname","downloader"],["download"]], {
-            "input_layers_tms": "['input_ids', 'input_mask', 'segment_ids']"
-        }, ["retrained", "input_data_types", "weight_data_types", "weight_transformations", "url", "md5", "entry_name"] ]
+        [ [ "inference_ready", "onnx_model", "model_name=bert_large", "source?=hosted" ], [["get_kernel"],["byname","downloader"],["download"]], {
+            "downloading_tool_query": "shell_tool,can_download_url_from_google_drive",
+            "url": "https://drive.google.com/uc?id=1BKfsbY1JieYWNICasz6lqMrRASVWikyS",
+            "file_path": "mlperf_bert_large.onnx",
+            "entry_name": "downloaded_bert_large_hosted.onnx"
+        }, ["input_layers_tms", "md5", "retrained", "input_data_types", "weight_data_types", "weight_transformations"] ],
+
+        [ [ "inference_ready", "onnx_model", "model_name=bert_large", "source?=official" ], [["get_kernel"],["byname","downloader"],["download"]], {
+            "url": "https://zenodo.org/record/3733910/files/model.onnx",
+            "entry_name": "downloaded_bert_large_official.onnx"
+        }, ["input_layers_tms", "md5", "retrained", "input_data_types", "weight_data_types", "weight_transformations"] ]
     ],
+
+    "input_layers_tms": "['input_ids', 'input_mask', 'segment_ids']",
+    "md5": "819b25b19cd8e59080c10892689750ca",
 
     "retrained": false,
     "input_data_types": "int32",
     "weight_data_types": "fp32",
-    "weight_transformations": "no",
-    "url": "https://zenodo.org/record/3733910/files/model.onnx",
-    "md5": "819b25b19cd8e59080c10892689750ca",
-    "entry_name": "downloaded_bert_large.onnx"
+    "weight_transformations": "no"
 }
