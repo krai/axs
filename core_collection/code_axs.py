@@ -72,7 +72,7 @@ class FilterPile:
                 import re
                 from function_access import to_num_or_not_to_num
 
-                binary_op_match = re.match('([\w\.\-]*\w)(:=|===|==|=|!==|!=|<>|<=|>=|<|>|:|!:)(.*)$', condition)
+                binary_op_match = re.match('([\w\.\-]*\w)(:=|\?=|===|==|=|!==|!=|<>|<=|>=|<|>|:|!:)(.*)$', condition)
                 if binary_op_match:
                     key_path    = binary_op_match.group(1)
                     op          = binary_op_match.group(2)
@@ -83,6 +83,8 @@ class FilterPile:
                         op = '='
                         pre_val = pre_val.split(':')
                         val     = [ to_num_or_not_to_num(x) for x in pre_val ]
+                        comparison_lambda   = lambda x: x==val
+                    elif op in ('?=',):         # optional/selective match
                         comparison_lambda   = lambda x: x==val
                     elif op in ('=', '=='):     # with auto-conversion to numbers
                         op = '='
@@ -147,6 +149,7 @@ class FilterPile:
         self.context       = context
         self.posi_tag_set  = set()
         self.posi_val_dict = {}
+        self.opti_val_dict = {}
         self.mentioned_set = set()
         self.filter_list   = []
 
@@ -159,6 +162,8 @@ class FilterPile:
 
             if op=='=':
                 self.posi_val_dict[key_path] = val
+            elif op=='?=':
+                self.opti_val_dict[key_path] = val
             elif op=='tag+':
                 self.posi_tag_set.add( val )
 
@@ -239,7 +244,12 @@ Usage examples :
                         if op=='tag+': continue     # we have matched them directly above
 
                         # we allow (only) equalities on the rule side not to have a match on the query side
-                        qr_conditions_ok = rule_comparison_lambda( parsed_query.posi_val_dict[key_path] ) if (key_path in parsed_query.posi_val_dict) else ((op=='=') and (key_path in parsed_query.mentioned_set))
+                        if (key_path in parsed_query.posi_val_dict):    # does the query contain a specific value for this rule condition's key_path?
+                            qr_conditions_ok = rule_comparison_lambda( parsed_query.posi_val_dict[key_path] )       # if so, use this value in evaluating this rule condition
+                        else:
+                            qr_conditions_ok = (((op=='?=') and (key_path not in parsed_query.mentioned_set)) or    # ignore optional(selective) matches
+                                                ((op=='=') and (key_path in parsed_query.mentioned_set)))           # otherwise if this rule condition sets a value, the query should have a corresponding condition to check (later) 
+
                         if not qr_conditions_ok: break
 
                     if qr_conditions_ok:
@@ -249,7 +259,11 @@ Usage examples :
                             if op=='tag+': continue     # we have matched them directly above
 
                             # we allow (only) equalities on the query side not to have a match on the rule side
-                            qr_conditions_ok = query_comparison_lambda( parsed_rule.posi_val_dict[key_path] ) if (key_path in parsed_rule.posi_val_dict) else (op=='=')
+                            if (key_path in parsed_rule.posi_val_dict): # does the rule contain a specific value for this query condition's key_path?
+                                qr_conditions_ok = query_comparison_lambda( parsed_rule.posi_val_dict[key_path] )   # if so, use this value in evaluating this query condition
+                            else:
+                                qr_conditions_ok = (op=='=')                                                        # otherwise this query condition must set a value
+
                             if not qr_conditions_ok: break
 
                     if qr_conditions_ok:
@@ -268,7 +282,8 @@ Usage examples :
             export_params       = rule_vector[3] if len(rule_vector)>3 else []
 
             cumulative_params = advertising_entry.slice( *export_params )   # default slice
-            cumulative_params.update( deepcopy( extra_params ) )            # extra_params on top
+            cumulative_params.update( parsed_rule.opti_val_dict )           # optional matches on top (may override some defaults)
+            cumulative_params.update( deepcopy( extra_params ) )            # extra_params on top (may override some defaults)
             cumulative_params.update( parsed_rule.posi_val_dict )           # rules on top (may override some defaults)
             cumulative_params.update( parsed_query.posi_val_dict )          # query on top (may override some defaults)
             cumulative_params["tags"] = list(parsed_query.posi_tag_set)     # FIXME:  parsed_rule.posi_tag_set should include it

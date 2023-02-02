@@ -4,7 +4,11 @@
         [ [ "test_product", "beta=20" ],               [["entry_producer"]],              { "delta": 42, "epsilon": 52 } ],
         [ [ "test_product", "beta=23" ],               [["entry_producer"]], { "alpha": 13, "delta": 43, "epsilon": 53 } ],
         [ [ "test_product", "alpha=14", "beta>=24" ],  [["entry_producer"]],                           { "epsilon": 54 } ],
-        [ [ "test_product" ],                          [["entry_producer"]],              { "delta": 40 } ]
+        [ [ "test_product" ],                          [["entry_producer"]],              { "delta": 40 } ],
+
+        [ [ "test_optional", "alpha=10", "delta?=41" ],  [["entry_producer"]], { "beta": 21, "gamma": 31, "epsilon": 51 } ],
+        [ [ "test_optional", "alpha=10", "delta?=42" ],  [["entry_producer"]], { "beta": 22, "gamma": 32, "epsilon": 52 } ],
+        [ [ "test_optional", "alpha=10", "delta?=43" ],  [["entry_producer"]], { "beta": 23, "gamma": 33, "epsilon": 53 } ]
     ],
     "gamma": 30
 }
