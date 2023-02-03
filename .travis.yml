@@ -105,9 +105,9 @@ matrix:
       env:
         - PYTHON_EXE=python
         - C_COMPILE_AND_RUN=on
-      before_install:
+      #before_install:
         # work around cache dir owned by root (see https://travis-ci.community/t/7822/6)
-        - sudo chown -fR $USER:$GROUP ~/.cache/pip/wheels
+        #- sudo chown -fR $USER:$GROUP ~/.cache/pip/wheels
 
 install:
     - CWD=`pwd`
