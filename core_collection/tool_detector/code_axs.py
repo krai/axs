@@ -24,7 +24,7 @@ Usage examples:
     return None
 
 
-def detect(tool_name=None, tool_path=None, tags=None, entry_name=None, __record_entry__=None):
+def detect(tool_name=None, tool_path=None, tags=None, entry_name=None, parent_entry_name="shell", __record_entry__=None):
     """Detect/select an installed shell tool and create an entry to point at it
 
 Usage examples :
@@ -41,7 +41,7 @@ Usage examples :
 
     if tool_path:
         __record_entry__["tool_path"]       = tool_path
-        __record_entry__["_parent_entries"] = [ [ "^", "byname", "shell" ] ]
+        __record_entry__["_parent_entries"] = [ [ "^", "byname", parent_entry_name ] ]
         __record_entry__.parent_objects     = None      # reload parents
 
         if not entry_name:
