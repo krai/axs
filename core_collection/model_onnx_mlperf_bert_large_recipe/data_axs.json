@@ -8,6 +8,7 @@
         }, ["input_layers_tms", "md5", "retrained", "input_data_types", "weight_data_types", "weight_transformations"] ],
 
         [ [ "inference_ready", "onnx_model", "model_name=bert_large", "source?=official" ], [["get_kernel"],["byname","downloader"],["download"]], {
+            "downloading_tool_query": "shell_tool,can_download_url",
             "url": "https://zenodo.org/record/3733910/files/model.onnx",
             "entry_name": "downloaded_bert_large_official.onnx"
         }, ["input_layers_tms", "md5", "retrained", "input_data_types", "weight_data_types", "weight_transformations"] ]
