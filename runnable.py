@@ -466,13 +466,14 @@ Usage examples :
                 export_params       = next(call_params_iter, None)
 
                 if type(pos_params)!=list:      # first ensure pos_params is a list
-                    pos_params = [ pos_params ]         # simplified syntax for single positional parameter actions
+                    pos_params = [ pos_params ]     # simplified syntax for single positional parameter actions
 
                 if insert_stash:                # insert the previous call's result into pos_params of the current call
                     insert_position, insert_result = insert_stash
                     insert_position_offset = 1 if action_name=='func' else 0
                     if type(insert_result) in (dict, list):
                         insert_result = { self.ESCAPE_do_not_process : insert_result }
+                    pos_params = pos_params[:]      # make a shallow copy to avoid editing original entry data
                     pos_params.insert( insert_position+insert_position_offset, insert_result )
                     insert_stash = None     # empty it after use
 
