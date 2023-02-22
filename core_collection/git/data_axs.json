@@ -24,6 +24,9 @@
 
     "url": [ "^^", "substitute", "#{url_prefix}#/#{repo_name}#" ],
     "repo_name": [ "^^", "url_2_repo_name" ],
+    "repo_dir_name": [ "^^", "case", [ [ "^^", "get", ["checkout", ""] ], ["", false], [ "^^", "get", "repo_name" ] ],
+                               { "default_value": [ "^^", "substitute", "#{repo_name}#_#{checkout}#" ] }
+                     ],
 
     "repo_path": [ "^^", "get_path", "" ],
 
