@@ -66,8 +66,9 @@ model_name                  = sys.argv[7]
 normalize_symmetric         = eval(sys.argv[8])     # FIXME: currently we are passing a stringified form of a data structure,
 subtract_mean_bool          = eval(sys.argv[9])     # it would be more flexible to encode/decode through JSON instead.
 given_channel_means         = eval(sys.argv[10])
-execution_device            = sys.argv[11]          # if empty, it will be autodetected
-top_n_max                   = int(sys.argv[12])
+output_layer_name           = sys.argv[11]
+execution_device            = sys.argv[12]          # if empty, it will be autodetected
+top_n_max                   = int(sys.argv[13])
 
 batch_count                 = math.ceil(num_of_images / max_batch_size)
 data_layout                 = "NCHW"
@@ -99,18 +100,26 @@ else:
 
 input_layer_names   = [ x.name for x in sess.get_inputs() ]
 input_layer_name    = input_layer_names[0]
-output_layer_names  = [ x.name for x in sess.get_outputs() ]
-output_layer_name   = output_layer_names[0]
+
+if output_layer_name:
+    for i, output_layer in enumerate(sess.get_outputs()):
+        if output_layer.name == output_layer_name:
+            output_layer_index = i
+            break
+else:
+    output_layer_index  = 0
+    output_layer_name   = sess.get_outputs()[output_layer_index].name
+
 model_input_shape   = sess.get_inputs()[0].shape
-model_output_shape  = sess.get_outputs()[0].shape
 height              = model_input_shape[2]
 width               = model_input_shape[3]
+model_output_shape  = sess.get_outputs()[output_layer_index].shape
 
 loader_object       = ImagenetLoader(preprocessed_imagenet_dir, height, width, data_layout, normalize_symmetric, subtract_mean_bool, given_channel_means, given_channel_stds)
 
 
 print(f"input_layer_names={input_layer_names}", file=sys.stderr)
-print(f"output_layer_names={output_layer_names}", file=sys.stderr)
+print(f"output_layer_name={output_layer_name}", file=sys.stderr)
 print(f"model_input_shape={model_input_shape}", file=sys.stderr)
 print(f"model_output_shape={model_output_shape}", file=sys.stderr)
 

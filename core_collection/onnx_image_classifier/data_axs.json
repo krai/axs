@@ -27,6 +27,10 @@
     "normalize_symmetric": [ "^^", "dig", "model_entry.normalize_symmetric" ],
     "subtract_mean_bool": [ "^^", "dig", "model_entry.subtract_mean_bool" ],
     "given_channel_means": [ "^^", "dig", "model_entry.given_channel_means" ],
+    "output_layer_name": [ "^^", "execute", [[
+        [ "get", "model_entry" ],
+        [ "get", [ "output_layer_name", "" ] ]
+    ]] ],
 
     "resolution": 224,
     "preprocessed_images_query": [ "preprocessed", "dataset_name=imagenet", [ "^^", "substitute", "resolution=#{resolution}#" ] ],
@@ -66,5 +70,5 @@
 
     "rel_script_path": "onnx_classify.py",
 
-    "script_extra_params": [ "^^", "substitute", "\"#{model_path}#\" \"#{preprocessed_images_dir}#\" #{num_of_images}# #{max_batch_size}# #{cpu_threads}# \"#{output_file_path}#\" #{model_name}# \"#{normalize_symmetric}#\" \"#{subtract_mean_bool}#\" \"#{given_channel_means}#\" \"#{execution_device}#\" #{top_n_max}#" ]
+    "script_extra_params": [ "^^", "substitute", "\"#{model_path}#\" \"#{preprocessed_images_dir}#\" #{num_of_images}# #{max_batch_size}# #{cpu_threads}# \"#{output_file_path}#\" #{model_name}# \"#{normalize_symmetric}#\" \"#{subtract_mean_bool}#\" \"#{given_channel_means}#\" \"#{output_layer_name}#\" \"#{execution_device}#\" #{top_n_max}#" ]
 }
