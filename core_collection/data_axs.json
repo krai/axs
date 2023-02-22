@@ -60,6 +60,7 @@
         "cjson_test_c": "cjson_test_c",
         "generate_calendar_py": "generate_calendar_py",
         "generate_primes_c": "generate_primes_c",
-        "factorizer": "factorizer"
+        "factorizer": "factorizer",
+        "bert_calibration_text_recipe": "bert_calibration_text_recipe"
     }
 }

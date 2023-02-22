@@ -16,19 +16,16 @@ max_seq_length               = int(sys.argv[5])
 max_query_length             = int(sys.argv[6])
 doc_stride                   = int(sys.argv[7])
 
-#calibration_dataset         = sys.argv[8]
-#calibration_dataset_id      = int(sys.argv[9])
-
 bert_code_root= os.path.join(sys.argv[8], 'language', 'bert')
+
+calibration                   = sys.argv[9] == "yes"
+if calibration:
+    calibration_option            = sys.argv[10]
+    calibration_data_path         = sys.argv[11]
 
 sys.path.insert(0, bert_code_root)
 
-print("bert_code_root= ", bert_code_root)
-
 sys.path.insert(0, os.path.join(bert_code_root, 'DeepLearningExamples','TensorFlow','LanguageModeling','BERT'))
-#sys.path.insert(0, bert_code_root + 'DeepLearningExamples/TensorFlow/LanguageModeling/BERT/utils')
-
-print("path= ", sys.path)
 
 from create_squad_data import read_squad_examples, convert_examples_to_features
 
@@ -38,21 +35,29 @@ tokenizer = BertTokenizer(tokenization_vocab_path)
 print("Reading examples from {} ...".format(squad_original_path))
 examples = read_squad_examples(input_file=squad_original_path, is_training=False, version_2_with_negative=False)
 
-#if calibration_dataset_id == 1:
-#    calib_examples = []
-#    with open(calibration_dataset, 'r') as fp:
-#        for example in fp:
-#            calib_examples.append(examples[int(example)])
-#        examples = calib_examples
+if calibration:
+    print("Calibrating dataset with examples in ", calibration_data_path)
+    if calibration_option == "features":
+        calib_examples = []
+        with open(calibration_data_path, 'r') as fp:
+            for example in fp:
+                calib_examples.append(examples[int(example)])
+            examples = calib_examples
+    else: #qas_id
+        examples_ids_dict = {}
+        for candidate in examples:
+            examples_ids_dict[candidate.qas_id] = candidate
 
-#elif calibration_dataset_id == 2:
-#    calib_examples = []
-#    with open(calibration_dataset, 'r') as fp:
-#        for example in fp:
-#            for candidate in examples:
-#                if candidate.qas_id == example.strip():
-#                    calib_examples.append(candidate)
-#        examples = calib_examples
+        calib_examples = []
+        with open(calibration_data_path, 'r') as fp:
+            for example in fp:
+                qas_id = example.strip()
+                try:
+                    calib_examples.append(examples_ids_dict[qas_id])
+                except:
+                    print(f"qas_id {qas_id} from calibration file doesn't exist in original dataset")
+                    continue
+            examples = calib_examples
 
 eval_features = []
 def append_feature(feature):

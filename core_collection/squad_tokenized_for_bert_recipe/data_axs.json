@@ -4,6 +4,19 @@
         [ [ "tokenized", "squad_v1_1" ], [["run"]], {} ]
     ],
 
+    "calibration" : "no",
+    "calibration_option": "features",
+    "calibration_data_query": ["^^", "substitute", "downloaded,calibrate,dataset=squad_v1_1,calibration_option=#{calibration_option}#"],
+    "calibration_data_entry": [ "^", "byquery", [[ "^^", "get", "calibration_data_query" ]], {}, ["calibration_data_query"] ],
+    "_calibration_data_path": [ "^^", "execute", [[
+        [ "get", "calibration_data_entry" ],
+        [ "get_path" ]
+    ]], {}, ["calibration_data_entry"] ],
+    "calibration_data_path": ["^^", "get", [[ "^^", "case",   [ ["^^", "get", "calibration"],
+                                "yes" , "_calibration_data_path" ],
+                                { "default_value": "" }
+                            ]] ],
+
     "dataset_max_seq_length": 384,
     "dataset_max_query_length": 64,
     "dataset_doc_stride": 128,
@@ -14,10 +27,13 @@
     "return_this_entry": [ "^^", "execute", [[
         [ "get_kernel" ],
         [ "work_collection" ],
-        [ "attached_entry", [ ["^^", "substitute", "tokenized_squad_v1_1_msl_#{dataset_max_seq_length}#"] , ["^^", "substitute", {
+        [ "attached_entry", [ ["^^", "substitute", "tokenized_squad_v1_1_msl_#{dataset_max_seq_length}#_calibration_#{calibration}#"] , ["^^", "substitute", {
             "_parent_entries": [ "AS^IS", [ "^", "byname", "base_experiment" ] ],
             "tags": ["tokenized", "squad_v1_1"],
             "dataset_max_seq_length": "#{dataset_max_seq_length}#",
+            "calibration": "#{calibration}#",
+            "calibration_option": "#{calibration_option}#",
+            "calibration_data_path": "#{calibration_data_path}#",
             "files_prefix": "#{tokenized_squad_files_prefix}#",
             "file_name": "#{tokenized_squad_files_prefix}#.pickled"
          } ] ] ],
@@ -62,5 +78,5 @@
         [ "get_path" ]
     ]] ],
     "rel_script_path": "tokenize_and_pack.py",
-    "script_extra_params": [ "^^", "substitute", "\"#{squad_dataset_original_path}#\" \"#{squad_tokenization_vocab_path}#\" \"#{tokenized_squad_dir}#\" \"#{tokenized_squad_files_prefix}#\" #{dataset_max_seq_length}# #{dataset_max_query_length}# #{dataset_doc_stride}# \"#{mlperf_inference_path}#\"" ]
+    "script_extra_params": [ "^^", "substitute", "\"#{squad_dataset_original_path}#\" \"#{squad_tokenization_vocab_path}#\" \"#{tokenized_squad_dir}#\" \"#{tokenized_squad_files_prefix}#\" #{dataset_max_seq_length}# #{dataset_max_query_length}# #{dataset_doc_stride}# \"#{mlperf_inference_path}#\" #{calibration}# #{calibration_option}# \"#{calibration_data_path}#\"" ]
 }
