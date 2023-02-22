@@ -4,6 +4,6 @@
         }, [ "url", "checkout", "submodules" ] ]
     ],
     "url": "https://github.com/mlcommons/inference",
-    "checkout": "r2.1",
+    "checkout": "master",
     "submodules": true
 }
