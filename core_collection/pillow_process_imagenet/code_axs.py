@@ -5,6 +5,16 @@ import sys
 import numpy as np
 from PIL import Image
 
+"""An example Python script that is given its data, necessary Python environment and the output path by wrapping it into an Entry.
+
+Usage examples :
+                    # using all defaults triggers downloading of a 500-sample subset of ImageNet:
+                axs byquery preprocessed,dataset_name=imagenet
+
+                    # overriding the input directory to preprocess all 50k of pre-stored ImageNet:
+                axs byquery preprocessed,dataset_name=imagenet,images_directory=/datasets/dataset-imagenet-ilsvrc2012-val,entry_name=pillow_imagenet50k_cropped_resized_to_sq.224
+"""
+
 # Load and preprocess image:
 # Mimic preprocessing steps from the official reference code.
 def load_image(image_path,            # Full path to processing image
