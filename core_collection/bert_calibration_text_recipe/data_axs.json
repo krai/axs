@@ -1,0 +1,15 @@
+{
+    "_producer_rules": [
+        [ [ "downloaded", "calibrate", "dataset=squad_v1_1", "calibration_option?=features" ], [["get_kernel"],["byname","downloader"],["download"]], {
+            "url": "https://raw.githubusercontent.com/mlcommons/inference/master/calibration/SQuAD-v1.1/bert_calibration_features.txt",
+            "md5": "81fa69eb66f72831edccb624133bb4b3",
+            "file_name": "bert_calibration_features.txt"
+        } ],
+
+        [ [ "downloaded", "calibrate", "dataset=squad_v1_1", "calibration_option?=qas_ids" ], [["get_kernel"],["byname","downloader"],["download"]], {
+            "url": "https://raw.githubusercontent.com/mlcommons/inference/master/calibration/SQuAD-v1.1/bert_calibration_qas_ids.txt",
+            "md5": "1e44e78ac31349a6c5a688f629449a74",
+            "file_name": "bert_calibration_qas_ids.txt"
+        } ]
+    ]
+}
