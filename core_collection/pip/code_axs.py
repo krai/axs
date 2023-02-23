@@ -58,14 +58,10 @@ Usage examples :
     return __record_entry__
 
 
-def available_versions(package_name, python_tool_entry):
+def available_versions(package_name, __entry__):
 
-    output_string = python_tool_entry.call('run', [], {
-        "shell_cmd": [ "^^", "substitute", "#{tool_path}#"+f" -m pip install {package_name}==99.99.99 --user" ],
-        "capture_output": False,
-        "capture_stderr": True,
+    versions_list = __entry__.call('get', 'available_package_versions', {
+        'package_name': package_name
     } )
-
-    versions_list = ufun.rematch(output_string, '\(from versions:\s(.*?)\)').split(', ')
 
     return versions_list

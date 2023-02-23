@@ -23,6 +23,19 @@
         { "default_value":  [["^^", "get", "rel_install_dir"], "lib", ["^^", "substitute", "python#{python_major_dot_minor}#"], "site-packages" ] }
     ],
 
+    "available_package_versions": [ "^^", "execute", [[
+        [ "get", "python_tool_entry" ],
+        [ "run", [], {
+                        "shell_cmd_with_subs": "\"#{tool_path}#\" -m pip install #{package_name}#==88.88.88 --user",
+                        "capture_output": false,
+                        "capture_stderr": true,
+                        "package_name": [ "^^", "get", "package_name" ]
+                     } ],
+        0,
+        [ "func", [ "ufun.rematch", "\\(from versions:\\s(.*?)\\)" ] ],
+        [ "split", ", " ]
+    ]] ],
+
     "version_suffix_name": [ "^^", "case", [ [ "^^", "get", ["package_version", ""]] , "" , "" ], {"default_value":  [ "^^", "substitute", "_#{package_version}#"] } ],
     "pip_entry_name": [ "^^", "substitute", "#{package_name}##{version_suffix_name}#_package_for_python#{python_major_dot_minor}#"]
 }
