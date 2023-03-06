@@ -9,10 +9,24 @@ import sys
 import ufun
 
 
+def flatten_options(pip_options):
+    if pip_options:
+        if type(pip_options)==dict:
+            flattened_options = [ k+'='+pip_options[k] for k in pip_options ]
+
+        if type(pip_options)==list:
+            flattened_options = ' '.join( [ e if e.startswith('-') else '--'+e for e in pip_options ] )
+
+    else:
+        flattened_options = ''
+
+    return flattened_options
+
+
 # Please note: some of the parameters below, although not directly used by the method,
 #   must still be present in order to be automatically recorded via __record_entry__ mechanism.
 #
-def install(package_name, pip_options=None, installable=None, python_tool_entry=None, pip_entry_name=None, rel_install_dir=None, rel_packages_dir=None, python_major_dot_minor=None, tags=None,  __record_entry__=None):
+def install(package_name, flattened_options=None, installable=None, python_tool_entry=None, pip_entry_name=None, rel_install_dir=None, rel_packages_dir=None, python_major_dot_minor=None, tags=None,  __record_entry__=None, __entry__=None):
     """Install a pip package into a separate entry, so that it could be easily use'd.
 
 Usage examples :
@@ -39,23 +53,17 @@ Usage examples :
     os.makedirs( os.path.join(abs_install_dir, 'lib') )
     os.symlink( 'lib', os.path.join(abs_install_dir, 'lib64') )
 
-    if pip_options:
-        if type(pip_options)==dict:
-            pip_options = [ k+'='+pip_options[k] for k in pip_options ]
-
-        if type(pip_options)==list:
-            pip_options = ' '.join( [ e if e.startswith('-') else '--'+e for e in pip_options ] )
-
-    else:
-        pip_options=''
-
-    python_tool_entry.call('run', [], {
-        "shell_cmd": [ "^^", "substitute", "#{tool_path}#"+f" -m pip install {installable} --prefix={abs_install_dir} --ignore-installed {pip_options}" ],
-        "capture_output": False,
-        "errorize_output": True,
+    return_code = __entry__.call('get', 'install_package', {
+        "installable": installable,
+        "abs_install_dir": abs_install_dir,
+        "flattened_options": flattened_options,
     } )
-
-    return __record_entry__
+    if return_code:
+        logging.error(f"A problem occured when trying to install {installable}, bailing out")
+        __record_entry__.remove()
+        return None
+    else:
+        return __record_entry__
 
 
 def available_versions(package_name, __entry__):

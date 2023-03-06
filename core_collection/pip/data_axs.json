@@ -23,6 +23,19 @@
         { "default_value":  [["^^", "get", "rel_install_dir"], "lib", ["^^", "substitute", "python#{python_major_dot_minor}#"], "site-packages" ] }
     ],
 
+    "pip_options": "",
+    "install_package": [ "^^", "execute", [[
+        [ "get", "python_tool_entry" ],
+        [ "run", [], {
+                        "shell_cmd_with_subs": "\"#{tool_path}#\" -m pip install #{installable}# --prefix=#{abs_install_dir}# --ignore-installed #{flattened_options}#",
+                        "capture_output": false,
+                        "errorize_output": true,
+                        "installable": [ "^^", "get", "installable" ],
+                        "abs_install_dir": [ "^^", "get", "abs_install_dir" ],
+                        "flattened_options": [ "^^", "flatten_options" ]
+                     } ]
+    ]] ],
+
     "available_package_versions": [ "^^", "execute", [[
         [ "get", "python_tool_entry" ],
         [ "run", [], {
