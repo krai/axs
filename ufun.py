@@ -56,6 +56,26 @@ Usage examples :
         return False
 
 
+def fs_find(top_dir, regex, looking_for_dir=False, return_full=False, topdown=True):
+    """Find a file or directory by regex in top_dir, return the list of all matches. Note: it must be Python's regex, not Shell's!
+
+Usage examples :
+                axs byquery extracted,imagenet , get_path ,0 func ufun.fs_find 'ILSVRC2012_val_\d+.JPEG' , __getitem__ 0
+    """
+    import os
+    import re
+
+    containing_subdirs = []
+    for dirpath,dirnames,filenames in os.walk(top_dir, topdown=topdown):
+        candidate_list = dirnames if looking_for_dir else filenames
+        for candidate_name in candidate_list:
+            if re.match(regex, candidate_name):
+                containing_subdirs.append( os.path.join(dirpath, candidate_name) if return_full else dirpath )
+                break
+
+    return containing_subdirs
+
+
 def join_with(things, separator=' '):
     """Reverse the order of arguments for String.join() to simplify its use in pipelines
 

@@ -119,6 +119,24 @@ Usage examples :
             return input_path
 
 
+    def find_file(self, regex, looking_for_dir=False, return_full=False, topdown=True, abs_paths=False, return_all=False):
+        """Find a file with the given regex inside current entry and return its relative or absolute path.
+Note: it must be Python's regex, not Shell's!
+
+Usage examples :
+                axs byname numpy_package_for_python3.6 , find_file 'poly.*' --return_full+ --return_all+
+        """
+        candidates = ufun.fs_find(self.get_path(''), regex, looking_for_dir=looking_for_dir, return_full=return_full, topdown=topdown)
+
+        if not abs_paths:
+            candidates = [ self.trim_path(c) for c in candidates ]
+
+        if return_all:
+            return candidates
+        else:
+            return candidates[0].split( os.path.sep )   # still a list -- it is our internal "portable relative path format"
+
+
     def get_name(self):
         return self.name or (self.entry_path and os.path.basename(self.entry_path))
 
