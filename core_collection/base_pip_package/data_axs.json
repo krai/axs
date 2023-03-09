@@ -3,9 +3,10 @@
 
     "abs_packages_dir": [ "^^", "get_path_from", "rel_packages_dir" ],
 
-    "rel_packages_dir": [ "^", "execute", [[
-        [ "byquery", "python_pathfinder" ],
-        [ "find_rel_packages_dir" ]
+    "rel_packages_dir": [ "^^", "execute", [[
+        [ "get_kernel" ],
+        [ "byquery", [["python_package", ["package_name", "six"], ["desired_python_version", ["^^", "get", "python_major_dot_minor"]]]] ],
+        [ "find_file", "six.py" ]
     ]] ],
 
     "package_version": [ "^^", "execute", [[

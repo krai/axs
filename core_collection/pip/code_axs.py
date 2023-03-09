@@ -29,7 +29,7 @@ def flatten_options(pip_options):
 # Please note: some of the parameters below, although not directly used by the method,
 #   must still be present in order to be automatically recorded via __record_entry__ mechanism.
 #
-def install(package_name, flattened_options=None, installable=None, python_tool_entry=None, pip_entry_name=None, rel_install_dir=None, rel_packages_dir=None, python_major_dot_minor=None, tags=None,  __record_entry__=None, __entry__=None):
+def install(package_name, flattened_options=None, installable=None, pip_entry_name=None, rel_install_dir=None, rel_packages_dir=None, python_major_dot_minor=None, tags=None,  __record_entry__=None, __entry__=None):
     """Install a pip package into a separate entry, so that it could be easily use'd.
 
 Usage examples :
@@ -46,15 +46,19 @@ Usage examples :
     """
 
     __record_entry__.pluck("pip_entry_name")
+    if rel_packages_dir is None:
+        __record_entry__.pluck("rel_packages_dir")
 
     __record_entry__["tags"]                = tags or ["python_package"]
     __record_entry__["_parent_entries"]     = [ [ "^", "byname", "base_pip_package" ] ]
+
     __record_entry__.parent_objects         = None      # reload parents
     __record_entry__.save( pip_entry_name )
-
     abs_install_dir   = __record_entry__["abs_install_dir"]
-    os.makedirs( os.path.join(abs_install_dir, 'lib') )
-    os.symlink( 'lib', os.path.join(abs_install_dir, 'lib64') )
+
+    os.makedirs( abs_install_dir )
+#    os.makedirs( os.path.join(abs_install_dir, 'lib') )
+#    os.symlink( 'lib', os.path.join(abs_install_dir, 'lib64') )
 
     return_code = __entry__.call('get', 'install_package', {
         "installable": installable,

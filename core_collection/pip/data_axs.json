@@ -18,11 +18,6 @@
 
     "rel_install_dir": "install",
 
-    "rel_packages_dir": [ "^^", "case", [ [ "^", "func", "platform.system"] ,
-        "Windows" , [["^^", "get", "rel_install_dir"], "lib", "site-packages" ] ],
-        { "default_value":  [["^^", "get", "rel_install_dir"], "lib", ["^^", "substitute", "python#{python_major_dot_minor}#"], "site-packages" ] }
-    ],
-
     "pip_options": "",
     "install_package": [ "^^", "execute", [[
         [ "get", "python_tool_entry" ],
