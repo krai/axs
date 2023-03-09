@@ -14,8 +14,11 @@ def flatten_options(pip_options):
         if type(pip_options)==dict:
             flattened_options = [ k+'='+pip_options[k] for k in pip_options ]
 
-        if type(pip_options)==list:
+        elif type(pip_options)==list:
             flattened_options = ' '.join( [ e if e.startswith('-') else '--'+e for e in pip_options ] )
+
+        else:
+            flattened_options = pip_options
 
     else:
         flattened_options = ''
