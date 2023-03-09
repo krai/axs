@@ -109,6 +109,7 @@ assert_end dependency_installation_and_resolution_for_internal_code
 if [ "$C_COMPILE_AND_RUN" == "on" ]; then
     axs byquery compiled,square_root , run --area=36
     assert 'axs byquery compute,square_root,area=64' "When square's area is 64.0 its side is 8.0"
+    axs byquery compiled,square_root --- , remove
     assert_end c_code_compilation_and_execution
 else
     echo "Skipping the C_COMPILE_AND_RUN test"
@@ -177,7 +178,7 @@ if [ "$PYTORCH_CLASSIFY" == "on" ] || [ "$ONNX_CLASSIFY" == "on" ] || [ "$TF_CLA
         echo "Skipping the TF_CLASSIFY test"
     fi
 
-    axs byquery preprocessed,imagenet --- , remove
+    axs byquery preprocessed,dataset_name=imagenet --- , remove
     axs byquery python_package,package_name=pillow --- , remove
     axs byquery python_package,package_name=numpy --- , remove
 
@@ -189,7 +190,7 @@ if [ "$PYTORCH_CLASSIFY" == "on" ] || [ "$ONNX_CLASSIFY" == "on" ] || [ "$TF_CLA
 
     axs byquery shell_tool,can_extract_tar --- , remove
 
-    axs byquery downloaded,file_name=ILSVRC2012_img_val_500.tar --- , remove
+    axs byquery downloaded,file_name:=ILSVRC2012_img_val_500.tar --- , remove
     axs byquery shell_tool,can_compute_md5 --- , remove
     axs byquery shell_tool,can_download_url --- , remove
 
@@ -251,6 +252,7 @@ axs byquery compiled,generate_primes --- , remove
 axs byquery lib,lib_name=cjson --- , remove
 axs byquery shell_tool,can_compile_c --- , remove
 axs byquery git_repo,repo_name=cjson_source_git --- , remove
+axs byquery shell_tool,can_git --- , remove
 
 assert_end factorized_numbers
 echo "axs tests done"
