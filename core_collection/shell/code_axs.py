@@ -44,6 +44,9 @@ Usage examples:
 
     stderr_target = subprocess.PIPE if capture_stderr else None
 
+    if env:
+        env = { k: str(env[k]) for k in env }   # cast all env's values to strings
+
     completed_process = subprocess.run(shell_cmd, shell = (type(shell_cmd)!=list), env=env, stdout=stdout_target, stderr=stderr_target)
 
     if in_dir:
