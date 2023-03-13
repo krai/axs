@@ -92,10 +92,12 @@ class FilterPile:
                     elif op in ('===',):        # no auto-conversion
                         op = '='
                         comparison_lambda   = lambda x: x==pre_val
+                        val                 = pre_val
                     elif op in ('<>', '!='):    # with auto-conversion to numbers
                         comparison_lambda   = lambda x: x!=val
                     elif op in ('!==',):        # no auto-conversion
                         comparison_lambda   = lambda x: x!=pre_val
+                        val                 = pre_val
                     elif op=='<' and len(pre_val)>0:
                         comparison_lambda   = lambda x: x!=None and x<val
                     elif op=='>' and len(pre_val)>0:
