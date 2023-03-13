@@ -65,9 +65,7 @@
                 "major_dot_minor": [ "AS^IS", "^^", "execute", [[
                     [ "get", "tool_version"],
                     [ "rsplit", [".", 1] ],
-                    [ "__getitem__", 0 ],
-                    0,
-                    [ "func", "float" ]
+                    [ "__getitem__", 0 ]
                 ]] ]
             }, ["exec_suffixes"]
         ],
