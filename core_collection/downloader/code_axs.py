@@ -77,7 +77,7 @@ Usage examples:
 
 
     logging.warning(f"The resolved downloading_tool_entry '{downloading_tool_entry.get_name()}' located at '{downloading_tool_entry.get_path()}' uses the shell tool '{downloading_tool_entry['tool_path']}'")
-    retval = downloading_tool_entry.call('run', [], {"url": url, "target_path": target_path})
+    retval = downloading_tool_entry.call('run', [], {"url": url, "target_path": target_path, "record_entry_path": record_entry_path})
     if retval == 0:
         if md5 is not None:
             md5_tool_entry = __entry__['md5_tool_entry']

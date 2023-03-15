@@ -22,6 +22,25 @@
                 "shell_cmd_with_subs": "\"#{tool_path}#\" -O \"#{target_path}#\" \"#{url}#\""
             }
         ],
+        [ ["shell_tool", "can_download_url_from_zenodo" ] , [["detect"]],
+            { "tool_name": "zenodo_get", "shell_cmd_with_subs": "\"#{tool_path}#\" --output-dir=\"#{record_entry_path}#\" --doi=\"#{url}#\"" }
+        ],
+        [ ["shell_tool", "can_download_url_from_zenodo" ] , [["detect"]],
+            {   "tool_name": "zenodo_get",
+                "tool_path": [ "AS^IS", "AS^IS", "^", "execute", [[
+                    [ "byquery", "python_package,package_name=zenodo-get" ],
+                    [ "get_path", [[ "^^", "case", [ [ "^", "func", "platform.system" ],
+                        "Windows" , ["install", "Scripts", "zenodo_get.exe"] ],
+                        { "default_value":  ["install", "bin", "zenodo_get"] } ]]
+                    ]
+                ]] ],
+                "parent_entry_name": "python_in_shell",
+                "python_deps": [
+                    [ "AS^IS", "^", "byquery", "python_package,package_name=zenodo-get" ]
+                ],
+                "shell_cmd_with_subs": "\"#{tool_path}#\" --output-dir=\"#{record_entry_path}#\" --doi=\"#{url}#\""
+            }
+        ],
 
         [ [ "shell_tool", "can_download_url" ], [["detect"]], { "tool_name": "wget", "shell_cmd_with_subs": "\"#{tool_path}#\" -O \"#{target_path}#\" #{url}#" } ],
         [ [ "shell_tool", "can_download_url" ], [["detect"]], { "tool_name": "curl", "shell_cmd_with_subs": "\"#{tool_path}#\" -L -o \"#{target_path}#\" #{url}#" } ],
