@@ -102,7 +102,7 @@ export KERNEL_PYTHON_MINOR_VERSION=`axs kernel_python_major_dot_minor , split . 
 if [ "$KERNEL_PYTHON_MINOR_VERSION" -lt "10" ]; then    # compare MINOR versions numerically
     export DESIRED_NUMPY_VERSION="1.19.4"
 else
-    export DESIRED_NUMPY_VERSION="1.24.2"
+    export DESIRED_NUMPY_VERSION="1.22.4"
 fi
 export NUMPY_QUERY_MOD="--numpy_query+,=package_version=${DESIRED_NUMPY_VERSION}"
 
