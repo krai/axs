@@ -95,11 +95,19 @@ axs byname examplepage_recipe , remove
 axs byquery shell_tool,can_download_url --- , remove
 assert_end url_downloading_recipe_activation_replay_and_removal
 
-axs byname numpy_import_test , deps_versions --pillow_query+,=package_version=8.1.2
-assert 'axs byname numpy_import_test , deps_versions --pillow_query+,=package_version=8.1.2' 'numpy==1.19.4, pillow==8.1.2'
 export KERNEL_PYTHON_VERSION=`axs kernel_python_major_dot_minor`
 echo "kernel Python version: $KERNEL_PYTHON_VERSION"
 export KERNEL_PYTHON_MINOR_VERSION=`axs kernel_python_major_dot_minor , split . , __getitem__ 1`
+
+if [ "$KERNEL_PYTHON_MINOR_VERSION" -lt "10" ]; then    # compare MINOR versions numerically
+    export DESIRED_NUMPY_VERSION="1.19.4"
+else
+    export DESIRED_NUMPY_VERSION="1.24.2"
+fi
+export NUMPY_QUERY_MOD="--numpy_query+,=package_version=${DESIRED_NUMPY_VERSION}"
+
+axs byname numpy_import_test , deps_versions $NUMPY_QUERY_MOD #
+assert "axs byname numpy_import_test , deps_versions ${NUMPY_QUERY_MOD}" "numpy==${DESIRED_NUMPY_VERSION}, pillow==8.1.2"
 
 assert 'axs byname numpy_import_test , kernel_python_major_dot_minor' "$KERNEL_PYTHON_VERSION"
 assert 'axs byname numpy_import_test , multiply 1 2 3 4 5 6' '[17, 39]'
