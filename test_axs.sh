@@ -99,22 +99,26 @@ export KERNEL_PYTHON_VERSION=`axs kernel_python_major_dot_minor`
 echo "kernel Python version: $KERNEL_PYTHON_VERSION"
 export KERNEL_PYTHON_MINOR_VERSION=`axs kernel_python_major_dot_minor , split . , __getitem__ 1`
 
-if [ "$KERNEL_PYTHON_MINOR_VERSION" -lt "10" ]; then    # compare MINOR versions numerically
-    export DESIRED_NUMPY_VERSION="1.19.4"
+if [ "$PACKAGE_INSTALL_AND_IMPORT" == "on" ]; then
+    if [ "$KERNEL_PYTHON_MINOR_VERSION" -lt "10" ]; then    # compare MINOR versions numerically
+        export DESIRED_NUMPY_VERSION="1.19.4"
+    else
+        export DESIRED_NUMPY_VERSION="1.22.4"
+    fi
+    export NUMPY_QUERY_MOD="--numpy_query+,=package_version=${DESIRED_NUMPY_VERSION}"
+
+    axs byname numpy_import_test , deps_versions $NUMPY_QUERY_MOD #
+    assert "axs byname numpy_import_test , deps_versions ${NUMPY_QUERY_MOD}" "numpy==${DESIRED_NUMPY_VERSION}, pillow==8.1.2"
+
+    assert 'axs byname numpy_import_test , kernel_python_major_dot_minor' "$KERNEL_PYTHON_VERSION"
+    assert 'axs byname numpy_import_test , multiply 1 2 3 4 5 6' '[17, 39]'
+    axs byquery --,=python_package,package_name=pillow --- , remove
+    axs byquery --:=python_package:package_name=numpy --- , remove
+    axs byquery --/=shell_tool/can_python --- , remove
+    assert_end dependency_installation_and_resolution_for_internal_code
 else
-    export DESIRED_NUMPY_VERSION="1.22.4"
+    echo "Skipping the PACKAGE_INSTALL_AND_IMPORT test"
 fi
-export NUMPY_QUERY_MOD="--numpy_query+,=package_version=${DESIRED_NUMPY_VERSION}"
-
-axs byname numpy_import_test , deps_versions $NUMPY_QUERY_MOD #
-assert "axs byname numpy_import_test , deps_versions ${NUMPY_QUERY_MOD}" "numpy==${DESIRED_NUMPY_VERSION}, pillow==8.1.2"
-
-assert 'axs byname numpy_import_test , kernel_python_major_dot_minor' "$KERNEL_PYTHON_VERSION"
-assert 'axs byname numpy_import_test , multiply 1 2 3 4 5 6' '[17, 39]'
-axs byquery --,=python_package,package_name=pillow --- , remove
-axs byquery --:=python_package:package_name=numpy --- , remove
-axs byquery --/=shell_tool/can_python --- , remove
-assert_end dependency_installation_and_resolution_for_internal_code
 
 if [ "$C_COMPILE_AND_RUN" == "on" ]; then
     axs byquery compiled,square_root , run --area=36

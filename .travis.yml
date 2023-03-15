@@ -18,6 +18,7 @@ matrix:
       python: 3.10
       dist: jammy
       env:
+        - PACKAGE_INSTALL_AND_IMPORT=on
         - C_COMPILE_AND_RUN=on
         - PYTHON_EXE=python
 
@@ -92,6 +93,7 @@ matrix:
       language: shell       # 'language: python' is an error on Travis CI macOS
       env:
         - ONNX_CLASSIFY=on
+        - PACKAGE_INSTALL_AND_IMPORT=on
         - C_COMPILE_AND_RUN=on
         - PYTHON_EXE=python3
 
