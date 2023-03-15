@@ -15,9 +15,31 @@ matrix:
 
   include:
     - language: python
-      python: 3.9
+      python: 3.10
+      dist: jammy
       env:
         - C_COMPILE_AND_RUN=on
+        - PYTHON_EXE=python
+
+    - language: python
+      python: 3.10
+      dist: jammy
+      env:
+        - PYTORCH_CLASSIFY=on
+        - PYTHON_EXE=python
+
+    - language: python
+      python: 3.10
+      dist: jammy
+      env:
+        - ONNX_CLASSIFY=on
+        - PYTHON_EXE=python
+
+    - language: python
+      python: 3.10
+      dist: jammy
+      env:
+        - TF_CLASSIFY=on
         - PYTHON_EXE=python
 
     - language: python

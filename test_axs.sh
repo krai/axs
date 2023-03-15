@@ -99,6 +99,8 @@ axs byname numpy_import_test , deps_versions --pillow_query+,=package_version=8.
 assert 'axs byname numpy_import_test , deps_versions --pillow_query+,=package_version=8.1.2' 'numpy==1.19.4, pillow==8.1.2'
 export KERNEL_PYTHON_VERSION=`axs kernel_python_major_dot_minor`
 echo "kernel Python version: $KERNEL_PYTHON_VERSION"
+export KERNEL_PYTHON_MINOR_VERSION=`axs kernel_python_major_dot_minor , split . , __getitem__ 1`
+
 assert 'axs byname numpy_import_test , kernel_python_major_dot_minor' "$KERNEL_PYTHON_VERSION"
 assert 'axs byname numpy_import_test , multiply 1 2 3 4 5 6' '[17, 39]'
 axs byquery --,=python_package,package_name=pillow --- , remove
@@ -120,8 +122,14 @@ if [ "$PYTORCH_CLASSIFY" == "on" ] || [ "$ONNX_CLASSIFY" == "on" ] || [ "$TF_CLA
         # The following line is split into two to provide more insight into what is going on.
         # Otherwise assert() blocks all the error output and the command looks "stuck" for quite a while.
 
-        axs byname pytorch_image_classifier , run --torchvision_query+=package_version=0.9.0 ---capture_output=false --output_file_path=
-        export INFERENCE_OUTPUT=`axs byname pytorch_image_classifier , run --torchvision_query+=package_version=0.9.0 ---capture_output=true --output_file_path=`
+        if [ "$KERNEL_PYTHON_MINOR_VERSION" -lt "10" ]; then    # compare MINOR versions numerically
+            export TORCH_VISION_QUERY_MOD="--torchvision_query+=package_version=0.9.0"
+        else
+            export TORCH_VISION_QUERY_MOD=""
+        fi
+
+        axs byname pytorch_image_classifier , run $TORCH_VISION_QUERY_MOD ---capture_output=false --output_file_path=
+        export INFERENCE_OUTPUT=`axs byname pytorch_image_classifier , run $TORCH_VISION_QUERY_MOD ---capture_output=true --output_file_path=`
         assert 'echo $INFERENCE_OUTPUT' 'batch 1/1: (1..20) [65, 795, 230, 809, 520, 65, 334, 852, 674, 332, 109, 286, 370, 757, 595, 147, 327, 23, 478, 517]'
         axs byquery program_output,classified_imagenet,framework=pytorch,num_of_images=32
         export ACCURACY_OUTPUT=`axs byquery program_output,classified_imagenet,framework=pytorch,num_of_images=32 , get accuracy`
@@ -137,8 +145,14 @@ if [ "$PYTORCH_CLASSIFY" == "on" ] || [ "$ONNX_CLASSIFY" == "on" ] || [ "$TF_CLA
         # The following line is split into two to provide more insight into what is going on.
         # Otherwise assert() blocks all the error output and the command looks "stuck" for quite a while.
 
-        axs byname onnx_image_classifier , run --onnxruntime_query+=package_version=1.9.0 ---capture_output=false --output_file_path=
-        export INFERENCE_OUTPUT=`axs byname onnx_image_classifier , run --onnxruntime_query+=package_version=1.9.0 ---capture_output=true --output_file_path=`
+        if [ "$KERNEL_PYTHON_MINOR_VERSION" -lt "10" ]; then    # compare MINOR versions numerically
+            export ONNXRUNTIME_QUERY_MOD="--onnxruntime_query+=package_version=1.9.0"
+        else
+            export ONNXRUNTIME_QUERY_MOD=""
+        fi
+
+        axs byname onnx_image_classifier , run $ONNXRUNTIME_QUERY_MOD ---capture_output=false --output_file_path=
+        export INFERENCE_OUTPUT=`axs byname onnx_image_classifier , run $ONNXRUNTIME_QUERY_MOD ---capture_output=true --output_file_path=`
         assert 'echo $INFERENCE_OUTPUT' 'batch 1/1: (1..20) [65, 795, 230, 809, 516, 67, 334, 415, 674, 332, 109, 286, 370, 757, 595, 147, 327, 23, 478, 517]'
 
         axs byquery program_output,classified_imagenet,framework=onnx,num_of_images=32
