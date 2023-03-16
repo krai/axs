@@ -53,6 +53,7 @@ Usage examples :
         else:
             return True
     else:
+        print(f'Failed to match "{input_string}" against "{regex}"', file=sys.stderr)
         return False
 
 
