@@ -21,6 +21,8 @@ matrix:
         - PACKAGE_INSTALL_AND_IMPORT=on
         - C_COMPILE_AND_RUN=on
         - PYTHON_EXE=python
+      before_install:
+        - "/home/travis/virtualenv/python3.10.5/bin/python3.10 -m pip install numpy==88.88.88 --only-binary :all: --user"
 
     - language: python
       python: 3.10
