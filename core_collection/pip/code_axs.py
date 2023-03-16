@@ -73,10 +73,11 @@ Usage examples :
         return __record_entry__
 
 
-def available_versions(package_name, __entry__):
+def available_versions(package_name, force_binary=False, __entry__=None):
 
     versions_list = __entry__.call('get', 'available_package_versions', {
-        'package_name': package_name
+        'package_name': package_name,
+        'force_binary': force_binary,
     } )
 
     return versions_list

@@ -144,6 +144,8 @@ install:
     - which git
     - git --version
     - wget https://raw.github.com/lehmannro/assert.sh/master/assert.sh
+    - axs byname pip , available_versions numpy --+
+    - axs byname pip , available_versions pillow --+
 
 script:
     - ${PYTHON_EXE} function_access.py
