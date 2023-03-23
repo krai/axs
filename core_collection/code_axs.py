@@ -122,7 +122,7 @@ class FilterPile:
                             comparison_lambda   = lambda x: x is not None
                         elif op=='!.':            # path does not exist
                             comparison_lambda   = lambda x: x is None
-                        elif op in ('?', '+'):    # computes to True
+                        elif op=='+':             # computes to True
                             op, val = '=', True
                             comparison_lambda   = lambda x: bool(x)
                         elif op=='-':             # computes to False
@@ -250,6 +250,7 @@ Usage examples :
                             qr_conditions_ok = rule_comparison_lambda( parsed_query.posi_val_dict[key_path] )       # if so, use this value in evaluating this rule condition
                         else:
                             qr_conditions_ok = (((op=='?=') and (key_path not in parsed_query.mentioned_set)) or    # ignore optional(selective) matches
+                                                ((op=='!.') and (key_path not in parsed_query.mentioned_set)) or
                                                 ((op=='=') and (key_path in parsed_query.mentioned_set)))           # otherwise if this rule condition sets a value, the query should have a corresponding condition to check (later) 
 
                         if not qr_conditions_ok: break

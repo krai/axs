@@ -8,7 +8,10 @@
 
         [ [ "test_optional", "alpha=10", "delta?=41" ],  [["entry_producer"]], { "beta": 21, "gamma": 31, "epsilon": 51 } ],
         [ [ "test_optional", "alpha=10", "delta?=42" ],  [["entry_producer"]], { "beta": 22, "gamma": 32, "epsilon": 52 } ],
-        [ [ "test_optional", "alpha=10", "delta?=43" ],  [["entry_producer"]], { "beta": 23, "gamma": 33, "epsilon": 53 } ]
+        [ [ "test_optional", "alpha=10", "delta?=43" ],  [["entry_producer"]], { "beta": 23, "gamma": 33, "epsilon": 53 } ],
+
+        [ [ "test_defined", "alpha=5", "delta." ],  [["entry_producer"]], { "beta": 20, "gamma": 34, "epsilon": 60 } ],
+        [ [ "test_defined", "alpha=5", "delta!." ],  [["entry_producer"]], { "beta": 200, "gamma": 340, "delta": "missing", "epsilon": 600 } ]
     ],
     "gamma": 30
 }
