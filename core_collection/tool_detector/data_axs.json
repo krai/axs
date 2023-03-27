@@ -71,6 +71,23 @@
         [ [ "shell_tool", "can_compute_md5" ], [["detect"]], { "tool_name": "md5",        "shell_cmd_with_subs": "'#{tool_path}#' -r '#{file_path}#' | cut -f 1 -d ' '", "capture_output": true } ],
 
 
+        [ [ "shell_tool", "can_python", ["desired_python_version", [ "^", "kernel_python_major_dot_minor" ]] ], [["detect"]],
+            {   "tool_name": [ "AS^IS", "^^", "substitute", "python#{desired_python_version}#" ],
+                "tool_path": [ "^", "python_path" ],
+                "shell_cmd_with_subs": "\"#{tool_path}#\" --version",
+                "capture_output": true,
+                "tool_version": [ "AS^IS", "^^", "execute", [[
+                    [ "run", [], { "shell_cmd_with_subs": "\"#{tool_path}#\" --version" } ],
+                    [ "split", " " ],
+                    [ "__getitem__", 1 ]
+                ]] ],
+                "major_dot_minor": [ "AS^IS", "^^", "execute", [[
+                    [ "get", "tool_version"],
+                    [ "rsplit", [".", 1] ],
+                    [ "__getitem__", 0 ]
+                ]] ]
+            }, ["exec_suffixes"]
+        ],
         [ [ "shell_tool", "can_python", "desired_python_version." ], [["detect"]],
             {   "tool_name": [ "AS^IS", "^^", "substitute", "python#{desired_python_version}#" ],
                 "shell_cmd_with_subs": "\"#{tool_path}#\" --version",
@@ -88,8 +105,9 @@
             }, ["exec_suffixes"]
         ],
         [ [ "shell_tool", "can_python", "desired_python_version!." ], [["detect"]],
-            {   "desired_python_version": ["^", "kernel_python_major_dot_minor"],
+            {   "tool_name": [ "AS^IS", "^^", "substitute", "python#{desired_python_version}#", { "desired_python_version": ["^", "kernel_python_major_dot_minor"] } ],
                 "tool_path": [ "^", "python_path" ],
+                "desired_python_version": ["^", "kernel_python_major_dot_minor"],
                 "shell_cmd_with_subs": "\"#{tool_path}#\" --version",
                 "capture_output": true,
                 "tool_version": [ "AS^IS", "^^", "execute", [[

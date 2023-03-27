@@ -235,7 +235,7 @@ Usage examples :
         matched_rules = []
         for advertising_entry in walk(__entry__):
             for unprocessed_rule in advertising_entry.own_data().get('_producer_rules', []):        # block processing some params until they are really needed
-                parsed_rule     = FilterPile( unprocessed_rule[0], f"Entry: {advertising_entry.get_name()}" )
+                parsed_rule     = FilterPile( advertising_entry.nested_calls( unprocessed_rule[0] ), f"Entry: {advertising_entry.get_name()}" )
 
                 if parsed_rule.posi_tag_set.issubset(parsed_query.posi_tag_set):  # FIXME:  parsed_rule.posi_tag_set should include it
                     qr_conditions_ok  = True
