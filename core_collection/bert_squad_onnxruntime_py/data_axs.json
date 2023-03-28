@@ -9,7 +9,7 @@
                        [ "run" ]
                 ]] ],
     "onnxruntime_name": [ "^", "case",[ ["^^", "get", "num_gpus"], "0", "onnxruntime" ], {"default_value": "onnxruntime-gpu"}, ["num_gpus"]],
-    "for_python36_option": [ "^^", "case", [ ["^^", "dig", "python_tool_entry.tool_version"], "3.6.9", "for_python36" ], {"default_value": "" } ],
+    "for_python36_option": [ "^^", "case", [ ["^^", "get", "python_major_dot_minor"], "3.6", "for_python36" ], {"default_value": "" } ],
     "onnxruntime_query": [ "python_package", ["package_name", ["^^", "get", "onnxruntime_name"]], ["^^", "get", "for_python36_option"]],
 
     "tensorflow_query": [ "python_package", "package_name=tensorflow"],

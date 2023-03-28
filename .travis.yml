@@ -55,6 +55,15 @@ matrix:
         - ONNX_BERT_SQUAD=on
         - PYTHON_EXE=python
 
+    - os: osx
+      osx_image: xcode12.5  # Python 3.9.5
+      language: shell       # 'language: python' is an error on Travis CI macOS
+      env:
+        - ONNX_CLASSIFY=on
+        - PACKAGE_INSTALL_AND_IMPORT=on
+        - C_COMPILE_AND_RUN=on
+        - PYTHON_EXE=python3
+
     - name: "Python 3.9 on Windows, ONNX_BERT_SQUAD"
       os: windows           # Windows 10.0.17134 N/A Build 17134
       language: shell       # 'language: python' is an error on Travis CI Windows
@@ -79,7 +88,7 @@ matrix:
     - language: python
       python: 3.8
       env:
-        - ONNX_CLASSIFY=on
+        - PYTORCH_CLASSIFY=on
         - PYTHON_EXE=python
 
     - language: python
@@ -88,19 +97,10 @@ matrix:
         - TF_CLASSIFY=on
         - PYTHON_EXE=python
 
-    - os: osx
-      osx_image: xcode12.5  # Python x.y.z
-      language: shell       # 'language: python' is an error on Travis CI macOS
-      env:
-        - ONNX_CLASSIFY=on
-        - PACKAGE_INSTALL_AND_IMPORT=on
-        - C_COMPILE_AND_RUN=on
-        - PYTHON_EXE=python3
-
     - language: python
       python: 3.6
       env:
-        - PYTORCH_CLASSIFY=on
+        - ONNX_CLASSIFY=on
         - PYTHON_EXE=python
 
     - name: "Python 3.6 on FreeBSD"

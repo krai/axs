@@ -2,8 +2,8 @@
     "_producer_rules": [
         [ [ "python_package", "package_name==torchvision", "with_cuda" ], [["install"]], { "package_version": "0.12.0+cu113", "pip_options": "torch==1.11.0+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html"}, ["desired_python_version"] ],
         [ [ "python_package", "package_name==torch", "with_cuda" ], [["install"]], { "package_version": "1.11.0+cu113", "pip_options": "-f https://download.pytorch.org/whl/cu113/torch_stable.html"}, ["desired_python_version"] ],
-        [ [ "python_package", "package_name==onnxruntime-gpu", "for_python36" ], [["install"]], { "package_version": "1.10.0", "pip_options": "protobuf==3.19.4" }, ["desired_python_version"] ],
-        [ [ "python_package", "package_name==onnxruntime", "for_python36" ], [["install"]], { "package_version": "1.10.0", "pip_options": "protobuf==3.19.4" }, ["desired_python_version"] ],
+        [ [ "python_package", "package_name==onnxruntime-gpu", "for_python36" ], [["install"]], { "pip_options": "protobuf==3.19.4" }, ["desired_python_version"] ],
+        [ [ "python_package", "package_name==onnxruntime", "for_python36" ], [["install"]], { "pip_options": "protobuf==3.19.4" }, ["desired_python_version"] ],
         [ [ "python_package", "no_deps" ], [["install"]], { "pip_options": [ "no-deps" ] }, ["desired_python_version"] ],
         [ [ "python_package", "special", "broken_rule" ], [["install"]], {}, ["desired_python_version"] ],
         [ [ "python_package" ], [["install"]], {}, ["desired_python_version"] ]
