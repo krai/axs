@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 
 import imp
-import json
 import logging
 import os
-import shutil
 import sys
 import uuid
 
@@ -313,7 +311,7 @@ Usage examples :
 
         entry_path = self.get_path('')
         if entry_path:
-            shutil.rmtree(entry_path)
+            ufun.rmdir( entry_path )
             logging.warning(f"[{self.get_name()}] {entry_path} removed from the filesystem")
         else:
             logging.warning(f"[{self.get_name()}] was not saved to the file system, so cannot be removed")

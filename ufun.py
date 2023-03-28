@@ -2,7 +2,12 @@
 
 "A collection of utility functions"
 
+import errno
 import json
+import os
+import re
+import shutil
+import stat
 import sys
 
 def load_json(json_file_path):
@@ -29,7 +34,6 @@ Usage examples :
                 axs func ufun.save_json ---='{"hello":"world"}' hello.json
                 axs work_collection , get contained_entries , keys ,0 func list ,0 func ufun.save_json work_entries.json
     """
-
     json_string   = json.dumps( data_structure , indent=indent)
 
     with open(json_file_path, "w") as json_fd:
@@ -44,8 +48,6 @@ def rematch(input_string, regex, group=1):
 Usage examples :
                 axs byname kernel_python_tool , run ,0 func ufun.rematch '^Python\s((\d+)\.(\d+))\.\d+'    # parse the major.minor version from Python
     """
-    import re
-
     searchObj = re.search(regex, input_string)
     if searchObj:
         if group>0:
@@ -63,9 +65,6 @@ def fs_find(top_dir, regex, looking_for_dir=False, return_full=False, topdown=Tr
 Usage examples :
                 axs byquery extracted,imagenet , get_path ,0 func ufun.fs_find 'ILSVRC2012_val_\d+.JPEG' , __getitem__ 0
     """
-    import os
-    import re
-
     containing_subdirs = []
     for dirpath,dirnames,filenames in os.walk(top_dir, topdown=topdown):
         candidate_list = dirnames if looking_for_dir else filenames
@@ -83,5 +82,23 @@ def join_with(things, separator=' '):
 Usage examples :
                 axs work_collection , get contained_entries , keys ,0 func ufun.join_with
     """
-
     return separator.join(things)
+
+
+def rmdir(dir_path):
+    """Recursively remove a non-empty directory
+
+Usage examples :
+                axs func ufun.rmdir path/to/remove
+    """
+    #   Thanks for this SO entry:
+    #       https://stackoverflow.com/questions/1213706/what-user-do-python-scripts-run-as-in-windows
+    #
+    def handleRemoveReadonly(func, path, exc):
+        if func in (os.rmdir, os.remove) and exc[1].errno == errno.EACCES:
+            os.chmod(path, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO) # 0777
+            func(path)
+        else:
+            raise
+
+    shutil.rmtree(dir_path, ignore_errors=False, onerror=handleRemoveReadonly)
