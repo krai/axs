@@ -3,13 +3,17 @@ build: false
 environment:
   ASSERT_URL: https://raw.github.com/lehmannro/assert.sh/master/assert.sh
   matrix:
-    - job_name: Windows pytorch+onnx+tf Py=3.10
+    - job_name: Windows classification Py=3.10
+      appveyor_build_worker_image: Visual Studio 2019
+      PYTHON_DIR: C:\Python310-x64
+      ONNX_CLASSIFY: on
+      PYTORCH_CLASSIFY: on
+      TF_CLASSIFY: on
+
+    - job_name: Windows detection+bert Py=3.10
       appveyor_build_worker_image: Visual Studio 2019
       PYTHON_DIR: C:\Python310-x64
       PACKAGE_INSTALL_AND_IMPORT: on
-      PYTORCH_CLASSIFY: on
-      ONNX_CLASSIFY: on
-      TF_CLASSIFY: on
       ONNX_DETECTION: on
       ONNX_BERT_SQUAD: on
       PYTORCH_BERT_DEMO: on
@@ -23,26 +27,33 @@ environment:
       ONNX_BERT_SQUAD: on
       PYTORCH_BERT_DEMO: on
 
-    - job_name: Linux pytorch+onnx+tf
+    - job_name: Linux detection+bert
       appveyor_build_worker_image: Ubuntu
-      PACKAGE_INSTALL_AND_IMPORT: on
-      C_COMPILE_AND_RUN: on
-      PYTORCH_CLASSIFY: on
-      ONNX_CLASSIFY: on
-      TF_CLASSIFY: on
       ONNX_DETECTION: on
       ONNX_BERT_SQUAD: on
       PYTORCH_BERT_DEMO: on
 
-    - job_name: Windows pytorch+onnx Py=3.6
+    - job_name: Linux compile+classification
+      appveyor_build_worker_image: Ubuntu
+      PACKAGE_INSTALL_AND_IMPORT: on
+      C_COMPILE_AND_RUN: on
+      ONNX_CLASSIFY: on
+      PYTORCH_CLASSIFY: on
+      TF_CLASSIFY: on
+
+    - job_name: Windows detection+bert Py=3.6
       appveyor_build_worker_image: Visual Studio 2019
       PYTHON_DIR: C:\Python36-x64
-      PACKAGE_INSTALL_AND_IMPORT: on
-      PYTORCH_CLASSIFY: on
-      ONNX_CLASSIFY: on
       ONNX_DETECTION: on
       ONNX_BERT_SQUAD: on
       PYTORCH_BERT_DEMO: on
+
+    - job_name: Windows classification Py=3.6
+      appveyor_build_worker_image: Visual Studio 2019
+      PYTHON_DIR: C:\Python36-x64
+      PACKAGE_INSTALL_AND_IMPORT: on
+      ONNX_CLASSIFY: on
+      PYTORCH_CLASSIFY: on
 
 init:
     - cmd: reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem" /v LongPathsEnabled /t REG_DWORD /d 1 /f
