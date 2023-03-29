@@ -6,6 +6,8 @@
         [ [ "python_package", "package_name==onnxruntime-gpu", ["desired_python_version", "3.6"] ], [["install"]], { "pip_options": "protobuf==3.19.4" }, ["desired_python_version"] ],
         [ [ "python_package", "package_name==onnxruntime", ["desired_python_version", "3.6"] ], [["install"]], { "pip_options": "protobuf==3.19.4" }, ["desired_python_version"] ],
         [ [ "python_package", "package_name==tensorflow", ["desired_python_version", "3.6"] ], [["install"]], { "pip_options": "protobuf==3.19.4" }, ["desired_python_version"] ],
+        [ [ "python_package", "package_name==transformers", ["desired_python_version", "3.6"] ], [["install"]], { "package_version": "4.2.2" }, ["desired_python_version"] ],
+
 
         [ [ "python_package", "no_deps" ], [["install"]], { "pip_options": [ "no-deps" ] }, ["desired_python_version"] ],
         [ [ "python_package", "special", "broken_rule" ], [["install"]], {}, ["desired_python_version"] ],
