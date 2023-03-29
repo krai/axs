@@ -13,19 +13,21 @@ environment:
     - job_name: Windows detection+bert Py=3.10
       appveyor_build_worker_image: Visual Studio 2019
       PYTHON_DIR: C:\Python310-x64
-      PACKAGE_INSTALL_AND_IMPORT: on
       ONNX_DETECTION: on
       ONNX_BERT_SQUAD: on
       PYTORCH_BERT_DEMO: on
 
-    - job_name: MacOS onnx
+    - job_name: MacOS detection+bert
+      appveyor_build_worker_image: macos
+      ONNX_DETECTION: on
+      ONNX_BERT_SQUAD: on
+      PYTORCH_BERT_DEMO: on
+
+    - job_name: MacOS compile+classification
       appveyor_build_worker_image: macos
       PACKAGE_INSTALL_AND_IMPORT: on
       C_COMPILE_AND_RUN: on
       ONNX_CLASSIFY: on
-      ONNX_DETECTION: on
-      ONNX_BERT_SQUAD: on
-      PYTORCH_BERT_DEMO: on
 
     - job_name: Linux detection+bert
       appveyor_build_worker_image: Ubuntu
