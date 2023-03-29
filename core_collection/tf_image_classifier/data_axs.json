@@ -4,9 +4,9 @@
         [ [ "program_output", "classified_imagenet", "framework=tf" ], [["run"]], { "return_saved_record_entry": true } ]
     ],
 
-    "tf_query": [ "python_package", "package_name=tensorflow" ],
+    "tensorflow_query": [ "python_package", "package_name=tensorflow" ],
     "python_deps": [
-        [ "^^", "python_sync_pip_package", [[ "^^", "get", "tf_query" ]] ],
+        [ "^^", "python_sync_pip_package", [[ "^^", "get", "tensorflow_query" ]] ],
         [ "^", "byquery", "data_loader,imagenet" ]
     ],
 
