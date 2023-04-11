@@ -25,7 +25,7 @@ Usage examples :
         return None
 
 
-def clone(repo_name=None, url=None, repo_dir_name=None, git_tool_entry=None, container_entry=None, checkout=None, submodules=False, tags=None, __entry__=None):
+def clone(repo_name=None, url=None, repo_dir_name=None, git_tool_entry=None, container_entry=None, checkout=None, submodules=False, abs_patch_path=None, tags=None, __entry__=None):
     """Clone a git repository into an Entry,
 
 Usage examples :
@@ -48,6 +48,9 @@ Clean-up:
     container_path  = container_entry.get_path('')
     entry_path      = container_entry.get_path( repo_dir_name )
     tool_path       = git_tool_entry["tool_path"]
+
+    logging.warning(f"The resolved git_tool_entry '{git_tool_entry.get_name()}' located at '{git_tool_entry.get_path()}' uses the shell tool '{tool_path}'")
+
     retval = git_tool_entry.call('run', f"\"{tool_path}\" -C \"{container_path}\" clone {url} {repo_dir_name}", {"capture_output": False} )
     if retval == 0:
         if checkout:
@@ -57,11 +60,26 @@ Clean-up:
             git_tool_entry.call('run', f"\"{tool_path}\" -C \"{entry_path}\" submodule init" )
             git_tool_entry.call('run', f"\"{tool_path}\" -C \"{entry_path}\" submodule update" )
 
+        if abs_patch_path:
+            patch_tool_entry = __entry__['patch_tool_entry']
+            logging.warning(f"The resolved patch_tool_entry '{patch_tool_entry.get_name()}' located at '{patch_tool_entry.get_path()}' uses the shell tool '{patch_tool_entry['tool_path']}'")
+
+            retval = patch_tool_entry.call('run', [], { 'entry_path': entry_path, 'abs_patch_path': abs_patch_path} )
+            if retval != 0:
+                logging.error(f"could not patch \"{entry_path}\" with \"{abs_patch_path}\", bailing out")
+                return None
+
         result_entry                = ak.bypath( entry_path )   # "discover" the Entry after cloning, then either create or augment the data
         result_entry['repo_name']   = repo_name
         result_entry['tags']        = tags or [ 'git_repo' ]
         if checkout:
-            result_entry['checkout']    = checkout
+            result_entry['checkout']        = checkout
+
+        result_entry['submodules']          = submodules
+
+        if abs_patch_path:
+            result_entry['abs_patch_path']  = abs_patch_path
+
         result_entry.attach( container_entry ).save()
 
         return result_entry

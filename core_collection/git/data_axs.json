@@ -5,6 +5,8 @@
 
     "git_tool_entry":   [ "^", "byquery", "shell_tool,can_git" ],
 
+    "patch_tool_entry": [ "^", "byquery", "shell_tool,can_patch" ],
+
     "kernel_git_url": [ "^^", "execute", [[
         [ "get_kernel" ],
         [ "byname", "shell" ],

@@ -131,6 +131,8 @@
                 "capture_output": true
         } ],
 
+        [ [ "shell_tool", "can_patch" ], [["detect"]], { "tool_name": "patch", "shell_cmd_with_subs": "\"#{tool_path}#\" -p1 -d \"#{entry_path}#\" -i \"#{abs_patch_path}#\"" } ],
+
         [ [ "shell_tool", "can_gpu" ], [["detect"]], { "tool_name": "nvidia-smi.exe", "shell_cmd_with_subs": "\"#{tool_path}#\" -L | findstr GPU | find /c /v \"\"" ,  "capture_output": true} ],
         [ [ "shell_tool", "can_gpu" ], [["detect"]], { "tool_name": "nvidia-smi", "shell_cmd_with_subs": "\"#{tool_path}#\" -L | grep -c GPU" ,  "capture_output": true} ],
         [ [ "shell_tool", "can_gpu" ], [["detect"]], { "tool_name": "echo", "shell_cmd": "echo 0" ,  "capture_output": true} ],

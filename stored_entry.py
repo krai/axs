@@ -165,6 +165,8 @@ Usage examples :
 
 Usage examples :
                 axs fresh_entry dynamically_attached , plant apple tree , attach --:=^:work_collection , save
+
+                axs byname mlperf_inference_git_recipe , attach --:=^:work_collection , save another_git_recipe
         """
         if container:
             self.container_object = container
