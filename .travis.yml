@@ -37,7 +37,7 @@ matrix:
         - PYTHON_EXE=python
 
     - language: python
-      python: "3.10.9"
+      python: "3.10.8"
       dist: jammy
       env:
         - ONNX_CLASSIFY=on
