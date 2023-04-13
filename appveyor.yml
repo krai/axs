@@ -10,26 +10,29 @@ environment:
       PYTORCH_CLASSIFY: on
       TF_CLASSIFY: on
 
-    - job_name: Windows detection+bert Py=3.10
+    - job_name: Windows detection+Bert Py=3.10
       appveyor_build_worker_image: Visual Studio 2019
       PYTHON_DIR: C:\Python310-x64
       ONNX_DETECTION: on
       ONNX_BERT_SQUAD: on
       PYTORCH_BERT_DEMO: on
 
-    - job_name: MacOS detection+bert
-      appveyor_build_worker_image: macos
-      ONNX_DETECTION: on
+    - job_name: MacOS Bert
+      appveyor_build_worker_image: macos-catalina
       ONNX_BERT_SQUAD: on
       PYTORCH_BERT_DEMO: on
 
+    - job_name: MacOS detection
+      appveyor_build_worker_image: macos-catalina
+      ONNX_DETECTION: on
+
     - job_name: MacOS compile+classification
-      appveyor_build_worker_image: macos
+      appveyor_build_worker_image: macos-catalina
       PACKAGE_INSTALL_AND_IMPORT: on
       C_COMPILE_AND_RUN: on
       ONNX_CLASSIFY: on
 
-    - job_name: Linux detection+bert
+    - job_name: Linux detection+Bert
       appveyor_build_worker_image: Ubuntu
       ONNX_DETECTION: on
       ONNX_BERT_SQUAD: on
@@ -43,12 +46,16 @@ environment:
       PYTORCH_CLASSIFY: on
       TF_CLASSIFY: on
 
-    - job_name: Windows detection+bert Py=3.6
+    - job_name: Windows Bert Py=3.6
+      appveyor_build_worker_image: Visual Studio 2019
+      PYTHON_DIR: C:\Python36-x64
+      ONNX_BERT_SQUAD: on
+      PYTORCH_BERT_DEMO: on
+
+    - job_name: Windows detection Py=3.6
       appveyor_build_worker_image: Visual Studio 2019
       PYTHON_DIR: C:\Python36-x64
       ONNX_DETECTION: on
-      ONNX_BERT_SQUAD: on
-      PYTORCH_BERT_DEMO: on
 
     - job_name: Windows classification Py=3.6
       appveyor_build_worker_image: Visual Studio 2019
