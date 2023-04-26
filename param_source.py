@@ -82,7 +82,7 @@ class ParamSource:
         return dict(enumerate(args))
 
 
-    def slice(self, *param_names):
+    def slice(self, *param_names, safe=False, plantable=False):
         """Produces a slice of a dictionary, with optional remapping
 
 Usage examples :
@@ -92,11 +92,15 @@ Usage examples :
         for param_name in param_names:
             if type(param_name)==dict:      # perform optional remapping
                 for k in param_name.keys():
-                    slice_dict[k] = self[param_name[k]]
+                    slice_dict[k] = self.dig(param_name[k], safe=safe)
             else:
-                slice_dict[param_name] = self[param_name]
+                slice_dict[param_name] = self.dig(param_name, safe=safe)
 
-        return slice_dict
+        if plantable:
+            import itertools
+            return list(itertools.chain(*zip(slice_dict.keys(), slice_dict.values())))
+        else:
+            return slice_dict
 
 
     def runtime_stack(self):
