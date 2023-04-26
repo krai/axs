@@ -7,6 +7,8 @@ source assert.sh
 #   https://github.com/gorakhargosh/watchdog/issues/689
 if [ `axs func platform.system` == "Darwin" ] && [ `axs func platform.machine` == "x86_64" ]; then
     export ARCHFLAGS="-arch x86_64"
+    # avoid compiling broken "ml_dtypes" package:
+    export PIP_ONLY_BINARY=ml_dtypes
 fi
 
 # On Windows: avoid compiling "tokenizers" package that needs Rust compiler
