@@ -1,6 +1,16 @@
 {
     "_producer_rules": [
-        [ [ "preprocessed" ], [["preprocess"]], {
+        [ [ "preprocessed", "dataset_name=coco" ], [["preprocess"]], {
+                "dataset_entry": [  "AS^IS", "^", "byquery", [[ "^^", "substitute", "dataset,dataset_name=#{dataset_name}#" ]], {}, [ "dataset_name" ] ],
+                "images_dir": [  "AS^IS", "^^", "dig", "dataset_entry.images_dir" ],
+                "annotation_data": [  "AS^IS", "^^", "dig", "dataset_entry.annotation_data" ]
+          },
+          [
+            "resolution", "supported_extensions",
+            "data_type","new_file_extension", "file_name", "fof_name"
+          ]
+        ],
+        [ [ "preprocessed", "dataset_name=openimages" ], [["preprocess"]], {
                 "dataset_entry": [  "AS^IS", "^", "byquery", [[ "^^", "substitute", "dataset,dataset_name=#{dataset_name}#" ]], {}, [ "dataset_name" ] ],
                 "images_dir": [  "AS^IS", "^^", "dig", "dataset_entry.images_dir" ],
                 "annotation_data": [  "AS^IS", "^^", "dig", "dataset_entry.annotation_data" ]
