@@ -35,5 +35,6 @@
     "convert_to_bgr":       false,
     "data_type":            "uint8",
     "new_file_extension":   "rgb8",
-    "file_name":            "preprocessed"
+    "file_name":            "preprocessed",
+    "first_n":              20
 }
