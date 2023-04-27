@@ -1,6 +1,6 @@
 {
     "_producer_rules": [
-        [ [ "preprocessed", "dataset_name=imagenet", "preprocess_method=pillow" ], [["preprocess"]], {},
+        [ [ "preprocessed", "dataset_name=imagenet", "preprocess_method?=pillow" ], [["preprocess"]], {},
           [
             "images_directory", "resolution", "supported_extensions", "crop_percentage", "inter_size",
             "convert_to_bgr", "data_type", "new_file_extension", "file_name"
