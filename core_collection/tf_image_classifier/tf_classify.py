@@ -25,19 +25,20 @@ model_name                  = sys.argv[1]
 model_path                  = sys.argv[2]
 preprocessed_imagenet_dir   = sys.argv[3]
 resolution                  = int(sys.argv[4])
-num_of_images               = int(sys.argv[5])
-max_batch_size              = int(sys.argv[6])
-output_file_path            = sys.argv[7]
-top_n_max                   = int(sys.argv[8])
+input_layer_name            = sys.argv[5]
+output_layer_name           = sys.argv[6]
+normalize_symmetric         = eval(sys.argv[7])
+subtract_mean_bool          = eval(sys.argv[8])
+given_channel_means         = eval(sys.argv[9])
+given_channel_stds          = eval(sys.argv[10])
+data_layout                 = sys.argv[11]
+
+num_of_images               = int(sys.argv[12])
+max_batch_size              = int(sys.argv[13])
+output_file_path            = sys.argv[14]
+top_n_max                   = int(sys.argv[15])
 
 batch_count                 = math.ceil(num_of_images / max_batch_size)
-input_layer_name            = "input"
-output_layer_name           = "MobilenetV2/Predictions/Reshape_1"
-normalize_symmetric         = True
-subtract_mean_bool          = False
-given_channel_means         = []
-given_channel_stds          = []
-data_layout                 = "NHWC"
 
 loader_object               = ImagenetLoader(preprocessed_imagenet_dir, resolution, resolution, data_layout, normalize_symmetric, subtract_mean_bool, given_channel_means, given_channel_stds)
 
