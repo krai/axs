@@ -61,6 +61,7 @@
         "generate_calendar_py": "generate_calendar_py",
         "generate_primes_c": "generate_primes_c",
         "factorizer": "factorizer",
-        "bert_calibration_text_recipe": "bert_calibration_text_recipe"
+        "bert_calibration_text_recipe": "bert_calibration_text_recipe",
+        "model_tf_resnet50_recipe": "model_tf_resnet50_recipe"
     }
 }
