@@ -26,8 +26,8 @@
     "given_channel_stds": [ "^^", "dig", "model_entry.given_channel_stds" ],
     "data_layout":  [ "^^", "dig", "model_entry.data_layout" ],
 
-
-    "preprocessed_images_query": [ "preprocessed", "dataset_name=imagenet", [ "^^", "substitute", "resolution=#{resolution}#" ], [ "^^", "substitute", "first_n=#{num_of_images}#" ] ],
+    "preprocess_method": "pillow",
+    "preprocessed_images_query": [ "preprocessed", "dataset_name=imagenet", [ "preprocess_method", [ "^^", "get", "preprocess_method" ]], [ "resolution", [ "^^", "get", "resolution" ]],[ "first_n", [ "^^", "get", "num_of_images" ]] ],
     "preprocessed_images_dir": [ "^", "execute", [[
         [ "byquery", [[ "^^", "get", "preprocessed_images_query" ]] ],
         [ "get_path" ]
