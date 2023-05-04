@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.228'     # TODO: update with every kernel change
+__version__ = '0.2.229'     # TODO: update with every kernel change
 
 import logging
 import os
@@ -204,6 +204,16 @@ Usage examples :
         """
         logging.debug(f"[{self.get_name()}] all_byquery({query}, {template})")
         return self.work_collection().call('all_byquery', [query, template, parent_recursion])
+
+
+    def show_matching_rules(self, query):
+        """Find and show all the rules (and their advertising entries) that match the given query.
+
+Usage examples :
+                axs show_matching_rules shell_tool,can_download_url_from_zenodo
+        """
+        logging.debug(f"[{self.get_name()}] show_matching_rules({query})")
+        return self.work_collection().call('show_matching_rules', [query])
 
 
     def byquery(self, query, produce_if_not_found=True, parent_recursion=False):

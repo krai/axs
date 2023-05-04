@@ -10,7 +10,6 @@ import os
 def walk(__entry__):
     """An internal recursive generator not to be called directly
     """
-
     ak = __entry__.get_kernel()
     assert ak != None, "__entry__'s kernel should be defined"
     collection_own_name = __entry__.get_name()
@@ -42,14 +41,12 @@ def attached_entry(entry_path=None, own_data=None, generated_name_prefix=None, _
 Usage examples :
                 axs work_collection , attached_entry ultimate_answer ---='{"answer":42}' , save
     """
-
     return __entry__.get_kernel().fresh_entry(container=__entry__, entry_path=entry_path, own_data=own_data, generated_name_prefix=generated_name_prefix)
 
 
 def byname(entry_name, __entry__):
     """Fetch an entry by name
     """
-
     for candidate_entry in walk(__entry__):
         if candidate_entry.get_name() == entry_name:
             return candidate_entry
@@ -206,6 +203,68 @@ Usage examples :
     return matched_entries if template is None else "\n".join( matched_entries )
 
 
+def find_matching_rules(parsed_query, __entry__):
+    """An internal method for finding matching rules given a query, not to be called directly
+    """
+    matching_rules = []
+    for advertising_entry in walk(__entry__):
+        for unprocessed_rule in advertising_entry.own_data().get('_producer_rules', []):        # block processing some params until they are really needed
+            parsed_rule     = FilterPile( advertising_entry.nested_calls( unprocessed_rule[0] ), f"Entry: {advertising_entry.get_name()}" )
+
+            if parsed_rule.posi_tag_set.issubset(parsed_query.posi_tag_set):  # FIXME:  parsed_rule.posi_tag_set should include it
+                qr_conditions_ok  = True
+
+                # first matching rule's conditions against query's values:
+                for key_path, op, rule_val, rule_comparison_lambda, _ in parsed_rule.filter_list:
+
+                    if op=='tag+': continue     # we have matched them directly above
+
+                    # we allow (only) equalities on the rule side not to have a match on the query side
+                    if (key_path in parsed_query.posi_val_dict):    # does the query contain a specific value for this rule condition's key_path?
+                        qr_conditions_ok = rule_comparison_lambda( parsed_query.posi_val_dict[key_path] )       # if so, use this value in evaluating this rule condition
+                    else:
+                        qr_conditions_ok = (((op=='?=') and (key_path not in parsed_query.mentioned_set)) or    # ignore optional(selective) matches
+                                            ((op=='!.') and (key_path not in parsed_query.mentioned_set)) or
+                                            ((op=='=') and (key_path in parsed_query.mentioned_set)))           # otherwise if this rule condition sets a value, the query should have a corresponding condition to check (later)
+
+                    if not qr_conditions_ok: break
+
+                if qr_conditions_ok:
+                    # then matching query's conditions against rule's values:
+                    for key_path, op, query_val, query_comparison_lambda, _ in parsed_query.filter_list:
+
+                        if op=='tag+': continue     # we have matched them directly above
+
+                        # we allow (only) equalities on the query side not to have a match on the rule side
+                        if (key_path in parsed_rule.posi_val_dict): # does the rule contain a specific value for this query condition's key_path?
+                            qr_conditions_ok = query_comparison_lambda( parsed_rule.posi_val_dict[key_path] )   # if so, use this value in evaluating this query condition
+                        else:
+                            qr_conditions_ok = (op=='=')                                                        # otherwise this query condition must set a value
+
+                        if not qr_conditions_ok: break
+
+                if qr_conditions_ok:
+                    matching_rules.append( (advertising_entry, unprocessed_rule, parsed_rule) )
+
+    return sorted( matching_rules, key = lambda x: len(x[1][0]), reverse=True)
+
+
+def show_matching_rules(query, __entry__):
+    """Find and show all the rules (and their advertising entries) that match the given query.
+
+Usage examples :
+                axs show_matching_rules shell_tool,can_download_url_from_zenodo
+    """
+    parsed_query        = FilterPile( query, "Query" )
+
+    matching_rules = find_matching_rules(parsed_query, __entry__)
+
+    for advertising_entry, unprocessed_rule, parsed_rule in matching_rules:
+        print( f"{advertising_entry.get_path()}:\n\t{str(unprocessed_rule)}\n")
+
+    return len(matching_rules)
+
+
 def byquery(query, produce_if_not_found=True, parent_recursion=False, __entry__=None):
     """Fetch an entry by query.
         If the query returns nothing on the first pass, but matching _producer_rules are defined,
@@ -232,52 +291,13 @@ Usage examples :
     if produce_if_not_found and len(parsed_query.posi_tag_set):
         logging.warning(f"[{__entry__.get_name()}] byquery({query}) did not find anything, but there are tags: {parsed_query.posi_tag_set} , trying to find a producer...")
 
-        matched_rules = []
-        for advertising_entry in walk(__entry__):
-            for unprocessed_rule in advertising_entry.own_data().get('_producer_rules', []):        # block processing some params until they are really needed
-                parsed_rule     = FilterPile( advertising_entry.nested_calls( unprocessed_rule[0] ), f"Entry: {advertising_entry.get_name()}" )
-
-                if parsed_rule.posi_tag_set.issubset(parsed_query.posi_tag_set):  # FIXME:  parsed_rule.posi_tag_set should include it
-                    qr_conditions_ok  = True
-
-                    # first matching rule's conditions against query's values:
-                    for key_path, op, rule_val, rule_comparison_lambda, _ in parsed_rule.filter_list:
-
-                        if op=='tag+': continue     # we have matched them directly above
-
-                        # we allow (only) equalities on the rule side not to have a match on the query side
-                        if (key_path in parsed_query.posi_val_dict):    # does the query contain a specific value for this rule condition's key_path?
-                            qr_conditions_ok = rule_comparison_lambda( parsed_query.posi_val_dict[key_path] )       # if so, use this value in evaluating this rule condition
-                        else:
-                            qr_conditions_ok = (((op=='?=') and (key_path not in parsed_query.mentioned_set)) or    # ignore optional(selective) matches
-                                                ((op=='!.') and (key_path not in parsed_query.mentioned_set)) or
-                                                ((op=='=') and (key_path in parsed_query.mentioned_set)))           # otherwise if this rule condition sets a value, the query should have a corresponding condition to check (later) 
-
-                        if not qr_conditions_ok: break
-
-                    if qr_conditions_ok:
-                        # then matching query's conditions against rule's values:
-                        for key_path, op, query_val, query_comparison_lambda, _ in parsed_query.filter_list:
-
-                            if op=='tag+': continue     # we have matched them directly above
-
-                            # we allow (only) equalities on the query side not to have a match on the rule side
-                            if (key_path in parsed_rule.posi_val_dict): # does the rule contain a specific value for this query condition's key_path?
-                                qr_conditions_ok = query_comparison_lambda( parsed_rule.posi_val_dict[key_path] )   # if so, use this value in evaluating this query condition
-                            else:
-                                qr_conditions_ok = (op=='=')                                                        # otherwise this query condition must set a value
-
-                            if not qr_conditions_ok: break
-
-                    if qr_conditions_ok:
-                        matched_rules.append( (unprocessed_rule, advertising_entry, parsed_rule) )
-
-        logging.warning(f"[{__entry__.get_name()}] A total of {len(matched_rules)} matched rules found.\n")
+        matching_rules = find_matching_rules(parsed_query, __entry__)
+        logging.warning(f"[{__entry__.get_name()}] A total of {len(matching_rules)} matched rules found.\n")
 
         match_idx = 0
-        for unprocessed_rule, advertising_entry, parsed_rule in sorted( matched_rules, key = lambda x: len(x[0][0]), reverse=True):
+        for advertising_entry, unprocessed_rule, parsed_rule in matching_rules:
             match_idx += 1  # matches are 1-based
-            logging.warning(f"Matched Rule #{match_idx}/{len(matched_rules)}: {unprocessed_rule[0]} from Entry '{advertising_entry.get_name()}'...")
+            logging.warning(f"Matched Rule #{match_idx}/{len(matching_rules)}: {unprocessed_rule[0]} from Entry '{advertising_entry.get_name()}'...")
 
             rule_vector         = advertising_entry.nested_calls(unprocessed_rule)
             producer_pipeline   = rule_vector[1]
@@ -295,10 +315,10 @@ Usage examples :
             new_entry = advertising_entry.execute(producer_pipeline, cumulative_params)
 
             if new_entry:
-                logging.warning(f"Matched Rule #{match_idx}/{len(matched_rules)} produced a result.\n")
+                logging.warning(f"Matched Rule #{match_idx}/{len(matching_rules)} produced a result.\n")
                 return new_entry
             else:
-                logging.warning(f"Matched Rule #{match_idx}/{len(matched_rules)} didn't produce a result, {len(matched_rules)-match_idx} more matched rules to try...\n")
+                logging.warning(f"Matched Rule #{match_idx}/{len(matching_rules)} didn't produce a result, {len(matching_rules)-match_idx} more matched rules to try...\n")
 
     else:
         logging.debug(f"[{__entry__.get_name()}] byquery({query}) did not find anything, and no matching _producer_rules => returning None")
