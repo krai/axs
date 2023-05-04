@@ -135,7 +135,10 @@ def main():
     pipeline = cli_parse(sys.argv[1:])
 #    from pprint import pprint
 #    pprint(pipeline)
-    return ak.execute(pipeline)
+    try:
+        return ak.execute(pipeline)
+    except RuntimeError as e:
+        print(str(e), file=sys.stderr)
 
 if __name__ == '__main__':
     print(ak.pickle_struct(main()))

@@ -440,7 +440,7 @@ Usage examples :
         result              = entry = self
         insert_stash        = None
 
-        for call_params in pipeline:
+        for call_idx, call_params in enumerate(pipeline):
 
 #            if hasattr(result, 'call') and result!=entry:
 #                result.runtime_stack_cache = inherited_context
@@ -480,10 +480,13 @@ Usage examples :
                 if hasattr(entry, 'call'):                                  # an Entry-specific or Runnable-generic method ("func" called on an Entry will fire here)
                     # print(f"Before call({action_name}, {pos_params}, {edit_dict}, export:{export_params}, rel:+++{self}---)")
                     result = entry.call(action_name, pos_params, edit_dict, export_params, slice_relative_to=self, call_record_entry_ptr=call_record_entry_ptr, nested_context=local_context)
-                else:                                                       # a non-axs Object method
+                elif hasattr(entry, action_name):                           # a non-axs Object method
                     action_object   = getattr(entry, action_name)
                     pos_params      = rt_pipeline_wide.nested_calls(pos_params)              # perform all nested calls if there are any
                     result          = function_access.feed(action_object, pos_params, edit_dict)
+                else:
+                    display_pipeline = "\n\t".join([str(step) for step in ["["]+pipeline]) + "\n]"
+                    raise RuntimeError( f'In pipeline {display_pipeline} step {pipeline[call_idx]} cannot be execited on value ({entry}) produced by {pipeline[call_idx-1]}' )
 
                 if input_label:
                     rt_pipeline_wide[input_label] = call_record_entry_ptr[0]
