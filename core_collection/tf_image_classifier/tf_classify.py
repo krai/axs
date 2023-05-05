@@ -20,23 +20,32 @@ import numpy as np
 import tensorflow as tf
 from imagenet_loader import ImagenetLoader
 
+input_parameters_file_path = sys.argv[1]
+output_file_path = sys.argv[2]
 
-model_name                  = sys.argv[1]
-model_path                  = sys.argv[2]
-preprocessed_imagenet_dir   = sys.argv[3]
-resolution                  = int(sys.argv[4])
-input_layer_name            = sys.argv[5]
-output_layer_name           = sys.argv[6]
-normalize_symmetric         = eval(sys.argv[7])
-subtract_mean_bool          = eval(sys.argv[8])
-given_channel_means         = eval(sys.argv[9])
-given_channel_stds          = eval(sys.argv[10])
-data_layout                 = sys.argv[11]
 
-num_of_images               = int(sys.argv[12])
-max_batch_size              = int(sys.argv[13])
-output_file_path            = sys.argv[14]
-top_n_max                   = int(sys.argv[15])
+input_parameters = {}
+
+with open(input_parameters_file_path) as f:
+    input_parameters = json.load(f)
+
+
+model_name                  = input_parameters["model_name"]
+model_path                  = input_parameters["model_path"]
+preprocessed_imagenet_dir   = input_parameters["preprocessed_images_dir"]
+resolution                  = input_parameters["resolution"]
+input_layer_name            = input_parameters["input_layer_name"]
+output_layer_name           = input_parameters["output_layer_name"]
+
+normalize_symmetric         = eval(input_parameters["normalization"]["normalize_symmetric"])
+subtract_mean_bool          = input_parameters["normalization"]["subtract_mean_bool"]
+given_channel_means         = eval(input_parameters["normalization"]["given_channel_means"])
+given_channel_stds          = eval(input_parameters["normalization"]["given_channel_stds"])
+data_layout                 = input_parameters["normalization"]["data_layout"]
+
+num_of_images               = input_parameters["num_of_images"]
+max_batch_size              = input_parameters["max_batch_size"]
+top_n_max                   = input_parameters["top_n_max"]
 
 batch_count                 = math.ceil(num_of_images / max_batch_size)
 

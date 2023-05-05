@@ -20,14 +20,10 @@
     "resolution": [ "^^", "dig", "model_entry.resolution" ],
     "input_layer_name": [ "^^", "dig", "model_entry.input_layer_name" ],
     "output_layer_name": [ "^^", "dig", "model_entry.output_layer_name" ],
-    "normalize_symmetric": [ "^^", "dig", "model_entry.normalization.normalize_symmetric" ],
-    "subtract_mean_bool": [ "^^", "dig", "model_entry.normalization.subtract_mean_bool" ],
-    "given_channel_means": [ "^^", "dig", "model_entry.normalization.given_channel_means" ],
-    "given_channel_stds": [ "^^", "dig", "model_entry.normalization.given_channel_stds" ],
-    "data_layout":  [ "^^", "dig", "model_entry.normalization.data_layout" ],
+    "normalization": [ "^^", "dig", "model_entry.normalization" ],
 
     "preprocess_method": "pillow",
-    "preprocessed_images_query": [ "preprocessed", "dataset_name=imagenet", [ "preprocess_method", [ "^^", "get", "preprocess_method" ]], [ "resolution", [ "^^", "get", "resolution" ]],[ "first_n", [ "^^", "get", "num_of_images" ]] ],
+    "preprocessed_images_query": [ "preprocessed", "dataset_name=imagenet", [ "preprocess_method", [ "^^", "get", "preprocess_method" ]], [ "resolution", [ "^^", "get", "resolution" ]],[ "first_n", [ "^^", "get", "num_of_images" ]], "normalayout-", "quantized-" ],
     "preprocessed_images_dir": [ "^", "execute", [[
         [ "byquery", [[ "^^", "get", "preprocessed_images_query" ]] ],
         [ "get_path" ]
@@ -42,25 +38,40 @@
     "max_batch_size": 25,
     "top_n_max": 10,
 
-    "output_file_path": [ "^^", "execute", [[
+    "output_entry": [ "^^", "execute", [[
         [ "get", "__record_entry__" ],
         [ "attach", [ "^", "work_collection" ] ],
         [ "plant", [ "^^", "substitute", [[
             "_parent_entries", [ "AS^IS", "AS^IS", [ "^", "byname", "base_imagenet_experiment" ] ],
             "tags", [ "program_output", "classified_imagenet" ],
             "num_of_images", "#{num_of_images}#",
+            "max_batch_size", "#{max_batch_size}#",
+            "top_n_max", "#{top_n_max}#",
             "model_name", "#{model_name}#",
+            "model_path", "#{model_path}#",
             "framework", "#{framework}#",
             "preprocessed_images_dir", "#{preprocessed_images_dir}#",
+            "resolution", "#{resolution}#",
+            "input_layer_name", "#{input_layer_name}#",
+            "output_layer_name", "#{output_layer_name}#",
+            "normalization", "#{normalization}#",
             "output_file_name", "#{output_file_name}#"
          ]] ] ],
-         [ "save" ],
-         [ "get_path_from", "output_file_name" ]
+         [ "save" ]
       ]] ],
+
+    "output_file_path": [ "^^", "execute", [[
+        [ "get", "output_entry" ],
+        [ "get_path_from", "output_file_name" ]
+    ]] ],
+    "input_parameters_file_path": [ "^^", "execute", [[
+        [ "get", "output_entry" ],
+        [ "get_path", "data_axs.json" ]
+    ]] ],
 
     "errorize_output": true,
 
     "rel_script_path": "tf_classify.py",
 
-    "script_extra_params": [ "^^", "substitute", "#{model_name}# \"#{model_path}#\" \"#{preprocessed_images_dir}#\" #{resolution}# \"#{input_layer_name}#\" \"#{output_layer_name}#\" \"#{normalize_symmetric}#\" \"#{subtract_mean_bool}#\" \"#{given_channel_means}#\" \"#{given_channel_stds}#\" \"#{data_layout}#\" #{num_of_images}# #{max_batch_size}# \"#{output_file_path}#\" #{top_n_max}#" ]
+    "script_extra_params": [ "^^", "substitute", "\"#{input_parameters_file_path}#\" \"#{output_file_path}#\"" ]
 }
