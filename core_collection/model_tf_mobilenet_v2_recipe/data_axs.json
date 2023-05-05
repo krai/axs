@@ -15,8 +15,8 @@
     "normalization": {
         "normalize_symmetric": true,
         "subtract_mean_bool": false,
-        "given_channel_means": "[]",
-        "given_channel_stds": "[]",
+        "given_channel_means": [],
+        "given_channel_stds": [],
         "data_layout": "NHWC"
     },
 

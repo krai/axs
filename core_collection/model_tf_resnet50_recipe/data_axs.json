@@ -8,10 +8,10 @@
             "model_rel_path": "resnet50_v1.pb",
             "resolution": 224,
             "normalization": {
-                "normalize_symmetric": "None",
+                "normalize_symmetric": null,
                 "subtract_mean_bool": true,
-                "given_channel_means": "[ 123.68, 116.78, 103.94 ]",
-                "given_channel_stds": "[]",
+                "given_channel_means": [ 123.68, 116.78, 103.94 ],
+                "given_channel_stds": [],
                 "data_layout": "NHWC"
             },
             "input_layer_name": "input_tensor",
