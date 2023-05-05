@@ -14,7 +14,7 @@ The goal here is to retain compatibility with the core ideas and the spirit of C
 # Installation
 Simply download the repository.
 ```
-git clone https://github.com/krai/axs ~/axs
+git clone --branch stable https://github.com/krai/axs ~/axs
 ```
 
 Add the path to `bashrc`.
