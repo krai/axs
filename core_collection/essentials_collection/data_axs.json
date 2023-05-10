@@ -1,0 +1,17 @@
+{
+    "_parent_entries": [ [ "^", "core_collection" ] ],
+    "tags": [
+        "collection"
+    ],
+    "contained_entries": {
+        "downloader": "downloader",
+        "extractor": "extractor",
+        "git": "git",
+        "pip": "pip",
+        "base_pip_package": "base_pip_package",
+        "shell": "shell",
+        "python_in_shell": "python_in_shell",
+        "python_script": "python_script",
+        "tool_detector": "tool_detector"
+    }
+}

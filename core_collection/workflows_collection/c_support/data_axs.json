@@ -1,0 +1,15 @@
+{
+    "_parent_entries": [ [ "^", "core_collection" ] ],
+    "tags": [
+        "collection"
+    ],
+    "contained_entries": {
+        "square_root_c": "square_root_c",
+
+        "cjson_lib_recipe": "cjson_lib_recipe",
+        "cjson_test_c": "cjson_test_c",
+
+        "generate_primes_c": "generate_primes_c",
+        "factorizer": "factorizer"
+    }
+}

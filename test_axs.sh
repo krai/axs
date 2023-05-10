@@ -97,6 +97,14 @@ axs byname examplepage_recipe , remove
 axs byquery shell_tool,can_download_url --- , remove
 assert_end url_downloading_recipe_activation_replay_and_removal
 
+# generate primes
+axs byquery compiled,generate_primes
+axs byquery program_output,generate_primes,up_to=20
+assert 'axs byname primes_up_to_20 , dig program_output.primes' '[2, 3, 5, 7, 11, 13, 17, 19]'
+axs byquery program_output,generate_primes,up_to=20 --- , remove
+axs byquery compiled,generate_primes --- , remove
+assert_end generate_primes
+
 export KERNEL_PYTHON_VERSION=`axs kernel_python_major_dot_minor`
 echo "kernel Python version: $KERNEL_PYTHON_VERSION"
 export KERNEL_PYTHON_MINOR_VERSION=`axs kernel_python_major_dot_minor , split . , __getitem__ 1`
@@ -127,6 +135,23 @@ if [ "$C_COMPILE_AND_RUN" == "on" ]; then
     assert 'axs byquery compute,square_root,area=64' "When square's area is 64.0 its side is 8.0"
     axs byquery compiled,square_root --- , remove
     assert_end c_code_compilation_and_execution
+
+    # factorized numbers
+    axs byquery program_output,factorizer,up_to=172
+    export FACTORIZED_NUM=`axs byquery program_output,factorizer,up_to=172 , dig program_output`
+    assert "echo $FACTORIZED_NUM" "{factorized_number: [2, 2, 43]}"
+    axs byquery program_output,factorizer,up_to=172 --- , remove
+    axs byquery compiled,factorizer --- , remove
+    axs byquery program_output,generate_primes,up_to=172 --- , remove
+    axs byquery compiled,generate_primes --- , remove
+
+    axs byquery lib,lib_name=cjson --- , remove
+    axs byquery shell_tool,can_compile_c --- , remove
+    axs byquery git_repo,repo_name=cjson_source_git --- , remove
+    axs byquery shell_tool,can_git --- , remove
+
+    assert_end factorized_numbers
+
 else
     echo "Skipping the C_COMPILE_AND_RUN test"
 fi
@@ -151,6 +176,8 @@ if [ "$PYTORCH_CLASSIFY" == "on" ] || [ "$ONNX_CLASSIFY" == "on" ] || [ "$TF_CLA
         assert 'echo $ACCURACY_OUTPUT' '0.71875'
 
         axs byquery python_package,package_name=torchvision --- , remove
+
+        assert_end pytorch_image_classifier
     else
         echo "Skipping the PYTORCH_CLASSIFY test"
     fi
@@ -182,6 +209,8 @@ if [ "$PYTORCH_CLASSIFY" == "on" ] || [ "$ONNX_CLASSIFY" == "on" ] || [ "$TF_CLA
 
         axs byquery python_package,package_name=onnxruntime --- , remove
         axs byquery python_package,package_name=onnxruntime-gpu --- , remove
+
+        assert_end onnx_image_classifier
     else
         echo "Skipping the ONNX_CLASSIFY test"
     fi
@@ -204,6 +233,8 @@ if [ "$PYTORCH_CLASSIFY" == "on" ] || [ "$ONNX_CLASSIFY" == "on" ] || [ "$TF_CLA
         axs byquery downloaded,tf_model --- , remove
 
         axs byquery python_package,package_name=tensorflow --- , remove
+
+        assert_end tf_image_classifier
     else
         echo "Skipping the TF_CLASSIFY test"
     fi
@@ -226,8 +257,6 @@ if [ "$PYTORCH_CLASSIFY" == "on" ] || [ "$ONNX_CLASSIFY" == "on" ] || [ "$TF_CLA
 
     axs byquery shell_tool,can_python --- , remove
     axs byquery shell_tool,can_gpu --- , remove
-
-    assert_end dependency_installation_and_resolution_for_external_python_script
 fi
 
 #axs byquery program_output,calendar , get program_output
@@ -244,6 +273,13 @@ if [ "$ONNX_DETECTION" == "on" ]; then
     assert_end onnx_object_detection
 fi
 
+if [ "$PYTORCH_BERT_DEMO" == "on" ]; then
+    axs byname bert_demo_torch_py , run
+    export BERT_DEMO_OUTPUT=`axs byname bert_demo_torch_py , run --capture_output+`
+    assert "echo $BERT_DEMO_OUTPUT" "Question_1: Which country has Moscow as the capital? Answer_1: the soviet union Question_2: How old is the capital of the Soviet Union? Answer_2: more than 800 years Question_3: Where is the Bolshoi Theater? Answer_3: moscow Question_4: How many museums are there in the capital of the Soviet Union? Answer_4: 150 Question_5: What is the Kremlin? Answer_5: a fortress surrounded by red stone walls Question_6: Where is the Kremlin? Answer_6: in the heart of moscow Question_7: What is inside the Kremlin? Answer_7: palaces , cathedrals and buildings housing the seat of the soviet government Question_8: What colour are the stones of the Kremlin? Answer_8: red"
+    assert_end pytorch_bert_demo
+fi
+
 if [ "$ONNX_BERT_SQUAD" == "on" ]; then
     axs byquery tokenized,squad_v1_1
     axs byquery program_output,bert_squad,framework=onnx,batch_count=20
@@ -255,35 +291,5 @@ if [ "$ONNX_BERT_SQUAD" == "on" ]; then
     assert_end onnx_bert_squad
 fi
 
-if [ "$PYTORCH_BERT_DEMO" == "on" ]; then
-    axs byname bert_demo_torch_py , run
-    export BERT_DEMO_OUTPUT=`axs byname bert_demo_torch_py , run --capture_output+`
-    assert "echo $BERT_DEMO_OUTPUT" "Question_1: Which country has Moscow as the capital? Answer_1: the soviet union Question_2: How old is the capital of the Soviet Union? Answer_2: more than 800 years Question_3: Where is the Bolshoi Theater? Answer_3: moscow Question_4: How many museums are there in the capital of the Soviet Union? Answer_4: 150 Question_5: What is the Kremlin? Answer_5: a fortress surrounded by red stone walls Question_6: Where is the Kremlin? Answer_6: in the heart of moscow Question_7: What is inside the Kremlin? Answer_7: palaces , cathedrals and buildings housing the seat of the soviet government Question_8: What colour are the stones of the Kremlin? Answer_8: red"
-    assert_end pytorch_bert_demo
-fi
 
-# generate primes
-axs byquery compiled,generate_primes
-axs byquery program_output,generate_primes,up_to=20
-assert 'axs byname primes_up_to_20 , dig program_output.primes' '[2, 3, 5, 7, 11, 13, 17, 19]'
-axs byquery program_output,generate_primes,up_to=20 --- , remove
-axs byquery compiled,generate_primes --- , remove
-assert_end generate_primes
-
-# factorized numbers
-axs byquery program_output,factorizer,up_to=172
-export FACTORIZED_NUM=`axs byquery program_output,factorizer,up_to=172 , dig program_output`
-assert "echo $FACTORIZED_NUM" "{factorized_number: [2, 2, 43]}"
-axs byquery program_output,factorizer,up_to=172 --- , remove
-axs byquery compiled,factorizer --- , remove
-axs byquery program_output,generate_primes,up_to=172 --- , remove
-axs byquery compiled,generate_primes --- , remove
-
-axs byquery lib,lib_name=cjson --- , remove
-axs byquery shell_tool,can_compile_c --- , remove
-axs byquery git_repo,repo_name=cjson_source_git --- , remove
-axs byquery shell_tool,can_git --- , remove
-
-assert_end factorized_numbers
 echo "axs tests done"
-

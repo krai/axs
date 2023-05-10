@@ -1,0 +1,7 @@
+{
+    "cmd_head": "echo",
+    "script_extra_params": "Hello, world",
+
+    "shell_cmd_with_subs": "#{cmd_head}# #{script_extra_params}#",
+    "shell_cmd": [ "^^", "substitute", [ "^^", "get", "shell_cmd_with_subs" ] ]
+}

@@ -1,5 +1,0 @@
-{
-    "person":   "Bill",
-    "be":       "Be",
-    "person2":  [ "^^", "substitute", "#{person}#" ]
-}

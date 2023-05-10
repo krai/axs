@@ -1,0 +1,23 @@
+{
+    "tags": [
+        "collection"
+    ],
+    "contained_entries": {
+        "base_dataset": "base_dataset",
+        "dataset_coco": "dataset_coco",
+        "coco_images_recipe": "coco_images_recipe",
+        "coco_annotation_recipe": "coco_annotation_recipe",
+        "dataset_openimages": "dataset_openimages",
+        "openimages_mlperf_recipe": "openimages_mlperf_recipe",
+        "pillow_resize_for_object_detection": "pillow_resize_for_object_detection",
+        "coco_preprocessed_loader": "coco_preprocessed_loader",
+        "base_object_detection_experiment": "base_object_detection_experiment",
+
+        "model_onnx_ssd_resnet34_recipe": "model_onnx_ssd_resnet34_recipe",
+        "model_onnx_retinanet_coco_recipe": "model_onnx_retinanet_coco_recipe",
+        "model_onnx_retinanet_openimages_recipe": "model_onnx_retinanet_openimages_recipe",
+
+        "onnx_object_detector": "onnx_object_detector",
+        "bboxes_for_onnx_object_detector": "bboxes_for_onnx_object_detector"
+    }
+}
