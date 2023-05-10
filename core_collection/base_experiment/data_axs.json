@@ -1,6 +1,11 @@
 {
+    "input_json_file_path": [ "^^", "get_path", "data_axs.json" ],
+
+    "output_file_name": "program_output.json",
+    "output_json_file_path": [ "^^", "get_path_from", "output_file_name" ],
+
     "program_output": [ "^^", "execute", [[
-        [ "get_path_from", "output_file_name" ],
+        [ "get", "output_json_file_path" ],
         0,
         [ "func", "ufun.load_json" ]
     ]] ]
