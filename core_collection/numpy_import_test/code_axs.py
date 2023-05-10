@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""An example of a script that can automatically import its documented dependencies before execution.
+"""Example "axs-native" code that can automatically import its documented dependencies before execution.
 
 Usage examples:
     # without any dependency modifications:
