@@ -29,13 +29,13 @@
         [ "get_path" ]
     ]], {}, ["preprocessed_images_query"] ],
 
-    "num_of_images": 20,
     "framework": "tf",
-
-    "execution_device": "",
-
+    "num_of_images": 20,
     "max_batch_size": 25,
     "top_n_max": 10,
+
+    "gpu_memory_percent": 33,
+    "num_of_cpus": 0,
 
     "output_entry": [ "^^", "execute", [[
         [ "get", "__record_entry__" ],
@@ -45,12 +45,16 @@
             "tags", [ "program_output", "classified_imagenet" ]
           ] ],
         [ "plant", [ "^^", "slice", [
+            "framework",
             "num_of_images",
             "max_batch_size",
             "top_n_max",
+
+            "gpu_memory_percent",
+            "num_of_cpus",
+
             "model_name",
             "model_path",
-            "framework",
             "preprocessed_images_dir",
             "resolution",
             "input_layer_name",

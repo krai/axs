@@ -7,7 +7,6 @@ Usage examples :
                 axs byquery program_output,classified_imagenet,framework=tf,preprocessed_imagenet_dir=/datasets/imagenet/pillow_sq.224_cropped_resized_imagenet50000,num_of_images=50000,max_batch_size=1000 , get accuracy
 """
 
-import os
 import sys
 
 print(f"\n**\nRUNNING {__file__} under {sys.executable} with sys.path={sys.path}\n**\n", file=sys.stderr)
@@ -46,6 +45,9 @@ num_of_images               = input_parameters["num_of_images"]
 max_batch_size              = input_parameters["max_batch_size"]
 top_n_max                   = input_parameters["top_n_max"]
 
+gpu_memory_percent          = input_parameters["gpu_memory_percent"]
+num_of_cpus                 = input_parameters["num_of_cpus"]
+
 batch_count                 = math.ceil(num_of_images / max_batch_size)
 
 loader_object               = ImagenetLoader(preprocessed_imagenet_dir, resolution, resolution, data_layout, normalize_symmetric, subtract_mean_bool, given_channel_means, given_channel_stds)
@@ -70,11 +72,9 @@ def load_graph(model_path):
 config = tf.compat.v1.ConfigProto()
 config.gpu_options.allow_growth = True
 config.gpu_options.allocator_type = 'BFC'
-config.gpu_options.per_process_gpu_memory_fraction = float(os.getenv('CK_TF_GPU_MEMORY_PERCENT', 33)) / 100.0
-num_processors = int(os.getenv('CK_TF_CPU_NUM_OF_PROCESSORS', 0))
-if num_processors > 0:
-    config.device_count["CPU"] = num_processors
-
+config.gpu_options.per_process_gpu_memory_fraction = float(gpu_memory_percent) / 100.0
+if num_of_cpus > 0:
+    config.device_count["CPU"] = num_of_cpus
 
 ts_before_model_loading = time()
 
