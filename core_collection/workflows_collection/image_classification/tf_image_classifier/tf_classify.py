@@ -19,13 +19,13 @@ import numpy as np
 import tensorflow as tf
 from imagenet_loader import ImagenetLoader
 
-input_parameters_file_path = sys.argv[1]
-output_file_path = sys.argv[2]
+input_json_file_path        = sys.argv[1]
+output_json_file_path       = sys.argv[2]
 
 
 input_parameters = {}
 
-with open(input_parameters_file_path) as f:
+with open(input_json_file_path) as f:
     input_parameters = json.load(f)
 
 
@@ -146,7 +146,7 @@ with tf.compat.v1.Session(graph=graph, config=config) as sess:
             top_n_predictions[stripped_batch_filenames[i]] = weight_id
             weight_id = {}
 
-if output_file_path:
+if output_json_file_path:
         output_dict = {
             "model_name": model_name,
             "framework": "onnx",
@@ -165,6 +165,6 @@ if output_file_path:
             "top_n": top_n_predictions
         }
         json_string = json.dumps( output_dict , indent=4)
-        with open(output_file_path, "w") as json_fd:
+        with open(output_json_file_path, "w") as json_fd:
             json_fd.write( json_string+"\n" )
-        print(f'Predictions for {num_of_images} images written into "{output_file_path}"')
+        print(f'Predictions for {num_of_images} images written into "{output_json_file_path}"')
