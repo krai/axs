@@ -7,11 +7,15 @@
         "downloader": "downloader",
         "extractor": "extractor",
         "git": "git",
+
         "pip": "pip",
         "base_pip_package": "base_pip_package",
+
         "shell": "shell",
         "python_in_shell": "python_in_shell",
         "python_script": "python_script",
+        "base_experiment": "base_experiment",
+
         "tool_detector": "tool_detector"
     }
 }

@@ -4,7 +4,6 @@
         "collection"
     ],
     "contained_entries": {
-        "base_experiment": "base_experiment",
         "generate_calendar_py": "generate_calendar_py",
 
         "mlperf_inference_git_recipe": "mlperf_inference_git_recipe",
