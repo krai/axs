@@ -27,6 +27,8 @@
         [ "get_path" ]
     ]], {}, [ "imagenet_query" ] ],
 
+    "input_file_list": [ "^^", "generate_file_list" ],
+
     "dataset_name":         "imagenet",
     "resolution":           224,
     "supported_extensions": ["jpeg", "jpg", "gif", "png"],

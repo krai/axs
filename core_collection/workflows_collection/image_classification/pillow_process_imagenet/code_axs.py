@@ -14,6 +14,15 @@ Usage examples :
                     # overriding the input directory to preprocess all 50k of pre-stored ImageNet:
                 axs byquery preprocessed,dataset_name=imagenet,images_directory=/datasets/dataset-imagenet-ilsvrc2012-val,entry_name=pillow_imagenet50k_cropped_resized_to_sq.224
 """
+def generate_file_list(images_directory, supported_extensions,calibration_dir=None, index_file=None, first_n=None, first_n_insert=None):
+    original_file_list = os.listdir(images_directory)
+    sorted_filenames = [filename for filename in sorted(original_file_list) if any(filename.lower().endswith(extension) for extension in supported_extensions) ]
+
+    if first_n:
+        sorted_filenames = sorted_filenames[:first_n] #if first_n is not None else sorted_filenames
+        assert len(sorted_filenames) == first_n
+
+    return sorted_filenames
 
 # Load and preprocess image:
 # Mimic preprocessing steps from the official reference code.
@@ -78,7 +87,7 @@ def load_image(image_path,            # Full path to processing image
     return img
 
 
-def preprocess(dataset_name, images_directory, resolution, supported_extensions, crop_percentage, inter_size, convert_to_bgr, data_type, new_file_extension, file_name, first_n, tags=None, entry_name=None, __record_entry__=None):
+def preprocess(dataset_name, images_directory, resolution, supported_extensions, crop_percentage, inter_size, convert_to_bgr, data_type, new_file_extension, file_name, first_n, input_file_list, tags=None, entry_name=None, __record_entry__=None):
 
     __record_entry__["tags"] = tags or [ "preprocessed", dataset_name ]
     if not entry_name:
@@ -89,10 +98,10 @@ def preprocess(dataset_name, images_directory, resolution, supported_extensions,
 
     os.makedirs( output_directory )
 
-    sorted_filenames = [filename for filename in sorted(os.listdir(images_directory)) if any(filename.lower().endswith(extension) for extension in supported_extensions) ]
-    sorted_filenames = sorted_filenames[:first_n] if first_n is not None else sorted_filenames
+    #sorted_filenames = [filename for filename in sorted(os.listdir(images_directory)) if any(filename.lower().endswith(extension) for extension in supported_extensions) ]
+    #sorted_filenames = sorted_filenames[:first_n] if first_n is not None else sorted_filenames
 
-    for current_idx, input_filename in enumerate(sorted_filenames):
+    for current_idx, input_filename in enumerate(input_file_list):
 
         full_input_path     = os.path.join(images_directory, input_filename)
 
