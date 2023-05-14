@@ -22,7 +22,6 @@ from imagenet_loader import ImagenetLoader
 input_json_file_path        = sys.argv[1]
 output_json_file_path       = sys.argv[2]
 
-
 input_parameters = {}
 
 with open(input_json_file_path) as f:
@@ -32,6 +31,7 @@ with open(input_json_file_path) as f:
 model_name                  = input_parameters["model_name"]
 model_path                  = input_parameters["model_path"]
 preprocessed_imagenet_dir   = input_parameters["preprocessed_images_dir"]
+input_file_list             = input_parameters["input_file_list"]
 resolution                  = input_parameters["resolution"]
 input_layer_name            = input_parameters["input_layer_name"]
 output_layer_name           = input_parameters["output_layer_name"]
@@ -50,7 +50,7 @@ num_of_cpus                 = input_parameters["num_of_cpus"]
 
 batch_count                 = math.ceil(num_of_images / max_batch_size)
 
-loader_object               = ImagenetLoader(preprocessed_imagenet_dir, resolution, resolution, data_layout, normalize_symmetric, subtract_mean_bool, given_channel_means, given_channel_stds)
+loader_object               = ImagenetLoader(preprocessed_imagenet_dir, input_file_list, resolution, resolution, data_layout, normalize_symmetric, subtract_mean_bool, given_channel_means, given_channel_stds)
 
 
 def load_graph(model_path):

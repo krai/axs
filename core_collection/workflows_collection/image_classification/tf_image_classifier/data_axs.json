@@ -28,6 +28,8 @@
         [ "byquery", [[ "^^", "get", "preprocessed_images_query" ]] ],
         [ "get_path" ]
     ]], {}, ["preprocessed_images_query"] ],
+    "input_file_list_entry": [ "^", "byquery", [[ "^^", "get", "preprocessed_images_query" ]], {}, ["preprocessed_images_query"] ],
+    "input_file_list": [ "^^", "dig", "input_file_list_entry.input_file_list" ],
 
     "framework": "tf",
     "num_of_images": 20,
@@ -56,6 +58,7 @@
             "model_name",
             "model_path",
             "preprocessed_images_dir",
+            "input_file_list",
             "resolution",
             "input_layer_name",
             "output_layer_name",

@@ -6,12 +6,11 @@ import numpy as np
 
 class ImagenetLoader:
 
-    file_pattern                        = 'ILSVRC2012_val_000{:05d}.rgb8'
-
-    def __init__(self, preprocessed_imagenet_dir, height, width, data_layout, normalize_symmetric=None, subtract_mean_bool=None, given_channel_means=None, given_channel_stds=None):
+    def __init__(self, preprocessed_imagenet_dir, input_file_list, height, width, data_layout, normalize_symmetric=None, subtract_mean_bool=None, given_channel_means=None, given_channel_stds=None):
         "A trivial constructor"
 
         self.preprocessed_imagenet_dir  = preprocessed_imagenet_dir
+        self.input_file_list            = input_file_list
         self.height                     = height
         self.width                      = width
         self.data_layout                = data_layout
@@ -22,7 +21,8 @@ class ImagenetLoader:
 
 
     def load_image_by_index_and_normalize(self, image_index):
-        image_filename = self.file_pattern.format(image_index+1)
+        image_filename = (self.input_file_list[image_index]).split(".")[0] + ".rgb8"
+
         image_filepath = os.path.join( self.preprocessed_imagenet_dir, image_filename )
 
         img_rgb8 = np.fromfile(image_filepath, np.uint8)
