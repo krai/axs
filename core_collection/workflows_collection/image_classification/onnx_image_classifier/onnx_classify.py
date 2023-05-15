@@ -69,6 +69,7 @@ given_channel_means         = eval(sys.argv[10])
 output_layer_name           = sys.argv[11]
 execution_device            = sys.argv[12]          # if empty, it will be autodetected
 top_n_max                   = int(sys.argv[13])
+input_file_list             = eval(sys.argv[14])
 
 batch_count                 = math.ceil(num_of_images / max_batch_size)
 data_layout                 = "NCHW"
@@ -115,7 +116,7 @@ height              = model_input_shape[2]
 width               = model_input_shape[3]
 model_output_shape  = sess.get_outputs()[output_layer_index].shape
 
-loader_object       = ImagenetLoader(preprocessed_imagenet_dir, height, width, data_layout, normalize_symmetric, subtract_mean_bool, given_channel_means, given_channel_stds)
+loader_object       = ImagenetLoader(preprocessed_imagenet_dir, input_file_list, height, width, data_layout, normalize_symmetric, subtract_mean_bool, given_channel_means, given_channel_stds)
 
 
 print(f"input_layer_names={input_layer_names}", file=sys.stderr)
