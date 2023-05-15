@@ -58,6 +58,7 @@ output_file_path            = sys.argv[5]       # if empty, recording of the out
 execution_device            = sys.argv[6]       # if empty, it will be autodetected
 max_batch_size              = int(sys.argv[7])
 top_n_max                   = int(sys.argv[8])
+input_file_list             = eval(sys.argv[9])
 
 file_pattern                = 'ILSVRC2012_val_000{:05d}.rgb8'
 max_attempts                = 3
@@ -88,7 +89,7 @@ normalize_symmetric = False # ternary choice (False means "asymmetric normalizat
 subtract_mean_bool  = True
 given_channel_means = [0.485, 0.456, 0.406]
 given_channel_stds  = [0.229, 0.224, 0.225]
-loader_object       = ImagenetLoader(preprocessed_imagenet_dir, resolution, resolution, data_layout, normalize_symmetric, subtract_mean_bool, given_channel_means, given_channel_stds)
+loader_object       = ImagenetLoader(preprocessed_imagenet_dir, input_file_list, resolution, resolution, data_layout, normalize_symmetric, subtract_mean_bool, given_channel_means, given_channel_stds)
 
 
 ts_before_model_loading = time()
