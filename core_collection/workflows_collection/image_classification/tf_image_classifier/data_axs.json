@@ -23,13 +23,23 @@
     "normalization": [ "^^", "dig", "model_entry.normalization" ],
 
     "preprocess_method": "pillow",
-    "preprocessed_images_query": [ "preprocessed", "dataset_name=imagenet", [ "preprocess_method", [ "^^", "get", "preprocess_method" ]], [ "resolution", [ "^^", "get", "resolution" ]],[ "first_n", [ "^^", "get", "num_of_images" ]], "normalayout-", "quantized-" ],
-    "preprocessed_images_dir": [ "^", "execute", [[
-        [ "byquery", [[ "^^", "get", "preprocessed_images_query" ]] ],
+    "index_file": null,
+    "preprocessed_images_query": [
+        "preprocessed",
+        "dataset_name=imagenet",
+        [ "preprocess_method", [ "^^", "get", "preprocess_method" ]],
+        [ "resolution", [ "^^", "get", "resolution" ]],
+        [ "first_n", [ "^^", "get", "num_of_images" ]],
+        [ "index_file", [ "^^", "get", "index_file" ]],
+        "normalayout-",
+        "quantized-"
+    ],
+    "preprocessed_images_entry": [ "^", "byquery", [[ "^^", "get", "preprocessed_images_query" ]], {}, ["preprocessed_images_query"] ],
+    "preprocessed_images_dir": [ "^^", "execute", [[
+        [ "get", "preprocessed_images_entry" ],
         [ "get_path" ]
-    ]], {}, ["preprocessed_images_query"] ],
-    "input_file_list_entry": [ "^", "byquery", [[ "^^", "get", "preprocessed_images_query" ]], {}, ["preprocessed_images_query"] ],
-    "input_file_list": [ "^^", "dig", "input_file_list_entry.input_file_list" ],
+    ]] ],
+    "input_file_list": [ "^^", "dig", "preprocessed_images_entry.input_file_list" ],
 
     "framework": "tf",
     "num_of_images": 20,
