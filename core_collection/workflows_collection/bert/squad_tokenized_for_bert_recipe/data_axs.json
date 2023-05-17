@@ -59,10 +59,15 @@
     ],
     "mlperf_inference_git_entry": [ "^", "byquery", "git_repo,repo_name=mlperf_inference_git" ],
 
-    "mlperf_inference_path": [ "^^", "execute", [[
+    "bert_code_root": [ "^^", "execute", [[
         [ "get", "mlperf_inference_git_entry" ],
-        [ "get_path" ]
-    ]], {}, ["mlperf_inference_git_entry"] ],
+        [ "get_path_of", "bert_code_root" ]
+    ]] ],
+
+    "bert_squad_code_dir": [ "^^", "execute", [[
+        [ "get", "mlperf_inference_git_entry" ],
+        [ "get_path_of", "bert_squad_code_dir" ]
+    ]] ],
 
     "squad_dataset_query":[ "downloaded", "squad_original" ],
     "squad_dataset_entry": [ "^", "byquery", [[ "^^", "get", "squad_dataset_query" ]], {}, ["squad_dataset_query"] ],
@@ -78,5 +83,5 @@
         [ "get_path" ]
     ]] ],
     "rel_script_path": "tokenize_and_pack.py",
-    "script_extra_params": [ "^^", "substitute", "\"#{squad_dataset_original_path}#\" \"#{squad_tokenization_vocab_path}#\" \"#{tokenized_squad_dir}#\" \"#{tokenized_squad_files_prefix}#\" #{dataset_max_seq_length}# #{dataset_max_query_length}# #{dataset_doc_stride}# \"#{mlperf_inference_path}#\" #{calibration}# #{calibration_option}# \"#{calibration_data_path}#\"" ]
+    "script_extra_params": [ "^^", "substitute", "\"#{squad_dataset_original_path}#\" \"#{squad_tokenization_vocab_path}#\" \"#{tokenized_squad_dir}#\" \"#{tokenized_squad_files_prefix}#\" #{dataset_max_seq_length}# #{dataset_max_query_length}# #{dataset_doc_stride}# \"#{bert_code_root}#\" \"#{bert_squad_code_dir}#\" #{calibration}# #{calibration_option}# \"#{calibration_data_path}#\"" ]
 }

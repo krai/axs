@@ -6,26 +6,26 @@ import sys
 from transformers import BertTokenizer
 
 # Input and output file paths:
-squad_original_path          = sys.argv[1]
-tokenization_vocab_path      = sys.argv[2]
-tokenized_squad_dir          = sys.argv[3]
-tokenized_squad_files_prefix = sys.argv[4]
+squad_original_path             = sys.argv[1]
+tokenization_vocab_path         = sys.argv[2]
+tokenized_squad_dir             = sys.argv[3]
+tokenized_squad_files_prefix    = sys.argv[4]
 
 # Tokenization parameters:
-max_seq_length               = int(sys.argv[5])
-max_query_length             = int(sys.argv[6])
-doc_stride                   = int(sys.argv[7])
+max_seq_length                  = int(sys.argv[5])
+max_query_length                = int(sys.argv[6])
+doc_stride                      = int(sys.argv[7])
 
-bert_code_root= os.path.join(sys.argv[8], 'language', 'bert')
+bert_code_root                  = sys.argv[8]
+bert_squad_code_dir             = sys.argv[9]
 
-calibration                   = sys.argv[9] == "yes"
+calibration                     = sys.argv[10] == "yes"
 if calibration:
-    calibration_option            = sys.argv[10]
-    calibration_data_path         = sys.argv[11]
+    calibration_option          = sys.argv[11]
+    calibration_data_path       = sys.argv[12]
 
 sys.path.insert(0, bert_code_root)
-
-sys.path.insert(0, os.path.join(bert_code_root, 'DeepLearningExamples','TensorFlow','LanguageModeling','BERT'))
+sys.path.insert(0, bert_squad_code_dir)
 
 from create_squad_data import read_squad_examples, convert_examples_to_features
 

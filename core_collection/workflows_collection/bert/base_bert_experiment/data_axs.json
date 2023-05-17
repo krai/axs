@@ -8,15 +8,16 @@
      ]] ],
 
     "mlperf_inference_git_entry": [ "^", "byquery", "git_repo,repo_name=mlperf_inference_git" ],
-    "bert_code_extra_path": [ "^^", "execute", [[
+
+    "bert_squad_code_dir": [ "^^", "execute", [[
         [ "get", "mlperf_inference_git_entry" ],
-        [ "get_path", [[ "language","bert", "DeepLearningExamples", "TensorFlow", "LanguageModeling", "BERT" ]] ]
+        [ "get_path_of", "bert_squad_code_dir" ]
     ]] ],
 
     "abs_script_path": [ "^^", "execute", [[
         [ "get", "mlperf_inference_git_entry" ],
-        [ "get_path", [[ "language","bert", "accuracy-squad.py" ]] ]
-            ]], {}, ["mlperf_inference_git_entry"] ],
+        [ "get_path_of", "bert_accuracy_script" ]
+    ]] ],
 
     "accuracy_log_path": ["^^", "get_path", "accuracy_log.json"],
     "check_file_exist": [ "^^", "func", [ "os.path.isfile" , ["^^", "get", "accuracy_log_path"] ] ],
@@ -36,7 +37,7 @@
         [ "run", [], {
                 "desired_python_version": [ "^^", "get", "desired_python_version" ],
                 "python_deps": [
-                    [ "^^", "get", "bert_code_extra_path" ],
+                    [ "^^", "get", "bert_squad_code_dir" ],
                     [ "AS^IS", "^^", "python_sync_pip_package", "python_package,package_name=tensorflow" ],
                     [ "AS^IS", "^^", "python_sync_pip_package", "python_package,package_name=transformers" ]
                 ],

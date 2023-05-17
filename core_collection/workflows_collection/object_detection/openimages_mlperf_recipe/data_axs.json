@@ -8,8 +8,8 @@
 
     "in_dir": [ "^^", "execute", [[
         [ "get", "mlperf_inference_git_entry" ],
-        [ "get_path", [["vision", "classification_and_detection", "tools"]] ]
-    ]], {}, ["mlperf_inference_git_entry"] ],
+        [ "get_path_of", "vision_tools_dir" ]
+    ]] ],
 
     "python_deps": [
         [ "^^", "python_sync_pip_package", [[ "python_package", "package_name=boto3" ]] ],

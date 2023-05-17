@@ -21,10 +21,15 @@
     ],
     "mlperf_inference_git_entry": [ "^", "byquery", "git_repo,repo_name=mlperf_inference_git" ],
 
-    "mlperf_inference_path": [ "^^", "execute", [[
+    "bert_code_root": [ "^^", "execute", [[
         [ "get", "mlperf_inference_git_entry" ],
-        [ "get_path" ]
-    ]], {}, ["mlperf_inference_git_entry"] ],
+        [ "get_path_of", "bert_code_root" ]
+    ]] ],
+
+    "bert_squad_code_dir": [ "^^", "execute", [[
+        [ "get", "mlperf_inference_git_entry" ],
+        [ "get_path_of", "bert_squad_code_dir" ]
+    ]] ],
 
     "model_name": "bert_large",
     "model_query": [ "inference_ready", "onnx_model", [ "^^", "substitute", "model_name=#{model_name}#" ] ],
@@ -75,5 +80,5 @@
 
     "rel_script_path": "bert_squad_onnxruntime.py",
 
-    "script_extra_params": [ "^^", "substitute", "\"#{mlperf_inference_path}#\" \"#{squad_dataset_original_path}#\" \"#{tokenized_squad_path}#\" \"#{model_path}#\" \"#{model_input_layers_tms}#\" \"#{batch_size}#\" \"#{batch_count}#\" \"#{execution_device}#\" \"#{output_file_path}#\"" ]
+    "script_extra_params": [ "^^", "substitute", "\"#{bert_code_root}#\" \"#{bert_squad_code_dir}#\" \"#{squad_dataset_original_path}#\" \"#{tokenized_squad_path}#\" \"#{model_path}#\" \"#{model_input_layers_tms}#\" \"#{batch_size}#\" \"#{batch_count}#\" \"#{execution_device}#\" \"#{output_file_path}#\"" ]
 }

@@ -9,27 +9,28 @@ import sys
 import numpy as np
 import onnxruntime
 
-bert_code_root = os.path.join(sys.argv[1], 'language', 'bert')
+bert_code_root      = sys.argv[1]
+bert_squad_code_dir = sys.argv[2]
 
 sys.path.insert(0, bert_code_root)
-sys.path.insert(0, os.path.join(bert_code_root,'DeepLearningExamples','TensorFlow','LanguageModeling','BERT'))
+sys.path.insert(0, bert_squad_code_dir)
 
 ## SQuAD dataset - original and tokenized
 #
-squad_dataset_original_path     = sys.argv[2]
-squad_dataset_tokenized_path    = sys.argv[3]
+squad_dataset_original_path     = sys.argv[3]
+squad_dataset_tokenized_path    = sys.argv[4]
 
 ## BERT model:
 #
-bert_model_path                 = sys.argv[4]
-model_input_layers_tms          = eval(sys.argv[5])
+bert_model_path                 = sys.argv[5]
+model_input_layers_tms          = eval(sys.argv[6])
 
 ## Processing by batches:
 #
-batch_size       = int(sys.argv[6])
-batch_count      = int(sys.argv[7])
-execution_device = sys.argv[8]
-output_file_path = sys.argv[9]
+batch_size       = int(sys.argv[7])
+batch_count      = int(sys.argv[8])
+execution_device = sys.argv[9]
+output_file_path = sys.argv[10]
 
 output_logits_dict = {}
 
