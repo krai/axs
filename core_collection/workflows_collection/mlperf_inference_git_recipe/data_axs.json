@@ -1,9 +1,25 @@
 {
     "_producer_rules": [
         [ [ "git_repo", "repo_name=mlperf_inference_git" ], [["get_kernel"],["byname","git"],["clone"]], {
-        }, [ "url", "checkout", "submodules" ] ]
+        }, [ "url", "checkout", "submodules", "contained_files" ] ]
     ],
     "url": "https://github.com/mlcommons/inference",
     "checkout": "master",
-    "submodules": true
+    "submodules": true,
+    "contained_files": {
+        "mlperf_conf_file": [ "mlperf.conf" ],
+
+        "vision_tools_dir": [ "vision", "classification_and_detection", "tools" ],
+        "classification_accuracy_script": [ "vision", "classification_and_detection", "tools", "accuracy-imagenet.py" ],
+        "coco_detection_accuracy_script": [ "vision", "classification_and_detection", "tools", "accuracy-coco.py" ],
+        "openimages_detection_accuracy_script": [ "vision", "classification_and_detection", "tools", "accuracy-openimages.py" ],
+
+        "bert_code_root": [ "language", "bert" ],
+        "bert_squad_code_dir": [ "language", "bert", "DeepLearningExamples", "TensorFlow", "LanguageModeling", "BERT" ],
+        "bert_accuracy_script": [ "language", "bert", "accuracy-squad.py" ],
+
+        "submission_accuracy_truncator_script": [ "tools", "submission", "truncate_accuracy_log.py" ],
+        "submission_checker_script": [ "tools", "submission", "submission_checker.py" ],
+        "submission_compliance_tests_dir": [ "compliance", "nvidia" ]
+    }
 }

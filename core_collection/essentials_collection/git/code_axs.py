@@ -25,7 +25,7 @@ Usage examples :
         return None
 
 
-def clone(repo_name=None, url=None, repo_dir_name=None, git_tool_entry=None, container_entry=None, checkout=None, submodules=False, abs_patch_path=None, tags=None, __entry__=None):
+def clone(repo_name=None, url=None, repo_dir_name=None, git_tool_entry=None, container_entry=None, checkout=None, submodules=False, abs_patch_path=None, tags=None, contained_files=None, __entry__=None):
     """Clone a git repository into an Entry,
 
 Usage examples :
@@ -79,6 +79,9 @@ Clean-up:
 
         if abs_patch_path:
             result_entry['abs_patch_path']  = abs_patch_path
+
+        if contained_files:
+            result_entry['contained_files']  = contained_files
 
         result_entry.attach( container_entry ).save()
 
