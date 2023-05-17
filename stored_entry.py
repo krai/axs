@@ -102,6 +102,21 @@ Usage examples :
         return self.get_path(self.dig(key_path))
 
 
+    def get_path_of(self, resource_name, strict=True):
+        """Assuming the entry has contained_files{} dictionary defined,
+            given the resource_name maps it to the absolute path of this resource.
+            Also optionally checks if the path exists, raising FileNotFoundError if not.
+
+Usage examples :
+                axs byquery git_repo,repo_name=mlperf_inference_git , get_path_of bert_code_root
+        """
+        abs_path = self.get_path(self.dig(["contained_files", resource_name], safe=not strict))
+        if strict and not os.path.exists( abs_path ):
+            raise FileNotFoundError( abs_path )
+
+        return abs_path
+
+
     def trim_path(self, input_path):
         """Transform path to relative-to-entry if inside entry, or absolute if outside
         """
