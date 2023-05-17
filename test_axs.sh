@@ -72,6 +72,15 @@ axs bypath dad      , remove
 axs bypath granddad , remove
 assert_end entry_creation_multiple_inheritance_and_removal
 
+axs work_collection , attached_entry base_for_editing ---='{"number":7, "string": "abc", "list": [10, 20, 30], "dic": {"alpha": 100, "beta": 200}}' , save
+assert 'axs byname base_for_editing , get number' '7'
+assert 'axs byname base_for_editing , get number --number+=980' '987'
+assert 'axs byname base_for_editing , get string --string+=de' 'abcde'
+assert 'axs byname base_for_editing , get list --list+,=40,50' '[10, 20, 30, 40, 50]'
+assert 'axs byname base_for_editing , get dic --dic+,::=gamma:300,delta:400' "{'alpha': 100, 'beta': 200, 'gamma': 300, 'delta': 400}"
+axs byname base_for_editing , remove
+assert_end incremental_override
+
 #axs byname git , clone --repo_name=counting_collection
 axs byquery git_repo,collection,repo_name=counting_collection,url_prefix=https://github.com/ens-lg4
 export REPO_DIG_OUTPUT=`axs byname French , dig number_mapping.5`
