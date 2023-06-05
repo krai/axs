@@ -1,3 +1,16 @@
 {
+    "_producer_rules": [
+        [ [ "graph_output" ], [["draw"]], {  }, [ "target" ] ]
+    ],
+    "target" : "shell",
+    "return_this_entry": [ "^^", "execute", [[
+        [ "get", "__record_entry__" ],
+        [ "attach", [ "^", "work_collection" ] ],
+        [ "plant", [ "^^", "substitute", [[
+            "tags", [ "graph_output"],
+            "target", "#{target}#"
+        ]] ] ],
+        [ "save" ]
+    ]] ]
     
 }
