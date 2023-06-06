@@ -12,7 +12,8 @@
                 "subtract_mean_bool": true,
                 "given_channel_means": [ 123.68, 116.78, 103.94 ],
                 "given_channel_stds": [],
-                "data_layout": "NHWC"
+                "data_layout": "NHWC",
+		"normalize_data": false
             },
             "input_layer_name": "input_tensor",
             "output_layer_name": "softmax_tensor"
