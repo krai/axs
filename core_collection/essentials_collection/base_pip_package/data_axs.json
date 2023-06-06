@@ -3,6 +3,13 @@
 
     "abs_packages_dir": [ "^^", "get_path_from", "rel_packages_dir" ],
 
+    "abs_bin_dir": [ "^^", "get_path_from", "rel_bin_dir" ],
+
+    "rel_bin_dir": [ "^^", "case", [ [ "^", "func", "platform.system" ],
+                        "Windows" , ["install", "Scripts"] ],
+                        { "default_value":  ["install", "bin"] }
+    ],
+
     "rel_packages_dir": [ "^^", "execute", [[
         [ "get_kernel" ],
         [ "byquery", [["python_package", ["package_name", "six"], ["desired_python_version", ["^^", "get", "python_major_dot_minor"]]]] ],
