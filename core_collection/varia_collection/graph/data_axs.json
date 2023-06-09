@@ -1,7 +1,6 @@
 {
     "_producer_rules": [
-        [ [ "graph_output" ], [["draw"]], {  }, [ "target" ] ]
-    ],
+        [ [ "graph_output" ], [["draw"]], {  }, [ "target"]]],
     "target" : "shell",
     "return_this_entry": [ "^^", "execute", [[
         [ "get", "__record_entry__" ],

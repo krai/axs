@@ -4,6 +4,7 @@ import os
 import logging
 import re
 import graphviz
+import json
 from kernel import default_kernel as ak
 
 def draw_collection(collection_object, tone_colour, graph):
@@ -74,6 +75,9 @@ def dfs(root, f, __entry__):
 def draw(target, return_this_entry=None, __entry__=None):
     dest_dir = return_this_entry.get_path()
     target_entry = __entry__.get_kernel().byname(target)
+    get_path = target_entry.get_path()
+    file_path = f'{get_path}/data_axs.json'
+    
     output = False
     output_parents_data = ""
     target_data = target_entry.own_data()
@@ -93,8 +97,9 @@ def draw(target, return_this_entry=None, __entry__=None):
         f.edge(target, "output")
 
     if output_parents_data:
+
         info = find_parent(output_parents_data)
-        output_parents = find_byname(info)
+        output_parents = find_byname(file_path,obj=info)
         print("output_parents", output_parents)
         for output_parent in output_parents:
             f = dfs(output_parent, f, __entry__)
@@ -103,19 +108,17 @@ def draw(target, return_this_entry=None, __entry__=None):
         else:
             target_entry = None
 
-        
-
     f.render(filename=f"{dest_dir}/image")
     return return_this_entry
 
 def find_parent(obj):
-    # obj = ['^^', 'execute', [[['get', '__record_entry__'], ['attach', ['^', 'work_collection']], ['plant', ['^^', 'substitute', [["_parent_entries", ['AS^IS', 'AS^IS', ['^', 'byname', 'base_bert_experiment']], 'tags', ['program_output', 'bert_squad'], 'model_name', '#{model_name}#', 'framework', '#{framework}#', 'output_file_name', '#{output_file_name}#', 'desired_python_version', '#{desired_python_version}#']]]], ['save'], ['get_path_from', 'output_file_name']]]] 
     items = find_key(obj, "_parent_entries")
     return items
 
-def find_byname(obj=None):
-    obj = ['_parent_entries', ['AS^IS', 'AS^IS', ['^', 'byname', 'base_bert_loadgen_experiment'], ["^", "byname", "base_qaic_experiment"]], 'tags', ['program_output', 'bert_squad'], 'model_name', '#{model_name}#', 'framework', '#{framework}#', 'output_file_name', '#{output_file_name}#', 'desired_python_version', '#{desired_python_version}#']
+def find_byname(file_path, obj=None):
+    obj=process_json(file_path)
     items = find_key(obj, "byname")
+    print("items",items)
     return [list(item)[2] for item in items]
 
 def find_key(obj, key):
@@ -139,4 +142,10 @@ def find_key(obj, key):
     return matches
         
 
-
+    
+def process_json(file_path):
+    with open(file_path) as f:
+        obj = json.load(f)
+        required_data = {key: obj[key] for key in ['output_file_path', 'output_entry'] if key in obj}
+        parents = find_parent(required_data)
+    return parents
