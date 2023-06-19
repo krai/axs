@@ -18,6 +18,8 @@
         "bert_squad_code_dir": [ "language", "bert", "DeepLearningExamples", "TensorFlow", "LanguageModeling", "BERT" ],
         "bert_accuracy_script": [ "language", "bert", "accuracy-squad.py" ],
 
+        "gptj_code_dir": [ "language", "gpt-j" ],
+
         "submission_accuracy_truncator_script": [ "tools", "submission", "truncate_accuracy_log.py" ],
         "submission_checker_script": [ "tools", "submission", "submission_checker.py" ],
         "submission_compliance_tests_dir": [ "compliance", "nvidia" ]
