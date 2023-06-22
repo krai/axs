@@ -293,6 +293,9 @@ Usage examples :
     assert __entry__ != None, "__entry__ should be defined"
 
     parsed_query        = FilterPile( query, "Query" )
+    if not parsed_query.filter_list:
+        logging.debug(f"[{__entry__.get_name()}] the query was empty => returning None")
+        return None
 
     # trying to match the Query in turn against each existing and walkable entry, first match returns:
     for candidate_entry in walk(__entry__):
