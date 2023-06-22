@@ -102,3 +102,28 @@ Usage examples :
             raise
 
     shutil.rmtree(dir_path, ignore_errors=False, onerror=handleRemoveReadonly)
+
+
+def is_in(candidate, iterable):
+    """Check if element is TRULY contained in the iterable.
+
+Note that the following are true in Python:
+    1==True
+    0==False
+    True in [1]
+    1 in [True]
+    False in [0]
+    0 in [False]
+
+So to account for the difference between (1 and True) and between (0 and False), we employ or own containment check.
+
+Usage examples :
+                axs func ufun.is_in 0 ---='[false,2,4]'
+                axs func ufun.is_in --- ---='[false,2,4]'
+                axs func ufun.is_in 1 ---='[0,true,4]'
+                axs func ufun.is_in --+ ---='[0,true,4]'
+    """
+    for element in iterable:
+        if candidate is element:
+            return True
+    return False

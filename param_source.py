@@ -3,6 +3,8 @@
 import logging
 import re
 
+import ufun
+
 class ParamSource:
     """ An object of ParamSource class is a non-persistent container of parameters
         that may optionally also have a parent object of the same class.
@@ -98,7 +100,8 @@ Usage examples :
 
         if plantable:
             import itertools
-            return list(itertools.chain(*zip(slice_dict.keys(), slice_dict.values())))
+
+            return list(itertools.chain(*zip(slice_dict.keys(), slice_dict.values())))      # flattened list of key-value pairs
         else:
             return slice_dict
 
@@ -360,7 +363,7 @@ Usage examples :
             answer  = answer_value_pairs[i]
             value   = answer_value_pairs[i+1]
 
-            if (type(question)==type(answer) and question==answer) or (type(answer)==list and question in answer):
+            if (type(question)==type(answer) and question==answer) or (type(answer)==list and ufun.is_in(question,answer) ):
                     return value
 
         return default_value
