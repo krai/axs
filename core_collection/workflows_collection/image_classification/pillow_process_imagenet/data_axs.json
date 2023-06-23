@@ -21,6 +21,19 @@
         ["use"]
     ]] ],
 
+    "first_n_part": [ "^^", "case", [ [ "^^", "get", ["first_n", ""] ], [0, "", false], "" ],
+                           { "default_value": [ "^^", "substitute", "_first.#{first_n}#" ] } ],
+    "entry_name": [ "^^", "substitute", "pillow_#{dataset_name}#_cropped_resized_to_sq.#{resolution}##{first_n_part}#_images" ],
+
+    "output_entry": [ "^^", "execute", [[
+        [ "get", "__record_entry__" ],
+        [ "set_path", [ "^^", "get", "entry_name" ] ],
+        [ "attach", [ "^", "work_collection" ] ],
+        [ "plant", [
+            "tags", [ "preprocessed" ]
+          ] ]
+      ]] ],
+
     "imagenet_query": [ "extracted", "imagenet" ],
     "images_directory": [ "^", "execute", [[
         [ "byquery", [[ "^^", "get", "imagenet_query" ]] ],

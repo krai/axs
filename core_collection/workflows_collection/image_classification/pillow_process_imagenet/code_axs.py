@@ -87,19 +87,10 @@ def load_image(image_path,            # Full path to processing image
     return img
 
 
-def preprocess(dataset_name, images_directory, resolution, supported_extensions, crop_percentage, inter_size, convert_to_bgr, data_type, new_file_extension, file_name, first_n, input_file_list, tags=None, entry_name=None, __record_entry__=None):
+def preprocess(dataset_name, images_directory, resolution, supported_extensions, crop_percentage, inter_size, convert_to_bgr, data_type, new_file_extension, file_name, first_n, input_file_list, output_entry):
 
-    __record_entry__["tags"] = tags or [ "preprocessed", dataset_name ]
-    if not entry_name:
-        first_n_insert = f'first.{first_n}_' if first_n else ''
-        entry_name = f'pillow_{dataset_name}_cropped_resized_to_sq.{resolution}_{first_n_insert}images'
-    __record_entry__.save( entry_name )
-    output_directory     = __record_entry__.get_path(file_name)
-
+    output_directory = output_entry.get_path( file_name )
     os.makedirs( output_directory )
-
-    #sorted_filenames = [filename for filename in sorted(os.listdir(images_directory)) if any(filename.lower().endswith(extension) for extension in supported_extensions) ]
-    #sorted_filenames = sorted_filenames[:first_n] if first_n is not None else sorted_filenames
 
     for current_idx, input_filename in enumerate(input_file_list):
 
@@ -119,4 +110,4 @@ def preprocess(dataset_name, images_directory, resolution, supported_extensions,
 
         print("[{}]:  Stored {}".format(current_idx+1, full_output_path) )
 
-    return __record_entry__
+    return output_entry.save()
