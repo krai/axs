@@ -9,6 +9,7 @@
         "coco_annotation_recipe": "coco_annotation_recipe",
         "dataset_openimages": "dataset_openimages",
         "openimages_mlperf_recipe": "openimages_mlperf_recipe",
+        "openimages_mlperf_annotations_2.1_recipe": "openimages_mlperf_annotations_2.1_recipe",
         "pillow_resize_for_object_detection": "pillow_resize_for_object_detection",
         "coco_preprocessed_loader": "coco_preprocessed_loader",
         "base_object_detection_experiment": "base_object_detection_experiment",
