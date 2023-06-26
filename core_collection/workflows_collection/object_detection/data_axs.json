@@ -18,6 +18,7 @@
         "model_onnx_ssd_resnet34_recipe": "model_onnx_ssd_resnet34_recipe",
         "model_onnx_retinanet_coco_recipe": "model_onnx_retinanet_coco_recipe",
         "model_onnx_retinanet_openimages_recipe": "model_onnx_retinanet_openimages_recipe",
+        "model_onnx_retinanet_openimages_no_nms_recipe": "model_onnx_retinanet_openimages_no_nms_recipe",
 
         "onnx_object_detector": "onnx_object_detector",
         "bboxes_for_onnx_object_detector": "bboxes_for_onnx_object_detector"
