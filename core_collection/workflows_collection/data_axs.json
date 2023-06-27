@@ -10,6 +10,7 @@
         "image_classification": "image_classification",
         "object_detection": "object_detection",
         "bert": "bert",
+        "gptj": "gptj",
 
         "c_support": "c_support"
     }
