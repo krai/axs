@@ -44,12 +44,13 @@
         ]] ] ],
         [ "save" ]
     ]] ],
+    "output_file_path": [ "^^", "dig", "output_entry.output_json_file_path" ],
 
     "errorize_output": true,
 
     "rel_script_path": "pytorch_classify.py",
 
-    "script_extra_params": [ "^^", "substitute", "\"#{preprocessed_images_dir}#\" #{resolution}# #{num_of_images}# #{model_name}# \"#{output_entry.output_json_file_path}#\" \"#{execution_device}#\" #{max_batch_size}# #{top_n_max}# \"#{input_file_list}#\"" ],
+    "script_extra_params": [ "^^", "substitute", "\"#{preprocessed_images_dir}#\" #{resolution}# #{num_of_images}# #{model_name}# \"#{output_file_path}#\" \"#{execution_device}#\" #{max_batch_size}# #{top_n_max}# \"#{input_file_list}#\"" ],
 
     "torchvision_query": ["python_package", "package_name=torchvision", [ "^^", "case", [ [ "^^", "get", "num_gpus"] , "0" , null ], {"default_value": "with_cuda" } ] ],
 
