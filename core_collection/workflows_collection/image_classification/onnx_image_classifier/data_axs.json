@@ -49,7 +49,6 @@
     "input_file_list": [ "^^", "dig", "preprocessed_images_entry.input_file_list" ],
 
     "num_of_images": 20,
-    "output_file_name": "program_output.json",
     "framework": "onnx",
 
     "execution_device": "",
@@ -59,7 +58,7 @@
 
     "cpu_threads": 0,
 
-    "output_file_path": [ "^^", "execute", [[
+    "output_entry": [ "^^", "execute", [[
         [ "get", "__record_entry__" ],
         [ "attach", [ "^", "work_collection" ] ],
         [ "plant", [ "^^", "substitute", [[
@@ -68,16 +67,14 @@
             "num_of_images", "#{num_of_images}#",
             "model_name", "#{model_name}#",
             "framework", "#{framework}#",
-            "preprocessed_images_dir", "#{preprocessed_images_dir}#",
-            "output_file_name", "#{output_file_name}#"
+            "preprocessed_images_dir", "#{preprocessed_images_dir}#"
          ]] ] ],
-         [ "save" ],
-         [ "get_path_from", "output_file_name" ]
+         [ "save" ]
       ]] ],
 
     "errorize_output": true,
 
     "rel_script_path": "onnx_classify.py",
 
-    "script_extra_params": [ "^^", "substitute", "\"#{model_path}#\" \"#{preprocessed_images_dir}#\" #{num_of_images}# #{max_batch_size}# #{cpu_threads}# \"#{output_file_path}#\" #{model_name}# \"#{normalize_symmetric}#\" \"#{subtract_mean_bool}#\" \"#{given_channel_means}#\" \"#{output_layer_name}#\" \"#{execution_device}#\" #{top_n_max}# \"#{input_file_list}#\"" ]
+    "script_extra_params": [ "^^", "substitute", "\"#{model_path}#\" \"#{preprocessed_images_dir}#\" #{num_of_images}# #{max_batch_size}# #{cpu_threads}# \"#{output_entry.output_json_file_path}#\" #{model_name}# \"#{normalize_symmetric}#\" \"#{subtract_mean_bool}#\" \"#{given_channel_means}#\" \"#{output_layer_name}#\" \"#{execution_device}#\" #{top_n_max}# \"#{input_file_list}#\"" ]
 }

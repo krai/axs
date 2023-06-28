@@ -46,7 +46,6 @@
         [ "get_path" ]
     ]], {}, ["preprocessed_images_query"] ],
 
-    "output_file_name": "program_output.json",
     "framework": "onnx",
 
     "num_of_images": 20,
@@ -65,8 +64,7 @@
             "model_resolution", "#{model_resolution}#",
             "framework", "#{framework}#",
             "dataset_name", "#{dataset_name}#",
-            "preprocessed_images_dir", "#{preprocessed_images_dir}#",
-            "output_file_name", "#{output_file_name}#"
+            "preprocessed_images_dir", "#{preprocessed_images_dir}#"
          ]] ] ],
          [ "save" ]
       ]] ],
@@ -75,14 +73,9 @@
     "minimal_class_id": [ "^^", "dig", "dataset_entry.minimal_class_id" ],
     "labels_file_path": [ "^^", "dig", "dataset_entry.labels_file_path"],
 
-    "output_file_path": [ "^^", "execute", [[
-        [ "get", "output_entry" ],
-        [ "get_path_from", "output_file_name" ]
-    ]] ],
-
     "errorize_output": true,
 
     "rel_script_path": "onnx_detect.py",
 
-    "script_extra_params": [ "^^", "substitute", "\"#{model_name}#\" \"#{model_path}#\" #{model_resolution}# #{model_output_scale}# \"#{model_input_layer_name}#\" \"#{model_output_layers_bls}#\" \"#{model_skipped_classes}#\" \"#{normalize_symmetric}#\" \"#{subtract_mean_bool}#\" \"#{given_channel_means}#\" \"#{given_channel_stds}#\" \"#{preprocessed_images_dir}#\" #{num_of_images}# #{max_batch_size}# \"#{execution_device}#\" #{cpu_threads}# \"#{labels_file_path}#\" \"#{output_file_path}#\" #{minimal_class_id}#" ]
+    "script_extra_params": [ "^^", "substitute", "\"#{model_name}#\" \"#{model_path}#\" #{model_resolution}# #{model_output_scale}# \"#{model_input_layer_name}#\" \"#{model_output_layers_bls}#\" \"#{model_skipped_classes}#\" \"#{normalize_symmetric}#\" \"#{subtract_mean_bool}#\" \"#{given_channel_means}#\" \"#{given_channel_stds}#\" \"#{preprocessed_images_dir}#\" #{num_of_images}# #{max_batch_size}# \"#{execution_device}#\" #{cpu_threads}# \"#{labels_file_path}#\" \"#{output_entry.output_json_file_path}#\" #{minimal_class_id}#" ]
 }

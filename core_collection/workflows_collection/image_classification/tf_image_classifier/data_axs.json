@@ -78,8 +78,7 @@
       ]] ],
 
     "errorize_output": true,
-    "output_file_path": [ "^^", "dig", "output_entry.output_json_file_path" ],
 
     "rel_script_path": "tf_classify.py",
-    "script_extra_params": [ "^^", "substitute", "\"#{output_entry.input_json_file_path}#\" \"#{output_file_path}#\"" ]
+    "script_extra_params": [ "^^", "substitute", "\"#{output_entry.input_json_file_path}#\" \"#{output_entry.output_json_file_path}#\"" ]
 }
