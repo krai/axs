@@ -57,7 +57,7 @@
         [ "^^", "python_sync_pip_package", [[ "^^", "get", "tensorflow_query" ]] ],
         [ "^^", "python_sync_pip_package", [[ "^^", "get", "transformers_query" ]] ]
     ],
-    "mlperf_inference_git_entry": [ "^", "byquery", "git_repo,repo_name=mlperf_inference_git" ],
+    "mlperf_inference_git_entry": [ "^", "byquery", "git_repo,repo_name=mlperf_inference_git,submodules+" ],
 
     "bert_code_root": [ "^^", "execute", [[
         [ "get", "mlperf_inference_git_entry" ],

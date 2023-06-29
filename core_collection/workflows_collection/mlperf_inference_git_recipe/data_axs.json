@@ -1,15 +1,14 @@
 {
     "_producer_rules": [
-        [ [ "git_repo", "repo_name=mlperf_inference_git", "patch=number_of_beams" ], [["get_kernel"],["byname","git"],["clone"]], {
+        [ [ "git_repo", "repo_name=mlperf_inference_git", "patch?=number_of_beams" ], [["get_kernel"],["byname","git"],["clone"]], {
             "abs_patch_path": [ "^^", "get_path", "number_of_beams.patch" ],
             "submodules": false
-        }, [ "url", "checkout", "submodules", "contained_files" ] ],
-        [ [ "git_repo", "repo_name=mlperf_inference_git" ], [["get_kernel"],["byname","git"],["clone"]], {
-        }, [ "url", "checkout", "submodules", "contained_files" ] ]
+        }, [ "url", "checkout", "contained_files" ] ],
+        [ [ "git_repo", "repo_name=mlperf_inference_git", "submodules+" ], [["get_kernel"],["byname","git"],["clone"]], {
+        }, [ "url", "checkout", "contained_files" ] ]
     ],
     "url": "https://github.com/mlcommons/inference",
     "checkout": "master",
-    "submodules": true,
     "contained_files": {
         "mlperf_conf_file": [ "mlperf.conf" ],
 
