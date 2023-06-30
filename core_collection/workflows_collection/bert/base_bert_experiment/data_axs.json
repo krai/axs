@@ -9,7 +9,7 @@
         ["use"]
      ]] ],
 
-    "mlperf_inference_git_entry": [ "^", "byquery", "git_repo,repo_name=mlperf_inference_git,submodules+" ],
+    "mlperf_inference_git_entry": [ "^", "byquery", "git_repo,repo_name=mlperf_inference_git" ],
 
     "bert_squad_code_dir": [ "^^", "execute", [[
         [ "get", "mlperf_inference_git_entry" ],

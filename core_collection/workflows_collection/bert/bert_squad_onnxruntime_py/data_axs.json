@@ -19,7 +19,7 @@
         [ "^^", "python_sync_pip_package", [[ "^^", "get", "onnxruntime_query" ]] ],
         [ "^^", "python_sync_pip_package", [[ "^^", "get", "torch_query" ]] ]
     ],
-    "mlperf_inference_git_entry": [ "^", "byquery", "git_repo,repo_name=mlperf_inference_git,submodules+" ],
+    "mlperf_inference_git_entry": [ "^", "byquery", "git_repo,repo_name=mlperf_inference_git" ],
 
     "bert_code_root": [ "^^", "execute", [[
         [ "get", "mlperf_inference_git_entry" ],
