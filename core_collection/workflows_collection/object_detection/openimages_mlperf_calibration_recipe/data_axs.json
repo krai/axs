@@ -15,7 +15,8 @@
         [ "^^", "python_sync_pip_package", [[ "python_package", "package_name=boto3" ]] ],
         [ "^^", "python_sync_pip_package", [[ "python_package", "package_name=tqdm" ]] ],
         [ "^^", "python_sync_pip_package", [[ "python_package", "package_name=pandas" ]] ],
-        [ "^^", "python_sync_pip_package", [[ "python_package", "package_name=opencv-python" ]] ]
+        [ "^^", "python_sync_pip_package", [[ "python_package", "package_name=opencv-python" ]] ],
+        [ "^^", "python_sync_pip_package", [[ "python_package", "package_name=requests" ]] ]
     ],
 
     "output_entry_path": [ "^^", "execute", [[
