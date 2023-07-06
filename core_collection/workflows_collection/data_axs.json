@@ -5,13 +5,11 @@
     ],
     "contained_entries": {
         "generate_calendar_py": "generate_calendar_py",
-
         "mlperf_inference_git_recipe": "mlperf_inference_git_recipe",
         "image_classification": "image_classification",
         "object_detection": "object_detection",
         "bert": "bert",
         "gptj": "gptj",
-
         "c_support": "c_support"
     }
 }
