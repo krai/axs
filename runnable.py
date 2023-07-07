@@ -217,11 +217,14 @@ Usage examples :
 
         if perform_nested_calls:
             value_source_entry.blocked_param_set.add( param_name )
+            logging.debug(f"[{self.get_name()}]  BLOCKING '{param_name}' in order to compute nested_calls on {unprocessed_value} ...")
             try:
                 param_value = self.nested_calls(unprocessed_value)
             except Exception as e:
+                logging.debug(f"[{self.get_name()}]  unBLOCKING '{param_name}' after attempt to compute nested_calls on {unprocessed_value} ...")
                 value_source_entry.blocked_param_set.remove( param_name )
                 raise e
+            logging.debug(f"[{self.get_name()}]  unBLOCKING '{param_name}' after computing nested_calls on {unprocessed_value} ...")
             value_source_entry.blocked_param_set.remove( param_name )
         else:
                 param_value = unprocessed_value
