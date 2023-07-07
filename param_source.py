@@ -116,12 +116,15 @@ Usage examples :
         "Common part of accessing a parameter"
 
         own_data = self.own_data()
-        if param_name in own_data and param_name not in self.blocked_param_set:
-            param_value = own_data[param_name]
-            logging.debug(f"[{self.get_name()}]  {self.get_name()} has parameter '{param_name}', returning '{param_value}'")
-            yield (self, param_value)
+        if param_name in own_data:
+            if param_name in self.blocked_param_set:
+                logging.warning(f"[{self.get_name()}]  parameter '{param_name}' is contained but BLOCKED, skipping further")
+            else:
+                param_value = own_data[param_name]
+                logging.debug(f"[{self.get_name()}]  parameter '{param_name}' is contained here, returning '{param_value}'")
+                yield (self, param_value)
         else:
-            logging.debug(f"[{self.get_name()}]  {self.get_name()} does not have parameter '{param_name}', skipping further")
+            logging.debug(f"[{self.get_name()}]  parameter '{param_name}' is not contained here, skipping further")
 
 
     def getitem_generator(self, param_name, parent_recursion=None):
