@@ -9,7 +9,7 @@ import os
 import subprocess
 import sys
 
-def run(shell_cmd, env=None, in_dir=None, capture_output=False, errorize_output=False, capture_stderr=False, split_to_lines=False, return_saved_record_entry=False, return_this_entry=None, get_and_return_on_success=None, __record_entry__=None):
+def run(shell_cmd, env=None, in_dir=None, capture_output=False, errorize_output=False, capture_stderr=False, split_to_lines=False, return_saved_record_entry=False, return_this_entry=None, get_and_return_on_success=None, __entry__=None, __record_entry__=None):
     """Run the given shell command in the given environment
 
 Usage examples:
