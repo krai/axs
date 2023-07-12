@@ -320,6 +320,7 @@ Usage examples :
             export_params       = rule_vector[3] if len(rule_vector)>3 else []
 
             cumulative_params = advertising_entry.slice( *export_params )   # default slice
+            cumulative_params["__query"] = query                            # NB: unparsed query in its original format, DANGER!
             cumulative_params.update( parsed_rule.opti_val_dict )           # optional matches on top (may override some defaults)
             cumulative_params.update( deepcopy( extra_params ) )            # extra_params on top (may override some defaults)
             cumulative_params.update( parsed_rule.posi_val_dict )           # rules on top (may override some defaults)
