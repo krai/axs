@@ -3,7 +3,7 @@
         [ [ "downloaded", "onnx_model", "model_name=retinanet", "no_nms" ], [["get_kernel"],["byname","downloader"],["download"]], {
             
             "url": "https://zenodo.org/record/8147436/files/retinanet.onnx",
-            "md5":"a052001071893b3832a1b6f81b2417a0",
+            "md5":"fe2c1580dabde478a44389614ba25dd9",
             "model_name": "retinanet",            
             "model_rel_path": "retinanet.onnx",
 
