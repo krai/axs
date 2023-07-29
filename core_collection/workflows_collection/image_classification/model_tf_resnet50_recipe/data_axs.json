@@ -2,7 +2,7 @@
     "_producer_rules": [
         [ [ "inference_ready", "tf_model", "model_name=resnet50" ], [["get_kernel"],["byname","downloader"],["download"]], {
 
-            "url": "https://www.dropbox.com/s/jo92dsoted1ha5q/resnet50_v1.pb",
+            "url": "https://zenodo.org/record/2535873/files/resnet50_v1.pb",
             "md5": "7b94a2da05dd30f6c0af23a46bc08886",
             "model_name": "resnet50",
             "model_rel_path": "resnet50_v1.pb",
