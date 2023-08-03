@@ -2,6 +2,7 @@
 
 import logging
 import re
+import sys
 
 import function_access
 from param_source import ParamSource
@@ -396,7 +397,12 @@ Usage examples :
             else:
                 return input_structure
 
-        processed_struct = nested_calls_rec(unprocessed_struct)
+        processed_struct = None
+        try:
+            processed_struct = nested_calls_rec(unprocessed_struct)
+        except Exception as e:
+            print("-"*120 + f"\nWhile computing nested_calls in {unprocessed_struct} the following exception was raised: {e}\n"+ "="*120, file=sys.stderr)
+            raise(e)
 
         return processed_struct if side_effects_count else unprocessed_struct                   # keeping the original if unchanged should help with GC
 
@@ -489,7 +495,7 @@ Usage examples :
                     result          = function_access.feed(action_object, pos_params, edit_dict)
                 else:
                     display_pipeline = "\n\t".join([str(step) for step in ["["]+pipeline]) + "\n]"
-                    raise RuntimeError( f'In pipeline {display_pipeline} step {pipeline[call_idx]} cannot be execited on value ({entry}) produced by {pipeline[call_idx-1]}' )
+                    raise RuntimeError( f'In pipeline {display_pipeline} step {pipeline[call_idx]} cannot be executed on value ({entry}) produced by {pipeline[call_idx-1]}' )
 
                 if input_label:
                     rt_pipeline_wide[input_label] = call_record_entry_ptr[0]
