@@ -191,28 +191,39 @@ class FilterPile:
         return candidate_still_ok
 
 
-def all_byquery(query, template=None, parent_recursion=False, __entry__=None):
+def all_byquery(query, pipeline=None, template=None, parent_recursion=False, __entry__=None):
     """Returns a list of ALL entries matching the query.
         Empty list if nothing matched.
 
 Usage examples :
                 axs all_byquery onnx_model
                 axs all_byquery python_package,package_name=pillow
-                axs all_byquery onnx_model "#{model_name}# : #{file_name}#"
-                axs all_byquery python_package "Python package #{package_name}# version #{package_version}#"
-                axs all_byquery tags. "tags=#{tags}#"
+                axs all_byquery onnx_model --template="#{model_name}# : #{file_name}#"
+                axs all_byquery python_package --template="python_#{python_version}# package #{package_name}#"
+                axs all_byquery tags. --template="tags=#{tags}#"
+                axs all_byquery deleteme+ ---='[["remove"]]'
     """
     assert __entry__ != None, "__entry__ should be defined"
 
     parsed_query        = FilterPile( query, "Query" )
 
     # trying to match the Query in turn against each existing and walkable entry, gathering them all:
-    matched_entries = []
+    result_list = []
     for candidate_entry in walk(__entry__):
         if parsed_query.matches_entry( candidate_entry, parent_recursion ):
-            matched_entries.append( candidate_entry if template is None else str(candidate_entry.substitute(template)) )
+            if pipeline:
+                single_result = candidate_entry.execute(pipeline)
+            elif template is not None:
+                single_result = str(candidate_entry.substitute(template))
+            else:
+                single_result = candidate_entry
 
-    return matched_entries if template is None else "\n".join( matched_entries )
+            result_list.append( single_result )
+
+    if template is not None:
+        return "\n".join( result_list )
+    else:
+        return result_list
 
 
 def find_matching_rules(parsed_query, __entry__):
