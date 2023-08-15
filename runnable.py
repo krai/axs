@@ -139,7 +139,7 @@ Usage examples :
         return function_access.list_function_names( self.__class__ ) + self.list_own_functions()
 
 
-    def help(self, action_name=None):
+    def help(self, *arguments):
         """Reach for a Runnable's function or method and examine its DocString and calling signature.
 
 Usage examples :
@@ -160,7 +160,8 @@ Usage examples :
         help_buffer.append('')
         help_buffer.append( common_format.format( 'Specific '+entry_class.__name__, self.get_name() ))
 
-        if action_name:
+        if arguments:
+            action_name = arguments[0]
             try:
                 ancestry_path   = []
                 action_object   = self.reach_action(action_name, _ancestry_path=ancestry_path)
