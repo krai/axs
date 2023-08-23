@@ -7,19 +7,19 @@
 
     "patch_tool_entry": [ "^", "byquery", "shell_tool,can_patch" ],
 
-    "kernel_git_url": [ "^^", "execute", [[
+    "git_url": [ "^^", "execute", [[
         [ "get_kernel" ],
         [ "byname", "shell" ],
         [ "run", [], {
-            "shell_cmd_with_subs": "\"#{git_tool_path}#\" -C #{kernel_path}# config --get remote.origin.url",
+            "shell_cmd_with_subs": "\"#{git_tool_path}#\" -C #{repo_path}# config --get remote.origin.url",
             "git_tool_path": [ "^^", "dig", "git_tool_entry.tool_path" ],
-            "kernel_path": [ "^", "kernel_path" ],
+            "repo_path": [ "^^", "get", "repo_path" ],
             "capture_output": true
         } ]
     ]] ],
 
     "url_prefix": [ "^^", "execute", [[
-        [ "get", "kernel_git_url" ],
+        [ "get", "git_url" ],
         0,
         [ "func", "os.path.dirname" ]
     ]] ],
@@ -37,5 +37,18 @@
 
     "repo_path": [ "^^", "get_path", "" ],
 
-    "container_entry":  [ "^", "work_collection" ]
+    "container_entry":  [ "^", "work_collection" ],
+
+    "current_checkout": [ "^^", "execute", [[
+        [ "get_kernel" ],
+        [ "byname", "shell" ],
+        [ "run", [], {
+            "shell_cmd_with_subs": "\"#{git_tool_path}#\" -C #{repo_path}# branch",
+            "git_tool_path": [ "^^", "dig", "git_tool_entry.tool_path" ],
+            "repo_path": [ "^^", "get", "repo_path" ],
+            "capture_output": true
+        } ],
+        0,
+        [ "func", ["ufun.rematch", "^\\*.*\\s(\\S+?)\\)?$"] ]
+    ]] ]
 }

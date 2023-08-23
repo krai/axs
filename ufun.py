@@ -48,7 +48,7 @@ def rematch(input_string, regex, group=1):
 Usage examples :
                 axs byname kernel_python_tool , run ,0 func ufun.rematch '^Python\s((\d+)\.(\d+))\.\d+'    # parse the major.minor version from Python
     """
-    searchObj = re.search(regex, input_string)
+    searchObj = re.search(regex, input_string, re.MULTILINE)
     if searchObj:
         if group>0:
             return searchObj.group(group)
