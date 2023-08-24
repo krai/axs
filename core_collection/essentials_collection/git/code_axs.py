@@ -72,8 +72,11 @@ Clean-up:
         result_entry                = ak.bypath( entry_path )   # "discover" the Entry after cloning, then either create or augment the data
         result_entry['repo_name']   = repo_name
         result_entry['tags']        = tags or [ 'git_repo' ]
-        result_entry['_parent_entries'] = [ [ "^", "byname", "git" ] ]
-        result_entry.parent_objects = None      # reload parents
+
+        parent_entries              = result_entry.own_data()['_parent_entries']
+        if [ "^", "byname", "git" ] not in parent_entries:
+            result_entry['_parent_entries'] = parent_entries + [ [ "^", "byname", "git" ] ]
+            result_entry.parent_objects = None      # reload parents
 
         if checkout:
             result_entry['checkout']        = checkout
