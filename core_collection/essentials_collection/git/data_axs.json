@@ -26,10 +26,10 @@
 
     "url": [ "^^", "substitute", "#{url_prefix}#/#{repo_name}#" ],
     "repo_name": [ "^^", "url_2_repo_name" ],
-    "checkout_part": [ "^^", "case", [ [ "^^", "get", ["checkout", ""] ], ["", false], "" ],
+    "checkout_part": [ "^^", "case", [ [ "^^", "get", ["checkout", ""] ], ["", false, null, "None"], "" ],
                                { "default_value": [ "^^", "substitute", "_#{checkout}#" ] }
                      ],
-    "patch_part": [ "^^", "case", [ [ "^^", "get", ["patch", ""] ], ["", false], "" ],
+    "patch_part": [ "^^", "case", [ [ "^^", "get", ["patch", ""] ], ["", false, null, "None"], "" ],
                                { "default_value": [ "^^", "substitute", "_#{patch}#" ] }
                      ],
 
@@ -50,5 +50,13 @@
         } ],
         0,
         [ "func", ["ufun.rematch", "^\\*.*\\s(\\S+?)\\)?$"] ]
-    ]] ]
+    ]] ],
+
+    "is_mlperf_branch": [ "^^", "execute", [[
+        [ "get", "current_checkout" ],
+        [ "startswith", "mlperf_" ]
+    ]] ],
+    "#checkout": [ "^^", "case", [ [ "^^", "get", "is_mlperf_branch" ], true, [ "^^", "get", "current_checkout" ] ], { "default_value": null } ],
+
+    "checkout": [ "^^", "propose_checkout" ]
 }

@@ -8,6 +8,15 @@ import os
 import logging
 
 
+def propose_checkout(current_checkout):
+    """Cannot use "case" in data_axs.json due to the current bug (clash of nested "case"-s), so implementing in code_axs.py :
+    """
+    if current_checkout.startswith("mlperf_"):
+        return current_checkout
+    else:
+        return None
+
+
 def url_2_repo_name(url=None):
     """Cut the repo_name out of the URL, if given.
 
