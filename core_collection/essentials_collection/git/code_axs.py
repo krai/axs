@@ -82,7 +82,7 @@ Clean-up:
         result_entry['repo_name']   = repo_name
         result_entry['tags']        = tags or [ 'git_repo' ]
 
-        parent_entries              = result_entry.own_data()['_parent_entries']
+        parent_entries              = result_entry.own_data().get('_parent_entries', [])
         if [ "^", "byname", "git" ] not in parent_entries:
             result_entry['_parent_entries'] = parent_entries + [ [ "^", "byname", "git" ] ]
             result_entry.parent_objects = None      # reload parents
