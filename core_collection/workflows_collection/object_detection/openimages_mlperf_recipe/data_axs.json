@@ -10,7 +10,7 @@
         [ "get", "mlperf_inference_git_entry" ],
         [ "get_path_of", "vision_tools_dir" ]
     ]] ],
-    "openimages_annotations_v21_entry": [ "^", "byquery", "inference_ready,openimages_annotations,v2_1" ] ,
+    "openimages_annotations_v21_entry": [ "^", "byquery", "extracted,openimages_annotations,v2_1" ] ,
     "openimages_mlperf_v2_1_path":  [ "^^", "execute", [[
         [ "get", "openimages_annotations_v21_entry" ],
         [ "get_path" ]

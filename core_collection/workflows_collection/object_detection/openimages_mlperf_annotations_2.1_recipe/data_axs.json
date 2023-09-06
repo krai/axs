@@ -2,7 +2,7 @@
     "_producer_rules": [
         [ [ "downloaded", "openimages_annotations", "v2_1" ], [["get_kernel"],["byname","downloader"],["download"]], {
             }, ["url"] ],
-        [ [ "inference_ready",  "openimages_annotations", "v2_1" ], [["get_kernel"],["byname","extractor"],["extract"]], {
+        [ [ "extracted",  "openimages_annotations", "v2_1" ], [["get_kernel"],["byname","extractor"],["extract"]], {
             }, [ "file_name", "archive_path" ] ]
     ],
 
