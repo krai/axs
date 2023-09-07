@@ -15,7 +15,7 @@
                 "data_layout": "NHWC"
             },
             "input_layer_name": "input_tensor",
-            "output_layer_name": "softmax_tensor"
+            "output_layer_name": "softmax_tensor",
 
             "starting_weights_filename": "https://zenodo.org/record/2535873/files/resnet50_v1.pb",
             "retrained": false,
