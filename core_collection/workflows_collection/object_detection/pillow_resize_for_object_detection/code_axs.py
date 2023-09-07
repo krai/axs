@@ -69,5 +69,6 @@ def preprocess(dataset_name, images_dir, annotation_data, resolution, supported_
     with open(fof_full_path, 'w') as fof:
         for filename in output_signatures:
             fof.write(filename + '\n')
+    output_entry.pluck("annotation_data")
 
     return output_entry.save()
