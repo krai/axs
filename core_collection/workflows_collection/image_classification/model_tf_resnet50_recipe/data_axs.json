@@ -16,6 +16,14 @@
             },
             "input_layer_name": "input_tensor",
             "output_layer_name": "softmax_tensor"
+
+            "starting_weights_filename": "https://zenodo.org/record/2535873/files/resnet50_v1.pb",
+            "retrained": false,
+            "input_data_types": "fp32",
+            "weight_data_types": "fp32",
+            "weight_transformations": "",
+            "input_layer_names": ["input_tensor"],
+            "output_layer_names": ["ArgMax"]
       } ]
     ]
 }
