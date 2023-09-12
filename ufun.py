@@ -128,3 +128,21 @@ Usage examples :
         if candidate is element:
             return True
     return False
+
+
+def augment(orig_structure, diff):
+    """Apply a simple 1-arg editing uperation to a data structure
+
+Usage examples :
+                axs func ufun.augment 100 -23                   # add two numbers
+                axs func ufun.augment abcd efg                  # concatenate two strings
+                axs func ufun.augment --,=10,20,30 40           # add an element to the list
+                axs func ufun.augment --,=10,20,30 --,=40,50    # concatenate two lists
+    """
+
+    if type(orig_structure)==dict:
+        return {**orig_structure, **diff}                   # dictionary top-up
+    elif type(orig_structure)==list and type(diff)!=list:
+        return orig_structure + [ diff ]                    # list top-up with an element
+    else:
+        return orig_structure + diff                        # list top-up with another list  OR  string concatenation  OR  adding numbers

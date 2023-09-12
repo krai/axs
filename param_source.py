@@ -325,14 +325,7 @@ Usage examples :
                 elif pluck:
                     struct_ptr.pop(key_syllable)
                 elif augment:
-                    orig_value = struct_ptr[key_syllable]
-
-                    if type(orig_value)==dict:
-                        struct_ptr[key_syllable].update(value)
-                    elif type(orig_value)==list and type(value)!=list:
-                        struct_ptr[key_syllable] += [ value ]
-                    else:
-                        struct_ptr[key_syllable] += value
+                    struct_ptr[key_syllable] = ufun.augment( struct_ptr[key_syllable], value )
                 else:
                     struct_ptr[key_syllable] = value
 
