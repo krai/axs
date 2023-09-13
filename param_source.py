@@ -179,16 +179,28 @@ Usage examples :
                 axs dig greek.4 --greek,=alpha,beta,gamma,delta --safe
                 axs byname counting_collection , byname french , dig --key_path,=number_mapping,7
                 axs byname counting_collection , byname dutch , dig number_mapping.6
+                axs dig .unzip_tool.tool_path
         """
         if type(key_path)!=list:
             key_path = key_path.split('.')
 
-        param_name = key_path[0]
+        key_syllable_iter   = iter(key_path)
+        param_name          = next(key_syllable_iter)
 
         try:
-            struct_ptr  = self.__getitem__(param_name, parent_recursion)
+            if not param_name:                                      # path that starts from an empty syllable indicates we want to start form the "root", or the kernel
+                entry_name  = next(key_syllable_iter)
+                start_entry = self.get_kernel().byname(entry_name)
+                param_name  = next(key_syllable_iter, None)         # protect with None to avoid exhausting the iterator too soon
+            else:
+                start_entry = self
 
-            for key_syllable in key_path[1:]:
+            if param_name is not None:
+                struct_ptr  = start_entry.__getitem__(param_name, parent_recursion)
+            else:
+                struct_ptr  = start_entry
+
+            for key_syllable in key_syllable_iter:
                 if type(struct_ptr)==list:  # descend into lists with numeric indices
                     key_syllable = int(key_syllable)
                 struct_ptr = struct_ptr[key_syllable]   # iterative descent
