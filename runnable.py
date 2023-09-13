@@ -254,6 +254,11 @@ Usage examples :
             return '{'+(','.join([ repr(k)+':'+repr(d[k]) for k in sorted(d.keys()) ]))+'}' if type(d)==dict else repr(d)
 
 
+        if type(action_name)==list:             # transforming qualified name into the (entry, action_name) pair
+            action_entry = self.dig( action_name[:-1] )
+            action_name = action_name[-1]
+            return action_entry.call( action_name, pos_params, edit_dict, export_params, deterministic, call_record_entry_ptr, nested_context, slice_relative_to)
+
         logging.debug(f'[{self.get_name()}]  calling action "{action_name}" with pos_params={pos_params} and edit_dict={edit_dict} ...')
 
         cache_tail = '\n\t+'.join([repr(s) for s in self.runtime_stack()])
@@ -486,6 +491,10 @@ Usage examples :
                     pos_params = pos_params[:]      # make a shallow copy to avoid editing original entry data
                     pos_params.insert( insert_position+insert_position_offset, insert_result )
                     insert_stash = None     # empty it after use
+
+                if type(action_name)==list:             # transforming qualified name into the (entry, action_name) pair
+                    entry = self.dig( action_name[:-1] )
+                    action_name = action_name[-1]
 
                 if hasattr(entry, 'call'):                                  # an Entry-specific or Runnable-generic method ("func" called on an Entry will fire here)
                     # print(f"Before call({action_name}, {pos_params}, {edit_dict}, export:{export_params}, rel:+++{self}---)")
