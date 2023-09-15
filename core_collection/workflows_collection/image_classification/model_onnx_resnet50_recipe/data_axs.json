@@ -1,6 +1,7 @@
 {
     "_producer_rules": [
         [ [ "downloaded", "onnx_model", "model_name=resnet50s" ], [["get_kernel"],["byname","downloader"],["download"]], {
+            "dataset_name": "imagenet",
             "retrained": false,
             "input_data_types": "fp32",
             "weight_data_types": "fp32",
@@ -13,6 +14,7 @@
             "given_channel_means": "[123.68, 116.78, 103.94]"
         } ],
         [ [ "downloaded", "onnx_model", "model_name=resnet50" ], [["get_kernel"],["byname","downloader"],["download"]], {
+            "dataset_name": "imagenet",
             "retrained": false,
             "input_data_types": "fp32",
             "weight_data_types": "fp32",
