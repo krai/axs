@@ -79,12 +79,8 @@ def cli_parse(arglist):
                     if re.match(r'^(\w*):(?:(\w*):)?$', arglist[i]):                # input and/or output label(s)
                         matched = re.match(r'^(\w*):(?:(\w*):)?$', arglist[i])
                         curr_link.extend( [ None, call_pos_params, call_params, matched.group(1), matched.group(2) ] )
-                    elif re.match(r'^([\w\.]+)$', arglist[i]):                      # a normal action
-                        matched = re.match(r'^(\w+)(?:\.(\w+))?$', arglist[i])
-                        if '.' in arglist[i]:
-                            curr_link.extend( [ arglist[i].split('.'), call_pos_params, call_params ] )     # qualified method path
-                        else:
-                            curr_link.extend( [ arglist[i], call_pos_params, call_params ] )                # assuming local method name
+                    elif re.match(r'^([\w\.]+)$', arglist[i]):                      # a normal action (qualified or local)
+                        curr_link.extend( [ arglist[i], call_pos_params, call_params ] )
                     else:
                         raise(Exception("Parsing error - cannot understand non-option '{}' before an action".format(arglist[i])))
                 elif curr_link[0] is None and re.match(r'^\w+$', arglist[i]):       # a normal action after input/output label(s)
