@@ -1,7 +1,7 @@
 {
     "_parent_entries": [ [ "^", "byname", "python_script" ] ],
     "_producer_rules": [
-        [ [ "program_output", "detected_coco", "framework=onnx" ], [["run"]], { "return_saved_record_entry": true } ]
+        [ [ "program_output", "task=object_detection", "framework=onnx" ], [["run"]], { "return_saved_record_entry": true } ]
     ],
 
     "num_gpus": [ "^", "execute", [[
@@ -58,7 +58,8 @@
         [ "attach", [ "^", "work_collection" ] ],
         [ "plant", [ "^^", "substitute", [[
             "_parent_entries", [ "AS^IS", "AS^IS", [ "^", "byname", "base_object_detection_experiment" ] ],
-            "tags", [ "program_output", "detected_coco" ],
+            "tags", [ "program_output" ],
+            "dataset_name", "#{dataset_name}#",
             "num_of_images", "#{num_of_images}#",
             "model_name", "#{model_name}#",
             "model_resolution", "#{model_resolution}#",

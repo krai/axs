@@ -2,16 +2,17 @@
     "_parent_entries": [ [ "^", "byname", "python_script" ] ],
 
     "_producer_rules": [
-        [ [ "program_output", "classified_imagenet", "framework=pytorch" ], [["run"]], { "return_saved_record_entry": true } ]
+        [ [ "program_output", "task=image_classification", "framework=pytorch" ], [["run"]], { "return_saved_record_entry": true } ]
     ],
 
     "model_name": "resnet50",
     "resolution": 224,
+    "dataset_name": "imagenet",
 
     "index_file": null,
     "preprocessed_images_query": [
         "preprocessed",
-        "dataset_name=imagenet",
+        [ "^^", "substitute", "dataset_name=#{dataset_name}#" ],
         [ "^^", "substitute", "resolution=#{resolution}#" ],
         [ "^^", "substitute", "first_n=#{num_of_images}#" ],
         [ "index_file", [ "^^", "get", "index_file" ]]
@@ -36,7 +37,8 @@
         [ "attach", [ "^", "work_collection" ] ],
         [ "plant", [ "^^", "substitute", [[
             "_parent_entries", [ "AS^IS", "AS^IS", [ "^", "byname", "base_imagenet_experiment" ] ],
-            "tags", [ "program_output", "classified_imagenet" ],
+            "tags", [ "program_output" ],
+            "dataset_name", "#{dataset_name}#",
             "num_of_images", "#{num_of_images}#",
             "model_name", "#{model_name}#",
 	        "framework", "#{framework}#",

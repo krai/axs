@@ -1,7 +1,7 @@
 {
     "_parent_entries": [ [ "^", "byname", "python_script" ] ],
     "_producer_rules": [
-        [ [ "program_output", "classified_imagenet", "framework=tf" ], [["run"]], { "return_saved_record_entry": true } ]
+        [ [ "program_output", "task=image_classification", "framework=tf" ], [["run"]], { "return_saved_record_entry": true } ]
     ],
 
     "tensorflow_query": [ "python_package", "package_name=tensorflow" ],
@@ -17,6 +17,7 @@
         [ "get", "model_entry" ],
         [ "get_path_from", "model_rel_path" ]
     ]] ],
+    "dataset_name": [ "^^", "dig", "model_entry.dataset_name" ],
     "resolution": [ "^^", "dig", "model_entry.resolution" ],
     "input_layer_name": [ "^^", "dig", "model_entry.input_layer_name" ],
     "output_layer_name": [ "^^", "dig", "model_entry.output_layer_name" ],
@@ -26,7 +27,7 @@
     "index_file": null,
     "preprocessed_images_query": [
         "preprocessed",
-        "dataset_name=imagenet",
+        [ "dataset_name", [ "^^", "get", "dataset_name" ]],
         [ "preprocess_method", [ "^^", "get", "preprocess_method" ]],
         [ "resolution", [ "^^", "get", "resolution" ]],
         [ "first_n", [ "^^", "get", "num_of_images" ]],
@@ -54,10 +55,11 @@
         [ "attach", [ "^", "work_collection" ] ],
         [ "plant", [
             "_parent_entries", [ "AS^IS", "AS^IS", [ "^", "byname", "base_imagenet_experiment" ] ],
-            "tags", [ "program_output", "classified_imagenet" ]
+            "tags", [ "program_output" ]
           ] ],
         [ "plant", [ "^^", "slice", [
             "framework",
+            "dataset_name",
             "num_of_images",
             "max_batch_size",
             "top_n_max",
