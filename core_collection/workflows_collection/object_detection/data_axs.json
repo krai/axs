@@ -21,7 +21,7 @@
         "model_onnx_retinanet_openimages_recipe": "model_onnx_retinanet_openimages_recipe",
         "model_onnx_retinanet_openimages_no_nms_recipe": "model_onnx_retinanet_openimages_no_nms_recipe",
 
-        "onnx_object_detector": "onnx_object_detector",
+        "object_detection_using_onnxrt_py": "object_detection_using_onnxrt_py",
         "bboxes_for_onnx_object_detector": "bboxes_for_onnx_object_detector"
     }
 }

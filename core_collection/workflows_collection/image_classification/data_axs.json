@@ -10,14 +10,14 @@
         "imagenet_preprocessed_loader": "imagenet_preprocessed_loader",
         "base_imagenet_experiment": "base_imagenet_experiment",
 
-        "pytorch_image_classifier": "pytorch_image_classifier",
+        "image_classification_using_pytorch_py": "image_classification_using_pytorch_py",
 
         "model_onnx_mobilenet_recipe": "model_onnx_mobilenet_recipe",
         "model_onnx_resnet50_recipe": "model_onnx_resnet50_recipe",
-        "onnx_image_classifier": "onnx_image_classifier",
+        "image_classification_using_onnxrt_py": "image_classification_using_onnxrt_py",
 
         "model_tf_resnet50_recipe": "model_tf_resnet50_recipe",
         "model_tf_mobilenet_v2_recipe": "model_tf_mobilenet_v2_recipe",
-        "tf_image_classifier": "tf_image_classifier"
+        "image_classification_using_tf_py": "image_classification_using_tf_py"
     }
 }
