@@ -1,5 +1,5 @@
 {
-    "_parent_entries": [ [ "^", "byname", "python_script" ] ],
+    "_parent_entries": [ [ "^", "byname", "python_script" ], [ "^", "byname", "base_benchmark_program" ] ],
     "_producer_rules": [
         [ [ "program_output", "task=object_detection", "framework=onnx" ], [["run"]], { "return_saved_record_entry": true } ]
     ],
@@ -53,22 +53,28 @@
     "execution_device": "",
     "cpu_threads": 0,
 
-    "output_entry": [ "^^", "execute", [[
-        [ "get", "__record_entry__" ],
-        [ "attach", [ "^", "work_collection" ] ],
-        [ "plant", [ "^^", "substitute", [[
-            "_parent_entries", [ "AS^IS", "AS^IS", [ "^", "byname", "base_object_detection_experiment" ] ],
-            "tags", [ "program_output" ],
-            "dataset_name", "#{dataset_name}#",
-            "num_of_images", "#{num_of_images}#",
-            "model_name", "#{model_name}#",
-            "model_resolution", "#{model_resolution}#",
-            "framework", "#{framework}#",
-            "dataset_name", "#{dataset_name}#",
-            "preprocessed_images_dir", "#{preprocessed_images_dir}#"
-         ]] ] ],
-         [ "save" ]
-      ]] ],
+    "output_entry_parents": [ "AS^IS", "AS^IS", [ "^", "byname", "base_object_detection_experiment" ] ],
+    "output_entry_param_names": [
+        "num_of_images",
+        "model_resolution",
+        "model_path",
+        "preprocessed_images_dir",
+        "max_batch_size",
+        "execution_device",
+        "cpu_threads",
+
+        "model_output_scale",
+        "model_input_layer_name",
+        "model_output_layers_bls",
+        "model_skipped_classes",
+        "normalize_symmetric",
+        "subtract_mean_bool",
+        "given_channel_means",
+        "given_channel_stds",
+
+        "labels_file_path",
+        "minimal_class_id"
+      ],
 
     "dataset_entry": [ "^", "byquery", [[ "^^", "substitute", "dataset,dataset_name=#{dataset_name}#" ]], {}, [ "dataset_name"] ],
     "minimal_class_id": [ "^^", "dig", "dataset_entry.minimal_class_id" ],
@@ -78,5 +84,5 @@
 
     "rel_script_path": "onnx_detect.py",
 
-    "script_extra_params": [ "^^", "substitute", "\"#{model_name}#\" \"#{model_path}#\" #{model_resolution}# #{model_output_scale}# \"#{model_input_layer_name}#\" \"#{model_output_layers_bls}#\" \"#{model_skipped_classes}#\" \"#{normalize_symmetric}#\" \"#{subtract_mean_bool}#\" \"#{given_channel_means}#\" \"#{given_channel_stds}#\" \"#{preprocessed_images_dir}#\" #{num_of_images}# #{max_batch_size}# \"#{execution_device}#\" #{cpu_threads}# \"#{labels_file_path}#\" \"#{output_entry.output_json_file_path}#\" #{minimal_class_id}#" ]
+    "script_extra_params": [ "^^", "substitute", "\"#{input_file_path}#\" \"#{output_file_path}#\"" ]
 }

@@ -1,0 +1,23 @@
+{
+    
+    "output_entry_parents": [ ],
+    "output_entry_common_param_names": [ "dataset_name", "model_name", "framework" ],
+    "output_entry_param_names": [ ],
+    "output_entry_subs_listmap": [ ],
+    "output_entry_tags": [ "program_output" ],
+    "output_entry": [ "^^", "execute", [[
+        [ "get", "__record_entry__" ],
+        [ "attach", [ "^", "work_collection" ] ],
+        [ "plant", [
+                "_parent_entries", ["^^", "get", "output_entry_parents" ],
+                "tags", ["^^", "get", "output_entry_tags" ]
+            ] ],
+        [ "plant", [ "^^", "slice", ["^^", "get", "output_entry_common_param_names" ], { "plantable": true } ] ],
+        [ "plant", [ "^^", "slice", ["^^", "get", "output_entry_param_names" ], { "plantable": true } ] ],
+        [ "plant", [ "^^", "substitute", [[ "^^", "get", "output_entry_subs_listmap" ]] ] ],
+        [ "save" ]
+    ]] ],
+    
+    "input_file_path": [ "^^", "dig", "output_entry.input_json_file_path" ],
+    "output_file_path": [ "^^", "dig", "output_entry.output_json_file_path" ]
+}

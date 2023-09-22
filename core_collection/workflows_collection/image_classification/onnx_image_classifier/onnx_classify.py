@@ -32,13 +32,13 @@ Usage examples :
                 axs byname onnx_image_classifier , run --execution_device=cpu --num_of_images=100 --output_file_path=experiment.json
 
                     # set top_n_max ( number of predictions for each image ) which is added to output_file. By default top_n_max = 10
-                axs byquery program_output,classified_imagenet,framework=onnx,num_of_images=32 , top_n_max=6
+                axs byquery program_output,task=image_classification,framework=onnx,num_of_images=32 , top_n_max=6
 
                     # get accuracy
-                axs byquery program_output,classified_imagenet,framework=onnx,num_of_images=32 , get accuracy
+                axs byquery program_output,task=image_classification,framework=onnx,num_of_images=32 , get accuracy
 
                     # get n predictions for each image
-                axs byquery program_output,classified_imagenet,framework=onnx,num_of_images=32 , get print_top_n_predictions
+                axs byquery program_output,task=image_classification,framework=onnx,num_of_images=32 , get print_top_n_predictions
 
 """
 
@@ -55,21 +55,26 @@ import numpy as np
 import onnxruntime as rt
 from imagenet_loader import ImagenetLoader
 
+input_file_path = sys.argv[1]
+output_file_path =  sys.argv[2]
 
-model_path                  = sys.argv[1]
-preprocessed_imagenet_dir   = sys.argv[2]
-num_of_images               = int(sys.argv[3])
-max_batch_size              = int(sys.argv[4])
-cpu_threads                 = int(sys.argv[5])
-output_file_path            = sys.argv[6]
-model_name                  = sys.argv[7]
-normalize_symmetric         = eval(sys.argv[8])     # FIXME: currently we are passing a stringified form of a data structure,
-subtract_mean_bool          = eval(sys.argv[9])     # it would be more flexible to encode/decode through JSON instead.
-given_channel_means         = eval(sys.argv[10])
-output_layer_name           = sys.argv[11]
-execution_device            = sys.argv[12]          # if empty, it will be autodetected
-top_n_max                   = int(sys.argv[13])
-input_file_list             = eval(sys.argv[14])
+with open(input_file_path) as f:
+    input_parameters = json.load(f)
+
+
+model_path                  = input_parameters["model_path"]
+preprocessed_images_dir     = input_parameters["preprocessed_images_dir"]
+num_of_images               = input_parameters["num_of_images"]
+max_batch_size              = input_parameters["max_batch_size"]
+cpu_threads                 = input_parameters["cpu_threads"]
+model_name                  = input_parameters["model_name"]
+normalize_symmetric         = eval(input_parameters["normalize_symmetric"])
+subtract_mean_bool          = eval(input_parameters["subtract_mean_bool"])
+given_channel_means         = eval(input_parameters["given_channel_means"])
+output_layer_name           = input_parameters["output_layer_name"]
+execution_device            = input_parameters["execution_device"]          # if empty, it will be autodetected
+top_n_max                   = input_parameters["top_n_max"]
+input_file_list             = input_parameters["input_file_list"]
 
 batch_count                 = math.ceil(num_of_images / max_batch_size)
 data_layout                 = "NCHW"
@@ -116,7 +121,7 @@ height              = model_input_shape[2]
 width               = model_input_shape[3]
 model_output_shape  = sess.get_outputs()[output_layer_index].shape
 
-loader_object       = ImagenetLoader(preprocessed_imagenet_dir, input_file_list, height, width, data_layout, normalize_symmetric, subtract_mean_bool, given_channel_means, given_channel_stds)
+loader_object       = ImagenetLoader(preprocessed_images_dir, input_file_list, height, width, data_layout, normalize_symmetric, subtract_mean_bool, given_channel_means, given_channel_stds)
 
 
 print(f"input_layer_names={input_layer_names}", file=sys.stderr)

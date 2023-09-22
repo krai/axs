@@ -1,5 +1,5 @@
 {
-    "_parent_entries": [ [ "^", "byname", "python_script" ] ],
+    "_parent_entries": [ [ "^", "byname", "python_script" ], [ "^", "byname", "base_benchmark_program" ] ],
     "_producer_rules": [
         [ [ "program_output", "task=bert", "framework=onnx" ], [["run"]], { "return_saved_record_entry": true } ]
     ],
@@ -49,7 +49,7 @@
         [ "get_path" ]
     ]] ],
 
-    "batch_size": "1",
+    "batch_size": 1,
     "batch_count": "1",
 
     "dataset_max_seq_length": 384,
@@ -62,24 +62,23 @@
 
     "framework": "onnx",
     "execution_device": "",
-    "output_entry": [ "^^", "execute", [[
-        [ "get", "__record_entry__" ],
-        [ "attach", [ "^", "work_collection" ] ],
-        [ "plant", [ "^^", "substitute", [[
-            "_parent_entries", [ "AS^IS", "AS^IS", [ "^", "byname", "base_bert_experiment" ] ],
-            "tags", [ "program_output" ],
-            "dataset_name", "#{dataset_name}#",
-            "model_name", "#{model_name}#",
-            "framework", "#{framework}#",
-            "desired_python_version", "#{desired_python_version}#"
-         ]] ] ],
-         [ "save" ]
-    ]] ],
-    "output_file_path": [ "^^", "dig", "output_entry.output_json_file_path" ],
+    "output_entry_parents": [ "AS^IS", "AS^IS", [ "^", "byname", "base_bert_experiment" ] ],
+    "output_entry_param_names": [        
+         "desired_python_version",
+         "bert_code_root",
+         "bert_squad_code_dir",
+         "squad_dataset_original_path",
+         "preprocessed_squad_path",
+         "model_path",
+         "model_input_layers_tms",
+         "batch_size",
+         "batch_count",
+         "execution_device"
+    ],
 
     "errorize_output": true,
 
     "rel_script_path": "bert_squad_onnxruntime.py",
 
-    "script_extra_params": [ "^^", "substitute", "\"#{bert_code_root}#\" \"#{bert_squad_code_dir}#\" \"#{squad_dataset_original_path}#\" \"#{preprocessed_squad_path}#\" \"#{model_path}#\" \"#{model_input_layers_tms}#\" \"#{batch_size}#\" \"#{batch_count}#\" \"#{execution_device}#\" \"#{output_file_path}#\"" ]
+    "script_extra_params": [ "^^", "substitute", "\"#{input_file_path}#\" \"#{output_file_path}#\"" ]
 }

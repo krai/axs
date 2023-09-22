@@ -9,28 +9,33 @@ import sys
 import numpy as np
 import onnxruntime
 
-bert_code_root      = sys.argv[1]
-bert_squad_code_dir = sys.argv[2]
+input_file_path = sys.argv[1]
+output_file_path =  sys.argv[2]
+
+with open(input_file_path) as f:
+    input_parameters = json.load(f)
+
+bert_code_root      = input_parameters["bert_code_root"]
+bert_squad_code_dir = input_parameters["bert_squad_code_dir"]
 
 sys.path.insert(0, bert_code_root)
 sys.path.insert(0, bert_squad_code_dir)
 
 ## SQuAD dataset - original and tokenized
 #
-squad_dataset_original_path     = sys.argv[3]
-squad_dataset_tokenized_path    = sys.argv[4]
+squad_dataset_original_path     = input_parameters["squad_dataset_original_path"]
+squad_dataset_tokenized_path    = input_parameters["preprocessed_squad_path"]
 
 ## BERT model:
 #
-bert_model_path                 = sys.argv[5]
-model_input_layers_tms          = eval(sys.argv[6])
+bert_model_path                 = input_parameters["model_path"]
+model_input_layers_tms          = eval(input_parameters["model_input_layers_tms"])
 
 ## Processing by batches:
 #
-batch_size       = int(sys.argv[7])
-batch_count      = int(sys.argv[8])
-execution_device = sys.argv[9]
-output_file_path = sys.argv[10]
+batch_size       = input_parameters["batch_size"]
+batch_count      = input_parameters["batch_count"]
+execution_device = input_parameters["execution_device"]
 
 output_logits_dict = {}
 

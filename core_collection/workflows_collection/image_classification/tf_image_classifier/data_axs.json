@@ -1,5 +1,5 @@
 {
-    "_parent_entries": [ [ "^", "byname", "python_script" ] ],
+    "_parent_entries": [ [ "^", "byname", "python_script" ], [ "^", "byname", "base_benchmark_program" ] ],
     "_producer_rules": [
         [ [ "program_output", "task=image_classification", "framework=tf" ], [["run"]], { "return_saved_record_entry": true } ]
     ],
@@ -50,38 +50,26 @@
     "gpu_memory_percent": 33,
     "num_of_cpus": 0,
 
-    "output_entry": [ "^^", "execute", [[
-        [ "get", "__record_entry__" ],
-        [ "attach", [ "^", "work_collection" ] ],
-        [ "plant", [
-            "_parent_entries", [ "AS^IS", "AS^IS", [ "^", "byname", "base_imagenet_experiment" ] ],
-            "tags", [ "program_output" ]
-          ] ],
-        [ "plant", [ "^^", "slice", [
-            "framework",
-            "dataset_name",
-            "num_of_images",
-            "max_batch_size",
-            "top_n_max",
+    "output_entry_parents": [ "AS^IS", "AS^IS", [ "^", "byname", "base_imagenet_experiment" ] ],
+    "output_entry_param_names": [
+        "num_of_images",
+        "max_batch_size",
+        "top_n_max",
 
-            "gpu_memory_percent",
-            "num_of_cpus",
+        "gpu_memory_percent",
+        "num_of_cpus",
 
-            "model_name",
-            "model_path",
-            "preprocessed_images_dir",
-            "input_file_list",
-            "resolution",
-            "input_layer_name",
-            "output_layer_name",
-            "normalization"
-          ], { "plantable": true } ] ],
-        [ "save" ]
-    ]] ],
-    "output_file_path": [ "^^", "dig", "output_entry.output_json_file_path" ],
+        "model_path",
+        "preprocessed_images_dir",
+        "input_file_list",
+        "resolution",
+        "input_layer_name",
+        "output_layer_name",
+        "normalization"
+    ],
 
     "errorize_output": true,
 
     "rel_script_path": "tf_classify.py",
-    "script_extra_params": [ "^^", "substitute", "\"#{output_entry.input_json_file_path}#\" \"#{output_file_path}#\"" ]
+    "script_extra_params": [ "^^", "substitute", "\"#{input_file_path}#\" \"#{output_file_path}#\"" ]
 }
