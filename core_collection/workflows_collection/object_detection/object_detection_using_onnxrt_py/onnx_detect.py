@@ -5,13 +5,13 @@
 Usage examples  :
 
                     # a short accuracy run:
-                axs byquery program_output,detected_coco,framework=onnx,num_of_images=20 , mAP
+                axs byquery program_output,task=object_detection,framework=onnxrt,num_of_images=20 , mAP
 
                     # a short accuracy run with RetinaNet model:
-                axs byquery program_output,detected_coco,framework=onnx,model_name=retinanet_coco , mAP
+                axs byquery program_output,task=object_detection,framework=onnxrt,model_name=retinanet_coco , mAP
 
                     # running without a model_entry (all relevant data specified directly) :
-                axs byname onnx_object_detector , run --num_of_images=1 --model_name=RetinaNet --model_path=/Users/lg4/tmp/retinanet/retinanet_resnext50_32x4d_model_12.onnx --model_resolution=800 --model_output_scale=800 --model_input_layer_name=images --model_output_layers_bls="['boxes','labels','scores']" --model_skipped_classes="[]" --normalize_symmetric=False --subtract_mean_bool=False --given_channel_means="[]" --given_channel_stds="[]"
+                axs byname object_detection_using_onnxrt_py , run --num_of_images=1 --model_name=RetinaNet --model_path=/Users/lg4/tmp/retinanet/retinanet_resnext50_32x4d_model_12.onnx --model_resolution=800 --model_output_scale=800 --model_input_layer_name=images --model_output_layers_bls="['boxes','labels','scores']" --model_skipped_classes="[]" --normalize_symmetric=False --subtract_mean_bool=False --given_channel_means="[]" --given_channel_stds="[]"
 
 """
 

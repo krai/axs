@@ -1,7 +1,7 @@
 {
     "_parent_entries": [ [ "^", "byname", "python_script" ], [ "^", "byname", "base_benchmark_program" ] ],
     "_producer_rules": [
-        [ [ "program_output", "task=object_detection", "framework=onnx" ], [["run"]], { "return_saved_record_entry": true } ]
+        [ [ "program_output", "task=object_detection", "framework=onnxrt" ], [["run"]], { "return_saved_record_entry": true } ]
     ],
 
     "num_gpus": [ "^", "execute", [[
@@ -46,7 +46,7 @@
         [ "get_path" ]
     ]], {}, ["preprocessed_images_query"] ],
 
-    "framework": "onnx",
+    "framework": "onnxrt",
 
     "num_of_images": 20,
     "max_batch_size": 1,

@@ -5,10 +5,10 @@
 Usage examples :
                     # execution_device can be cpu, gpu, cuda.
                     # as a side-effect, automatically downloads and extracts Imagenet500:
-                axs byname onnx_image_classifier , run --execution_device=cpu --num_of_images=100
+                axs byname image_classification_using_onnxrt_py , run --execution_device=cpu --num_of_images=100
 
                     # reuses the Imagenet500 already downloaded & extracted:
-                axs byname onnx_image_classifier , run --execution_device=gpu --num_of_images=500
+                axs byname image_classification_using_onnxrt_py , run --execution_device=gpu --num_of_images=500
 
                     # quick removal of Imagenet500:
                 axs byquery preprocessed,imagenet , remove
@@ -16,7 +16,7 @@ Usage examples :
 
                     # assuming Imagenet50k in a tarball:
                 axs byname extractor , extract --archive_path=/datasets/dataset-imagenet-ilsvrc2012-val.tar --tags,=extracted,imagenet --strip_components=1
-                axs byname onnx_image_classifier , run --num_of_images=1000
+                axs byname image_classification_using_onnxrt_py , run --num_of_images=1000
 
                     # quick removal of Imagenet500 (again):
                 axs byquery preprocessed,imagenet , remove
@@ -26,19 +26,19 @@ Usage examples :
                 axs byquery preprocessed,imagenet,imagenet_directory=/datasets/imagenet/imagenet
 
                     # should use previously preprocessed dataset:
-                axs byname onnx_image_classifier , run --num_of_images=800
+                axs byname image_classification_using_onnxrt_py , run --num_of_images=800
 
                     # save output to file experiment.json:
-                axs byname onnx_image_classifier , run --execution_device=cpu --num_of_images=100 --output_file_path=experiment.json
+                axs byname image_classification_using_onnxrt_py , run --execution_device=cpu --num_of_images=100 --output_file_path=experiment.json
 
                     # set top_n_max ( number of predictions for each image ) which is added to output_file. By default top_n_max = 10
-                axs byquery program_output,task=image_classification,framework=onnx,num_of_images=32 , top_n_max=6
+                axs byquery program_output,task=image_classification,framework=onnxrt,num_of_images=32 , top_n_max=6
 
                     # get accuracy
-                axs byquery program_output,task=image_classification,framework=onnx,num_of_images=32 , get accuracy
+                axs byquery program_output,task=image_classification,framework=onnxrt,num_of_images=32 , get accuracy
 
                     # get n predictions for each image
-                axs byquery program_output,task=image_classification,framework=onnx,num_of_images=32 , get print_top_n_predictions
+                axs byquery program_output,task=image_classification,framework=onnxrt,num_of_images=32 , get print_top_n_predictions
 
 """
 
@@ -182,7 +182,7 @@ if output_file_path:
         output_dict = {
             "execution_device": execution_device,
             "model_name": model_name,
-            "framework": "onnx",
+            "framework": "onnxrt",
             "max_batch_size":   max_batch_size,
             "times": {
                 "model_loading_s":          model_loading_s,

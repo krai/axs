@@ -149,7 +149,7 @@ with tf.compat.v1.Session(graph=graph, config=config) as sess:
 if output_file_path:
         output_dict = {
             "model_name": model_name,
-            "framework": "onnx",
+            "framework": "tf",
             "max_batch_size":   max_batch_size,
             "times": {
                 "model_loading_s":          model_loading_s,

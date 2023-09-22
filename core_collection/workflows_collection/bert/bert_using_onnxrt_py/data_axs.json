@@ -1,7 +1,7 @@
 {
     "_parent_entries": [ [ "^", "byname", "python_script" ], [ "^", "byname", "base_benchmark_program" ] ],
     "_producer_rules": [
-        [ [ "program_output", "task=bert", "framework=onnx" ], [["run"]], { "return_saved_record_entry": true } ]
+        [ [ "program_output", "task=bert", "framework=onnxrt" ], [["run"]], { "return_saved_record_entry": true } ]
     ],
 
     "num_gpus": [ "^", "execute", [[
@@ -60,7 +60,7 @@
         [ "get_path" ]
     ]] ],
 
-    "framework": "onnx",
+    "framework": "onnxrt",
     "execution_device": "",
     "output_entry_parents": [ "AS^IS", "AS^IS", [ "^", "byname", "base_bert_experiment" ] ],
     "output_entry_param_names": [        
