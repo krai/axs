@@ -31,26 +31,26 @@ output_file_path =  sys.argv[2]
 with open(input_file_path) as f:
      input_parameters = json.load(f)
 
-model_name                  = input_parameters["model_name"]
-model_path                  = input_parameters["model_path"]
-model_resolution            = input_parameters["model_resolution"]
-model_output_scale          = input_parameters["model_output_scale"]
-model_input_layer_name      = input_parameters["model_input_layer_name"]
-model_output_layers_bls     = eval(input_parameters["model_output_layers_bls"])
-model_skipped_classes       = eval(input_parameters["model_skipped_classes"])
-normalize_symmetric         = eval(input_parameters["normalize_symmetric"])
-subtract_mean_bool          = eval(input_parameters["subtract_mean_bool"])
-given_channel_means         = eval(input_parameters["given_channel_means"])
-given_channel_stds          = eval(input_parameters["given_channel_stds"])
+model_name                    = input_parameters["model_name"]
+model_path                    = input_parameters["model_path"]
+model_resolution              = input_parameters["model_resolution"]
+model_output_scale            = input_parameters["model_output_scale"]
+model_input_layer_name        = input_parameters["model_input_layer_name"]
+model_output_layers_bls       = eval(input_parameters["model_output_layers_bls"])
+model_skipped_classes         = eval(input_parameters["model_skipped_classes"])
+normalize_symmetric           = eval(input_parameters["normalize_symmetric"])
+subtract_mean_bool            = eval(input_parameters["subtract_mean_bool"])
+given_channel_means           = eval(input_parameters["given_channel_means"])
+given_channel_stds            = eval(input_parameters["given_channel_stds"])
 
 preprocessed_images_dir       = input_parameters["preprocessed_images_dir"]
-num_of_images               = input_parameters["num_of_images"]
-max_batch_size              = input_parameters["max_batch_size"]
-execution_device            = input_parameters["execution_device"]           # if empty, it will be autodetected
-cpu_threads                 = input_parameters["cpu_threads"]
-labels_file_path            = input_parameters["labels_file_path"]
+num_of_images                 = input_parameters["num_of_images"]
+max_batch_size                = input_parameters["max_batch_size"]
+supported_execution_providers = input_parameters["supported_execution_providers"]
+cpu_threads                   = input_parameters["cpu_threads"]
+labels_file_path              = input_parameters["labels_file_path"]
 
-minimal_class_id            = input_parameters["minimal_class_id"]
+minimal_class_id              = input_parameters["minimal_class_id"]
 
 
 ### RetinaNet:
@@ -71,7 +71,6 @@ SCORE_THRESHOLD             = 0
 IMAGE_LIST_FILE_NAME    = "original_dimensions.txt"
 original_dims_file_path = os.path.join(preprocessed_images_dir, IMAGE_LIST_FILE_NAME)
 loader_object           = CocoLoader(preprocessed_images_dir, original_dims_file_path, model_resolution, model_resolution, data_layout, normalize_symmetric, subtract_mean_bool, given_channel_means, given_channel_stds)
-
 
 def load_labels(labels_filepath):
     my_labels = []
@@ -100,14 +99,7 @@ def main():
         sess_options.enable_sequential_execution = False
         sess_options.session_thread_pool_size = cpu_threads
 
-    if execution_device == "cpu":
-        requested_provider = "CPUExecutionProvider"
-    elif execution_device in ["gpu", "cuda"]:
-        requested_provider = "CUDAExecutionProvider"
-    elif execution_device in ["tensorrt", "trt"]:
-        requested_provider = "TensorrtExecutionProvider"
-
-    sess = rt.InferenceSession(model_path, sess_options, providers= [requested_provider] if execution_device else rt.get_available_providers())
+    sess = rt.InferenceSession(model_path, sess_options, providers = list(set(supported_execution_providers) & set(rt.get_available_providers())))
 
     session_execution_provider=sess.get_providers()
     print("Session execution provider: ", sess.get_providers(), file=sys.stderr)
@@ -233,7 +225,6 @@ def main():
 
     if output_file_path:
         output_dict = {
-            "execution_device": execution_device,
             "model_name": model_name,
             "framework": "onnx",
             "times": {
