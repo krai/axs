@@ -11,6 +11,7 @@
         "object_detection": "object_detection",
         "bert": "bert",
         "gptj": "gptj",
-        "c_support": "c_support"
+        "c_support": "c_support",
+        "nvidia_gpu_support": "nvidia_gpu_support"
     }
 }

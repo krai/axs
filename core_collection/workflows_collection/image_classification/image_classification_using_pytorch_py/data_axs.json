@@ -1,5 +1,5 @@
 {
-    "_parent_entries": [ [ "^", "byname", "python_script" ], [ "^", "byname", "base_benchmark_program" ] ],
+    "_parent_entries": [ [ "^", "byname", "python_script" ], [ "^", "byname", "base_benchmark_program" ], [ "^", "byname", "nvidia_gpu_support" ] ],
 
     "_producer_rules": [
         [ [ "program_output", "task=image_classification", "framework=pytorch" ], [["run"]], { "return_saved_record_entry": true } ]
@@ -28,10 +28,7 @@
     "max_batch_size": 25,
     "top_n_max": 10,
     "framework": "pytorch",
-    "num_gpus": [ "^", "execute", [[
-                        [ "byquery", "shell_tool,can_gpu" ],
-                        [ "run"  ]
-                ]]  ],
+
     "output_entry_parents": [ "AS^IS", "AS^IS", [ "^", "byname", "base_imagenet_experiment" ] ],
     "output_entry_param_names": [
         "num_of_images",
@@ -48,8 +45,6 @@
     "rel_script_path": "pytorch_classify.py",
 
     "script_extra_params": [ "^^", "substitute", "\"#{input_file_path}#\" \"#{output_file_path}#\"" ],
-
-    "torchvision_query": ["python_package", "package_name=torchvision", [ "^^", "case", [ [ "^^", "get", "num_gpus"] , "0" , null ], {"default_value": "with_cuda" } ] ],
 
     "python_deps": [
         [ "^^", "python_sync_pip_package", [[ "^^", "get", "torchvision_query" ]] ],
