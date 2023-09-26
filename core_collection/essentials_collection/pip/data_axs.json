@@ -16,6 +16,7 @@
 
         [ [ "python_package", "package_name==requests" ], [["install"]], { "pip_options": "\"urllib3<2\"" } ],
         [ [ "python_package", "package_name==torchvision" ], [["install"]], { "pip_options": "\"urllib3<2\"" } ],
+        [ [ "python_package", "package_name==evaluate" ], [["install"]], { "pip_options": "\"urllib3<1.27\"" } ],
 
         [ [ "python_package", "no_deps" ], [["install"]], { "pip_options": [ "no-deps" ] }, ["desired_python_version"] ],
         [ [ "python_package", "special", "broken_rule" ], [["install"]], {}, ["desired_python_version"] ],
