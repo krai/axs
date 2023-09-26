@@ -2,7 +2,7 @@
     "_parent_entries": [ [ "^", "byname", "python_script" ] ],
 
     "python_deps": [
-        [ "^^", "python_sync_pip_package", [["python_package", "package_name=pytorch"]] ],
+        [ "^^", "python_sync_pip_package", [["python_package", "package_name=torch"]] ],
         [ "^^", "python_sync_pip_package", [["python_package", "package_name=transformers"]] ],
         [ "^^", "python_sync_pip_package", [["python_package", "package_name=accelerate"]] ]
     ],
