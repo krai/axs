@@ -29,10 +29,9 @@ class ParamSource:
 
 
     def __repr__(self):
-        "Not callable via commandline (FIXME)"
+        "Method for stringifying params mainly used as cache key"
 
-        own_data = self.own_data()
-        return (self.get_name() or 'Anonymous') + '{'+(','.join([ repr(k)+':'+('self' if own_data[k]==self else repr(own_data[k])) for k in sorted(own_data.keys()) ]))+'}'
+        return (self.get_name() or 'Anonymous') + ':' + self.__class__.__name__ + ':'+ ufun.repr_dict(self.own_data(), [(self, "self")] )
 
 
     def get_name(self):

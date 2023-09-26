@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
+import inspect
 import logging
 import re
 import sys
 
+import ufun
 import function_access
 from param_source import ParamSource
 from copy import deepcopy
@@ -63,17 +65,19 @@ Usage examples :
         own_functions   = self.own_functions()
 
         if hasattr(own_functions, function_name):
-            return getattr(own_functions, function_name)
-        else:
-            found_function = None
-            for parent_object in self.parents_loaded():
-                found_function = parent_object.reach_function(function_name, _ancestry_path)
-                if found_function:
-                    break
-                else:
-                    _ancestry_path.pop()
+            found_function = getattr(own_functions, function_name)
+            if inspect.isfunction(found_function):
+                return found_function
 
-            return found_function
+        found_function = None
+        for parent_object in self.parents_loaded():
+            found_function = parent_object.reach_function(function_name, _ancestry_path)
+            if found_function:
+                break
+            else:
+                _ancestry_path.pop()
+
+        return found_function
 
 
     def reach_action(self, action_name, _ancestry_path=None):
@@ -269,16 +273,10 @@ Usage examples :
                 axs mi: fresh_entry , plant alpha 10  beta 20  formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula , get mi , get formula --alpha=100
         """
 
-        def unidict(d):
-            "Unique dictionary representation, used for hashing"
-
-            return '{'+(','.join([ repr(k)+':'+repr(d[k]) for k in sorted(d.keys()) ]))+'}' if type(d)==dict else repr(d)
-
-
         logging.debug(f'[{self.get_name()}]  calling action "{action_name}" with pos_params={pos_params} and edit_dict={edit_dict} ...')
 
         cache_tail = '\n\t+'.join([repr(s) for s in self.runtime_stack()])
-        cache_key = f"{action_name}.{pos_params}/{unidict(edit_dict)}\n\t+{cache_tail}"
+        cache_key = f"{action_name}.{pos_params}/{ufun.repr_dict(edit_dict)}\n\t+{cache_tail}"
 
         if deterministic and (cache_key in self.call_cache):
             cached_value = self.call_cache[cache_key]

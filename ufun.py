@@ -146,3 +146,18 @@ Usage examples :
         return orig_structure + [ diff ]                    # list top-up with an element
     else:
         return orig_structure + diff                        # list top-up with another list  OR  string concatenation  OR  adding numbers
+
+
+def repr_dict(d, exception_pairs=None):
+    """A safer way to print a dictionary that may contain 1st-level references to self or self-containing objects.
+        Note exception_pairs has to be a list of pairs.
+    """
+    exception_pairs = exception_pairs or []
+
+    def safe_value(v):
+        for (exception_v, safe_v) in exception_pairs:
+            if v==exception_v:
+                return safe_v
+        return repr(v)
+
+    return ('{' + (','.join([ repr(k)+':'+safe_value(d[k]) for k in sorted(d.keys()) ])) + '}') if type(d)==dict else repr(d)
