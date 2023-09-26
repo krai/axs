@@ -106,8 +106,11 @@ Usage examples :
             return slice_dict
 
 
-    def runtime_stack(self):
+    def runtime_stack(self, new_stack_value=None):
         "A list of entries to query for parameters before own_data during [] parameter access"
+
+        if new_stack_value is not None:
+            self.runtime_stack_cache = new_stack_value
 
         return self.runtime_stack_cache
 
