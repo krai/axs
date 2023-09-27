@@ -225,8 +225,6 @@ def main():
 
     if output_file_path:
         output_dict = {
-            "model_name": model_name,
-            "framework": "onnx",
             "times": {
                 "model_loading_s":          model_loading_s,
                 "sum_loading_s":            sum_loading_s,
