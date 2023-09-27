@@ -62,37 +62,30 @@ with open(input_file_path) as f:
     input_parameters = json.load(f)
 
 
-model_path                  = input_parameters["model_path"]
-preprocessed_images_dir     = input_parameters["preprocessed_images_dir"]
-num_of_images               = input_parameters["num_of_images"]
-max_batch_size              = input_parameters["max_batch_size"]
-cpu_threads                 = input_parameters["cpu_threads"]
-model_name                  = input_parameters["model_name"]
-normalize_symmetric         = eval(input_parameters["normalize_symmetric"])
-subtract_mean_bool          = eval(input_parameters["subtract_mean_bool"])
-given_channel_means         = eval(input_parameters["given_channel_means"])
-output_layer_name           = input_parameters["output_layer_name"]
-execution_device            = input_parameters["execution_device"]          # if empty, it will be autodetected
-top_n_max                   = input_parameters["top_n_max"]
-input_file_list             = input_parameters["input_file_list"]
+model_path                    = input_parameters["model_path"]
+preprocessed_images_dir       = input_parameters["preprocessed_images_dir"]
+num_of_images                 = input_parameters["num_of_images"]
+max_batch_size                = input_parameters["max_batch_size"]
+cpu_threads                   = input_parameters["cpu_threads"]
+model_name                    = input_parameters["model_name"]
+normalize_symmetric           = eval(input_parameters["normalize_symmetric"])
+subtract_mean_bool            = eval(input_parameters["subtract_mean_bool"])
+given_channel_means           = eval(input_parameters["given_channel_means"])
+output_layer_name             = input_parameters["output_layer_name"]
+supported_execution_providers = input_parameters["supported_execution_providers"]          # if empty, it will be autodetected
+top_n_max                     = input_parameters["top_n_max"]
+input_file_list               = input_parameters["input_file_list"]
 
-batch_count                 = math.ceil(num_of_images / max_batch_size)
-data_layout                 = "NCHW"
-given_channel_stds          = []
+batch_count                   = math.ceil(num_of_images / max_batch_size)
+data_layout                   = "NCHW"
+given_channel_stds            = []
 
 sess_options = rt.SessionOptions()
 if cpu_threads > 0:
     sess_options.enable_sequential_execution = False
     sess_options.session_thread_pool_size = cpu_threads
 
-if execution_device == "cpu":
-    requested_provider = "CPUExecutionProvider"
-elif execution_device in ["gpu", "cuda"]:
-    requested_provider = "CUDAExecutionProvider"
-elif execution_device in ["tensorrt", "trt"]:
-    requested_provider = "TensorrtExecutionProvider"
-
-sess = rt.InferenceSession(model_path, sess_options, providers= [requested_provider] if execution_device else rt.get_available_providers())
+sess = rt.InferenceSession(model_path, sess_options, providers=list(set(supported_execution_providers) & set(rt.get_available_providers())))
 
 session_execution_provider=sess.get_providers()
 print("Session execution provider: ", sess.get_providers(), file=sys.stderr)
@@ -180,10 +173,6 @@ for batch_start in range(0, num_of_images, max_batch_size):
 
 if output_file_path:
         output_dict = {
-            "execution_device": execution_device,
-            "model_name": model_name,
-            "framework": "onnxrt",
-            "max_batch_size":   max_batch_size,
             "times": {
                 "model_loading_s":          model_loading_s,
                 "sum_loading_s":            sum_loading_s,
