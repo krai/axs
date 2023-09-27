@@ -35,19 +35,15 @@ model_input_layers_tms          = eval(input_parameters["model_input_layers_tms"
 #
 batch_size       = input_parameters["batch_size"]
 batch_count      = input_parameters["batch_count"]
-execution_device = input_parameters["execution_device"]
+
+supported_execution_providers = input_parameters["supported_execution_providers"]
 
 output_logits_dict = {}
 
 sess_options = onnxruntime.SessionOptions()
 
-if execution_device == "cpu":
-    requested_provider = "CPUExecutionProvider"
-elif execution_device in ["gpu", "cuda"]:
-    requested_provider = "CUDAExecutionProvider"
-
 print("Loading BERT model and weights from {} ...".format(bert_model_path))
-sess = onnxruntime.InferenceSession(bert_model_path, sess_options, providers= [requested_provider] if execution_device else onnxruntime.get_available_providers())
+sess = onnxruntime.InferenceSession(bert_model_path, sess_options, providers =list(set(supported_execution_providers) & set(rt.get_available_providers())) )
 
 session_execution_provider=sess.get_providers()
 print("Session execution provider: ", sess.get_providers(), file=sys.stderr)

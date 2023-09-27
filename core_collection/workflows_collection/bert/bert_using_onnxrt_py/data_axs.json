@@ -65,7 +65,7 @@
          "model_input_layers_tms",
          "batch_size",
          "batch_count",
-         "execution_device"
+         "supported_execution_providers"
     ],
 
     "errorize_output": true,
