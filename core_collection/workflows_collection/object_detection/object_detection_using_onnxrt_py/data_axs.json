@@ -45,7 +45,6 @@
     "max_batch_size": 1,
     "execution_device": "",
     "cpu_threads": 0,
-    "supported_execution_providers": [ "^", "case", [ ["^^", "get", "execution_device"], "cpu", [ "CPUExecutionProvider" ], "gpu", [ "CUDAExecutionProvider" ], "cuda", [ "CUDAExecutionProvider" ], "tensorrt", [ "TensorrtExecutionProvider"], "trt", [ "TensorrtExecutionProvider"] ], {"default_value": [ "CUDAExecutionProvider", "CPUExecutionProvider" ] }, ["execution_device"]],
 
     "output_entry_parents": [ "AS^IS", "AS^IS", [ "^", "byname", "base_object_detection_experiment" ] ],
     "output_entry_param_names": [

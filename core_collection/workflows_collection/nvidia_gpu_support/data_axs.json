@@ -7,6 +7,12 @@
     "onnxruntime_query": [ "python_package", ["package_name", ["^^", "get", "onnxruntime_name"]] ],
 
     "torchvision_query": [ "^^", "case", [ [ "^^", "get", "num_gpus"] , "0" ,["python_package", "package_name=torchvision"] ], {"default_value": ["python_package", "package_name=torchvision", "with_cuda"] } ],
-    "torch_query": [ "python_package", "package_name=torch", [ "^^", "case", [ [ "^^", "get", "num_gpus"] , "0" , null ], {"default_value": "with_cuda" } ] ]
+    "torch_query": [ "python_package", "package_name=torch", [ "^^", "case", [ [ "^^", "get", "num_gpus"] , "0" , null ], {"default_value": "with_cuda" } ] ],
 
+    "supported_execution_providers": [ "^^", "case", [ ["^^", "get", "execution_device"],
+        "cpu", [ "CPUExecutionProvider" ],
+        [ "gpu", "cuda" ], [ "CUDAExecutionProvider" ],
+        [ "tensorrt","trt"], [ "TensorrtExecutionProvider"] ],
+        {"default_value": [ "CUDAExecutionProvider", "CPUExecutionProvider" ] }
+    ]
 }
