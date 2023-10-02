@@ -89,6 +89,7 @@ def draw(target, return_this_entry=None, __entry__=None):
     initial_root_visited = False
     dest_dir = return_this_entry.get_path()
     target_entry = __entry__.get_kernel().byname(target)
+    print("target_entry",target_entry)
     get_path = target_entry.get_path()
     file_path = f'{get_path}/data_axs.json'
     
@@ -96,11 +97,22 @@ def draw(target, return_this_entry=None, __entry__=None):
     output_parents_data = ""
     target_data = target_entry.own_data()
 
+    output_entries = target_entry.get("output_entry_parents")
+    print("output_entries:", output_entries)
+
+    # Extract all 'byname' entries from "output_entry_parents" as a key
+    if output_entries:
+        byname_entries = extract_byname_entries(output_entries)
+        print("byname_entries:", byname_entries)
+
+
     for key, val in target_data.items():
         if "_parent_entries" in str(val):
             output = True
             output_parents_data = val
         elif "tags" in str(val):
+            output = True
+        elif output_entries:
             output = True
 
     f = graphviz.Digraph(format='png')
@@ -129,6 +141,15 @@ def draw(target, return_this_entry=None, __entry__=None):
                 target_entry = output_parent
         else:
             target_entry = None
+
+    elif output_entries and byname_entries:
+        for byname_entry in byname_entries:
+            with f.subgraph(name=f'cluster_1') as c:
+                c.attr(style='dotted')
+                c.attr(label=f'Group B')
+                dfs(byname_entry, c, __entry__, is_output=True)  
+                f.edge(byname_entry, "output")
+
 
     f.render(filename=f"{dest_dir}/image")
     return return_this_entry
@@ -162,12 +183,21 @@ def find_key(obj, key):
             matches.extend(find_key(item, key))
 
     return matches
-        
-
-    
+            
 def process_json(file_path):
     with open(file_path) as f:
         obj = json.load(f)
         required_data = {key: obj[key] for key in ['output_file_path', 'output_entry'] if key in obj}
         parents = find_parent(required_data)
     return parents
+
+
+def extract_byname_entries(output_entries):
+    byname_entries = []
+    for item in output_entries:
+        if isinstance(item, list) and 'byname' in item:
+            index = item.index('byname') + 1
+            if index < len(item):
+                byname_entries.append(item[index])
+    return byname_entries
+
