@@ -7,6 +7,8 @@ import graphviz
 import json
 from kernel import default_kernel as ak
 
+initial_root_visited = False
+
 def draw_collection(collection_object, tone_colour, graph):
     collection_name = collection_object.get_name()
 
@@ -37,7 +39,8 @@ def draw_collection(collection_object, tone_colour, graph):
     graph.subgraph(cluster)
 
 
-def dfs(root, f, __entry__):
+def dfs(root, f, __entry__, is_output=False):
+    global initial_root_visited
     stack = []
     visited = set()
 
@@ -45,16 +48,25 @@ def dfs(root, f, __entry__):
     if not cur_target_entry:
         print("ERROR!")
         return 
-    stack.append((cur_target_entry, 0))
+
+    stack.append((cur_target_entry, True))  # Using True to signify that this is the initial root node
     
     while stack:
-        cur_target_entry, level = stack.pop()
+        cur_target_entry, is_initial_root = stack.pop()
         cur_target = cur_target_entry.get_name()
-        print(cur_target)
+
         if cur_target in visited:
             continue
 
-        f.node(cur_target)
+        if not initial_root_visited:
+            color = 'red'
+            initial_root_visited = True
+        elif is_output:
+            color = 'lightblue'
+        else:
+            color = 'lightcoral'
+
+        f.node(cur_target, color=color, style='filled')
         visited.add(cur_target)
 
         parents = cur_target_entry.get("_parent_entries")
@@ -66,13 +78,15 @@ def dfs(root, f, __entry__):
                     p = parent
                 if not p:
                     continue
-                stack.append((p, 0))
-                f.node(p.get_name())
+                stack.append((p, False))  # Using False to signify that this is not the initial root node
                 f.edge(p.get_name(), cur_target)
-
+    
     return f
 
 def draw(target, return_this_entry=None, __entry__=None):
+
+    global initial_root_visited
+    initial_root_visited = False
     dest_dir = return_this_entry.get_path()
     target_entry = __entry__.get_kernel().byname(target)
     get_path = target_entry.get_path()
@@ -91,20 +105,28 @@ def draw(target, return_this_entry=None, __entry__=None):
 
     f = graphviz.Digraph(format='png')
     f.attr('node', shape='circle')
-    f = dfs(target, f, __entry__)
+
+    with f.subgraph(name='cluster_0') as c:
+        c.attr(style='dotted')
+        c.attr(label='Group A')
+        dfs(target, c, __entry__, is_output=False)  
+ 
+
     if output:
-        f.node("output")
+        f.node("output", style='filled', color='blue')
         f.edge(target, "output")
 
     if output_parents_data:
-
         info = find_parent(output_parents_data)
         output_parents = find_byname(file_path,obj=info)
         print("output_parents", output_parents)
         for output_parent in output_parents:
-            f = dfs(output_parent, f, __entry__)
-            f.edge(output_parent, "output")
-            target_entry = output_parent
+            with f.subgraph(name='cluster_1') as c:
+                c.attr(style='dotted')
+                c.attr(label='Group B')
+                dfs(output_parent, c, __entry__, is_output=True) 
+                f.edge(output_parent, "output")
+                target_entry = output_parent
         else:
             target_entry = None
 
