@@ -1,0 +1,20 @@
+{
+    "_parent_entries": [ [ "^", "byname", "python_script" ] ],
+
+    "python_deps": [
+        [ "^^", "python_sync_pip_package", [["python_package", "package_name=torch"]] ],
+        [ "^^", "python_sync_pip_package", [["python_package", "package_name=transformers"]] ],
+        [ "^^", "python_sync_pip_package", [["python_package", "package_name=datasets"]] ],
+        [ "^^", "python_sync_pip_package", [["python_package", "package_name=tqdm"]] ]
+    ],
+
+    "model_name": "EleutherAI/gpt-j-6B",
+    "dataset_name": "lambada",
+    "execution_device": "",
+    "dtype": "float32",
+    "verbosity": 1,
+
+    "rel_script_path": "gptj_next_word_demo.py",
+
+    "script_extra_params": [ "^^", "substitute", "\"#{model_name}#\" \"#{dataset_name}#\" \"#{execution_device}#\" \"#{dtype}#\" \"#{verbosity}#\"" ]
+}
