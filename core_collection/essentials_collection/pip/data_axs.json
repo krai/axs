@@ -50,9 +50,10 @@
         [ "run", [], {
                         "force_binary": false,
                         "force_binary_str": [ "^^", "case", [ [ "^^", "get", "force_binary" ], true, "--only-binary :all:" ], { "default_value": "" } ],
-                        "shell_cmd_with_subs": "\"#{tool_path}#\" -m pip install #{package_name}#==88.88.88 #{force_binary_str}#",
+                        "shell_cmd_with_subs": "\"#{tool_path}#\" -m pip install #{package_name}#==88.88.88 #{flattened_options}# #{force_binary_str}#",
                         "capture_output": false,
                         "capture_stderr": true,
+                        "flattened_options": [ "^^", "flatten_options" ],
                         "package_name": [ "^^", "get", "package_name" ]
                      } ],
         0,
