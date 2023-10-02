@@ -5,13 +5,13 @@
 Usage examples  :
 
                     # a short accuracy run:
-                axs byquery program_output,detected_coco,framework=onnx,num_of_images=20 , mAP
+                axs byquery program_output,task=object_detection,framework=onnxrt,num_of_images=20 , mAP
 
                     # a short accuracy run with RetinaNet model:
-                axs byquery program_output,detected_coco,framework=onnx,model_name=retinanet_coco , mAP
+                axs byquery program_output,task=object_detection,framework=onnxrt,model_name=retinanet_coco , mAP
 
                     # running without a model_entry (all relevant data specified directly) :
-                axs byname onnx_object_detector , run --num_of_images=1 --model_name=RetinaNet --model_path=/Users/lg4/tmp/retinanet/retinanet_resnext50_32x4d_model_12.onnx --model_resolution=800 --model_output_scale=800 --model_input_layer_name=images --model_output_layers_bls="['boxes','labels','scores']" --model_skipped_classes="[]" --normalize_symmetric=False --subtract_mean_bool=False --given_channel_means="[]" --given_channel_stds="[]"
+                axs byname object_detection_using_onnxrt_py , run --num_of_images=1 --model_name=RetinaNet --model_path=/Users/lg4/tmp/retinanet/retinanet_resnext50_32x4d_model_12.onnx --model_resolution=800 --model_output_scale=800 --model_input_layer_name=images --model_output_layers_bls="['boxes','labels','scores']" --model_skipped_classes="[]" --normalize_symmetric=False --subtract_mean_bool=False --given_channel_means="[]" --given_channel_stds="[]"
 
 """
 
@@ -25,27 +25,32 @@ import numpy as np
 import onnxruntime as rt
 from coco_loader import CocoLoader
 
-model_name                  = sys.argv[1]
-model_path                  = sys.argv[2]
-model_resolution            = int(sys.argv[3])
-model_output_scale          = float(sys.argv[4])
-model_input_layer_name      = sys.argv[5]
-model_output_layers_bls     = eval(sys.argv[6])
-model_skipped_classes       = eval(sys.argv[7])
-normalize_symmetric         = eval(sys.argv[8])     # FIXME: currently we are passing a stringified form of a data structure,
-subtract_mean_bool          = eval(sys.argv[9])     # it would be more flexible to encode/decode through JSON instead.
-given_channel_means         = eval(sys.argv[10])
-given_channel_stds          = eval(sys.argv[11])
+input_file_path  = sys.argv[1]
+output_file_path =  sys.argv[2]
 
-preprocessed_coco_dir       = sys.argv[12]
-num_of_images               = int(sys.argv[13])
-max_batch_size              = int(sys.argv[14])
-execution_device            = sys.argv[15]           # if empty, it will be autodetected
-cpu_threads                 = int(sys.argv[16])
-labels_file_path            = sys.argv[17]
-output_file_path            = sys.argv[18]
+with open(input_file_path) as f:
+     input_parameters = json.load(f)
 
-minimal_class_id            = int(sys.argv[19])
+model_name                    = input_parameters["model_name"]
+model_path                    = input_parameters["model_path"]
+model_resolution              = input_parameters["model_resolution"]
+model_output_scale            = input_parameters["model_output_scale"]
+model_input_layer_name        = input_parameters["model_input_layer_name"]
+model_output_layers_bls       = eval(input_parameters["model_output_layers_bls"])
+model_skipped_classes         = eval(input_parameters["model_skipped_classes"])
+normalize_symmetric           = eval(input_parameters["normalize_symmetric"])
+subtract_mean_bool            = eval(input_parameters["subtract_mean_bool"])
+given_channel_means           = eval(input_parameters["given_channel_means"])
+given_channel_stds            = eval(input_parameters["given_channel_stds"])
+
+preprocessed_images_dir       = input_parameters["preprocessed_images_dir"]
+num_of_images                 = input_parameters["num_of_images"]
+max_batch_size                = input_parameters["max_batch_size"]
+supported_execution_providers = input_parameters["supported_execution_providers"]
+cpu_threads                   = input_parameters["cpu_threads"]
+labels_file_path              = input_parameters["labels_file_path"]
+
+minimal_class_id              = input_parameters["minimal_class_id"]
 
 
 ### RetinaNet:
@@ -64,9 +69,8 @@ SCORE_THRESHOLD             = 0
 ## Preprocessed input images' properties:
 #
 IMAGE_LIST_FILE_NAME    = "original_dimensions.txt"
-original_dims_file_path = os.path.join(preprocessed_coco_dir, IMAGE_LIST_FILE_NAME)
-loader_object           = CocoLoader(preprocessed_coco_dir, original_dims_file_path, model_resolution, model_resolution, data_layout, normalize_symmetric, subtract_mean_bool, given_channel_means, given_channel_stds)
-
+original_dims_file_path = os.path.join(preprocessed_images_dir, IMAGE_LIST_FILE_NAME)
+loader_object           = CocoLoader(preprocessed_images_dir, original_dims_file_path, model_resolution, model_resolution, data_layout, normalize_symmetric, subtract_mean_bool, given_channel_means, given_channel_stds)
 
 def load_labels(labels_filepath):
     my_labels = []
@@ -95,14 +99,7 @@ def main():
         sess_options.enable_sequential_execution = False
         sess_options.session_thread_pool_size = cpu_threads
 
-    if execution_device == "cpu":
-        requested_provider = "CPUExecutionProvider"
-    elif execution_device in ["gpu", "cuda"]:
-        requested_provider = "CUDAExecutionProvider"
-    elif execution_device in ["tensorrt", "trt"]:
-        requested_provider = "TensorrtExecutionProvider"
-
-    sess = rt.InferenceSession(model_path, sess_options, providers= [requested_provider] if execution_device else rt.get_available_providers())
+    sess = rt.InferenceSession(model_path, sess_options, providers = list(set(supported_execution_providers) & set(rt.get_available_providers())))
 
     session_execution_provider=sess.get_providers()
     print("Session execution provider: ", sess.get_providers(), file=sys.stderr)
@@ -228,9 +225,6 @@ def main():
 
     if output_file_path:
         output_dict = {
-            "execution_device": execution_device,
-            "model_name": model_name,
-            "framework": "onnx",
             "times": {
                 "model_loading_s":          model_loading_s,
                 "sum_loading_s":            sum_loading_s,

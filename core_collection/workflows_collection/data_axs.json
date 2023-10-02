@@ -4,13 +4,14 @@
         "collection"
     ],
     "contained_entries": {
+        "base_benchmark_program": "base_benchmark_program",
         "generate_calendar_py": "generate_calendar_py",
-
         "mlperf_inference_git_recipe": "mlperf_inference_git_recipe",
         "image_classification": "image_classification",
         "object_detection": "object_detection",
         "bert": "bert",
-
-        "c_support": "c_support"
+        "gptj": "gptj",
+        "c_support": "c_support",
+        "nvidia_gpu_support": "nvidia_gpu_support"
     }
 }

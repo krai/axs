@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 
+import inspect
 import logging
 import re
+import sys
 
+import ufun
 import function_access
 from param_source import ParamSource
 from copy import deepcopy
@@ -62,17 +65,19 @@ Usage examples :
         own_functions   = self.own_functions()
 
         if hasattr(own_functions, function_name):
-            return getattr(own_functions, function_name)
-        else:
-            found_function = None
-            for parent_object in self.parents_loaded():
-                found_function = parent_object.reach_function(function_name, _ancestry_path)
-                if found_function:
-                    break
-                else:
-                    _ancestry_path.pop()
+            found_function = getattr(own_functions, function_name)
+            if inspect.isfunction(found_function):
+                return found_function
 
-            return found_function
+        found_function = None
+        for parent_object in self.parents_loaded():
+            found_function = parent_object.reach_function(function_name, _ancestry_path)
+            if found_function:
+                break
+            else:
+                _ancestry_path.pop()
+
+        return found_function
 
 
     def reach_action(self, action_name, _ancestry_path=None):
@@ -138,7 +143,7 @@ Usage examples :
         return function_access.list_function_names( self.__class__ ) + self.list_own_functions()
 
 
-    def help(self, action_name=None):
+    def help(self, *arguments):
         """Reach for a Runnable's function or method and examine its DocString and calling signature.
 
 Usage examples :
@@ -159,7 +164,8 @@ Usage examples :
         help_buffer.append('')
         help_buffer.append( common_format.format( 'Specific '+entry_class.__name__, self.get_name() ))
 
-        if action_name:
+        if arguments:
+            action_name = arguments[0]
             try:
                 ancestry_path   = []
                 action_object   = self.reach_action(action_name, _ancestry_path=ancestry_path)
@@ -217,11 +223,14 @@ Usage examples :
 
         if perform_nested_calls:
             value_source_entry.blocked_param_set.add( param_name )
+            logging.debug(f"[{self.get_name()}]  BLOCKING '{param_name}' in order to compute nested_calls on {unprocessed_value} ...")
             try:
                 param_value = self.nested_calls(unprocessed_value)
             except Exception as e:
+                logging.debug(f"[{self.get_name()}]  unBLOCKING '{param_name}' after attempt to compute nested_calls on {unprocessed_value} ...")
                 value_source_entry.blocked_param_set.remove( param_name )
                 raise e
+            logging.debug(f"[{self.get_name()}]  unBLOCKING '{param_name}' after computing nested_calls on {unprocessed_value} ...")
             value_source_entry.blocked_param_set.remove( param_name )
         else:
                 param_value = unprocessed_value
@@ -231,7 +240,28 @@ Usage examples :
         return param_value
 
 
-    def call(self, action_name, pos_params=None, edit_dict=None, export_params=None, deterministic=True, call_record_entry_ptr=None, nested_context=None, slice_relative_to=None):
+    def call(self, action_path, *the_pos_rest, **the_named_rest):
+        """Dispatch qualified calls via dig() and local calls via local_call()
+
+Usage examples :
+                axs version
+                axs .pip.available_versions numpy
+
+        """
+        if '.' in action_path:
+            action_parts = action_path.split('.')
+            action_entry = self.dig( action_parts[:-1] )    # starting from an empty string will trigger byname() inside dig()
+
+            # TODO: checking for ..method_name or .fully.qualified..method_name is better be done here,
+            #       and possibly also creation of the temp_entry for ad-hoc editing of parameters, to offload the actual call()
+
+            action_name = action_parts[-1]
+            return action_entry.local_call( action_name, *the_pos_rest, **the_named_rest )
+        else:
+            return self.local_call( action_path, *the_pos_rest, **the_named_rest )
+
+
+    def local_call(self, action_name, pos_params=None, edit_dict=None, export_params=None, deterministic=True, call_record_entry_ptr=None, nested_context=None, slice_relative_to=None):
         """Call a given function or method of a given entry and feed it
             with arguments from the current object optionally overridden by a given edit_dict
 
@@ -243,16 +273,10 @@ Usage examples :
                 axs mi: fresh_entry , plant alpha 10  beta 20  formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula , get mi , get formula --alpha=100
         """
 
-        def unidict(d):
-            "Unique dictionary representation, used for hashing"
-
-            return '{'+(','.join([ repr(k)+':'+repr(d[k]) for k in sorted(d.keys()) ]))+'}' if type(d)==dict else repr(d)
-
-
         logging.debug(f'[{self.get_name()}]  calling action "{action_name}" with pos_params={pos_params} and edit_dict={edit_dict} ...')
 
         cache_tail = '\n\t+'.join([repr(s) for s in self.runtime_stack()])
-        cache_key = f"{action_name}.{pos_params}/{unidict(edit_dict)}\n\t+{cache_tail}"
+        cache_key = f"{action_name}.{pos_params}/{ufun.repr_dict(edit_dict)}\n\t+{cache_tail}"
 
         if deterministic and (cache_key in self.call_cache):
             cached_value = self.call_cache[cache_key]
@@ -393,7 +417,12 @@ Usage examples :
             else:
                 return input_structure
 
-        processed_struct = nested_calls_rec(unprocessed_struct)
+        processed_struct = None
+        try:
+            processed_struct = nested_calls_rec(unprocessed_struct)
+        except Exception as e:
+            print("-"*120 + f"\nWhile computing nested_calls in {unprocessed_struct} the following exception was raised: {e}\n"+ "="*120, file=sys.stderr)
+            raise(e)
 
         return processed_struct if side_effects_count else unprocessed_struct                   # keeping the original if unchanged should help with GC
 
@@ -486,7 +515,7 @@ Usage examples :
                     result          = function_access.feed(action_object, pos_params, edit_dict)
                 else:
                     display_pipeline = "\n\t".join([str(step) for step in ["["]+pipeline]) + "\n]"
-                    raise RuntimeError( f'In pipeline {display_pipeline} step {pipeline[call_idx]} cannot be execited on value ({entry}) produced by {pipeline[call_idx-1]}' )
+                    raise RuntimeError( f'In pipeline {display_pipeline} step {pipeline[call_idx]} cannot be executed on value ({entry}) produced by {pipeline[call_idx-1]}' )
 
                 if input_label:
                     rt_pipeline_wide[input_label] = call_record_entry_ptr[0]

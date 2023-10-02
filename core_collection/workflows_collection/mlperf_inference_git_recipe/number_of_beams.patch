@@ -1,0 +1,13 @@
+diff --git a/language/gpt-j/backend.py b/language/gpt-j/backend.py
+index 5657559..25dcfc7 100644
+--- a/language/gpt-j/backend.py
++++ b/language/gpt-j/backend.py
+@@ -14,7 +14,7 @@ gen_kwargs = {
+     "early_stopping": True,
+     "max_new_tokens": 128,
+     "min_new_tokens": 30,
+-    "num_beams": 4,
++    "num_beams": int( os.environ.get('NUMBER_OF_BEAMS', "4") ),
+ }
+ 
+ 

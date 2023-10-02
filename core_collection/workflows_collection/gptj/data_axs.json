@@ -1,0 +1,9 @@
+{
+    "_parent_entries": [ [ "^", "core_collection" ] ],
+    "tags": [
+        "collection"
+    ],
+    "contained_entries": {
+        "gptj_demo_torch_py": "gptj_demo_torch_py"
+    }
+}

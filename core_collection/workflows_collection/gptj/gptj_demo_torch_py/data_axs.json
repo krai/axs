@@ -1,0 +1,20 @@
+{
+    "_parent_entries": [ [ "^", "byname", "python_script" ] ],
+
+    "python_deps": [
+        [ "^^", "python_sync_pip_package", [["python_package", "package_name=torch"]] ],
+        [ "^^", "python_sync_pip_package", [["python_package", "package_name=transformers"]] ],
+        [ "^^", "python_sync_pip_package", [["python_package", "package_name=accelerate"]] ]
+    ],
+
+    "model_name": "EleutherAI/gpt-j-6B",
+    "revision": "float32",
+    "dtype": "bfloat16",
+    "prompt": "Google was created in",
+    "generate_length": 200,
+    "execution_device": "",
+
+    "rel_script_path": "gptj_generate_demo.py",
+
+    "script_extra_params": [ "^^", "substitute", "\"#{model_name}#\" \"#{revision}#\" \"#{dtype}#\" \"#{prompt}#\" #{generate_length}# \"#{execution_device}#\"" ]
+}

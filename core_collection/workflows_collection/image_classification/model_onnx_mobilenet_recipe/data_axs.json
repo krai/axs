@@ -5,7 +5,8 @@
             "md5": "5173c0ccbae0d4fe2acd514e8b847f0d",
             "normalize_data_bool": "True",
             "subtract_mean_bool": "False",
-            "given_channel_means": "[]"
+            "given_channel_means": "[]",
+            "dataset_name": "imagenet"
         } ]
     ]
 }

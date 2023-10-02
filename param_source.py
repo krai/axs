@@ -3,6 +3,8 @@
 import logging
 import re
 
+import ufun
+
 class ParamSource:
     """ An object of ParamSource class is a non-persistent container of parameters
         that may optionally also have a parent object of the same class.
@@ -27,10 +29,9 @@ class ParamSource:
 
 
     def __repr__(self):
-        "Not callable via commandline (FIXME)"
+        "Method for stringifying params mainly used as cache key"
 
-        own_data = self.own_data()
-        return (self.get_name() or 'Anonymous') + '{'+(','.join([ repr(k)+':'+('self' if own_data[k]==self else repr(own_data[k])) for k in sorted(own_data.keys()) ]))+'}'
+        return (self.get_name() or 'Anonymous') + ':' + self.__class__.__name__ + ':'+ ufun.repr_dict(self.own_data(), [(self, "self")] )
 
 
     def get_name(self):
@@ -98,13 +99,17 @@ Usage examples :
 
         if plantable:
             import itertools
-            return list(itertools.chain(*zip(slice_dict.keys(), slice_dict.values())))
+
+            return list(itertools.chain(*zip(slice_dict.keys(), slice_dict.values())))      # flattened list of key-value pairs
         else:
             return slice_dict
 
 
-    def runtime_stack(self):
+    def runtime_stack(self, new_stack_value=None):
         "A list of entries to query for parameters before own_data during [] parameter access"
+
+        if new_stack_value is not None:
+            self.runtime_stack_cache = new_stack_value
 
         return self.runtime_stack_cache
 
@@ -113,12 +118,15 @@ Usage examples :
         "Common part of accessing a parameter"
 
         own_data = self.own_data()
-        if param_name in own_data and param_name not in self.blocked_param_set:
-            param_value = own_data[param_name]
-            logging.debug(f"[{self.get_name()}]  {self.get_name()} has parameter '{param_name}', returning '{param_value}'")
-            yield (self, param_value)
+        if param_name in own_data:
+            if param_name in self.blocked_param_set:
+                logging.warning(f"[{self.get_name()}]  parameter '{param_name}' is contained but BLOCKED, skipping further")
+            else:
+                param_value = own_data[param_name]
+                logging.debug(f"[{self.get_name()}]  parameter '{param_name}' is contained here, returning '{param_value}'")
+                yield (self, param_value)
         else:
-            logging.debug(f"[{self.get_name()}]  {self.get_name()} does not have parameter '{param_name}', skipping further")
+            logging.debug(f"[{self.get_name()}]  parameter '{param_name}' is not contained here, skipping further")
 
 
     def getitem_generator(self, param_name, parent_recursion=None):
@@ -173,16 +181,28 @@ Usage examples :
                 axs dig greek.4 --greek,=alpha,beta,gamma,delta --safe
                 axs byname counting_collection , byname french , dig --key_path,=number_mapping,7
                 axs byname counting_collection , byname dutch , dig number_mapping.6
+                axs dig .unzip_tool.tool_path
         """
         if type(key_path)!=list:
             key_path = key_path.split('.')
 
-        param_name = key_path[0]
+        key_syllable_iter   = iter(key_path)
+        param_name          = next(key_syllable_iter)
 
         try:
-            struct_ptr  = self.__getitem__(param_name, parent_recursion)
+            if not param_name:                                      # path that starts from an empty syllable indicates we want to start form the "root", or the kernel
+                entry_name  = next(key_syllable_iter)
+                start_entry = self.get_kernel().byname(entry_name)
+                param_name  = next(key_syllable_iter, None)         # protect with None to avoid exhausting the iterator too soon
+            else:
+                start_entry = self
 
-            for key_syllable in key_path[1:]:
+            if param_name is not None:
+                struct_ptr  = start_entry.__getitem__(param_name, parent_recursion)
+            else:
+                struct_ptr  = start_entry
+
+            for key_syllable in key_syllable_iter:
                 if type(struct_ptr)==list:  # descend into lists with numeric indices
                     key_syllable = int(key_syllable)
                 struct_ptr = struct_ptr[key_syllable]   # iterative descent
@@ -319,14 +339,7 @@ Usage examples :
                 elif pluck:
                     struct_ptr.pop(key_syllable)
                 elif augment:
-                    orig_value = struct_ptr[key_syllable]
-
-                    if type(orig_value)==dict:
-                        struct_ptr[key_syllable].update(value)
-                    elif type(orig_value)==list and type(value)!=list:
-                        struct_ptr[key_syllable] += [ value ]
-                    else:
-                        struct_ptr[key_syllable] += value
+                    struct_ptr[key_syllable] = ufun.augment( struct_ptr[key_syllable], value )
                 else:
                     struct_ptr[key_syllable] = value
 
@@ -360,7 +373,7 @@ Usage examples :
             answer  = answer_value_pairs[i]
             value   = answer_value_pairs[i+1]
 
-            if (type(question)==type(answer) and question==answer) or (type(answer)==list and question in answer):
+            if (type(question)==type(answer) and question==answer) or (type(answer)==list and ufun.is_in(question,answer) ):
                     return value
 
         return default_value

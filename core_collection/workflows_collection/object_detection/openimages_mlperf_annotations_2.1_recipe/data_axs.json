@@ -1,0 +1,16 @@
+{
+    "_producer_rules": [
+        [ [ "downloaded", "openimages_annotations", "v2_1" ], [["get_kernel"],["byname","downloader"],["download"]], {
+            }, ["url"] ],
+        [ [ "extracted",  "openimages_annotations", "v2_1" ], [["get_kernel"],["byname","extractor"],["extract"]], {
+            }, [ "file_name", "archive_path" ] ]
+    ],
+
+    "url": "https://github.com/mlcommons/inference/releases/download/v2.1/openimages-mlperf_annotations_2.1.json.zip",
+    "file_name": "extracted/openimages-mlperf.json",
+    "archive_path": [ "AS^IS", "^", "execute", [[
+        [ "byquery", [[ "downloaded", "openimages_annotations", "v2_1" ]] ],
+        [ "get_path" ]
+        ]], {}
+    ]
+}

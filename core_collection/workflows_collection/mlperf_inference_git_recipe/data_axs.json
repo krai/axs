@@ -1,5 +1,10 @@
 {
     "_producer_rules": [
+        [ [ "git_repo", "repo_name=mlperf_inference_git", "patch=number_of_beams" ], [["get_kernel"],["byname","git"],["clone"]], {
+            "COMMENT": "obsolete variation, but kept here as an example",
+            "abs_patch_path": [ "^^", "get_path", "number_of_beams.patch" ],
+            "submodules": false
+        }, [ "url", "checkout", "contained_files" ] ],
         [ [ "git_repo", "repo_name=mlperf_inference_git" ], [["get_kernel"],["byname","git"],["clone"]], {
         }, [ "url", "checkout", "submodules", "contained_files" ] ]
     ],
@@ -17,6 +22,11 @@
         "bert_code_root": [ "language", "bert" ],
         "bert_squad_code_dir": [ "language", "bert", "DeepLearningExamples", "TensorFlow", "LanguageModeling", "BERT" ],
         "bert_accuracy_script": [ "language", "bert", "accuracy-squad.py" ],
+
+        "gptj_code_dir": [ "language", "gpt-j" ],
+        "gptj_cnndm_download_script": [ "language", "gpt-j", "download_cnndm.py" ],
+        "gptj_reference_loadgen_script": [ "language", "gpt-j", "main.py" ],
+        "gptj_accuracy_script": [ "language", "gpt-j", "evaluation.py" ],
 
         "submission_accuracy_truncator_script": [ "tools", "submission", "truncate_accuracy_log.py" ],
         "submission_checker_script": [ "tools", "submission", "submission_checker.py" ],

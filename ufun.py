@@ -48,7 +48,7 @@ def rematch(input_string, regex, group=1):
 Usage examples :
                 axs byname kernel_python_tool , run ,0 func ufun.rematch '^Python\s((\d+)\.(\d+))\.\d+'    # parse the major.minor version from Python
     """
-    searchObj = re.search(regex, input_string)
+    searchObj = re.search(regex, input_string, re.MULTILINE)
     if searchObj:
         if group>0:
             return searchObj.group(group)
@@ -81,6 +81,7 @@ def join_with(things, separator=' '):
 
 Usage examples :
                 axs work_collection , get contained_entries , keys ,0 func ufun.join_with
+                axs noop --,=ab,cd,ef ,0 func ufun.join_with $'\n'      # note Bash-specific syntax for passing a carriage return
     """
     return separator.join(things)
 
@@ -102,3 +103,61 @@ Usage examples :
             raise
 
     shutil.rmtree(dir_path, ignore_errors=False, onerror=handleRemoveReadonly)
+
+
+def is_in(candidate, iterable):
+    """Check if element is TRULY contained in the iterable.
+
+Note that the following are true in Python:
+    1==True
+    0==False
+    True in [1]
+    1 in [True]
+    False in [0]
+    0 in [False]
+
+So to account for the difference between (1 and True) and between (0 and False), we employ or own containment check.
+
+Usage examples :
+                axs func ufun.is_in 0 ---='[false,2,4]'
+                axs func ufun.is_in --- ---='[false,2,4]'
+                axs func ufun.is_in 1 ---='[0,true,4]'
+                axs func ufun.is_in --+ ---='[0,true,4]'
+    """
+    for element in iterable:
+        if candidate is element:
+            return True
+    return False
+
+
+def augment(orig_structure, diff):
+    """Apply a simple 1-arg editing uperation to a data structure
+
+Usage examples :
+                axs func ufun.augment 100 -23                   # add two numbers
+                axs func ufun.augment abcd efg                  # concatenate two strings
+                axs func ufun.augment --,=10,20,30 40           # add an element to the list
+                axs func ufun.augment --,=10,20,30 --,=40,50    # concatenate two lists
+    """
+
+    if type(orig_structure)==dict:
+        return {**orig_structure, **diff}                   # dictionary top-up
+    elif type(orig_structure)==list and type(diff)!=list:
+        return orig_structure + [ diff ]                    # list top-up with an element
+    else:
+        return orig_structure + diff                        # list top-up with another list  OR  string concatenation  OR  adding numbers
+
+
+def repr_dict(d, exception_pairs=None):
+    """A safer way to print a dictionary that may contain 1st-level references to self or self-containing objects.
+        Note exception_pairs has to be a list of pairs.
+    """
+    exception_pairs = exception_pairs or []
+
+    def safe_value(v):
+        for (exception_v, safe_v) in exception_pairs:
+            if v==exception_v:
+                return safe_v
+        return repr(v)
+
+    return ('{' + (','.join([ repr(k)+':'+safe_value(d[k]) for k in sorted(d.keys()) ])) + '}') if type(d)==dict else repr(d)

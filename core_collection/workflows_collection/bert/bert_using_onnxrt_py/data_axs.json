@@ -1,0 +1,76 @@
+{
+    "_parent_entries": [ [ "^", "byname", "python_script" ], [ "^", "byname", "base_benchmark_program" ], [ "^", "byname", "nvidia_gpu_support" ] ],
+    "_producer_rules": [
+        [ [ "program_output", "task=bert", "framework=onnxrt" ], [["run"]], { "return_saved_record_entry": true } ]
+    ],
+
+    "tensorflow_query": [ "python_package", "package_name=tensorflow"],
+
+    "python_deps": [
+        [ "^^", "python_sync_pip_package", [[ "^^", "get", "tensorflow_query" ]] ],
+        [ "^^", "python_sync_pip_package", [[ "^^", "get", "onnxruntime_query" ]] ],
+        [ "^^", "python_sync_pip_package", [[ "^^", "get", "torch_query" ]] ]
+    ],
+    "mlperf_inference_git_entry": [ "^", "byquery", "git_repo,repo_name=mlperf_inference_git" ],
+
+    "bert_code_root": [ "^^", "execute", [[
+        [ "get", "mlperf_inference_git_entry" ],
+        [ "get_path_of", "bert_code_root" ]
+    ]] ],
+
+    "bert_squad_code_dir": [ "^^", "execute", [[
+        [ "get", "mlperf_inference_git_entry" ],
+        [ "get_path_of", "bert_squad_code_dir" ]
+    ]] ],
+
+    "model_name": "bert_large",
+    "model_query": [ "inference_ready", "onnx_model", [ "^^", "substitute", "model_name=#{model_name}#" ] ],
+    "model_entry": [ "^", "byquery", [[ "^^", "get", "model_query" ]], {}, ["model_query"] ],
+    "model_path": [ "^^", "execute", [[
+        [ "get", "model_entry" ],
+        [ "get_path" ]
+    ]] ],
+    "dataset_name": [ "^^", "dig", "model_entry.dataset_name" ],
+
+    "model_input_layers_tms": [ "^^", "dig", "model_entry.input_layers_tms" ],
+
+    "squad_dataset_query":[ "downloaded", "squad_original" ],
+    "squad_dataset_entry": [ "^", "byquery", [[ "^^", "get", "squad_dataset_query" ]], {}, ["squad_dataset_query"] ],
+    "squad_dataset_original_path": [ "^^", "execute", [[
+        [ "get", "squad_dataset_entry" ],
+        [ "get_path" ]
+    ]] ],
+
+    "batch_size": 1,
+    "batch_count": "1",
+
+    "dataset_max_seq_length": 384,
+    "preprocessed_squad_query":[ "preprocessed", "dataset_name=squad_v1_1", [ "^^", "substitute", "dataset_max_seq_length=#{dataset_max_seq_length}#" ] ],
+    "preprocessed_squad_entry": [ "^", "byquery", [[ "^^", "get", "preprocessed_squad_query" ]], {}, ["preprocessed_squad_query"] ],
+    "preprocessed_squad_path": [ "^^", "execute", [[
+        [ "get", "preprocessed_squad_entry" ],
+        [ "get_path" ]
+    ]] ],
+
+    "framework": "onnxrt",
+    "execution_device": "",
+    "output_entry_parents": [ "AS^IS", "AS^IS", [ "^", "byname", "base_bert_experiment" ] ],
+    "output_entry_param_names": [        
+         "desired_python_version",
+         "bert_code_root",
+         "bert_squad_code_dir",
+         "squad_dataset_original_path",
+         "preprocessed_squad_path",
+         "model_path",
+         "model_input_layers_tms",
+         "batch_size",
+         "batch_count",
+         "supported_execution_providers"
+    ],
+
+    "errorize_output": true,
+
+    "rel_script_path": "bert_squad_onnxruntime.py",
+
+    "script_extra_params": [ "^^", "substitute", "\"#{input_file_path}#\" \"#{output_file_path}#\"" ]
+}

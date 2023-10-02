@@ -176,17 +176,17 @@ if [ "$PYTORCH_CLASSIFY" == "on" ] || [ "$ONNX_CLASSIFY" == "on" ] || [ "$TF_CLA
             export TORCH_VISION_QUERY_MOD=""
         fi
 
-        axs byname pytorch_image_classifier , run $TORCH_VISION_QUERY_MOD ---capture_output=false --output_file_path=
-        export INFERENCE_OUTPUT=`axs byname pytorch_image_classifier , run $TORCH_VISION_QUERY_MOD ---capture_output=true --output_file_path=`
+        axs byname image_classification_using_pytorch_py , run $TORCH_VISION_QUERY_MOD ---capture_output=false --output_file_path=
+        export INFERENCE_OUTPUT=`axs byname image_classification_using_pytorch_py , run $TORCH_VISION_QUERY_MOD ---capture_output=true --output_file_path=`
         assert 'echo $INFERENCE_OUTPUT' 'batch 1/1: (1..20) [65, 795, 230, 809, 520, 65, 334, 852, 674, 332, 109, 286, 370, 757, 595, 147, 327, 23, 478, 517]'
-        axs byquery program_output,classified_imagenet,framework=pytorch,num_of_images=32
-        export ACCURACY_OUTPUT=`axs byquery program_output,classified_imagenet,framework=pytorch,num_of_images=32 , get accuracy`
+        axs byquery program_output,task=image_classification,framework=pytorch,num_of_images=32
+        export ACCURACY_OUTPUT=`axs byquery program_output,task=image_classification,framework=pytorch,num_of_images=32 , get accuracy`
         echo "Accuracy: $ACCURACY_OUTPUT"
         assert 'echo $ACCURACY_OUTPUT' '0.71875'
 
         axs byquery python_package,package_name=torchvision --- , remove
 
-        assert_end pytorch_image_classifier
+        assert_end image_classification_using_pytorch_py
     else
         echo "Skipping the PYTORCH_CLASSIFY test"
     fi
@@ -203,13 +203,13 @@ if [ "$PYTORCH_CLASSIFY" == "on" ] || [ "$ONNX_CLASSIFY" == "on" ] || [ "$TF_CLA
             export ONNXRUNTIME_QUERY_MOD=""
         fi
 
-        axs byname onnx_image_classifier , run $ONNXRUNTIME_QUERY_MOD ---capture_output=false --output_file_path=
-        export INFERENCE_OUTPUT=`axs byname onnx_image_classifier , run $ONNXRUNTIME_QUERY_MOD ---capture_output=true --output_file_path=`
+        axs byname image_classification_using_onnxrt_py , run $ONNXRUNTIME_QUERY_MOD ---capture_output=false --output_file_path=
+        export INFERENCE_OUTPUT=`axs byname image_classification_using_onnxrt_py , run $ONNXRUNTIME_QUERY_MOD ---capture_output=true --output_file_path=`
         assert 'echo $INFERENCE_OUTPUT' 'batch 1/1: (1..20) [65, 795, 230, 809, 516, 67, 334, 415, 674, 332, 109, 286, 370, 757, 595, 147, 327, 23, 478, 517]'
 
-        axs byquery program_output,classified_imagenet,framework=onnx,num_of_images=32
+        axs byquery program_output,task=image_classification,framework=onnxrt,num_of_images=32
 
-        export ACCURACY_OUTPUT=`axs byquery program_output,classified_imagenet,framework=onnx,num_of_images=32 , get accuracy`
+        export ACCURACY_OUTPUT=`axs byquery program_output,task=image_classification,framework=onnxrt,num_of_images=32 , get accuracy`
         echo "Accuracy: $ACCURACY_OUTPUT"
         assert 'echo $ACCURACY_OUTPUT' '0.84375'
 
@@ -219,7 +219,7 @@ if [ "$PYTORCH_CLASSIFY" == "on" ] || [ "$ONNX_CLASSIFY" == "on" ] || [ "$TF_CLA
         axs byquery python_package,package_name=onnxruntime --- , remove
         axs byquery python_package,package_name=onnxruntime-gpu --- , remove
 
-        assert_end onnx_image_classifier
+        assert_end image_classification_using_onnxrt_py
     else
         echo "Skipping the ONNX_CLASSIFY test"
     fi
@@ -228,13 +228,13 @@ if [ "$PYTORCH_CLASSIFY" == "on" ] || [ "$ONNX_CLASSIFY" == "on" ] || [ "$TF_CLA
         # The following line is split into two to provide more insight into what is going on.
         # Otherwise assert() blocks all the error output and the command looks "stuck" for quite a while.
 
-        axs byname tf_image_classifier , run ---capture_output=false --output_file_path=
-        export INFERENCE_OUTPUT=`axs byname tf_image_classifier , run ---capture_output=true --output_file_path=`
+        axs byname image_classification_using_tf_py , run ---capture_output=false --output_file_path=
+        export INFERENCE_OUTPUT=`axs byname image_classification_using_tf_py , run ---capture_output=true --output_file_path=`
         assert 'echo $INFERENCE_OUTPUT' 'batch 1/1: (1..20) [65, 795, 230, 809, 529, 57, 334, 434, 674, 332, 109, 286, 370, 757, 595, 147, 327, 23, 478, 517]'
 
-        axs byquery program_output,classified_imagenet,framework=tf,num_of_images=32
+        axs byquery program_output,task=image_classification,framework=tf,num_of_images=32
 
-        export ACCURACY_OUTPUT=`axs byquery program_output,classified_imagenet,framework=tf,num_of_images=32 , get accuracy`
+        export ACCURACY_OUTPUT=`axs byquery program_output,task=image_classification,framework=tf,num_of_images=32 , get accuracy`
         echo "Accuracy: $ACCURACY_OUTPUT"
         assert 'echo $ACCURACY_OUTPUT' '0.8125'
 
@@ -243,7 +243,7 @@ if [ "$PYTORCH_CLASSIFY" == "on" ] || [ "$ONNX_CLASSIFY" == "on" ] || [ "$TF_CLA
 
         axs byquery python_package,package_name=tensorflow --- , remove
 
-        assert_end tf_image_classifier
+        assert_end image_classification_using_tf_py
     else
         echo "Skipping the TF_CLASSIFY test"
     fi
@@ -252,7 +252,7 @@ if [ "$PYTORCH_CLASSIFY" == "on" ] || [ "$ONNX_CLASSIFY" == "on" ] || [ "$TF_CLA
     axs byquery python_package,package_name=pillow --- , remove
     axs byquery python_package,package_name=numpy --- , remove
 
-    axs byquery program_output,classified_imagenet --- , remove
+    axs byquery program_output,task=image_classification --- , remove
     axs byquery imagenet_annotation,extracted --- , remove
     axs byquery imagenet_annotation,downloaded --- , remove
 
@@ -273,13 +273,13 @@ fi
 #axs byquery program_output,calendar --- , remove
 
 if [ "$ONNX_DETECTION" == "on" ]; then
-    axs byquery program_output,detected_coco,framework=onnx
-    #export ACCURACY_OUTPUT=$(eval "axs byquery program_output,detected_coco,framework=onnx , get accuracy" | tail -1)
-    export ACCURACY_OUTPUT=`axs byquery program_output,detected_coco,framework=onnx , get accuracy ,0 func round 4`
+    axs byquery program_output,task=object_detection,framework=onnxrt
+    #export ACCURACY_OUTPUT=$(eval "axs byquery program_output,task=object_detection,framework=onnxrt , get accuracy" | tail -1)
+    export ACCURACY_OUTPUT=`axs byquery program_output,task=object_detection,framework=onnxrt , get accuracy ,0 func round 4`
     echo "Accuracy: $ACCURACY_OUTPUT"
     assert 'echo $ACCURACY_OUTPUT' '0.2302'
-    axs byquery program_output,detected_coco,framework=onnx --- , remove
-    assert_end onnx_object_detection
+    axs byquery program_output,task=object_detection,framework=onnxrt --- , remove
+    assert_end object_detection_using_onnxrt_py
 fi
 
 if [ "$PYTORCH_BERT_DEMO" == "on" ]; then
@@ -290,14 +290,14 @@ if [ "$PYTORCH_BERT_DEMO" == "on" ]; then
 fi
 
 if [ "$ONNX_BERT_SQUAD" == "on" ]; then
-    axs byquery tokenized,squad_v1_1
-    axs byquery program_output,bert_squad,framework=onnx,batch_count=20
-    export ACCURACY_OUTPUT=`axs byquery program_output,bert_squad,framework=onnx,batch_count=20 , get accuracy_dict`
+    axs byquery preprocessed,dataset_name=squad_v1_1
+    axs byquery program_output,task=bert,framework=onnxrt,batch_count=20
+    export ACCURACY_OUTPUT=`axs byquery program_output,task=bert,framework=onnxrt,batch_count=20 , get accuracy_dict`
     echo "Accuracy: $ACCURACY_OUTPUT"
     assert 'echo $ACCURACY_OUTPUT' "{'exact_match': 85.0, 'f1': 85.0}"
-    axs byquery program_output,bert_squad,framework=onnx,batch_count=20 --- , remove
-    axs byquery tokenized,squad_v1_1 --- , remove
-    assert_end onnx_bert_squad
+    axs byquery program_output,task=bert,framework=onnxrt,batch_count=20 --- , remove
+    axs byquery preprocessed,dataset_name=squad_v1_1 --- , remove
+    assert_end bert_using_onnxrt_py
 fi
 
 

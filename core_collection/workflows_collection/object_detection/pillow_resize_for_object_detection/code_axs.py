@@ -33,18 +33,12 @@ def load_image(image_path,            # Full path to processing image
     return batch_data, original_width, original_height
 
 
-def preprocess(dataset_name, images_dir, annotation_data, resolution, supported_extensions, data_type, new_file_extension, file_name,  fof_name, first_n=None, tags=None, entry_name=None, __record_entry__=None):
+def preprocess(dataset_name, images_dir, annotation_data, resolution, supported_extensions, data_type, new_file_extension, file_name,  fof_name, output_entry, first_n=None):
     "Go through the selected_filenames and preprocess all the files"
 
     output_signatures = []
 
-    __record_entry__["tags"] = tags or [ "preprocessed", dataset_name ]
-    if not entry_name:
-        first_n_insert = f'first.{first_n}_' if first_n else ''
-        entry_name = f'pillow_{dataset_name}_resized_for_detection_sq.{resolution}_{first_n_insert}images'
-    __record_entry__.save( entry_name )
-    output_directory     = __record_entry__.get_path(file_name)
-
+    output_directory = output_entry.get_path( file_name )
     os.makedirs( output_directory )
 
     if annotation_data:
@@ -75,5 +69,6 @@ def preprocess(dataset_name, images_dir, annotation_data, resolution, supported_
     with open(fof_full_path, 'w') as fof:
         for filename in output_signatures:
             fof.write(filename + '\n')
+    output_entry.pluck("annotation_data")
 
-    return __record_entry__
+    return output_entry.save()

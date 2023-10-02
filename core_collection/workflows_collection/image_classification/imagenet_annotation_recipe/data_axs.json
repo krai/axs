@@ -4,8 +4,8 @@
         [ [ "extracted",  "imagenet_annotation" ], [["get_kernel"],["byname","extractor" ],["extract"]],  {}, [ "archive_path" ] ]
     ],
 
-    "url": "https://www.dropbox.com/s/92n2fyej3lzy3s3/caffe_ilsvrc12.tar.gz",
-    "md5": "ee346d67141e476df9c1a3f813552503",
+    "url": "http://dl.caffe.berkeleyvision.org/caffe_ilsvrc12.tar.gz",
+    "md5": "f963098ea0e785a968ca1eb634003a90",
 
     "archive_path": [ "^", "execute", [[
         [ "byquery", [[ "^^", "substitute", "downloaded,imagenet_annotation,url=#{url}#,md5=#{md5}#" ]] ],

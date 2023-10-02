@@ -1,4 +1,5 @@
 {
+    "_parent_entries": [ [ "^", "core_collection" ] ],
     "tags": [
         "collection"
     ],
@@ -9,6 +10,8 @@
         "coco_annotation_recipe": "coco_annotation_recipe",
         "dataset_openimages": "dataset_openimages",
         "openimages_mlperf_recipe": "openimages_mlperf_recipe",
+        "openimages_mlperf_annotations_2.1_recipe": "openimages_mlperf_annotations_2.1_recipe",
+        "openimages_mlperf_calibration_recipe": "openimages_mlperf_calibration_recipe",
         "pillow_resize_for_object_detection": "pillow_resize_for_object_detection",
         "coco_preprocessed_loader": "coco_preprocessed_loader",
         "base_object_detection_experiment": "base_object_detection_experiment",
@@ -16,8 +19,9 @@
         "model_onnx_ssd_resnet34_recipe": "model_onnx_ssd_resnet34_recipe",
         "model_onnx_retinanet_coco_recipe": "model_onnx_retinanet_coco_recipe",
         "model_onnx_retinanet_openimages_recipe": "model_onnx_retinanet_openimages_recipe",
+        "model_onnx_retinanet_openimages_no_nms_recipe": "model_onnx_retinanet_openimages_no_nms_recipe",
 
-        "onnx_object_detector": "onnx_object_detector",
+        "object_detection_using_onnxrt_py": "object_detection_using_onnxrt_py",
         "bboxes_for_onnx_object_detector": "bboxes_for_onnx_object_detector"
     }
 }

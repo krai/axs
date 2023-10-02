@@ -8,6 +8,15 @@ import os
 import logging
 
 
+def propose_checkout(current_checkout):
+    """Cannot use "case" in data_axs.json due to the current bug (clash of nested "case"-s), so implementing in code_axs.py :
+    """
+    if current_checkout.startswith("mlperf_"):
+        return current_checkout
+    else:
+        return None
+
+
 def url_2_repo_name(url=None):
     """Cut the repo_name out of the URL, if given.
 
@@ -25,7 +34,7 @@ Usage examples :
         return None
 
 
-def clone(repo_name=None, url=None, repo_dir_name=None, git_tool_entry=None, container_entry=None, checkout=None, submodules=False, abs_patch_path=None, tags=None, contained_files=None, __entry__=None):
+def clone(repo_name=None, url=None, repo_dir_name=None, git_tool_entry=None, container_entry=None, checkout=None, submodules=False, abs_patch_path=None, patch=None, tags=None, contained_files=None, __entry__=None):
     """Clone a git repository into an Entry,
 
 Usage examples :
@@ -72,6 +81,12 @@ Clean-up:
         result_entry                = ak.bypath( entry_path )   # "discover" the Entry after cloning, then either create or augment the data
         result_entry['repo_name']   = repo_name
         result_entry['tags']        = tags or [ 'git_repo' ]
+
+        parent_entries              = result_entry.own_data().get('_parent_entries', [])
+        if [ "^", "byname", "git" ] not in parent_entries:
+            result_entry['_parent_entries'] = parent_entries + [ [ "^", "byname", "git" ] ]
+            result_entry.parent_objects = None      # reload parents
+
         if checkout:
             result_entry['checkout']        = checkout
 
@@ -79,6 +94,7 @@ Clean-up:
 
         if abs_patch_path:
             result_entry['abs_patch_path']  = abs_patch_path
+            result_entry['patch']           = patch
 
         if contained_files:
             result_entry['contained_files']  = contained_files

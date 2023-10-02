@@ -1,11 +1,12 @@
 {
     "_producer_rules": [
         [ [ "downloaded", "tf_model", "model_name=mobilenet_v2" ], [["get_kernel"],["byname","downloader"],["download"]], {
-            }, ["url","multiplier","resolution"] ],
+            }, ["dataset_name", "url","multiplier","resolution"] ],
         [ [ "inference_ready",  "tf_model", "model_name=mobilenet_v2" ], [["get_kernel"],["byname","extractor"],["extract"]], {
-            }, ["archive_path","model_rel_path","multiplier","resolution", "input_layer_name", "output_layer_name", "normalization" ] ]
+            }, [ "dataset_name", "archive_path","model_rel_path","multiplier","resolution", "input_layer_name", "output_layer_name", "normalization" ] ]
     ],
 
+    "dataset_name": "imagenet",
     "url": [ "AS^IS", "^^", "substitute", "https://zenodo.org/record/2266646/files/mobilenet_v2_#{multiplier}#_#{resolution}#.tgz" ],
     "model_rel_path": [ "AS^IS", "^^", "substitute", "extracted/mobilenet_v2_#{multiplier}#_#{resolution}#_frozen.pb" ],
     "multiplier": "1.0",

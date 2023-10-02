@@ -1,0 +1,31 @@
+{
+    "_producer_rules": [
+        [ [ "downloaded", "onnx_model", "model_name=retinanet", "no_nms" ], [["get_kernel"],["byname","downloader"],["download"]], {
+            
+            "url": "https://zenodo.org/record/8147436/files/retinanet.onnx",
+            "md5":"fe2c1580dabde478a44389614ba25dd9",
+            "model_name": "retinanet",            
+            "model_rel_path": "retinanet.onnx",
+
+            "dataset_name": "openimages",
+            "resolution": 800,
+
+
+            "normalization": {
+                "normalize_symmetric": true,
+                "normalize_lower": 0.0,
+                "normalize_upper": 1.0,
+                "subtract_mean_bool": true,
+                "given_channel_means": "0.485 0.456 0.406",
+                "given_channel_stds": "0.229 0.224 0.225",
+                "data_layout": "NCHW"
+            },
+
+            "input_layer_name": "input",
+            "output_layer_name": "boxes,scores",
+            "output_layer_bboxes": "boxes",
+            "output_layer_scores": "scores",
+            "classes_labels": "flatlabels.txt"
+        } ]
+    ]
+}

@@ -30,13 +30,13 @@ Usage examples :
                 axs byname pytorch_image_classifier , run --execution_device=gpu --num_of_images=100 --output_file_path=experiment.json
 
                     # set top_n_max ( number of predictions for each image ) which is added to output_file. By default top_n_max = 10
-                axs byquery program_output,classified_imagenet,framework=pytorch,num_of_images=32 , top_n_max=6
+                axs byquery program_output,task=image_classification,framework=pytorch,num_of_images=32 , top_n_max=6
 
                     # get accuracy
-                axs byquery program_output,classified_imagenet,framework=pytorch,num_of_images=32 , get accuracy
+                axs byquery program_output,task=image_classification,framework=pytorch,num_of_images=32 , get accuracy
 
                     # get n predictions for each image
-                axs byquery program_output,classified_imagenet,framework=pytorch,num_of_images=32 , get print_top_n_predictions
+                axs byquery program_output,task=image_classification,framework=pytorch,num_of_images=32 , get print_top_n_predictions
 
 """
 
@@ -50,15 +50,22 @@ import math
 from time import time, sleep
 from urllib.error import HTTPError
 
-preprocessed_imagenet_dir   = sys.argv[1]
-resolution                  = int(sys.argv[2])
-num_of_images               = int(sys.argv[3])
-model_name                  = sys.argv[4]
-output_file_path            = sys.argv[5]       # if empty, recording of the output will be skipped
-execution_device            = sys.argv[6]       # if empty, it will be autodetected
-max_batch_size              = int(sys.argv[7])
-top_n_max                   = int(sys.argv[8])
-input_file_list             = eval(sys.argv[9])
+input_file_path = sys.argv[1]
+output_file_path =  sys.argv[2]
+
+with open(input_file_path) as f:
+    input_parameters = json.load(f)
+
+
+preprocessed_imagenet_dir   = input_parameters["preprocessed_images_dir"]
+resolution                  = input_parameters["resolution"]
+num_of_images               = input_parameters["num_of_images"]
+model_name                  = input_parameters["model_name"]
+
+execution_device            = input_parameters["execution_device"]       # if empty, it will be autodetected
+max_batch_size              = input_parameters["max_batch_size"]
+top_n_max                   = input_parameters["top_n_max"]
+input_file_list             = input_parameters["input_file_list"]
 
 file_pattern                = 'ILSVRC2012_val_000{:05d}.rgb8'
 max_attempts                = 3

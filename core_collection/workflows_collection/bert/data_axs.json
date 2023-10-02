@@ -11,9 +11,9 @@
         "model_onnx_mlperf_bert_large_recipe": "model_onnx_mlperf_bert_large_recipe",
         "squad_original_recipe": "squad_original_recipe",
         "tokenization_vocab_for_bert_recipe": "tokenization_vocab_for_bert_recipe",
-        "squad_tokenized_for_bert_recipe": "squad_tokenized_for_bert_recipe",
+        "squad_preprocessed_for_bert_recipe": "squad_preprocessed_for_bert_recipe",
         "bert_calibration_text_recipe": "bert_calibration_text_recipe",
 
-        "bert_squad_onnxruntime_py": "bert_squad_onnxruntime_py"
+        "bert_using_onnxrt_py": "bert_using_onnxrt_py"
     }
 }

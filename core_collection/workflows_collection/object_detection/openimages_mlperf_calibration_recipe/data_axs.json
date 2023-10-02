@@ -1,0 +1,33 @@
+{
+    "_parent_entries": [ [ "^", "byname", "python_in_shell" ] ],
+    "_producer_rules": [
+        [ [ "openimages_mlperf", "calibration" ], [["run"]], { "return_saved_record_entry": true } ]
+    ],
+
+    "mlperf_inference_git_entry": [ "^", "byquery", "git_repo,repo_name=mlperf_inference_git" ],
+
+    "in_dir": [ "^^", "execute", [[
+        [ "get", "mlperf_inference_git_entry" ],
+        [ "get_path_of", "vision_tools_dir" ]
+    ]] ],
+    
+    "python_deps": [
+        [ "^^", "python_sync_pip_package", [[ "python_package", "package_name=boto3" ]] ],
+        [ "^^", "python_sync_pip_package", [[ "python_package", "package_name=tqdm" ]] ],
+        [ "^^", "python_sync_pip_package", [[ "python_package", "package_name=pandas" ]] ],
+        [ "^^", "python_sync_pip_package", [[ "python_package", "package_name=opencv-python" ]] ],
+        [ "^^", "python_sync_pip_package", [[ "python_package", "package_name=requests" ]] ]
+    ],
+
+    "output_entry_path": [ "^^", "execute", [[
+        [ "get", "__record_entry__" ],
+        [ "set_path", "openimages_mlperf_calibration" ],
+        [ "plant", [ "tags", [ "calibration", "openimages_mlperf" ] ] ],
+        [ "attach", [ "^", "work_collection" ] ],
+        [ "save" ],
+        [ "get_path" ]
+    ]] ],
+
+    "shell_cmd_with_subs": "./openimages_calibration_mlperf.sh  --dataset-path #{output_entry_path}#"
+
+}

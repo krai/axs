@@ -1,0 +1,53 @@
+{
+    "_parent_entries": [ [ "^", "byname", "python_script" ], [ "^", "byname", "base_benchmark_program" ], [ "^", "byname", "nvidia_gpu_support" ] ],
+
+    "_producer_rules": [
+        [ [ "program_output", "task=image_classification", "framework=pytorch" ], [["run"]], { "return_saved_record_entry": true } ]
+    ],
+
+    "model_name": "resnet50",
+    "resolution": 224,
+    "dataset_name": "imagenet",
+
+    "index_file": null,
+    "preprocessed_images_query": [
+        "preprocessed",
+        [ "^^", "substitute", "dataset_name=#{dataset_name}#" ],
+        [ "^^", "substitute", "resolution=#{resolution}#" ],
+        [ "^^", "substitute", "first_n=#{num_of_images}#" ],
+        [ "index_file", [ "^^", "get", "index_file" ]]
+    ],
+    "preprocessed_images_entry": [ "^", "byquery", [[ "^^", "get", "preprocessed_images_query" ]], {}, ["preprocessed_images_query"] ],
+    "preprocessed_images_dir": [ "^^", "execute", [[
+        [ "get", "preprocessed_images_entry" ],
+        [ "get_path" ]
+    ]] ],
+    "input_file_list": [ "^^", "dig", "preprocessed_images_entry.input_file_list" ],
+    "num_of_images": 20,
+    "execution_device": "",
+    "max_batch_size": 25,
+    "top_n_max": 10,
+    "framework": "pytorch",
+
+    "output_entry_parents": [ "AS^IS", "AS^IS", [ "^", "byname", "base_imagenet_experiment" ] ],
+    "output_entry_param_names": [
+        "num_of_images",
+        "preprocessed_images_dir",
+        "resolution",
+        "max_batch_size",
+        "execution_device",
+        "top_n_max",
+        "input_file_list"
+    ],
+
+    "errorize_output": true,
+
+    "rel_script_path": "pytorch_classify.py",
+
+    "script_extra_params": [ "^^", "substitute", "\"#{input_file_path}#\" \"#{output_file_path}#\"" ],
+
+    "python_deps": [
+        [ "^^", "python_sync_pip_package", [[ "^^", "get", "torchvision_query" ]] ],
+        [ "^", "byquery", "data_loader,imagenet" ]
+    ]
+}

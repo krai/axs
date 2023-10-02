@@ -4,7 +4,7 @@
 
 Usage examples :
                     # Compute accuracy on the full ImageNet50k preprocessed dataset:
-                axs byquery program_output,classified_imagenet,framework=tf,preprocessed_imagenet_dir=/datasets/imagenet/pillow_sq.224_cropped_resized_imagenet50000,num_of_images=50000,max_batch_size=1000 , get accuracy
+                axs byquery program_output,task=image_classification,framework=tf,preprocessed_imagenet_dir=/datasets/imagenet/pillow_sq.224_cropped_resized_imagenet50000,num_of_images=50000,max_batch_size=1000 , get accuracy
 """
 
 import sys
@@ -19,12 +19,12 @@ import numpy as np
 import tensorflow as tf
 from imagenet_loader import ImagenetLoader
 
-input_json_file_path        = sys.argv[1]
-output_json_file_path       = sys.argv[2]
+input_file_path        = sys.argv[1]
+output_file_path       = sys.argv[2]
 
 input_parameters = {}
 
-with open(input_json_file_path) as f:
+with open(input_file_path) as f:
     input_parameters = json.load(f)
 
 
@@ -146,10 +146,10 @@ with tf.compat.v1.Session(graph=graph, config=config) as sess:
             top_n_predictions[stripped_batch_filenames[i]] = weight_id
             weight_id = {}
 
-if output_json_file_path:
+if output_file_path:
         output_dict = {
             "model_name": model_name,
-            "framework": "onnx",
+            "framework": "tf",
             "max_batch_size":   max_batch_size,
             "times": {
                 "model_loading_s":          model_loading_s,
@@ -165,6 +165,6 @@ if output_json_file_path:
             "top_n": top_n_predictions
         }
         json_string = json.dumps( output_dict , indent=4)
-        with open(output_json_file_path, "w") as json_fd:
+        with open(output_file_path, "w") as json_fd:
             json_fd.write( json_string+"\n" )
-        print(f'Predictions for {num_of_images} images written into "{output_json_file_path}"')
+        print(f'Predictions for {num_of_images} images written into "{output_file_path}"')

@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.232'     # TODO: update with every kernel change
+__version__ = '0.2.257'     # TODO: update with every kernel change
 
 import logging
 import os
@@ -191,19 +191,20 @@ Usage examples :
         return self.work_collection().call('byname', [entry_name])
 
 
-    def all_byquery(self, query, template=None, parent_recursion=False):
+    def all_byquery(self, query, pipeline=None, template=None, parent_recursion=False):
         """Returns a list of ALL entries matching the query.
             Empty list if nothing matched.
 
 Usage examples :
                 axs all_byquery onnx_model
                 axs all_byquery python_package,package_name=pillow
-                axs all_byquery onnx_model "#{model_name}# : #{file_name}#"
-                axs all_byquery python_package "Python package #{package_name}# version #{package_version}#"
-                axs all_byquery tags. "tags=#{tags}#"
+                axs all_byquery onnx_model --template="#{model_name}# : #{file_name}#"
+                axs all_byquery python_package --template="python_#{python_version}# package #{package_name}#"
+                axs all_byquery tags. --template="tags=#{tags}#"
+                axs all_byquery deleteme+ ---='[["remove"]]'
         """
-        logging.debug(f"[{self.get_name()}] all_byquery({query}, {template})")
-        return self.work_collection().call('all_byquery', [query, template, parent_recursion])
+        logging.debug(f"[{self.get_name()}] all_byquery({query}, {pipeline}, {template})")
+        return self.work_collection().call('all_byquery', [query, pipeline, template, parent_recursion])
 
 
     def show_matching_rules(self, query):
