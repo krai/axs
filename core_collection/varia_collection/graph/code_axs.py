@@ -87,72 +87,78 @@ def draw(target, return_this_entry=None, __entry__=None):
 
     global initial_root_visited
     initial_root_visited = False
-    dest_dir = return_this_entry.get_path()
-    target_entry = __entry__.get_kernel().byname(target)
-    print("target_entry",target_entry)
-    get_path = target_entry.get_path()
-    file_path = f'{get_path}/data_axs.json'
-    
     output = False
     output_parents_data = ""
-    target_data = target_entry.own_data()
+    dest_dir = return_this_entry.get_path()
+   
+    target_entry = __entry__.get_kernel().byname(target)
+    if target_entry:
+        get_path = target_entry.get_path()
+        file_path = f'{get_path}/data_axs.json'
+        target_data = target_entry.own_data()
+        output_entries = target_entry.get("output_entry_parents")
 
-    output_entries = target_entry.get("output_entry_parents")
-    print("output_entries:", output_entries)
+        if output_entries:
+            # Extract all 'byname' entries from "output_entry_parents" as objects to byname as key
+            byname_entries = extract_byname_entries(output_entries)
+            print("byname_entries:", byname_entries)
 
-    # Extract all 'byname' entries from "output_entry_parents" as a key
-    if output_entries:
-        byname_entries = extract_byname_entries(output_entries)
-        print("byname_entries:", byname_entries)
+        for key, val in target_data.items():
+            if "_parent_entries" in str(val):
+                output = True
+                output_parents_data = val
+            elif "tags" in str(val):
+                output = True
+            elif output_entries:
+                output = True
+
+        f = graphviz.Digraph(format='svg')
+        f.attr('node', shape='ellipse')
+        f.attr(dpi='400')
+        f.engine = 'dot'
 
 
-    for key, val in target_data.items():
-        if "_parent_entries" in str(val):
-            output = True
-            output_parents_data = val
-        elif "tags" in str(val):
-            output = True
-        elif output_entries:
-            output = True
-
-    f = graphviz.Digraph(format='png')
-    f.attr('node', shape='circle')
-
-    with f.subgraph(name='cluster_0') as c:
-        c.attr(style='dotted')
-        c.attr(label='Group A')
-        dfs(target, c, __entry__, is_output=False)  
+        with f.subgraph(name='cluster_0') as c:
+            c.attr(style='dotted')
+            c.attr(label='Entry and Its Parent(s)')
+            dfs(target, c, __entry__, is_output=False)  
  
 
-    if output:
-        f.node("output", style='filled', color='blue')
-        f.edge(target, "output")
+        if output:
+            f.node("output", style='filled', color='blue')
+            f.edge(target, "output")
 
-    if output_parents_data:
-        info = find_parent(output_parents_data)
-        output_parents = find_byname(file_path,obj=info)
-        print("output_parents", output_parents)
-        for output_parent in output_parents:
-            with f.subgraph(name='cluster_1') as c:
-                c.attr(style='dotted')
-                c.attr(label='Group B')
-                dfs(output_parent, c, __entry__, is_output=True) 
-                f.edge(output_parent, "output")
-                target_entry = output_parent
-        else:
-            target_entry = None
+        if output_parents_data:
+            info = find_parent(output_parents_data)
+            output_parents = find_byname(file_path,obj=info)
+            print("output_parents", output_parents)
+            for output_parent in output_parents:
+                with f.subgraph(name='cluster_1') as c:
+                    c.attr(style='dotted')
+                    c.attr(label='Parent(s) of the Output Entry')
+                    dfs(output_parent, c, __entry__, is_output=True) 
+                    f.edge(output_parent, "output")
+                    target_entry = output_parent
+            else:
+                target_entry = None
 
-    elif output_entries and byname_entries:
-        for byname_entry in byname_entries:
-            with f.subgraph(name=f'cluster_1') as c:
-                c.attr(style='dotted')
-                c.attr(label=f'Group B')
-                dfs(byname_entry, c, __entry__, is_output=True)  
-                f.edge(byname_entry, "output")
+        elif output_entries and byname_entries:
+            for byname_entry in byname_entries:
+                with f.subgraph(name=f'cluster_1') as c:
+                    c.attr(style='dotted')
+                    c.attr(label=f'Parent(s) of the Output Entry')
+                    dfs(byname_entry, c, __entry__, is_output=True)  
+                    f.edge(byname_entry, "output")
 
 
-    f.render(filename=f"{dest_dir}/image")
-    return return_this_entry
+        f.render(filename=f"{dest_dir}/image", view=False, cleanup=False)
+        print("Graph is generated!")
+
+        return return_this_entry
+    else:
+        print("ERROR! Provide correct entry name!")
+
+    
 
 def find_parent(obj):
     items = find_key(obj, "_parent_entries")
