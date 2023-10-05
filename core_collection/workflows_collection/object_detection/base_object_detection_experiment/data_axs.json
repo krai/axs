@@ -20,7 +20,7 @@
 
     "dataset_entry": [ "^", "byquery", [[ "^^", "substitute", "dataset,dataset_name=#{dataset_name}#" ]], {}, [ "dataset_name"] ],
 
-    "bboxed_query": [ "^^","substitute", [ [ "bboxed", "detected_coco", "framework=#{framework}#", "model_name=#{model_name}#","num_of_images=#{num_of_images}#", "num_of_bboxes=#{num_of_bboxes}#" ]] ],
+    "bboxed_query": [ "^^","substitute", [ [ "bboxed", "task=object_detection", "framework=#{framework}#", "model_name=#{model_name}#","num_of_images=#{num_of_images}#", "num_of_bboxes=#{num_of_bboxes}#" ]] ],
 
     "bboxed_entry": [ "^", "byquery", [[ "^^", "get", "bboxed_query" ]], {}, ["bboxed_query"] ],
 
