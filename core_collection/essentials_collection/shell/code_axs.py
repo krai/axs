@@ -9,22 +9,31 @@ import os
 import subprocess
 import sys
 
+
+def subst_run(template, __entry__=None, **rest):
+    """Substitute data into a given template and run the resulting shell command in the given environment
+
+Usage examples:
+                axs .shell.subst_run 'echo #{greetings}#, #{name}#' --greetings=Hello --name=World
+
+    # execute a shell command in a specific directory:
+                axs wp: .work_collection.get_path , .shell.subst_run 'ls -l #{wp}#'
+    """
+    return __entry__.call( 'run', __entry__.substitute(template) )
+
+
 def run(shell_cmd, env=None, in_dir=None, capture_output=False, errorize_output=False, capture_stderr=False, split_to_lines=False, return_saved_record_entry=False, return_this_entry=None, get_and_return_on_success=None, __entry__=None, __record_entry__=None):
     """Run the given shell command in the given environment
 
 Usage examples:
-            axs byname shell , run 'echo This is a test.'
-
-    # execute a shell command in a specific directory:
-            axs work_collection , in_dir: get_path , , byname shell , run 'ls -l'
+                axs byname shell , run 'echo This is a test.'
 
     # dynamically create a tool and use it:
-            axs fresh_entry , plant _parent_entries --,:=AS^IS:^:byname:shell , plant tool_path --:=^^:which:wget , plant shell_cmd '--:=AS^IS:^^:substitute:#{tool_path}# -O #{target_path}# #{url}#' , run --url=https://example.com --target_path=example.html
+                axs fresh_entry , plant _parent_entries --,:=AS^IS:^:byname:shell , plant tool_path --:=^^:which:wget , plant shell_cmd '--:=AS^IS:^^:substitute:#{tool_path}# -O #{target_path}# #{url}#' , run --url=https://example.com --target_path=example.html
 
     # first create a downloading tool, then use it:
-            axs fresh_entry ---own_data='{"_parent_entries":[["AS^IS","^","byname","shell"]]}' , plant tool_name wget tool_path --:=^^:which:wget shell_cmd '--:=AS^IS:^^:substitute:#{tool_path}# -O #{target_path}# #{url}#' tags --,=shell_tool,can_download_url , save wget_tool
-            axs bypath wget_tool , run --url=https://example.com --target_path=example.html
-
+                axs fresh_entry ---own_data='{"_parent_entries":[["AS^IS","^","byname","shell"]]}' , plant tool_name wget tool_path --:=^^:which:wget shell_cmd '--:=AS^IS:^^:substitute:#{tool_path}# -O #{target_path}# #{url}#' tags --,=shell_tool,can_download_url , save wget_tool
+                axs bypath wget_tool , run --url=https://example.com --target_path=example.html
     """
     if type(shell_cmd)==list:   # making sure all components are strings
         shell_cmd = [str(x) for x in shell_cmd]
