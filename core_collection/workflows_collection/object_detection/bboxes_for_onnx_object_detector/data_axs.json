@@ -8,8 +8,8 @@
     ]] ],
 
     "_producer_rules": [
-        [ [ "bboxed", "detected_coco" ], [["postprocess_add_detections"]], {
-            "experiment_query": [ "AS^IS", "^^","substitute", [ [ "program_output", "detected_coco", "framework=#{framework}#", "model_name=#{model_name}#","num_of_images=#{num_of_images}#" ]] ],
+        [ [ "bboxed", "task=object_detection" ], [["postprocess_add_detections"]], {
+            "experiment_query": [ "AS^IS", "^^","substitute", [ [ "program_output", "task=object_detection", "framework=#{framework}#", "model_name=#{model_name}#","num_of_images=#{num_of_images}#" ]] ],
             "experiment_entry": [ "AS^IS", "^", "byquery", [[ "^^", "get", "experiment_query" ]], {}, ["experiment_query"] ],
             "input_images_directory":[ "AS^IS","^^", "dig", "experiment_entry.dataset_entry.images_dir" ],
             "data_detections": [ "AS^IS", "^^", "execute", [[

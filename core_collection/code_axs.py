@@ -339,7 +339,15 @@ Usage examples :
             cumulative_params["tags"] = list(parsed_query.posi_tag_set)     # FIXME:  parsed_rule.posi_tag_set should include it
             logging.warning(f"Pipeline: {producer_pipeline}, Cumulative params: {cumulative_params}")
 
-            new_entry = advertising_entry.execute(producer_pipeline, cumulative_params)
+            if type(producer_pipeline[0])==list:
+                new_entry = advertising_entry.execute(producer_pipeline, cumulative_params)
+            elif len(producer_pipeline)<3:
+                producer_call_params_iter   = iter(producer_pipeline)
+                producer_action_name        = next(producer_call_params_iter)
+                producer_pos_params         = next(producer_call_params_iter, [])
+                new_entry                   = advertising_entry.call( producer_action_name, producer_pos_params, cumulative_params )
+            else:
+                raise SyntaxError(f"Rule parsing error: a single-call action with its own named parameters is ambiguous: {producer_pipeline}")
 
             if new_entry:
                 logging.warning(f"Matched Rule #{match_idx}/{len(matching_rules)} produced a result.\n")

@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 
 """ This entry knows how to install pip packages into generated entries.
+
+Usage examples :
+                axs byname pip , install numpy
+
+                axs byname pip , install numpy 1.16.4
+
+                axs byname pip , get available_package_versions --package_name=tensorrt --pip_options="--extra-index-url https://pypi.nvidia.com"
 """
 
 import logging
@@ -12,7 +19,7 @@ import ufun
 def flatten_options(pip_options):
     if pip_options:
         if type(pip_options)==dict:
-            flattened_options = [ k+'='+pip_options[k] for k in pip_options ]
+            flattened_options = ' '.join( [ k+' '+pip_options[k] for k in pip_options ] )
 
         elif type(pip_options)==list:
             flattened_options = ' '.join( [ e if e.startswith('-') else '--'+e for e in pip_options ] )

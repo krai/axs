@@ -513,6 +513,8 @@ Usage examples :
                     action_object   = getattr(entry, action_name)
                     pos_params      = rt_pipeline_wide.nested_calls(pos_params)              # perform all nested calls if there are any
                     result          = function_access.feed(action_object, pos_params, edit_dict)
+                elif action_name[0]=='.':   # presumably a qualified name, let's start from self
+                    result = self.call(action_name, pos_params, edit_dict, export_params, slice_relative_to=self, call_record_entry_ptr=call_record_entry_ptr, nested_context=local_context)
                 else:
                     display_pipeline = "\n\t".join([str(step) for step in ["["]+pipeline]) + "\n]"
                     raise RuntimeError( f'In pipeline {display_pipeline} step {pipeline[call_idx]} cannot be executed on value ({entry}) produced by {pipeline[call_idx-1]}' )
