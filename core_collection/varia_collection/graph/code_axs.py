@@ -1,45 +1,15 @@
-import subprocess
-import sys
-import os
-import logging
 import re
 import graphviz
 import json
 from kernel import default_kernel as ak
 
-initial_root_visited = False
-
-def draw_collection(collection_object, tone_colour, graph):
-    collection_name = collection_object.get_name()
-
-    cluster = graphviz.Digraph(name='cluster_'+collection_name)
-    cluster.attr(style='filled', color=tone_colour, fillcolor=tone_colour)
-
-    collection_entry_names = collection_object['contained_entries'].keys()
-
-    for entry_name in collection_entry_names:
-        entry = ak.byname(entry_name)
-        own_data = entry.own_data()
-        tags = own_data.get('tags', '')
-        label = f"{entry_name} {tags}"
-
-        if '_producer_rules' in own_data:
-            cluster.node(entry_name, label=label, shape='rectangle')
-        else:
-            cluster.node(entry_name, label=label)
-
-        for p in entry.get('_parent_entries', []):
-            if p:
-                graph.edge(entry_name+':w', p.get_name()+':e')
-            else:
-                print(collection_name, entry_name)
-                graph.node('BROKEN_PARENT', style='filled', color='red')
-                graph.edge(entry_name+':w', 'BROKEN_PARENT:e')
-
-    graph.subgraph(cluster)
-
-
+initial_root_visited = False 
+    
 def dfs(root, f, __entry__, is_output=False):
+
+    """ Depth First Search(DFS) for a given node.
+    """
+
     global initial_root_visited
     stack = []
     visited = set()
@@ -84,6 +54,13 @@ def dfs(root, f, __entry__, is_output=False):
     return f
 
 def draw(target, return_this_entry=None, __entry__=None):
+
+    """ Generate Dependency Graph for a given entry.
+
+        Usage examples:
+            axs byname graph , draw bert_using_onnxrt_py
+            axs byname graph , draw image_classification_using_tf_py
+    """
 
     global initial_root_visited
     initial_root_visited = False
@@ -158,7 +135,6 @@ def draw(target, return_this_entry=None, __entry__=None):
     else:
         print("ERROR! Provide correct entry name!")
 
-    
 
 def find_parent(obj):
     items = find_key(obj, "_parent_entries")
