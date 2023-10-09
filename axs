@@ -83,7 +83,7 @@ def cli_parse(arglist):
                         curr_link.extend( [ arglist[i], call_pos_params, call_params ] )
                     else:
                         raise(Exception("Parsing error - cannot understand non-option '{}' before an action".format(arglist[i])))
-                elif curr_link[0] is None and re.match(r'^\w+$', arglist[i]):       # a normal action after input/output label(s)
+                elif curr_link[0] is None and re.match(r'^([\w\.]+)$', arglist[i]): # a normal action (qualified or local) after input/output label(s)
                     curr_link[0] = arglist[i]
                 else:
                     call_pos_params.append( to_num_or_not_to_num(arglist[i]) )      # a positional argument
