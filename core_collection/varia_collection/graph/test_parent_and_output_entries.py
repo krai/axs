@@ -1,6 +1,7 @@
 import re
 import json
 import pytest
+import subprocess
 
 def read_dot_file(file_path):
     with open(file_path, 'r') as f:
@@ -36,7 +37,12 @@ def parse_output_dot_content(cluster_1_content, target):
             
     return output_parent_nodes
 
-dot_file_path = "/home/saheli/work_collection/generated_by_graph_on_draw_6feaeffee44d4390b3f18293a4436825/image"  
+def get_actual_path():
+    command = "axs byquery graph_output,target=image_classification_using_tf_py , get_path"
+    result = subprocess.run(command, stdout=subprocess.PIPE, shell=True, text=True)
+    return result.stdout.strip()
+
+dot_file_path = get_actual_path() + "/image"
 dot_content = read_dot_file(dot_file_path)
 cluster_1_content = read_cluster_1_content(dot_content)
 print("cluster_1_content",cluster_1_content)

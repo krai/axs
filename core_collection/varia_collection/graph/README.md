@@ -1,31 +1,28 @@
 ## Generating Hierarchy Graph
-`AXS` command:
+Set the target entry that we would like to draw a dependency graph for, e.g., image_classification_using_tf_py
 ```
-axs byname graph , draw <entry_name>
+export TARGET=image_classification_using_tf_py
 ```
-Eg. 
+`AXS` command to generate the graph:
 ```
-axs byname graph , draw image_classification_using_tf_py
+axs byquery graph_output,target=${TARGET}
 ```
-
 ![Alt text](image.png)
-
 The figure shows a dependency graph generated for `image_classification_using_tf_py` entry. 
 
 - Red : target entry 
-- Coral: Parents of the target entry
+- Lightcoral: Parents of the target entry
 - Blue: output node
 - Lightblue: Parents of the output node
 
 If the run is successful, it should print `Graph is generated!`
-
 ```
 saved to '/home/saheli/work_collection/generated_by_graph_on_draw_a579763d98044530962cc967ac659b28/data_axs.json'
 byname_entries: ['base_imagenet_experiment']
 Graph is generated!
 ['^', 'byname', 'generated_by_graph_on_draw_generated_by_graph_on_draw_a579763d98044530962cc967ac659b28']
 ```
-The image of the graph rendered in vector graphics, `image.svg` and `.dot` file are generated under `~/work_collection/generated_by_graph_on_draw_a579763d98044530962cc967ac659b28/` folder. 
+The image of the graph rendered in vector graphics, `image.svg` and `.dot` file are generated under `axs byquery graph_output,target=${target} , get_path`. Open `image.svg` with a GUI interface to view the generated graph. 
 
 The structure of the `.dot` file will look something like this: `image`. It can be interpreted as a normal text file.
 ```
