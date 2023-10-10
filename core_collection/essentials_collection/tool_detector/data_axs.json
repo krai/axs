@@ -51,9 +51,9 @@
         [ [ "shell_tool", "can_uncompress_gz", "tool_name?=gzip.exe"   ], [["detect"]], { "shell_cmd_with_subs": "\"#{tool_path}#\" -d \"#{target_path}#\"" } ],
         [ [ "shell_tool", "can_uncompress_gz", "tool_name?=gunzip"     ], [["detect"]], { "shell_cmd_with_subs": "\"#{tool_path}#\" \"#{target_path}#\"" } ],
 
+        [ [ "shell_tool", "can_compute_md5", "tool_name?=md5sum"       ], [["detect"]], { "shell_cmd_with_subs": "'#{tool_path}#' '#{file_path}#' | cut -f 1 -d ' '", "capture_output": true, "exec_suffixes": [""] } ],
         [ [ "shell_tool", "can_compute_md5", "tool_name?=md5sum.exe"   ], [["detect"]], { "shell_cmd_with_subs": "\"#{tool_path}#\" \"#{file_path}#\" | cut -f 1 -d \" \" | sed \"s/\\\\\\\\//g\"", "capture_output": true } ],
         [ [ "shell_tool", "can_compute_md5", "tool_name?=certutil.exe" ], [["detect"]], { "shell_cmd_with_subs": "\"#{tool_path}#\" -hashfile \"#{file_path}#\" MD5 | findstr /v \":\"", "capture_output": true } ],
-        [ [ "shell_tool", "can_compute_md5", "tool_name?=md5sum"       ], [["detect"]], { "shell_cmd_with_subs": "'#{tool_path}#' '#{file_path}#' | cut -f 1 -d ' '", "capture_output": true } ],
         [ [ "shell_tool", "can_compute_md5", "tool_name?=md5"          ], [["detect"]], { "shell_cmd_with_subs": "'#{tool_path}#' -r '#{file_path}#' | cut -f 1 -d ' '", "capture_output": true } ],
 
 
