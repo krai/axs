@@ -210,6 +210,8 @@ Usage examples :
         """Lazy parameter access: returns the parameter value from self or the closest parent,
             automatically executing nested_calls on the result.
         """
+        logging.debug(f"[{self.get_name()}]  Looking for [{param_name}]...")
+
         if param_name=='__entry__':
             return self
 
@@ -513,7 +515,7 @@ Usage examples :
                     action_object   = getattr(entry, action_name)
                     pos_params      = rt_pipeline_wide.nested_calls(pos_params)              # perform all nested calls if there are any
                     result          = function_access.feed(action_object, pos_params, edit_dict)
-                elif action_name[0]=='.':   # presumably a qualified name, let's start from self
+                elif action_name[0]=='.':   # presumably a qualified action_name, let's start from self
                     result = self.call(action_name, pos_params, edit_dict, export_params, slice_relative_to=self, call_record_entry_ptr=call_record_entry_ptr, nested_context=local_context)
                 else:
                     display_pipeline = "\n\t".join([str(step) for step in ["["]+pipeline]) + "\n]"
