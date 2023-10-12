@@ -242,8 +242,12 @@ def find_matching_rules(parsed_query, __entry__):
 
                     if op=='tag+': continue     # we have matched them directly above
 
+                    if op=='tag-':  # rule doesn't want the query to contain a certain tag
+                        qr_conditions_ok = rule_val not in parsed_query.posi_tag_set
+                        break
+
                     # we allow (only) equalities on the rule side not to have a match on the query side
-                    if (key_path in parsed_query.posi_val_dict):    # does the query contain a specific value for this rule condition's key_path?
+                    elif (key_path in parsed_query.posi_val_dict):    # does the query contain a specific value for this rule condition's key_path?
                         qr_conditions_ok = rule_comparison_lambda( parsed_query.posi_val_dict[key_path] )       # if so, use this value in evaluating this rule condition
                     else:
                         qr_conditions_ok = (((op=='?=') and (key_path not in parsed_query.mentioned_set)) or    # ignore optional(selective) matches
@@ -258,8 +262,12 @@ def find_matching_rules(parsed_query, __entry__):
 
                         if op=='tag+': continue     # we have matched them directly above
 
+                        if op=='tag-':  # query doesn't want the rule to contain a certain tag
+                            qr_conditions_ok = query_val not in parsed_rule.posi_tag_set
+                            break
+
                         # we allow (only) equalities on the query side not to have a match on the rule side
-                        if (key_path in parsed_rule.posi_val_dict): # does the rule contain a specific value for this query condition's key_path?
+                        elif (key_path in parsed_rule.posi_val_dict): # does the rule contain a specific value for this query condition's key_path?
                             qr_conditions_ok = query_comparison_lambda( parsed_rule.posi_val_dict[key_path] )   # if so, use this value in evaluating this query condition
                         else:
                             qr_conditions_ok = (op=='=')                                                        # otherwise this query condition must set a value
