@@ -83,19 +83,26 @@ class ParamSource:
         return dict(enumerate(args))
 
 
-    def slice(self, *param_names, safe=False, plantable=False):
+    def slice(self, *param_names, safe=False, plantable=False, skip_missing=False):
         """Produces a slice of a dictionary, with optional remapping
 
 Usage examples :
+                axs bypath 3d_point , slice x y z w --safe
+                axs bypath 3d_point , slice x y z w --skip_missing
                 axs bypath 3d_point , slice x y --,::=another_y:y,another_z:z z
         """
         slice_dict = {}
         for param_name in param_names:
-            if type(param_name)==dict:      # perform optional remapping
-                for k in param_name.keys():
-                    slice_dict[k] = self.dig(param_name[k], safe=safe)
-            else:
-                slice_dict[param_name] = self.dig(param_name, safe=safe)
+            mapping = param_name if type(param_name)==dict else { param_name: param_name }  # perform optional remapping
+
+            for k in mapping.keys():
+                try:
+                    slice_dict[k] = self.dig(mapping[k], safe=safe)
+                except (KeyError, IndexError, ValueError) as e:
+                    if skip_missing:
+                        pass
+                    else:
+                        raise e
 
         if plantable:
             import itertools
