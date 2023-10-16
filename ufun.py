@@ -105,6 +105,16 @@ Usage examples :
     shutil.rmtree(dir_path, ignore_errors=False, onerror=handleRemoveReadonly)
 
 
+def move_dir_contents_from_to(source_dir, dest_dir):
+
+    all_filenames = os.listdir(source_dir)
+
+    for filename in all_filenames:
+        source_path = os.path.join(source_dir, filename)
+        dest_path   = os.path.join(dest_dir, filename)
+        shutil.move(source_path, dest_path)
+
+
 def is_in(candidate, iterable):
     """Check if element is TRULY contained in the iterable.
 

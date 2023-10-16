@@ -1,6 +1,6 @@
 {
     "_producer_rules": [
-        [ [ "git_repo", "collection" ], [["clone"]], {} ]
+        [ [ "git_repo", "collection" ], [["clone"]], { "tags": ["git_repo", "collection"] } ]
     ],
 
     "git_tool_entry":   [ "^", "byquery", "shell_tool,can_git" ],
@@ -34,6 +34,7 @@
                      ],
 
     "repo_dir_name": [ "^^", "substitute", "#{repo_name}##{checkout_part}##{patch_part}#" ],
+    "rel_clone_dir": [ "^^", "substitute", "cloned_#{repo_dir_name}#" ],
 
     "repo_path": [ "^^", "get_path", "" ],
 
@@ -58,5 +59,21 @@
     ]] ],
     "#checkout": [ "^^", "case", [ [ "^^", "get", "is_mlperf_branch" ], true, [ "^^", "get", "current_checkout" ] ], { "default_value": null } ],
 
-    "checkout": [ "^^", "propose_checkout" ]
+    "checkout": [ "^^", "propose_checkout" ],
+
+    "generated_entry_parents": [ "AS^IS", "AS^IS", [ "^", "byname", "git" ] ],
+    "generated_entry_tags": [ "git_repo" ],
+    "generated_entry_param_names": [ "repo_name", "checkout", "submodules", "abs_patch_path", "patch", "contained_files" ],
+    "generated_entry": [ "^^", "execute", [[
+        [ "get", "__record_entry__" ],
+        [ "set_path", [ "^^", "get", "repo_dir_name" ] ],
+        [ "attach", [ "^^", "get", "container_entry" ] ],
+        [ "plant", [
+            "_parent_entries", [ "^^", "get", "generated_entry_parents" ],
+            "tags", [ "^^", "get", "generated_entry_tags" ],
+            "repo_name", [ "^^", "get", "repo_name" ]
+        ]],
+        [ "plant", [ "^^", "slice", ["^^", "get", "generated_entry_param_names" ], { "plantable": true, "skip_missing": true } ] ],
+        [ "save" ]
+    ]] ]
 }

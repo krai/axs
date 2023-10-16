@@ -7,6 +7,8 @@
 import os
 import logging
 
+import ufun
+
 
 def propose_checkout(current_checkout):
     """Cannot use "case" in data_axs.json due to the current bug (clash of nested "case"-s), so implementing in code_axs.py :
@@ -34,7 +36,7 @@ Usage examples :
         return None
 
 
-def clone(repo_name=None, url=None, repo_dir_name=None, git_tool_entry=None, container_entry=None, checkout=None, submodules=False, abs_patch_path=None, patch=None, tags=None, contained_files=None, __entry__=None):
+def clone(repo_name=None, url=None, rel_clone_dir=None, generated_entry=None, move_on_up=True, git_tool_entry=None, checkout=None, submodules=False, abs_patch_path=None, patch=None, tags=None, contained_files=None, __entry__=None):
     """Clone a git repository into an Entry,
 
 Usage examples :
@@ -51,57 +53,41 @@ Clean-up:
     """
 
     assert __entry__ != None, "__entry__ should be defined"
-    ak = __entry__.get_kernel()
-    assert ak != None, "__entry__'s kernel should be defined"
 
-    container_path  = container_entry.get_path('')
-    entry_path      = container_entry.get_path( repo_dir_name )
-    tool_path       = git_tool_entry["tool_path"]
+    generated_entry_path    = generated_entry.get_path( "" )
+    tool_path               = git_tool_entry["tool_path"]
 
     logging.warning(f"The resolved git_tool_entry '{git_tool_entry.get_name()}' located at '{git_tool_entry.get_path()}' uses the shell tool '{tool_path}'")
 
-    retval = git_tool_entry.call('run', f"\"{tool_path}\" -C \"{container_path}\" clone {url} {repo_dir_name}", {"capture_output": False} )
+    retval = git_tool_entry.call('run', f"\"{tool_path}\" -C \"{generated_entry_path}\" clone {url} {rel_clone_dir}", {"capture_output": False} )
     if retval == 0:
+
+        abs_clone_dir = os.path.join(generated_entry_path, rel_clone_dir)
+
         if checkout:
-            git_tool_entry.call('run', f"\"{tool_path}\" -C \"{entry_path}\" checkout \"{checkout}\"" )
+            git_tool_entry.call('run', f"\"{tool_path}\" -C \"{abs_clone_dir}\" checkout \"{checkout}\"" )
 
         if submodules:
-            git_tool_entry.call('run', f"\"{tool_path}\" -C \"{entry_path}\" submodule init" )
-            git_tool_entry.call('run', f"\"{tool_path}\" -C \"{entry_path}\" submodule update" )
+            git_tool_entry.call('run', f"\"{tool_path}\" -C \"{abs_clone_dir}\" submodule init" )
+            git_tool_entry.call('run', f"\"{tool_path}\" -C \"{abs_clone_dir}\" submodule update" )
 
         if abs_patch_path:
             patch_tool_entry = __entry__['patch_tool_entry']
             logging.warning(f"The resolved patch_tool_entry '{patch_tool_entry.get_name()}' located at '{patch_tool_entry.get_path()}' uses the shell tool '{patch_tool_entry['tool_path']}'")
 
-            retval = patch_tool_entry.call('run', [], { 'entry_path': entry_path, 'abs_patch_path': abs_patch_path} )
+            retval = patch_tool_entry.call('run', [], { 'entry_path': abs_clone_dir, 'abs_patch_path': abs_patch_path} )
             if retval != 0:
-                logging.error(f"could not patch \"{entry_path}\" with \"{abs_patch_path}\", bailing out")
+                logging.error(f"could not patch \"{abs_clone_dir}\" with \"{abs_patch_path}\", bailing out")
                 return None
 
-        result_entry                = ak.bypath( entry_path )   # "discover" the Entry after cloning, then either create or augment the data
-        result_entry['repo_name']   = repo_name
-        result_entry['tags']        = tags or [ 'git_repo' ]
+        if move_on_up:
+            ufun.move_dir_contents_from_to( abs_clone_dir, generated_entry_path )
+            ufun.rmdir( abs_clone_dir )
+        else:
+            generated_entry['file_name'] = rel_clone_dir
+            generated_entry.save()
 
-        parent_entries              = result_entry.own_data().get('_parent_entries', [])
-        if [ "^", "byname", "git" ] not in parent_entries:
-            result_entry['_parent_entries'] = parent_entries + [ [ "^", "byname", "git" ] ]
-            result_entry.parent_objects = None      # reload parents
-
-        if checkout:
-            result_entry['checkout']        = checkout
-
-        result_entry['submodules']          = submodules
-
-        if abs_patch_path:
-            result_entry['abs_patch_path']  = abs_patch_path
-            result_entry['patch']           = patch
-
-        if contained_files:
-            result_entry['contained_files']  = contained_files
-
-        result_entry.attach( container_entry ).save()
-
-        return result_entry
+        return generated_entry
 
     else:
         logging.error(f"A problem (retval={retval}) occured when trying to clone '{repo_name}' at {url} , bailing out")
