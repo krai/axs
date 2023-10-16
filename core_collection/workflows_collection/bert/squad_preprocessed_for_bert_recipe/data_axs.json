@@ -6,7 +6,7 @@
 
     "calibration" : "no",
     "calibration_option": "features",
-    "calibration_data_query": ["^^", "substitute", "downloaded,calibrate,dataset=squad_v1_1,calibration_option=#{calibration_option}#"],
+    "calibration_data_query": ["^^", "substitute", "downloaded,calibrate,dataset_name=squad_v1_1,calibration_option=#{calibration_option}#"],
     "calibration_data_entry": [ "^", "byquery", [[ "^^", "get", "calibration_data_query" ]], {}, ["calibration_data_query"] ],
     "_calibration_data_path": [ "^^", "execute", [[
         [ "get", "calibration_data_entry" ],
@@ -14,7 +14,7 @@
     ]], {}, ["calibration_data_entry"] ],
     "calibration_data_path": ["^^", "get", [[ "^^", "case",   [ ["^^", "get", "calibration"],
                                 "yes" , "_calibration_data_path" ],
-                                { "default_value": "" }
+                                { "default_value": null }
                             ]] ],
 
     "dataset_name": "squad_v1_1",
