@@ -22,7 +22,7 @@ import math
 from time import time
 
 import numpy as np
-import onnxruntime as rt
+import onnxruntime
 from coco_loader import CocoLoader
 
 input_file_path  = sys.argv[1]
@@ -94,12 +94,12 @@ def main():
 
     ts_before_model_loading = time()
 
-    sess_options = rt.SessionOptions()
+    sess_options = onnxruntime.SessionOptions()
     if cpu_threads > 0:
         sess_options.enable_sequential_execution = False
         sess_options.session_thread_pool_size = cpu_threads
 
-    sess = rt.InferenceSession(model_path, sess_options, providers = list(set(supported_execution_providers) & set(rt.get_available_providers())))
+    sess = onnxruntime.InferenceSession(model_path, sess_options, providers = list(set(supported_execution_providers) & set(onnxruntime.get_available_providers())))
 
     session_execution_provider=sess.get_providers()
     print("Session execution provider: ", sess.get_providers(), file=sys.stderr)
@@ -169,7 +169,7 @@ def main():
 
         ts_before_inference = time()
 
-        run_options = rt.RunOptions()
+        run_options = onnxruntime.RunOptions()
         batch_results = sess.run(model_output_layers_bls, {model_input_layer_name: batch_data}, run_options)
 
         if extra_dimension_needed:  # adding an extra dimension (on for RetinaNet, off for Resnet34-SSD)
