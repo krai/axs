@@ -85,6 +85,8 @@ Clean-up:
             ufun.rmdir( abs_clone_dir )
         else:
             generated_entry['file_name'] = rel_clone_dir
+            if tags and 'collection' in tags:
+                generated_entry['contained_entries'] = { rel_clone_dir: rel_clone_dir }
             generated_entry.save()
 
         return generated_entry
