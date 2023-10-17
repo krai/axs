@@ -44,7 +44,7 @@
         [ "get_kernel" ],
         [ "byname", "shell" ],
         [ "run", [], {
-            "shell_cmd_with_subs": "\"#{git_tool_path}#\" -C #{repo_path}# branch",
+            "shell_cmd_with_subs": "\"#{git_tool_path}#\" -C \"#{repo_path}#\" branch",
             "git_tool_path": [ "^^", "dig", "git_tool_entry.tool_path" ],
             "repo_path": [ "^^", "get", "repo_path" ],
             "capture_output": true
@@ -52,12 +52,6 @@
         0,
         [ "func", ["ufun.rematch", "^\\*.*\\s(\\S+?)\\)?$"] ]
     ]] ],
-
-    "is_mlperf_branch": [ "^^", "execute", [[
-        [ "get", "current_checkout" ],
-        [ "startswith", "mlperf_" ]
-    ]] ],
-    "#checkout": [ "^^", "case", [ [ "^^", "get", "is_mlperf_branch" ], true, [ "^^", "get", "current_checkout" ] ], { "default_value": null } ],
 
     "checkout": [ "^^", "propose_checkout" ],
 
