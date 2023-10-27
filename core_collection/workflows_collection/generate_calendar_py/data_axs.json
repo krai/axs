@@ -1,7 +1,8 @@
 {
     "_parent_entries": [ [ "^", "byname", "python_script" ] ],
     "_producer_rules": [
-        [ [ "program_output", "calendar" ], [["run"]], { "return_saved_record_entry": false } ]
+        [ [ "program_output", "calendar" ], [["run"]], { "return_saved_record_entry": false } ],
+        [ "collection_name" ]
     ],
     
     "python_deps": [ ],
@@ -9,10 +10,16 @@
     "first_weekday": 0,
     "month": 10,
     "year": 2022,
+
+    "collection_name": "work_collection",
+    "colection_name_added": [ "^^", "case",   [ ["^^", "get", "collection_name"],
+                                "work_collection" , "" ],
+                            { "default_value": ["^^", "substitute", ",collection_name=#{collection_name}#" ]  }
+                             ],
     
     "return_this_entry": [ "^^", "execute", [[
         [ "get_kernel" ],
-        [ "work_collection" ],
+        [ "byquery", ["^^", "substitute", "collection#{colection_name_added}#" ]],
         [ "attached_entry", [ ["^^", "substitute", "calendar_#{year}#_#{month}#_#{first_weekday}#" ],["^^", "substitute", {
             "_parent_entries": [ "AS^IS", [ "^", "byname", "base_experiment" ] ],
             "tags": [ "program_output", "calendar" ]
@@ -20,7 +27,8 @@
         [ "plant", [ "^^", "slice", [
             "year",
             "month",
-            "first_weekday"
+            "first_weekday",
+            "collection_name"
           ], { "plantable": true } ] ],
         [ "save" ]
       ]] ],
