@@ -1,0 +1,22 @@
+{
+    "_producer_rules": [
+        [ [ "collection"  ], [["create_collection"]], {} ],
+        [ "collection_name" ]
+    ],
+
+    "container_entry":  [ "^", "work_collection" ],
+    "collection_name": "target_name",
+
+    "entry_name": [ "^^", "substitute", "#{collection_name}#" ],
+
+    "output_entry": [ "^^", "execute", [[
+        [ "get", "__record_entry__" ],
+        [ "set_path", [ "^^", "get", "entry_name" ] ],
+        [ "attach", [ "^", "work_collection" ] ],
+        [ "plant", [
+            "_parent_entries", [ "AS^IS", [ "^", "byname", "core_collection" ] ],
+            "tags", [ "collection" ],
+            "contained_entries", {}
+          ] ]
+    ]] ]
+}
