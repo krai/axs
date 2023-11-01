@@ -2,6 +2,7 @@
     "tags": [
         "collection"
     ],
+    "collection_name": [ "^^", "get_name" ],
     "contained_entries": {
         "essentials_collection": "essentials_collection",
         "workflows_collection": "workflows_collection",

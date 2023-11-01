@@ -5,9 +5,13 @@
     "output_entry_param_names": [ ],
     "output_entry_subs_listmap": [ ],
     "output_entry_tags": [ "program_output" ],
+
+    "collection_name": "work_collection",
+    "collection_object": [ "^", "byquery", ["^^", "substitute", "collection,collection_name=#{collection_name}#" ], { "parent_recursion": true }, [ "collection_name" ] ],
+
     "output_entry": [ "^^", "execute", [[
         [ "get", "__record_entry__" ],
-        [ "attach", [ "^", "work_collection" ] ],
+        [ "attach",  [ "^^", "get", "collection_object" ] ],
         [ "plant", [
                 "_parent_entries", ["^^", "get", "output_entry_parents" ],
                 "tags", ["^^", "get", "output_entry_tags" ]
