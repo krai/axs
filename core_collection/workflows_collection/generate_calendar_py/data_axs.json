@@ -12,14 +12,10 @@
     "year": 2022,
 
     "collection_name": "work_collection",
-    "colection_name_added": [ "^^", "case",   [ ["^^", "get", "collection_name"],
-                                "work_collection" , "" ],
-                            { "default_value": ["^^", "substitute", ",collection_name=#{collection_name}#" ]  }
-                             ],
-    
+    "collection_object": [ "^", "byquery", ["^^", "substitute", "collection,collection_name=#{collection_name}#" ], { "parent_recursion": true }, [ "collection_name" ] ],
+
     "return_this_entry": [ "^^", "execute", [[
-        [ "get_kernel" ],
-        [ "byquery", ["^^", "substitute", "collection#{colection_name_added}#" ]],
+        [ "get", "collection_object" ],
         [ "attached_entry", [ ["^^", "substitute", "calendar_#{year}#_#{month}#_#{first_weekday}#" ],["^^", "substitute", {
             "_parent_entries": [ "AS^IS", [ "^", "byname", "base_experiment" ] ],
             "tags": [ "program_output", "calendar" ]
