@@ -19,6 +19,16 @@
             "resolution", "supported_extensions",
             "data_type","new_file_extension", "file_name", "fof_name"
           ]
+        ],
+        [ [ "preprocessed", "dataset_name=human36m" ], [["preprocess"]], {
+          "dataset_entry": [  "AS^IS", "^", "byquery", [[ "^^", "substitute", "dataset,dataset_name=#{dataset_name}#" ]], {}, [ "dataset_name" ] ],
+          "images_dir": "/home/elim/pose-assets/Human36M/images/images/s_09_act_02_subact_01_ca_02",
+          "annotation_data": ""
+          },
+          [
+            "resolution", "supported_extensions",
+            "data_type","new_file_extension", "file_name", "fof_name"
+          ]
         ]
     ],
 

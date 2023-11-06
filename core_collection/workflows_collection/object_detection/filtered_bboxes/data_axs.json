@@ -1,0 +1,26 @@
+{
+    "pillow_query": [ "python_package", "package_name=pillow", ["desired_python_version", ["^", "kernel_python_major_dot_minor"]] ],
+
+    "_BEFORE_CODE_LOADING": [ "^^", "execute", [[
+        ["get_kernel"],
+        ["byquery", [[ "^^", "get", "pillow_query" ]] ],
+        ["use"]
+    ]] ],
+
+    "_producer_rules": [
+        [ [ "filtered_bboxed", "task=object_detection" ], [["postprocess_add_detections"]], {
+            "experiment_query": [ "AS^IS", "^^","substitute", [ [ "program_output", "task=object_detection", "dataset_name=human36m", "framework=#{framework}#", "model_name=#{model_name}#","num_of_images=#{num_of_images}#" ]] ],
+            "experiment_entry": [ "AS^IS", "^", "byquery", [[ "^^", "get", "experiment_query" ]], {}, ["experiment_query"] ],
+            "input_images_directory":[ "AS^IS","^^", "dig", "experiment_entry.dataset_entry.images_dir" ],
+            "data_detections": [ "AS^IS", "^^", "execute", [[
+                ["dig", "experiment_entry.program_output"],
+                ["get","detections" ]
+            ]] ]
+        }
+        ]
+    ],
+
+    "file_name": "bboxed",
+    
+    "num_of_bboxes": ""
+}

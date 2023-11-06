@@ -12,7 +12,8 @@
         "openimages_mlperf_recipe": "openimages_mlperf_recipe",
         "openimages_mlperf_annotations_2.1_recipe": "openimages_mlperf_annotations_2.1_recipe",
         "openimages_mlperf_calibration_recipe": "openimages_mlperf_calibration_recipe",
-        "pillow_resize_for_object_detection": "pillow_resize_for_object_detection",
+        "dataset_human36m": "dataset_human36m",
+	    "pillow_resize_for_object_detection": "pillow_resize_for_object_detection",
         "coco_preprocessed_loader": "coco_preprocessed_loader",
         "base_object_detection_experiment": "base_object_detection_experiment",
 
@@ -22,6 +23,8 @@
         "model_onnx_retinanet_openimages_no_nms_recipe": "model_onnx_retinanet_openimages_no_nms_recipe",
 
         "object_detection_using_onnxrt_py": "object_detection_using_onnxrt_py",
-        "bboxes_for_onnx_object_detector": "bboxes_for_onnx_object_detector"
+        "bboxes_for_onnx_object_detector": "bboxes_for_onnx_object_detector",
+
+        "filtered_bboxes": "filtered_bboxes"
     }
 }

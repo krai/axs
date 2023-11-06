@@ -24,6 +24,10 @@
 
     "bboxed_entry": [ "^", "byquery", [[ "^^", "get", "bboxed_query" ]], {}, ["bboxed_query"] ],
 
+    "filtered_bboxed_query": [ "^^","substitute", [ [ "filtered_bboxed", "task=object_detection", "framework=#{framework}#", "model_name=#{model_name}#","num_of_images=#{num_of_images}#", "num_of_bboxes=#{num_of_bboxes}#" ]] ],
+
+    "filtered_bboxed_entry": [ "^", "byquery", [[ "^^", "get", "filtered_bboxed_query" ]], {}, ["filtered_bboxed_query"] ],
+
     "annotation_file": [ "^^", "dig", "dataset_entry.annotation_file" ],
 
     "preprocessed_files": [ "^^", "get_path", [[ ["^^", "get", "preprocessed_images_dir"], "original_dimensions.txt" ]] ],
