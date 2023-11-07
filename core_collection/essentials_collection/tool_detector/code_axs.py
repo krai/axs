@@ -1,6 +1,22 @@
 #!/usr/bin/env python3
 
 """ This entry knows how to detect and set up shell tools
+
+Usage examples :
+    # show the detected tool's name:
+            axs byquery shell_tool,can_download_url , get tool_name
+
+    # show the detected tool's path:
+            axs byquery shell_tool,can_download_url , get tool_path
+
+    # show the command template:
+            axs byquery shell_tool,can_download_url , get shell_cmd_with_subs
+
+    # show the substituted downloading command:
+            axs byquery shell_tool,can_download_url , get shell_cmd  --url=http://example.com/ --target_path=example.html
+
+    # run the substituted downloading command:
+            axs byquery shell_tool,can_download_url , run  --url=http://example.com/ --target_path=example.html
 """
 
 import logging
@@ -11,7 +27,8 @@ import sys
 def which(tool_name, exec_suffixes=None, env=None):
     """OS-independent routine to search for an executable in the OS's executable path.
 
-Usage examples:
+Usage examples :
+    # detect the executable by searching through the active exec_path
             axs byname tool_detector , which wget
     """
     exec_dirs   = os.get_exec_path(env)
@@ -28,15 +45,20 @@ def detect(tool_name=None, tool_path=None, tags=None, entry_name=None, parent_en
     """Detect/select an installed shell tool and create an entry to point at it
 
 Usage examples :
-                axs byname tool_detector , detect wget --tags,=shell_tool,can_download_url '--shell_cmd:=AS^IS:^^:substitute:#{tool_path}# -O #{target_path}# #{url}#'
+    # detect wget by providing all the parameters from the command line:
+            axs byname tool_detector , detect wget --tags,=shell_tool,can_download_url '--shell_cmd:=AS^IS:^^:substitute:#{tool_path}# -O #{target_path}# #{url}#'
 
-                axs byname tool_detector , detect curl --tags,=shell_tool,can_download_url '--shell_cmd:=AS^IS:^^:substitute:#{tool_path}# -L -o #{target_path}# #{url}#'
+    # detect curl by providing all the parameters from the command line:
+            axs byname tool_detector , detect curl --tags,=shell_tool,can_download_url '--shell_cmd:=AS^IS:^^:substitute:#{tool_path}# -L -o #{target_path}# #{url}#'
 
-                axs byquery shell_tool,can_python                       # select kernel_python by default
+    # select kernel_python by default:
+            axs byquery shell_tool,can_python
 
-                axs byquery shell_tool,can_python,tool_name=python3.8   # detect a custom tool_name
+    # detect a custom tool_name:
+            axs byquery shell_tool,can_python,tool_name=python3.8
 
-                axs byquery shell_tool,can_download_url , run --url=https://example.com/ --target_path=example.html
+    # run the substituted downloading command:
+            axs byquery shell_tool,can_download_url , run --url=https://example.com/ --target_path=example.html
     """
 
     if tool_path:

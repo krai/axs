@@ -3,11 +3,15 @@
 """ This entry knows how to install pip packages into generated entries.
 
 Usage examples :
-                axs byname pip , install numpy
 
-                axs byname pip , install numpy 1.16.4
+    # install a given pip package:
+            axs byname pip , install numpy
 
-                axs byname pip , get available_package_versions --package_name=tensorrt --pip_options="--extra-index-url https://pypi.nvidia.com"
+    # install a specific version of the given pip package:
+            axs byname pip , install numpy 1.16.4
+
+    # check available versions for a specific package (optionally from a specific index)
+            axs byname pip , get available_package_versions --package_name=tensorrt --pip_options="--extra-index-url https://pypi.nvidia.com"
 """
 
 import logging
@@ -40,16 +44,21 @@ def install(package_name, flattened_options=None, installable=None, pip_entry_na
     """Install a pip package into a separate entry, so that it could be easily use'd.
 
 Usage examples :
-                axs byname pip , install numpy 1.16.4
 
-                axs byname pip , install numpy
+    # install a given pip package:
+            axs .pip.install numpy
 
-                axs byname pip , install scipy 1.5.1 --pip_options,=no-deps --tags,=python_package,no_deps
+    # install a specific version of the given pip package:
+            axs .pip.install numpy 1.16.4
 
-                axs byname pip , install --package_name=torchvision --package_version=0.11.1+cu113 --pip_options="torch==1.10.0+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html"
+    # only install the specific package, without dependencies:
+            axs byname pip , install scipy 1.5.1 --pip_options,=no-deps --tags,=python_package,no_deps
 
-            # installing from a wheel file:
-                axs byname pip , install mlperf_loadgen 1.1 --installable=$HOME/work_collection/mlperf_inference_git/loadgen/dist/mlperf_loadgen-1.1-cp36-cp36m-macosx_10_9_x86_64.whl
+    # install a specific package with a specific version with a specific dependency version, given a "links file" :
+            axs byname pip , install --package_name=torchvision --package_version=0.11.1+cu113 --pip_options="torch==1.10.0+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html"
+
+    # install a package from a given wheel file:
+            axs byname pip , install mlperf_loadgen 1.1 --installable=$HOME/work_collection/mlperf_inference_git/loadgen/dist/mlperf_loadgen-1.1-cp36-cp36m-macosx_10_9_x86_64.whl
     """
 
     __record_entry__.pluck("pip_entry_name")
@@ -81,7 +90,13 @@ Usage examples :
 
 
 def available_versions(package_name, force_binary=False, __entry__=None):
+    """Install a pip package into a separate entry, so that it could be easily use'd.
 
+Usage examples :
+
+    # return the list of available versions for a specific package:
+            axs .pip.available_versions --package_name=scipy
+    """
     versions_list = __entry__.call('get', 'available_package_versions', {
         'package_name': package_name,
         'force_binary': force_binary,
