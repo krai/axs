@@ -34,7 +34,7 @@
     "repo_dir_name": [ "^^", "substitute", "#{repo_name}##{checkout_part}##{patch_part}#" ],
     "rel_clone_dir": [ "^^", "substitute", "cloned_#{repo_dir_name}#" ],
 
-    "repo_path": [ "^^", "get_path", "" ],
+    "repo_path": [ "^^", "get_path" ],
 
     "container_entry":  [ "^", "work_collection" ],
 
