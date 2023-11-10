@@ -8,11 +8,9 @@
     "patch_tool_entry": [ "^", "byquery", "shell_tool,can_patch" ],
 
     "git_url": [ "^^", "execute", [[
-        [ "get_kernel" ],
-        [ "byname", "shell" ],
+        [ "get", "git_tool_entry" ],
         [ "run", [], {
-            "shell_cmd_with_subs": "\"#{git_tool_path}#\" -C #{repo_path}# config --get remote.origin.url",
-            "git_tool_path": [ "^^", "dig", "git_tool_entry.tool_path" ],
+            "shell_cmd_with_subs": "\"#{tool_path}#\" -C #{repo_path}# config --get remote.origin.url",
             "repo_path": [ "^^", "get", "repo_path" ],
             "capture_output": true
         } ]
@@ -41,11 +39,9 @@
     "container_entry":  [ "^", "work_collection" ],
 
     "current_checkout": [ "^^", "execute", [[
-        [ "get_kernel" ],
-        [ "byname", "shell" ],
+        [ "get", "git_tool_entry" ],
         [ "run", [], {
-            "shell_cmd_with_subs": "\"#{git_tool_path}#\" -C \"#{repo_path}#\" branch",
-            "git_tool_path": [ "^^", "dig", "git_tool_entry.tool_path" ],
+            "shell_cmd_with_subs": "\"#{tool_path}#\" -C \"#{repo_path}#\" branch",
             "repo_path": [ "^^", "get", "repo_path" ],
             "capture_output": true
         } ],

@@ -1,7 +1,26 @@
 #!/usr/bin/env python3
 
-""" This entry knows how to download git repositories.
+""" This entry knows how to download and query git repositories.
     They may either become collections or regular entries.
+
+Usage examples :
+    # obtain the URL of the kernel's repository:
+            axs byname git , get git_url
+
+    # obtain the URL of a given repository:
+            axs byname axs2mlperf , get git_url
+
+    # obtain the URL of a given repository using query:
+            axs byquery git_repo,collection,repo_name=axs2mlperf , get git_url
+
+    # obtain the checkout (branch or tag) of the kernel's repository:
+            axs byname git , get current_checkout
+
+    # obtain the checkout (branch or tag) of a given repository:
+            axs byname axs2mlperf , get current_checkout
+
+    # obtain the checkout (branch or tag) of a given repository using query:
+            axs byquery git_repo,collection,repo_name=axs2mlperf , get current_checkout
 """
 
 import os
@@ -104,7 +123,8 @@ Usage examples :
 
                 axs byname git , pull `axs core_collection , get_path`
     """
-    tool_path       = git_tool_entry["tool_path"]
-    git_tool_entry.call('run', f"\"{tool_path}\" -C \"{repo_path}\" pull --ff-only" )
+#    git_tool_entry.call('subst_run', "\"#{tool_path}#\" -C \"#{repo_path}#\" pull --ff-only", { 'repo_path': repo_path} )
+    git_tool_entry.call('run', [], { "shell_cmd_with_subs": "\"#{tool_path}#\" -C \"#{repo_path}#\" pull --ff-only", "repo_path": repo_path} )
+
 
     return __entry__
