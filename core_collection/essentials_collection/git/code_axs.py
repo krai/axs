@@ -78,17 +78,17 @@ Clean-up:
 
     logging.warning(f"The resolved git_tool_entry '{git_tool_entry.get_name()}' located at '{git_tool_entry.get_path()}' uses the shell tool '{tool_path}'")
 
-    retval = git_tool_entry.call('run', f"\"{tool_path}\" -C \"{generated_entry_path}\" clone {url} {rel_clone_dir}", {"capture_output": False} )
+    retval = git_tool_entry.call('run', [], { "cmd_key": "clone", "container_path": generated_entry_path, "url": url, "clone_subdir": rel_clone_dir, "capture_output": False } )
     if retval == 0:
 
         abs_clone_dir = os.path.join(generated_entry_path, rel_clone_dir)
 
         if checkout:
-            git_tool_entry.call('run', f"\"{tool_path}\" -C \"{abs_clone_dir}\" checkout \"{checkout}\"" )
+            git_tool_entry.call('run', [], { "cmd_key": "checkout", "repo_path": abs_clone_dir, "checkout": checkout } )
 
         if submodules:
-            git_tool_entry.call('run', f"\"{tool_path}\" -C \"{abs_clone_dir}\" submodule init" )
-            git_tool_entry.call('run', f"\"{tool_path}\" -C \"{abs_clone_dir}\" submodule update" )
+            git_tool_entry.call('run', [], { "cmd_key": "submodules_1", "repo_path": abs_clone_dir } )
+            git_tool_entry.call('run', [], { "cmd_key": "submodules_2", "repo_path": abs_clone_dir } )
 
         if abs_patch_path:
             patch_tool_entry = __entry__['patch_tool_entry']
@@ -124,7 +124,6 @@ Usage examples :
                 axs byname git , pull `axs core_collection , get_path`
     """
 #    git_tool_entry.call('subst_run', "\"#{tool_path}#\" -C \"#{repo_path}#\" pull --ff-only", { 'repo_path': repo_path} )
-    git_tool_entry.call('run', [], { "shell_cmd_with_subs": "\"#{tool_path}#\" -C \"#{repo_path}#\" pull --ff-only", "repo_path": repo_path} )
-
+    git_tool_entry.call('run', [], { "cmd_key": "pull", "repo_path": repo_path} )
 
     return __entry__
