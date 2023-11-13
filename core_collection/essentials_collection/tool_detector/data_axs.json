@@ -29,8 +29,22 @@
             }
         ],
 
-        [ [ "shell_tool", "can_download_url", "tool_name?=wget" ], [["detect"]], { "shell_cmd_with_subs": "\"#{tool_path}#\" -O \"#{target_path}#\" #{url}#" } ],
-        [ [ "shell_tool", "can_download_url", "tool_name?=curl" ], [["detect"]], { "shell_cmd_with_subs": "\"#{tool_path}#\" -L -o \"#{target_path}#\" #{url}#" } ],
+        [ [ "shell_tool", "can_download_url", "tool_name?=wget" ], [["detect"]], {
+                "shell_cmd_templates": {
+                    "help": "\"#{tool_path}#\" --help",
+                    "version": "\"#{tool_path}#\" --version",
+                    "dload": "\"#{tool_path}#\" -O \"#{target_path}#\" #{url}#"
+                },
+                "cmd_key": "dload"
+        } ],
+        [ [ "shell_tool", "can_download_url", "tool_name?=curl" ], [["detect"]], {
+                "shell_cmd_templates": {
+                    "help": "\"#{tool_path}#\" --help",
+                    "version": "\"#{tool_path}#\" --version",
+                    "dload": "\"#{tool_path}#\" -L -o \"#{target_path}#\" #{url}#"
+                },
+                "cmd_key": "dload"
+        } ],
 
         [ [ "shell_tool", "can_extract_tar" ], [["detect"]], { "tool_name": "tar", "strip_components": 0,
             "uncompression_insert": [ "AS^IS", "AS^IS", "^^", "case",   [ ["^^", "get", "archive_format"],
@@ -112,9 +126,19 @@
 
         [ [ "shell_tool", "can_git"], [["detect"]], {
                 "tool_name": "git",
-                "shell_cmd_with_subs": "\"#{tool_path}#\" --version",
+                "repo_path": ".",
+                "shell_cmd_templates": {
+                    "version": "\"#{tool_path}#\" --version",
+                    "clone": "\"#{tool_path}#\" -C \"#{container_path}#\" clone #{url}# \"#{clone_subdir}#\"",
+                    "checkout": "\"#{tool_path}#\" -C \"#{repo_path}#\" checkout #{checkout}#",
+                    "submodules_1": "\"#{tool_path}#\" -C \"#{repo_path}#\" submodule init",
+                    "submodules_2": "\"#{tool_path}#\" -C \"#{repo_path}#\" submodule update",
+                    "pull": "\"#{tool_path}#\" -C \"#{repo_path}#\" pull --ff-only"
+                },
+                "cmd_key": "version",
                 "capture_output": true
         } ],
+
 
         [ [ "shell_tool", "can_patch" ], [["detect"]], { "tool_name": "patch", "shell_cmd_with_subs": "\"#{tool_path}#\" -p1 -d \"#{entry_path}#\" -i \"#{abs_patch_path}#\"" } ],
 

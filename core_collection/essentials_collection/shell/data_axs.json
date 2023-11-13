@@ -4,5 +4,13 @@
         "substitute",
         [ "^^", "get", "shell_cmd_with_subs" ]
     ],
-    "shell_cmd_with_subs": "echo Hello, world"
+    "shell_cmd_with_subs": [ "^^", "execute", [[
+        [ "get", "shell_cmd_templates"],
+        [ "get", [ "^^", "get", "cmd_key" ] ]
+    ]] ],
+    "shell_cmd_templates": {
+        "default": "echo Hello, world",
+        "gb": "echo Good bye"
+    },
+    "cmd_key": "default"
 }
