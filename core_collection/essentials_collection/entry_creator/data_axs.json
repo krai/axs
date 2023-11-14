@@ -1,0 +1,28 @@
+{
+    "alpha": 15,
+    "beta": "abcd",
+
+    "newborn_name_template": "newborn_alpha.#{alpha}#_beta.#{beta}#",
+    "newborn_entry_name": [ "^^", "substitute", [ "^^", "get", "newborn_name_template" ] ],
+    "newborn_entry_tags": [ "newborn" ],
+    "newborn_parent_names": [ "shell", "pip" ],
+    "newborn_entry_param_names": [ "alpha", "beta" ],
+
+    "collection_name": "work_collection",
+    "collection_object": [ "^", "byquery", ["^^", "substitute", "collection,collection_name=#{collection_name}#" ],
+                                           { "parent_recursion": true }, [ "collection_name" ] ],
+
+    "newborn_entry": [ "^^", "execute", [[
+        [ "get", "collection_object" ],
+        [ "attached_entry", [ ["^^", "get", "newborn_entry_name" ], {
+                "tags": [ "^^", "get", [ "tags", [ "^^", "get", "newborn_entry_tags" ] ] ]
+         } ] ],
+        [ "plant", [ "_parent_entries", [ "^^", "parent_list_from_names" ] ] ],
+        [ "plant", [ "^^", "slice", ["^^", "get", "newborn_entry_param_names" ], { "plantable": true, "skip_missing": true } ] ]
+    ]] ],
+    "newborn_entry_path": [ "^^", "execute", [[
+        [ "get", "newborn_entry" ],
+        [ "save" ],
+        [ "get_path" ]
+    ]] ]
+}

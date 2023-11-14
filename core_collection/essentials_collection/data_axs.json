@@ -4,6 +4,8 @@
         "collection"
     ],
     "contained_entries": {
+        "entry_creator": "entry_creator",
+
         "downloader": "downloader",
         "extractor": "extractor",
         "git": "git",

@@ -3,8 +3,12 @@
         [ [ "git_repo", "collection" ], [["clone"]], { "tags": ["git_repo", "collection"] } ]
     ],
 
-    "git_tool_entry":   [ "^", "byquery", "shell_tool,can_git" ],
+    "_parent_entries": [ [ "^", "byname", "entry_creator" ] ],
 
+    "rel_clone_dir": [ "^^", "substitute", "cloned_#{repo_name}#" ],
+
+
+    "git_tool_entry":   [ "^", "byquery", "shell_tool,can_git" ],
     "patch_tool_entry": [ "^", "byquery", "shell_tool,can_patch" ],
 
     "git_url": [ "^^", "execute", [[
@@ -24,19 +28,8 @@
 
     "url": [ "^^", "substitute", "#{url_prefix}#/#{repo_name}#" ],
     "repo_name": [ "^^", "url_2_repo_name" ],
-    "checkout_part": [ "^^", "case", [ [ "^^", "get", ["checkout", ""] ], ["", false, null, "None"], "" ],
-                               { "default_value": [ "^^", "substitute", "_#{checkout}#" ] }
-                     ],
-    "patch_part": [ "^^", "case", [ [ "^^", "get", ["patch", ""] ], ["", false, null, "None"], "" ],
-                               { "default_value": [ "^^", "substitute", "_#{patch}#" ] }
-                     ],
-
-    "repo_dir_name": [ "^^", "substitute", "#{repo_name}##{checkout_part}##{patch_part}#" ],
-    "rel_clone_dir": [ "^^", "substitute", "cloned_#{repo_dir_name}#" ],
 
     "repo_path": [ "^^", "get_path" ],
-
-    "container_entry":  [ "^", "work_collection" ],
 
     "current_checkout": [ "^^", "execute", [[
         [ "get", "git_tool_entry" ],
@@ -51,19 +44,16 @@
 
     "checkout": [ "^^", "propose_checkout" ],
 
-    "generated_entry_parents": [ "AS^IS", "AS^IS", [ "^", "byname", "git" ] ],
-    "generated_entry_tags": [ "git_repo" ],
-    "generated_entry_param_names": [ "repo_name", "checkout", "submodules", "abs_patch_path", "patch", "contained_files" ],
-    "generated_entry": [ "^^", "execute", [[
-        [ "get", "__record_entry__" ],
-        [ "set_path", [ "^^", "get", "repo_dir_name" ] ],
-        [ "attach", [ "^^", "get", "container_entry" ] ],
-        [ "plant", [
-            "_parent_entries", [ "^^", "get", "generated_entry_parents" ],
-            "tags", [ "^^", "get", "generated_entry_tags" ],
-            "repo_name", [ "^^", "get", "repo_name" ]
-        ]],
-        [ "plant", [ "^^", "slice", ["^^", "get", "generated_entry_param_names" ], { "plantable": true, "skip_missing": true } ] ],
-        [ "save" ]
-    ]] ]
+
+    "checkout_part": [ "^^", "case", [ [ "^^", "get", ["checkout", ""] ], ["", false, null, "None"], "" ],
+                               { "default_value": [ "^^", "substitute", "_#{checkout}#" ] }
+                     ],
+    "patch_part": [ "^^", "case", [ [ "^^", "get", ["patch", ""] ], ["", false, null, "None"], "" ],
+                               { "default_value": [ "^^", "substitute", "_#{patch}#" ] }
+                     ],
+
+    "newborn_entry_tags": [ "git_repo" ],
+    "newborn_parent_names": [ "git" ],
+    "newborn_name_template": "#{repo_name}##{checkout_part}##{patch_part}#",
+    "newborn_entry_param_names": [ "repo_name", "checkout", "submodules", "abs_patch_path", "patch", "contained_files" ]
 }

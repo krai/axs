@@ -55,7 +55,7 @@ Usage examples :
         return None
 
 
-def clone(repo_name=None, url=None, rel_clone_dir=None, generated_entry=None, move_on_up=True, git_tool_entry=None, checkout=None, submodules=False, abs_patch_path=None, patch=None, tags=None, contained_files=None, __entry__=None):
+def clone(repo_name=None, url=None, rel_clone_dir=None, newborn_entry=None, newborn_entry_path=None, move_on_up=True, git_tool_entry=None, checkout=None, submodules=False, abs_patch_path=None, patch=None, tags=None, contained_files=None, __entry__=None):
     """Clone a git repository into an Entry,
 
 Usage examples :
@@ -73,15 +73,14 @@ Clean-up:
 
     assert __entry__ != None, "__entry__ should be defined"
 
-    generated_entry_path    = generated_entry.get_path( "" )
     tool_path               = git_tool_entry["tool_path"]
 
     logging.warning(f"The resolved git_tool_entry '{git_tool_entry.get_name()}' located at '{git_tool_entry.get_path()}' uses the shell tool '{tool_path}'")
 
-    retval = git_tool_entry.call('run', [], { "cmd_key": "clone", "container_path": generated_entry_path, "url": url, "clone_subdir": rel_clone_dir, "capture_output": False } )
+    retval = git_tool_entry.call('run', [], { "cmd_key": "clone", "container_path": newborn_entry_path, "url": url, "clone_subdir": rel_clone_dir, "capture_output": False } )
     if retval == 0:
 
-        abs_clone_dir = os.path.join(generated_entry_path, rel_clone_dir)
+        abs_clone_dir = os.path.join(newborn_entry_path, rel_clone_dir)
 
         if checkout:
             git_tool_entry.call('run', [], { "cmd_key": "checkout", "repo_path": abs_clone_dir, "checkout": checkout } )
@@ -100,15 +99,15 @@ Clean-up:
                 return None
 
         if move_on_up:
-            ufun.move_dir_contents_from_to( abs_clone_dir, generated_entry_path )
+            ufun.move_dir_contents_from_to( abs_clone_dir, newborn_entry_path )
             ufun.rmdir( abs_clone_dir )
         else:
-            generated_entry['file_name'] = rel_clone_dir
+            newborn_entry['file_name'] = rel_clone_dir
             if tags and 'collection' in tags:
-                generated_entry['contained_entries'] = { rel_clone_dir: rel_clone_dir }
-            generated_entry.save()
+                newborn_entry['contained_entries'] = { rel_clone_dir: rel_clone_dir }
+            newborn_entry.save()
 
-        return generated_entry
+        return newborn_entry
 
     else:
         logging.error(f"A problem (retval={retval}) occured when trying to clone '{repo_name}' at {url} , bailing out")
