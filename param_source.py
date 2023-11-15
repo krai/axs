@@ -57,6 +57,9 @@ class ParamSource:
         if self.parent_objects==None:     # lazy-loading condition
             logging.debug(f"[{self.get_name()}] Lazy-loading the parents...")
             self.parent_objects = self.get(self.PARAMNAME_parent_entries, [])
+            if None in self.parent_objects:
+                raise RuntimeError( f"Some of entry {self.get_name()}'s parents could not be loaded." ) # NB: part of the message should stay verbatim!
+
             logging.debug(f"[{self.get_name()}] Parents loaded and cached.")
         else:
             logging.debug(f"[{self.get_name()}] Parents have already been cached")

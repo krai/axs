@@ -185,9 +185,17 @@ class FilterPile:
 
         candidate_still_ok = True
         for key_path, op, val, query_comparison_lambda, split_key_path in self.filter_list:
-            if not query_comparison_lambda( candidate_entry.dig(split_key_path, safe=True, parent_recursion=parent_recursion) ):
-                candidate_still_ok = False
-                break
+            try:
+                if not query_comparison_lambda( candidate_entry.dig(split_key_path, safe=True, parent_recursion=parent_recursion) ):
+                    candidate_still_ok = False
+                    break
+            except RuntimeError as e:
+                if parent_recursion and ("could not be loaded" in str(e)) :
+                    logging.warning( str(e) )
+                    candidate_still_ok = False
+                    break
+                else:
+                    raise(e)
         return candidate_still_ok
 
 

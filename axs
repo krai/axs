@@ -138,7 +138,7 @@ def main():
     try:
         return ak.execute(pipeline)
     except RuntimeError as e:
-        print(str(e), file=sys.stderr)
+        logging.error(f"RuntimeError: {e}")
 
 if __name__ == '__main__':
     print(ak.pickle_struct(main()))
