@@ -8,6 +8,7 @@ import logging
 import re
 import sys
 
+logging.basicConfig( level=logging.INFO )
 #logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")   # put this BEFORE IMPORTING the kernel to see logging from the kernel
 
 from function_access import to_num_or_not_to_num

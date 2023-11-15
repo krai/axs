@@ -284,7 +284,7 @@ Usage examples :
         """
         param_value = self.get(param_name, None)
         if param_value!=None:
-            logging.warning(f"[{self.get_name()}] touch {param_name}={param_value}")
+            logging.info(f"[{self.get_name()}] touch {param_name}={param_value}")
         return param_value
 
 

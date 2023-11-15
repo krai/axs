@@ -331,15 +331,15 @@ Usage examples :
 
     # if a matching entry does not exist, see if we can produce it with a matching Rule
     if produce_if_not_found and len(parsed_query.posi_tag_set):
-        logging.warning(f"[{__entry__.get_name()}] byquery({query}) did not find anything, but there are tags: {parsed_query.posi_tag_set} , trying to find a producer...")
+        logging.info(f"[{__entry__.get_name()}] byquery({query}) did not find anything, but there are tags: {parsed_query.posi_tag_set} , trying to find a producer...")
 
         matching_rules = find_matching_rules(parsed_query, __entry__)
-        logging.warning(f"[{__entry__.get_name()}] A total of {len(matching_rules)} matched rules found.\n")
+        logging.info(f"[{__entry__.get_name()}] A total of {len(matching_rules)} matched rules found.\n")
 
         match_idx = 0
         for advertising_entry, unprocessed_rule, parsed_rule in matching_rules:
             match_idx += 1  # matches are 1-based
-            logging.warning(f"Matched Rule #{match_idx}/{len(matching_rules)}: {unprocessed_rule[0]} from Entry '{advertising_entry.get_name()}'...")
+            logging.info(f"Matched Rule #{match_idx}/{len(matching_rules)}: {unprocessed_rule[0]} from Entry '{advertising_entry.get_name()}'...")
 
             rule_vector         = advertising_entry.nested_calls(unprocessed_rule)
             producer_pipeline   = rule_vector[1]
@@ -355,7 +355,7 @@ Usage examples :
             cumulative_params["tags"] = list(parsed_query.posi_tag_set)     # FIXME:  parsed_rule.posi_tag_set should include it
             if type(produce_if_not_found)==dict:
                 cumulative_params.update( produce_if_not_found )            # highest priority override only in case there was no match and we are generating
-            logging.warning(f"Pipeline: {producer_pipeline}, Cumulative params: {cumulative_params}")
+            logging.info(f"Pipeline: {producer_pipeline}, Cumulative params: {cumulative_params}")
 
             if type(producer_pipeline[0])==list:
                 new_entry = advertising_entry.execute(producer_pipeline, cumulative_params)
@@ -368,10 +368,10 @@ Usage examples :
                 raise SyntaxError(f"Rule parsing error: a single-call action with its own named parameters is ambiguous: {producer_pipeline}")
 
             if new_entry:
-                logging.warning(f"Matched Rule #{match_idx}/{len(matching_rules)} produced a result.\n")
+                logging.info(f"Matched Rule #{match_idx}/{len(matching_rules)} produced a result.\n")
                 return new_entry
             else:
-                logging.warning(f"Matched Rule #{match_idx}/{len(matching_rules)} didn't produce a result, {len(matching_rules)-match_idx} more matched rules to try...\n")
+                logging.info(f"Matched Rule #{match_idx}/{len(matching_rules)} didn't produce a result, {len(matching_rules)-match_idx} more matched rules to try...\n")
 
     else:
         logging.debug(f"[{__entry__.get_name()}] byquery({query}) did not find anything, and no matching _producer_rules => returning None")

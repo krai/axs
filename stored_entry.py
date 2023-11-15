@@ -311,7 +311,7 @@ Usage examples :
 
         json_string = ufun.save_json( self.pickle_struct(self.own_data()), parameters_full_path, indent=4 )
 
-        logging.warning(f"[{self.get_name()}] parameters {json_string} saved to '{parameters_full_path}'")
+        logging.info(f"[{self.get_name()}] parameters {json_string} saved to '{parameters_full_path}'")
 
         self.call('attach')
 
@@ -329,7 +329,7 @@ Usage examples :
         entry_path = self.get_path('')
         if entry_path:
             ufun.rmdir( entry_path )
-            logging.warning(f"[{self.get_name()}] {entry_path} removed from the filesystem")
+            logging.info(f"[{self.get_name()}] {entry_path} removed from the filesystem")
         else:
             logging.warning(f"[{self.get_name()}] was not saved to the file system, so cannot be removed")
 
