@@ -9,7 +9,7 @@
                 "abs_source_path": [ "^^", "get", "cjson_c_path" ],
                 "capture_output": false
             } ]
-        ] ]
+        ], {}, ["return_this_entry"] ]
     ],
 
     "url": "https://github.com/DaveGamble/cJSON",
