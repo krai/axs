@@ -6,6 +6,7 @@
                         "cmd_key": "compile_to_binary",
                         "abs_binary_path": [ "^^", "dig", "return_this_entry.abs_binary_path" ],
                         "abs_source_path": [ "^^", "get", "abs_source_path" ],
+                        "compile_suffix": "-lm",
                         "capture_output": false
                     } ]
             ] ],
