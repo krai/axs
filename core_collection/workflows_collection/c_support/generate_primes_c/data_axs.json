@@ -1,8 +1,17 @@
 {
-    "_parent_entries": [ [ "^", "byname", "shell" ] ],
     "_producer_rules": [   
-        [ [ "compiled", "generate_primes" ], [["run"]], {}, ["compiler_entry", "shell_cmd_with_subs", "cjson_lib_entry", "return_this_entry", "abs_source_path"]],
-        [ [ "program_output",  "generate_primes" ], [["get_kernel"],["byquery","compiled,generate_primes"],["run"]]  ]
+        [ [ "compiled", "generate_primes" ], [
+            [ "get", "compiler_entry" ],
+            [ "run", [], {
+                "cmd_key": "compile_to_binary",
+                "compile_infix": [ "^^", "substitute", "-I#{cjson_lib_entry.include_path}#" ],
+                "abs_binary_path": [ "^^", "dig", "return_this_entry.abs_binary_path" ],
+                "abs_source_path": [ "^^", "get", "abs_source_path" ],
+                "compile_suffix": [ "^^", "dig", "cjson_lib_entry.cjson_o_path" ],
+                "capture_output": false
+            } ]
+        ], {}, ["abs_source_path", "return_this_entry", "cjson_lib_entry"] ],
+        [ [ "program_output",  "generate_primes" ], [["get_kernel"],["byquery","compiled,generate_primes"],["run"]] ]
     ],
 
     "tags": [ "source_code", "generate_primes" ],     
@@ -13,7 +22,7 @@
     "output_file_name": "program_output.json",
     "binary_name_def": [ "^^", "case", [ [ "^", "func", "platform.system"] ,
        "Windows" , "generate_primes.exe" ],
-       { "default_value": "generate_primers"  }
+       { "default_value": "generate_primes"  }
     ],
     "return_this_entry": [ "^^", "execute", [[
         [ "get_kernel" ],
@@ -46,6 +55,5 @@
     ]] ],
 
     "compiler_entry": [ "^", "byquery", "shell_tool,can_compile_c" ],
-    "cjson_lib_entry": [ "^", "byquery", "lib,lib_name=cjson" ],
-    "shell_cmd_with_subs": "\"#{compiler_entry.tool_path}#\" -I#{cjson_lib_entry.include_path}# -o #{return_this_entry.abs_binary_path}# #{abs_source_path}# #{cjson_lib_entry.cjson_o_path}#"
+    "cjson_lib_entry": [ "^", "byquery", "lib,lib_name=cjson" ]
 }

@@ -146,10 +146,51 @@
         [ [ "shell_tool", "can_gpu", "tool_name?=nvidia-smi.exe" ], [["detect"]], { "shell_cmd_with_subs": "\"#{tool_path}#\" -L | findstr GPU | find /c /v \"\"" ,  "capture_output": true} ],
         [ [ "shell_tool", "can_gpu", "tool_name?=echo"           ], [["detect"]], { "shell_cmd_with_subs": "echo 0" ,  "capture_output": true} ],
 
-        [ [ "shell_tool", "can_compile_c", "tool_name?=gcc"      ], [["detect"]], { "shell_cmd_with_subs": "\"#{tool_path}#\" --version", "capture_output": true } ],
-        [ [ "shell_tool", "can_compile_c", "tool_name?=clang"    ], [["detect"]], { "shell_cmd_with_subs": "\"#{tool_path}#\" --version", "capture_output": true } ],
-        [ [ "shell_tool", "can_compile_c", "tool_name?=cc"       ], [["detect"]], { "shell_cmd_with_subs": "\"#{tool_path}#\" --version", "capture_output": true } ],
-        [ [ "shell_tool", "can_compile_c", "tool_name?=cl.exe"   ], [["detect"]], { "shell_cmd_with_subs": "\"#{tool_path}#\" --version", "capture_output": true } ]
+        [ [ "shell_tool", "can_compile_c", "tool_name?=gcc"      ], [["detect"]], {
+                "shell_cmd_templates": {
+                    "compile_to_binary": "\"#{tool_path}#\" #{compile_infix}# -o \"#{abs_binary_path}#\" \"#{abs_source_path}#\" #{compile_suffix}#",
+                    "compile_to_object": "\"#{tool_path}#\" #{compile_infix}# -c -o \"#{abs_object_path}#\" \"#{abs_source_path}#\" #{compile_suffix}#",
+                    "version": "\"#{tool_path}#\" --version"
+                },
+                "cmd_key": "version",
+                "compile_infix": "",
+                "compile_suffix": "",
+                "capture_output": true
+        } ],
+        [ [ "shell_tool", "can_compile_c", "tool_name?=clang"    ], [["detect"]], {
+                "shell_cmd_templates": {
+                    "compile_to_binary": "\"#{tool_path}#\" #{compile_infix}# -o \"#{abs_binary_path}#\" \"#{abs_source_path}#\" #{compile_suffix}#",
+                    "compile_to_object": "\"#{tool_path}#\" #{compile_infix}# -c -o \"#{abs_object_path}#\" \"#{abs_source_path}#\" #{compile_suffix}#",
+                    "version": "\"#{tool_path}#\" --version"
+                },
+                "cmd_key": "version",
+                "compile_infix": "",
+                "compile_suffix": "",
+                "capture_output": true
+        } ],
+        [ [ "shell_tool", "can_compile_c", "tool_name?=cc"       ], [["detect"]], {
+                "shell_cmd_templates": {
+                    "compile_to_binary": "\"#{tool_path}#\" #{compile_infix}# -o \"#{abs_binary_path}#\" \"#{abs_source_path}#\" #{compile_suffix}#",
+                    "compile_to_object": "\"#{tool_path}#\" #{compile_infix}# -c -o \"#{abs_object_path}#\" \"#{abs_source_path}#\" #{compile_suffix}#",
+                    "version": "\"#{tool_path}#\" --version"
+                },
+                "cmd_key": "version",
+                "compile_infix": "",
+                "compile_suffix": "",
+                "capture_output": true
+        } ],
+        [ [ "shell_tool", "can_compile_c", "tool_name?=cl.exe"   ], [["detect"]], {
+                "shell_cmd_templates": {
+                    "compile_to_binary": "#{compile_prefix}# \"#{tool_path}#\" #{compile_infix}# /Fe\"#{abs_binary_path}#\" \"#{abs_source_path}#\" #{compile_suffix}#",
+                    "compile_to_object": "#{compile_prefix}# \"#{tool_path}#\" #{compile_infix}# /c /Fo\"#{abs_object_path}#\" \"#{abs_source_path}#\" #{compile_suffix}#",
+                    "version": "\"#{tool_path}#\""
+                },
+                "cmd_key": "version",
+                "compile_prefix": "vcvars64.bat && ",
+                "compile_infix": "",
+                "compile_suffix": "",
+                "capture_output": true
+        } ]
     ],
 
     "exec_suffixes": [ "^^", "case", [ [ "^", "func", [ "sys.platform.startswith", "win" ] ], true, [ "", ".exe", ".bat", ".com" ], false, [ "" ] ]],

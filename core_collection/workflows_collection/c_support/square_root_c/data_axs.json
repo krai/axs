@@ -1,13 +1,22 @@
 {
-    "_parent_entries": [ [ "^", "byname", "shell" ] ],
     "_producer_rules": [
-            [ [ "compiled", "square_root" ], [["run"]] ],
+            [ [ "compiled", "square_root" ], [
+                    [ "get", "compiler_entry" ],
+                    [ "run", [], {
+                        "cmd_key": "compile_to_binary",
+                        "abs_binary_path": [ "^^", "dig", "return_this_entry.abs_binary_path" ],
+                        "abs_source_path": [ "^^", "get", "abs_source_path" ],
+                        "capture_output": false
+                    } ]
+            ] ],
             [ [ "compute",  "square_root" ], [["get_kernel"],["byquery","compiled,square_root"],["run"]] ]
     ],
     "tags": [ "source_code", "square_root" ],
     "file_name": "square_rooter.c",
     "abs_source_path": [ "^^", "get_path" ],
     "area": 9,
+
+    "compiler_entry": [ "^", "byquery", "shell_tool,can_compile_c" ],
 
     "return_this_entry": [ "^^", "execute", [[
         [ "get_kernel" ],
@@ -22,9 +31,5 @@
                 "shell_cmd_with_subs": "#{abs_binary_path}# #{area}#"
             } ] ],
         [ "save" ]
-    ]] ],
-
-    "compiler_entry": [ "^", "byquery", "shell_tool,can_compile_c" ],
-
-    "shell_cmd_with_subs": "\"#{compiler_entry.tool_path}#\" -o #{return_this_entry.abs_binary_path}# #{abs_source_path}# -lm"
+    ]] ]
 }
