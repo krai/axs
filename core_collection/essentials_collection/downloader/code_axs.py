@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 """ This entry knows how to download a file from a given URL.
-    The resulting file may either become a collection or a regular entry.
 
     # create a recipe entry:
             axs work_collection , attached_entry examplepage_recipe , plant url http://example.com/  entry_name examplepage_downloaded  file_name example.html  _parent_entries --,:=AS^IS:^:byname:downloader , save
@@ -47,14 +46,19 @@ def download(url, file_name=None, split_file_path=None, md5=None, downloading_to
 Usage examples:
     # Manual downloading into a new entry:
             axs byname downloader , download 'https://example.com/' example.html --tags,=example
+
     # Replay of the same command at a later time, stored in a different entry:
             axs byquery downloaded,file_path=example.html , get _replay --entry_name=replay_downloading_example.html
+
     # Resulting entry path (counter-intuitively) :
             axs byquery downloaded,file_path=example.html , get_path ''
+
     # Downloaded file path:
             axs byquery downloaded,file_path=example.html , get_path
+
     # Reaching to the original tool used for downloading:
             axs byquery downloaded,file_path=example.html , get downloading_tool_entry , get tool_path
+
     # Clean up:
             axs byquery downloaded,file_path=example.html , remove
 
