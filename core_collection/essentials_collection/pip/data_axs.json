@@ -34,8 +34,7 @@
     "newborn_name_template": "#{package_name}##{version_suffix_name}#_package_for_python#{python_major_dot_minor}#",
     "newborn_entry_param_names": [ "package_name", "package_version", "pip_options", "installable", "python_major_dot_minor", "desired_python_version" ],
     "abs_install_dir": [ "^^", "execute", [[
-        [ "get", "newborn_entry" ],
-        [ "save" ],
+        [ "get", "stored_newborn_entry" ],
         [ "get_path", [ "^^", "get", "rel_install_dir" ] ]
     ]] ],
 

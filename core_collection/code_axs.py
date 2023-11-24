@@ -355,6 +355,7 @@ Usage examples :
             cumulative_params["tags"] = list(parsed_query.posi_tag_set)     # FIXME:  parsed_rule.posi_tag_set should include it
             if type(produce_if_not_found)==dict:
                 cumulative_params.update( produce_if_not_found )            # highest priority override only in case there was no match and we are generating
+            cumulative_params["__cumulative_param_names"] = list( cumulative_params.keys() )
             logging.info(f"Pipeline: {producer_pipeline}, Cumulative params: {cumulative_params}")
 
             if type(producer_pipeline[0])==list:
