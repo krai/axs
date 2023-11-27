@@ -400,7 +400,7 @@ Usage examples :
                 head = input_structure[0]
                 if head=='^^':
                     side_effects_count += 1
-                    return self.call( *input_structure[1:] )
+                    return self.call( *input_structure[1:], slice_relative_to=self )
                 elif head=='^':
                     side_effects_count += 1
                     return self.get_kernel().call( *input_structure[1:], slice_relative_to=self )
