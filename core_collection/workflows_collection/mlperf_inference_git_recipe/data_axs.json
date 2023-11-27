@@ -14,6 +14,7 @@
     "contained_files": {
         "mlperf_conf_file": [ "mlperf.conf" ],
 
+        "loadgen": [ "loadgen" ],
         "vision_tools_dir": [ "vision", "classification_and_detection", "tools" ],
         "classification_accuracy_script": [ "vision", "classification_and_detection", "tools", "accuracy-imagenet.py" ],
         "coco_detection_accuracy_script": [ "vision", "classification_and_detection", "tools", "accuracy-coco.py" ],
