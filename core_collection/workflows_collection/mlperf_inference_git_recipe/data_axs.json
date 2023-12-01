@@ -30,7 +30,8 @@
         "gptj_accuracy_script": [ "language", "gpt-j", "evaluation.py" ],
 
         "diffusion_coco2014_download_dir": [  "text_to_image", "tools" ],
-        "diffusion_coco2014_download_script": [  "text_to_image", "tools", "dowload-coco-2014.sh" ],
+        "diffusion_coco2014_download_script": [  "text_to_image", "tools", "download-coco-2014.sh" ],
+        "diffusion_reference_script": [  "text_to_image", "main.py" ],
 
         "submission_accuracy_truncator_script": [ "tools", "submission", "truncate_accuracy_log.py" ],
         "submission_checker_script": [ "tools", "submission", "submission_checker.py" ],
