@@ -3,7 +3,7 @@
 "A collection of utility functions"
 
 import errno
-import json
+import jsonc
 import os
 import re
 import shutil
@@ -19,8 +19,8 @@ Usage examples :
     """
     with open( json_file_path, encoding='utf-8' ) as json_fd:
         try:
-            data_structure = json.load(json_fd)
-        except json.decoder.JSONDecodeError as e:
+            data_structure = jsonc.load(json_fd)
+        except jsonc.json.decoder.JSONDecodeError as e:
             print(f'Error parsing "{json_file_path}" : {e}', file=sys.stderr)
             data_structure = {}
 
@@ -34,7 +34,7 @@ Usage examples :
                 axs func ufun.save_json ---='{"hello":"world"}' hello.json
                 axs work_collection , get contained_entries , keys ,0 func list ,0 func ufun.save_json work_entries.json
     """
-    json_string   = json.dumps( data_structure , indent=indent)
+    json_string   = jsonc.dumps( data_structure , indent=indent)
 
     with open(json_file_path, "w") as json_fd:
         json_fd.write( json_string+"\n" )

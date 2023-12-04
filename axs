@@ -3,7 +3,7 @@
 """ A simple CommandLine API for this framework.
 """
 
-import json
+import jsonc
 import logging
 import re
 import sys
@@ -93,7 +93,7 @@ def cli_parse(arglist):
                 matched = re.match(r'^---(([\w\.]*\+?)((\^{1,2})(\w+))?)=(.*)$', arglist[i])                    # verbatim JSON value
                 if matched:
                     call_param_json     = matched.group(6)
-                    call_param_value    = json.loads( call_param_json )
+                    call_param_value    = jsonc.loads( call_param_json )
                 else:
                     matched = re.match(r'^--(([\w\.]*\+?)((\^{1,2})(\w+))?)([\ ,;:/]{0,3})=(.*)$', arglist[i])  # scalar value, list, list-of-lists or dictionary
                     if matched:
