@@ -42,7 +42,7 @@
     ]] ],
 
     "batch_size": 1,
-    "batch_count": "1",
+    "batch_count": 1,
 
     "dataset_max_seq_length": 384,
     "preprocessed_squad_query":[ "preprocessed", "dataset_name=squad_v1_1", [ "^^", "substitute", "dataset_max_seq_length=#{dataset_max_seq_length}#" ] ],
