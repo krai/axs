@@ -290,7 +290,7 @@ if [ "$PYTORCH_BERT_DEMO" == "on" ]; then
 fi
 
 if [ "$ONNX_BERT_SQUAD" == "on" ]; then
-    axs byquery preprocessed,dataset_name=squad_v1_1
+    #axs byquery preprocessed,dataset_name=squad_v1_1
     axs byquery program_output,task=bert,framework=onnxrt,batch_count=20
     export ACCURACY_OUTPUT=`axs byquery program_output,task=bert,framework=onnxrt,batch_count=20 , get accuracy_dict`
     echo "Accuracy: $ACCURACY_OUTPUT"
