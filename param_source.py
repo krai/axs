@@ -21,7 +21,7 @@ class ParamSource:
         self.own_data_cache         = own_data
         self.parent_objects         = parent_objects
         self.runtime_stack_cache    = []
-        self.blocked_param_set      = set()
+        self.blocked_param_set      = {}
 
         logging.debug(f"[{self.get_name()}] Initializing the ParamSource with own_data={self.own_data_cache}, inheriting from {'some parents' or 'no parents'}")
 # FIXME: The following would cause infinite recursion (expecting cached entries before they actually end up in cache)
@@ -124,30 +124,31 @@ Usage examples :
         return self.runtime_stack_cache
 
 
-    def get_own_value_generator(self, param_name):
+    def get_own_value_generator(self, param_name, asking_entry):
         "Common part of accessing a parameter"
 
         own_data = self.own_data()
         if param_name in own_data:
-            if param_name in self.blocked_param_set:
-                logging.warning(f"[{self.get_name()}]  parameter '{param_name}' is contained but BLOCKED, skipping further")
+            if asking_entry.get_name() in self.blocked_param_set.get(param_name, set()):
+                logging.warning(f"[{asking_entry.get_name()} -> {self.get_name()}] parameter '{param_name}' is contained here, but BLOCKED by this entry -- all blockers: {self.blocked_param_set[param_name]}")
             else:
                 param_value = own_data[param_name]
-                logging.debug(f"[{self.get_name()}]  parameter '{param_name}' is contained here, returning '{param_value}'")
+                logging.debug(f"[{asking_entry.get_name()} -> {self.get_name()}]  parameter '{param_name}' is contained here, returning '{param_value}'")
                 yield (self, param_value)
         else:
-            logging.debug(f"[{self.get_name()}]  parameter '{param_name}' is not contained here, skipping further")
+            logging.debug(f"[{asking_entry.get_name()} -> {self.get_name()}]  parameter '{param_name}' is not contained here, skipping further")
 
 
-    def getitem_generator(self, param_name, parent_recursion=None):
+    def getitem_generator(self, param_name, parent_recursion=None, asking_entry=None):
         "Walk the potential sources of the parameter (runtime, own_data and the parents recursively)"
 
+        asking_entry = asking_entry or self
         logging.debug(f"[{self.get_name()}] Attempt to access parameter '{param_name}'...")
 
         for runtime_entry in self.runtime_stack():
-            yield from runtime_entry.get_own_value_generator( param_name )
+            yield from runtime_entry.get_own_value_generator( param_name, asking_entry )
 
-        yield from self.get_own_value_generator( param_name )
+        yield from self.get_own_value_generator( param_name, asking_entry )
 
         # trust the boolean value if it was defined,
         # otherwise the parameter's inheritability is encoded in its name:
@@ -155,7 +156,7 @@ Usage examples :
             for parent_object in self.parents_loaded():
                 logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}', fallback to the parent '{parent_object.get_name()}'")
                 try:
-                    yield from parent_object.getitem_generator(param_name)
+                    yield from parent_object.getitem_generator(param_name, asking_entry=asking_entry)
                 except StopIteration:
                     logging.debug(f"[{self.get_name()}]  My parent '{parent_object.get_name()}'' did not know about '{param_name}'")
                     pass

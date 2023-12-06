@@ -224,18 +224,23 @@ Usage examples :
             raise KeyError(param_name)
 
         if perform_nested_calls:
-            value_source_entry.blocked_param_set.add( param_name )
+            if param_name not in value_source_entry.blocked_param_set:
+                value_source_entry.blocked_param_set[param_name] = set()
+
+            value_source_entry.blocked_param_set[param_name].add(self.get_name())
+
             logging.debug(f"[{self.get_name()}]  BLOCKING '{param_name}' in order to compute nested_calls on {unprocessed_value} ...")
             try:
                 param_value = self.nested_calls(unprocessed_value)
             except Exception as e:
                 logging.debug(f"[{self.get_name()}]  unBLOCKING '{param_name}' after attempt to compute nested_calls on {unprocessed_value} ...")
-                value_source_entry.blocked_param_set.remove( param_name )
+                del value_source_entry.blocked_param_set[param_name]
                 raise e
             logging.debug(f"[{self.get_name()}]  unBLOCKING '{param_name}' after computing nested_calls on {unprocessed_value} ...")
-            value_source_entry.blocked_param_set.remove( param_name )
+
+            value_source_entry.blocked_param_set[param_name].remove(self.get_name())
         else:
-                param_value = unprocessed_value
+            param_value = unprocessed_value
 
         logging.debug(f"[{self.get_name()}]  Got {param_name}={param_value}")
 
