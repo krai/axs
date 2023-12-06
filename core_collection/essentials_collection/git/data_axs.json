@@ -14,7 +14,7 @@
     "git_url": [ "^^", "execute", [[
         [ "get", "git_tool_entry" ],
         [ "run", [], {
-            "shell_cmd_with_subs": "\"#{tool_path}#\" -C #{repo_path}# config --get remote.origin.url",
+            "cmd_key": "origin_url",
             "repo_path": [ "^^", "get", "repo_path" ],
             "capture_output": true
         } ]
@@ -34,7 +34,7 @@
     "current_checkout": [ "^^", "execute", [[
         [ "get", "git_tool_entry" ],
         [ "run", [], {
-            "shell_cmd_with_subs": "\"#{tool_path}#\" -C \"#{repo_path}#\" branch",
+            "cmd_key": "branch",
             "repo_path": [ "^^", "get", "repo_path" ],
             "capture_output": true
         } ],
