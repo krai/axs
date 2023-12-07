@@ -1,6 +1,6 @@
 {
     "_parent_entries": [
-        [ "^", "byname", "shell" ],
+        [ "^", "byname", "python_in_shell" ],
         [ "^", "byname", "entry_creator" ]
     ],
     "_producer_rules": [
