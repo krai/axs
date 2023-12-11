@@ -6,7 +6,10 @@
     "output_entry_subs_listmap": [ ],
     "output_entry_tags": [ "program_output" ],
 
-    "collection_name": "work_collection",
+    "collection_name": [ "^", "execute", [[
+        [ "work_collection" ],
+        [ "get_name" ]
+    ]] ],
     "collection_object": [ "^", "byquery", ["^^", "substitute", "collection,collection_name=#{collection_name}#" ], { "parent_recursion": true }, [ "collection_name" ] ],
 
     "output_entry": [ "^^", "execute", [[

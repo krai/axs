@@ -13,7 +13,10 @@
     "newborn_parent_names": [ "shell" ],
     "newborn_entry_param_names": [ "greeting", "name", "shell_cmd_with_subs" ],
 
-    "collection_name": "work_collection",
+    "collection_name": [ "^", "execute", [[
+        [ "work_collection" ],
+        [ "get_name" ]
+    ]] ],
     "collection_object": [ "^", "byquery", ["^^", "substitute", "collection,collection_name=#{collection_name}#" ],
                                            { "parent_recursion": true }, [ "collection_name" ] ],
 

@@ -11,7 +11,10 @@
     "month": 10,
     "year": 2022,
 
-    "collection_name": "work_collection",
+    "collection_name": [ "^", "execute", [[
+        [ "work_collection" ],
+        [ "get_name" ]
+    ]] ],
     "collection_object": [ "^", "byquery", ["^^", "substitute", "collection,collection_name=#{collection_name}#" ], { "parent_recursion": true }, [ "collection_name" ] ],
 
     "return_this_entry": [ "^^", "execute", [[
