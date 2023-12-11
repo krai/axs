@@ -37,9 +37,6 @@ def flatten_options(pip_options):
     return flattened_options
 
 
-# Please note: some of the parameters below, although not directly used by the method,
-#   must still be present in order to be automatically recorded via __record_entry__ mechanism.
-#
 def install(package_name, flattened_options=None, installable=None, abs_install_dir=None, newborn_entry=None, __entry__=None):
     """Install a pip package into a separate entry, so that it could be easily use'd.
 
