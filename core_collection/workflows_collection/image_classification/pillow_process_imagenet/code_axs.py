@@ -87,9 +87,9 @@ def load_image(image_path,            # Full path to processing image
     return img
 
 
-def preprocess(dataset_name, images_directory, resolution, supported_extensions, crop_percentage, inter_size, convert_to_bgr, data_type, new_file_extension, file_name, first_n, input_file_list, output_entry):
+def preprocess(dataset_name, images_directory, resolution, supported_extensions, crop_percentage, inter_size, convert_to_bgr, data_type, new_file_extension, file_name, first_n, input_file_list, stored_newborn_entry):
 
-    output_directory = output_entry.get_path( file_name )
+    output_directory = stored_newborn_entry.get_path( file_name )
     os.makedirs( output_directory )
 
     for current_idx, input_filename in enumerate(input_file_list):
@@ -110,4 +110,4 @@ def preprocess(dataset_name, images_directory, resolution, supported_extensions,
 
         print("[{}]:  Stored {}".format(current_idx+1, full_output_path) )
 
-    return output_entry.save()
+    return stored_newborn_entry
