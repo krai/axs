@@ -208,6 +208,7 @@ Usage examples :
                 axs all_byquery python_package --template="python_#{python_version}# package #{package_name}#"
                 axs all_byquery tags. --template="tags=#{tags}#"
                 axs all_byquery deleteme+ ---='[["remove"]]'
+                axs all_byquery git_repo ---='[["pull"]]'
         """
         logging.debug(f"[{self.get_name()}] all_byquery({query}, {pipeline}, {template})")
         return self.work_collection().call('all_byquery', [query, pipeline, template, parent_recursion])
