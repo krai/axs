@@ -8,7 +8,7 @@
         [ "set_path", [ "^^", "get", "collection_name" ] ],
         [ "attach", [ "^", "work_collection" ] ],
         [ "plant", [
-            "_parent_entries", [ "AS^IS", [ "^", "byname", "core_collection" ] ],
+            "_parent_entries", [ "AS^IS", "AS^IS", [ "^", "core_collection" ] ],
             "tags", [ "collection" ],
             "contained_entries", {}
           ] ],
