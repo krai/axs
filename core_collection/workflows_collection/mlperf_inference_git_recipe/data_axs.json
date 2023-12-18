@@ -6,6 +6,7 @@
             "submodules": false
         }, [ "url", "checkout", "contained_files" ] ],
         [ [ "git_repo", "repo_name=mlperf_inference_git" ], [["get_kernel"],["byname","git"],["clone"]], {
+            "clone_options": "--depth 1"
         }, [ "url", "checkout", "submodules", "contained_files" ] ]
     ],
     "url": "https://github.com/mlcommons/inference",

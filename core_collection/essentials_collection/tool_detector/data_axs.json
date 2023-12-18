@@ -204,7 +204,7 @@
                 "repo_path": ".",
                 "shell_cmd_templates": {
                     "version": "\"#{tool_path}#\" --version",
-                    "clone": "\"#{tool_path}#\" -C \"#{container_path}#\" clone #{url}# \"#{clone_subdir}#\"",
+                    "clone": "\"#{tool_path}#\" -C \"#{container_path}#\" clone #{url}# #{clone_options}# \"#{clone_subdir}#\"",
                     "checkout": "\"#{tool_path}#\" -C \"#{repo_path}#\" checkout #{checkout}#",
                     "submodules_1": "\"#{tool_path}#\" -C \"#{repo_path}#\" submodule init",
                     "submodules_2": "\"#{tool_path}#\" -C \"#{repo_path}#\" submodule update --recursive",

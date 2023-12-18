@@ -55,5 +55,5 @@
     "newborn_entry_tags": [ "git_repo" ],
     "newborn_parent_names": [ "git" ],
     "newborn_name_template": "#{repo_name}##{checkout_part}##{patch_part}#",
-    "newborn_entry_param_names": [ "repo_name", "checkout", "submodules", "abs_patch_path", "patch", "contained_files" ]
+    "newborn_entry_param_names": [ "repo_name", "checkout", "submodules", "abs_patch_path", "patch", "contained_files", "clone_options" ]
 }
