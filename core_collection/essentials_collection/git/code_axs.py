@@ -111,6 +111,7 @@ Clean-up:
 
     else:
         logging.error(f"A problem (retval={retval}) occured when trying to clone '{repo_name}' at {url} , bailing out")
+        newborn_entry.remove()
         return None
 
 
