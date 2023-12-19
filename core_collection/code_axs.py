@@ -70,6 +70,8 @@ class FilterPile:
 
     def __init__(self, conditions, context):
 
+        import re
+
         def parse_condition(condition, context):
 
             if type(condition)==list:   # pre-parsed equality
@@ -78,7 +80,6 @@ class FilterPile:
                 comparison_lambda   = lambda x: x==val
 
             else:   # assuming a string that needs to be parsed (even if a tag)
-                import re
                 from function_access import to_num_or_not_to_num
 
                 binary_op_match = re.match('([\w\.\-]*\w)(:=|\?=|===|==|=|!==|!=|<>|<=|>=|<|>|:|!:)(.*)$', condition)
@@ -156,7 +157,7 @@ class FilterPile:
             return key_path, op, val, comparison_lambda
 
 
-        self.conditions    = conditions if type(conditions)==list else conditions.split(',')
+        self.conditions    = conditions if type(conditions)==list else re.split(r',(?=(?:[^"]*"[^"]*")*[^"]*$)', conditions)
         self.context       = context
         self.posi_tag_set  = set()
         self.posi_val_dict = {}

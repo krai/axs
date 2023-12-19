@@ -136,6 +136,9 @@ def vararg_supporting_example_func(alpha, beta, *others, gamma=333, delta=4444):
 def to_num_or_not_to_num(x):
     "Convert the parameter to a number if it looks like it"
 
+    if isinstance(x, str) and len(x)>1 and x.startswith('"') and x.endswith('"'):
+        return x[1:-1]
+
     try:
         x_int = int(x)
         if type(x_int)==int:
