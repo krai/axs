@@ -256,13 +256,13 @@ Usage examples :
 
         # Structural recursion:
         if type(input_structure)==list:
-            return [self.substitute(e) for e in input_structure]                            # all list elements are substituted
+            return [self.substitute(e) for e in input_structure]                                            # all list elements are substituted
         elif type(input_structure)==dict:
-            return { k : self.substitute(input_structure[k]) for k in input_structure }     # only values are substituted
+            return { self.substitute(k) : self.substitute(input_structure[k]) for k in input_structure }    # both keys and values are substituted
         elif type(input_structure)==str:
-            return scalar_substitute(input_structure)                                       # ground step
+            return scalar_substitute(input_structure)                                                       # ground step
         else:
-            return input_structure                                                          # basement step
+            return input_structure                                                                          # basement step
 
 
     def get(self, param_name, default_value=None):
