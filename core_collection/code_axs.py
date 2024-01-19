@@ -370,7 +370,9 @@ Usage examples :
                 raise SyntaxError(f"Rule parsing error: a single-call action with its own named parameters is ambiguous: {producer_pipeline}")
 
             if new_entry:
-                if parsed_query.matches_entry( new_entry, parent_recursion ):
+                if not isinstance(new_entry, type(__entry__)):
+                    raise RuntimeError( f"Matched Rule #{match_idx}/{len(matching_rules)} produced something ( {repr(new_entry)} ), which is not an Entry - PLEASE INVESTIGATE" )
+                elif parsed_query.matches_entry( new_entry, parent_recursion ):
                     logging.info(f"Matched Rule #{match_idx}/{len(matching_rules)} produced an entry, which matches the original query.\n")
                     return new_entry
                 else:

@@ -9,8 +9,7 @@
                         "compile_suffix": "-lm",
                         "capture_output": false
                     } ]
-            ] ],
-            [ [ "compute",  "square_root" ], [["get_kernel"],["byquery","compiled,square_root"],["run"]] ]
+            ], {}, [ "return_this_entry" ] ]
     ],
     "tags": [ "source_code", "square_root" ],
     "file_name": "square_rooter.c",
