@@ -30,6 +30,8 @@
         "gptj_reference_loadgen_script": [ "language", "gpt-j", "main.py" ],
         "gptj_accuracy_script": [ "language", "gpt-j", "evaluation.py" ],
 
+	"llama2_openorca_preprocess_script": [ "language", "llama2-70b", "processorca.py" ],
+
         "diffusion_coco2014_download_dir": [  "text_to_image", "tools" ],
         "diffusion_coco2014_download_script": [  "text_to_image", "tools", "download-coco-2014.sh" ],
         "diffusion_reference_script": [  "text_to_image", "main.py" ],
