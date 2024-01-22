@@ -56,6 +56,15 @@ Usage examples :
 
     # install a package from a given wheel file:
             axs byname pip , install mlperf_loadgen 1.1 --installable=$HOME/work_collection/mlperf_inference_git/loadgen/dist/mlperf_loadgen-1.1-cp36-cp36m-macosx_10_9_x86_64.whl
+
+    # install a package using a rule:
+            axs byquery python_package,package_name=numpy
+
+    # install a package with a given version & without dependencies, using a rule:
+            axs byquery python_package,package_name=scipy,package_version=1.2.1,no_deps
+
+    # install all dependencies for project_A from its requirements.txt file, using a rule (note the correct quotes and their escaping) :
+            axs byquery 'python_package,package_name=deps_for_project_A,installable="-r path/to/project_A/requirements.txt"'
     """
 
     os.makedirs( abs_install_dir )
