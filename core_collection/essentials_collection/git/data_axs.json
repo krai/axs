@@ -1,6 +1,10 @@
 {
     "_producer_rules": [
-        [ [ "git_repo", "collection" ], [["clone"]], { "tags": ["git_repo", "collection"] } ]
+        [ [ "git_repo", "collection" ], [["clone"]], {
+            "tags": ["git_repo", "collection"],
+            "newborn_parent_names": [ "git", "core_collection" ],
+            "contained_entries": {}
+        } ]
     ],
 
     "_parent_entries": [ [ "^", "byname", "entry_creator" ] ],
@@ -46,10 +50,10 @@
 
 
     "checkout_part": [ "^^", "case", [ [ "^^", "get", ["checkout", ""] ], ["", false, null, "None"], "" ],
-                               { "default_value": [ "^^", "substitute", "_#{checkout}#" ] }
+                                { "default_value": [ "^^", "func", [ "re.sub", "\\W", "_", [ "^^", "substitute", "_#{checkout}#" ] ] ] }
                      ],
     "patch_part": [ "^^", "case", [ [ "^^", "get", ["patch", ""] ], ["", false, null, "None"], "" ],
-                               { "default_value": [ "^^", "substitute", "_#{patch}#" ] }
+                                { "default_value": [ "^^", "func", [ "re.sub", "\\W", "_", [ "^^", "substitute", "_#{patch}#" ] ] ] }
                      ],
 
     "newborn_entry_tags": [ "git_repo" ],
