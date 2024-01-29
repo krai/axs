@@ -376,7 +376,7 @@ Usage examples :
                     logging.info(f"Matched Rule #{match_idx}/{len(matching_rules)} produced an entry, which matches the original query.\n")
                     return new_entry
                 else:
-                    raise RuntimeError( f"Matched Rule #{match_idx}/{len(matching_rules)} produced an entry, but it failed to match the original query - PLEASE INVESTIGATE" )
+                    raise RuntimeError( f"Matched Rule #{match_idx}/{len(matching_rules)} produced an entry, but it failed to match the original query {query} - PLEASE INVESTIGATE" )
             else:
                 logging.info(f"Matched Rule #{match_idx}/{len(matching_rules)} didn't produce a result, {len(matching_rules)-match_idx} more matched rules to try...\n")
 
