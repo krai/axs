@@ -194,7 +194,7 @@ if [ "$PYTORCH_CLASSIFY" == "on" ] || [ "$ONNX_CLASSIFY" == "on" ] || [ "$TF_CLA
         # The following line is split into two to provide more insight into what is going on.
         # Otherwise assert() blocks all the error output and the command looks "stuck" for quite a while.
 
-        if [ "$KERNEL_PYTHON_MINOR_VERSION" -lt "6" ]; then    # compare MINOR versions numerically
+        if [ "$KERNEL_PYTHON_MINOR_VERSION" -le "6" ]; then    # compare MINOR versions numerically
             export ONNXRUNTIME_QUERY_MOD="--onnxruntime_query+=package_version=1.9.0"
         elif [ "$KERNEL_PYTHON_MINOR_VERSION" -lt "10" ]; then
             export ONNXRUNTIME_QUERY_MOD="--onnxruntime_query+=package_version=1.10.0"
