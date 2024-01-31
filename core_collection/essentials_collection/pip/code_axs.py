@@ -67,10 +67,6 @@ Usage examples :
             axs byquery 'python_package,package_name=deps_for_project_A,installable="-r path/to/project_A/requirements.txt"'
     """
 
-    os.makedirs( abs_install_dir )
-#    os.makedirs( os.path.join(abs_install_dir, 'lib') )
-#    os.symlink( 'lib', os.path.join(abs_install_dir, 'lib64') )
-
     return_code = __entry__.call('get', 'install_package', {
         "installable": installable,
         "abs_install_dir": abs_install_dir,

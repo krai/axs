@@ -36,5 +36,11 @@
     "newborn_entry_path": [ "^^", "execute", [[
         [ "get", "stored_newborn_entry" ],
         [ "get_path" ]
-    ]] ]
+    ]] ],
+
+    "rel_install_dir": null,
+    "abs_install_dir": [ "^^", "make_abs_install_dir_if_necessary" ],
+
+    "inside_install_dir" : null,
+    "path_inside_newborn_entry": [ "^^", "get_path_inside_newborn_entry" ]
 }
