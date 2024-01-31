@@ -5,5 +5,5 @@
 
     "script_extra_params": "",
 
-    "shell_cmd": [ "^^", "substitute", "#{python_tool_entry.tool_path}# #{abs_script_path}# #{script_extra_params}#" ]
+    "shell_cmd_with_subs": "#{python_tool_entry.tool_path}# #{abs_script_path}# #{script_extra_params}#"
 }
