@@ -12,6 +12,12 @@ Usage examples :
 
     # check available versions for a specific package (optionally from a specific index)
             axs byname pip , get available_package_versions --package_name=tensorrt --pip_options="--extra-index-url https://pypi.nvidia.com"
+
+    # get an attribute from a specific package:
+            axs byquery python_package,package_name=numpy , use , , attr numpy.pi
+
+    # run a function from a specific package:
+            axs byquery python_package,package_name=numpy , use , , func numpy.log 10
 """
 
 import logging
