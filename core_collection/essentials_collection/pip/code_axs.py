@@ -37,7 +37,7 @@ def flatten_options(pip_options):
     return flattened_options
 
 
-def install(package_name, flattened_options=None, installable=None, abs_install_dir=None, newborn_entry=None, __entry__=None):
+def install(package_name, flattened_options=None, installable=None, abs_install_dir=None, abs_patch_path=None, newborn_entry=None, __entry__=None):
     """Install a pip package into a separate entry, so that it could be easily use'd.
 
 Usage examples :
@@ -72,6 +72,19 @@ Usage examples :
         "abs_install_dir": abs_install_dir,
         "flattened_options": flattened_options,
     } )
+
+    if abs_patch_path:
+        patch_tool_entry = __entry__['patch_tool_entry']
+        newborn_entry.parent_objects = None
+        abs_packages_dir = newborn_entry["abs_packages_dir"]
+
+        logging.warning(f"The resolved patch_tool_entry '{patch_tool_entry.get_name()}' located at '{patch_tool_entry.get_path()}' uses the shell tool '{patch_tool_entry['tool_path']}'")
+
+        retval = patch_tool_entry.call('run', [], { 'entry_path': abs_packages_dir, 'abs_patch_path': abs_patch_path} )
+        if retval != 0:
+            logging.error(f"could not patch \"{abs_packages_dir}\" with \"{abs_patch_path}\", bailing out")
+            return None
+
     if return_code:
         logging.error(f"A problem occured when trying to install {installable}, bailing out")
         newborn_entry.remove()
