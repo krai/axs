@@ -55,7 +55,7 @@ Usage examples :
         return None
 
 
-def clone(repo_name=None, url=None, rel_clone_dir=None, newborn_entry=None, newborn_entry_path=None, move_on_up=True, git_tool_entry=None, checkout=None, submodules=False, abs_patch_path=None, patch=None, clone_options="", tags=None, contained_files=None, __entry__=None):
+def clone(repo_name=None, url=None, rel_clone_dir=None, newborn_entry=None, newborn_entry_path=None, move_on_up=True, checkout=None, submodules=False, abs_patch_path=None, patch=None, clone_options="", tags=None, contained_files=None, __entry__=None):
     """Clone a git repository into an Entry,
 
 Usage examples :
@@ -73,21 +73,17 @@ Clean-up:
 
     assert __entry__ != None, "__entry__ should be defined"
 
-    tool_path               = git_tool_entry["tool_path"]
-
-    logging.warning(f"The resolved git_tool_entry '{git_tool_entry.get_name()}' located at '{git_tool_entry.get_path()}' uses the shell tool '{tool_path}'")
-
-    retval = git_tool_entry.call('run', [], { "cmd_key": "clone", "container_path": newborn_entry_path, "url": url, "clone_subdir": rel_clone_dir, "clone_options": clone_options, "capture_output": False } )
+    retval = __entry__.call('run', [], { "cmd_key": "clone", "container_path": newborn_entry_path, "url": url, "clone_subdir": rel_clone_dir, "clone_options": clone_options, "capture_output": False } )
     if retval == 0:
 
         abs_clone_dir = os.path.join(newborn_entry_path, rel_clone_dir)
 
         if checkout:
-            git_tool_entry.call('run', [], { "cmd_key": "checkout", "repo_path": abs_clone_dir, "checkout": checkout } )
+            __entry__.call('run', [], { "cmd_key": "checkout", "repo_path": abs_clone_dir, "checkout": checkout } )
 
         if submodules:
-            git_tool_entry.call('run', [], { "cmd_key": "submodules_1", "repo_path": abs_clone_dir } )
-            git_tool_entry.call('run', [], { "cmd_key": "submodules_2", "repo_path": abs_clone_dir } )
+            __entry__.call('run', [], { "cmd_key": "submodules_1", "repo_path": abs_clone_dir } )
+            __entry__.call('run', [], { "cmd_key": "submodules_2", "repo_path": abs_clone_dir } )
 
         if abs_patch_path:
             patch_tool_entry = __entry__['patch_tool_entry']
@@ -115,7 +111,7 @@ Clean-up:
         return None
 
 
-def pull(repo_path, git_tool_entry, __entry__=None):
+def pull(repo_path,  __entry__=None):
     """Pull the repository contained in an entry.
 
 Usage examples :
@@ -123,7 +119,7 @@ Usage examples :
 
                 axs byname git , pull `axs core_collection , get_path`
     """
-#    git_tool_entry.call('subst_run', "\"#{tool_path}#\" -C \"#{repo_path}#\" pull --ff-only", { 'repo_path': repo_path} )
-    git_tool_entry.call('run', [], { "cmd_key": "pull", "repo_path": repo_path} )
+#    __entry__.call('subst_run', "\"#{tool_path}#\" -C \"#{repo_path}#\" pull --ff-only", { 'repo_path': repo_path} )
+    __entry__.call('run', [], { "cmd_key": "pull", "repo_path": repo_path} )
 
     return __entry__

@@ -7,16 +7,13 @@
         } ]
     ],
 
-    "_parent_entries": [ [ "^", "byname", "entry_creator" ] ],
+    "_parent_entries": [ [ "^", "byquery", "shell_tool,can_git" ], [ "^", "byname", "entry_creator" ] ],
 
     "rel_clone_dir": [ "^^", "substitute", "cloned_#{repo_name}#" ],
 
-
-    "git_tool_entry":   [ "^", "byquery", "shell_tool,can_git" ],
     "patch_tool_entry": [ "^", "byquery", "shell_tool,can_patch" ],
 
     "git_url": [ "^^", "execute", [[
-        [ "get", "git_tool_entry" ],
         [ "run", [], {
             "cmd_key": "origin_url",
             "repo_path": [ "^^", "get", "repo_path" ],
@@ -36,7 +33,6 @@
     "repo_path": [ "^^", "get_path" ],
 
     "current_checkout": [ "^^", "execute", [[
-        [ "get", "git_tool_entry" ],
         [ "run", [], {
             "cmd_key": "branch",
             "repo_path": [ "^^", "get", "repo_path" ],
