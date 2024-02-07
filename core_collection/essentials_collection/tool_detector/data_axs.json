@@ -210,7 +210,8 @@
                     "submodules_2": "\"#{tool_path}#\" -C \"#{repo_path}#\" submodule update --recursive",
                     "pull": "\"#{tool_path}#\" -C \"#{repo_path}#\" pull --ff-only",
                     "branch": "\"#{tool_path}#\" -C \"#{repo_path}#\" branch",
-                    "origin_url": "\"#{tool_path}#\" -C #{repo_path}# config --get remote.origin.url"
+                    "origin_url": "\"#{tool_path}#\" -C #{repo_path}# config --get remote.origin.url",
+                    "generic": "\"#{tool_path}#\" -C #{repo_path}# #{rest_of_cmd}#"
                 },
                 "cmd_key": "version",
                 "capture_output": true
