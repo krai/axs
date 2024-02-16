@@ -5,6 +5,16 @@
     ],
     "_producer_rules": [
 
+        [ [ "shell_tool", "can_download_url_from_rclone" ] , [["detect"]], {
+                "tool_name": "rclone",
+                "shell_cmd_templates": {
+                    "help": "\"#{tool_path}#\" --help",
+                    "version": "\"#{tool_path}#\" --version",
+                    "dload": "\"#{tool_path}#\" copy mlc-inference:mlcommons-inference-wg-public/#{url}# \"#{target_path}#\" -P"
+                },
+                "cmd_key": "dload"
+        } ],
+
         [ [ "shell_tool", "can_download_url_from_google_drive" ] , [["detect"]], {
                 "tool_name": "gdown",
                 "shell_cmd_templates": {
