@@ -10,7 +10,7 @@
                 "shell_cmd_templates": {
                     "help": "\"#{tool_path}#\" --help",
                     "version": "\"#{tool_path}#\" --version",
-                    "dload": "\"#{tool_path}#\" copy mlc-inference:mlcommons-inference-wg-public/#{url}# \"#{target_path}#\" -P"
+                    "dload": "\"#{tool_path}#\" copy #{url}# \"#{target_path}#\" -P"
                 },
                 "cmd_key": "dload"
         } ],
