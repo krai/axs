@@ -18,11 +18,7 @@ def detect_archive_format(archive_path):
     return archive_format
 
 
-def join_paths(extra_dir_prefix="", internal_file_name=""):
-    return os.path.join(extra_dir_prefix, internal_file_name)
-
-
-def extract(archive_path, archive_format=None, extra_dir_prefix=None, file_name=None, extraction_tool_entry=None, strip_components=0, tags=None, extra_tags=None, entry_name=None, __record_entry__=None):
+def extract(archive_path, abs_install_dir, stored_newborn_entry, extraction_tool_entry, archive_format, strip_components=0):
     """Create a new entry and extract the archive into it
 
 Usage examples:
@@ -48,30 +44,11 @@ Usage examples:
             axs byquery extracted,archive_path=$HOME/tmp/ziptest.zip
     """
 
-    __record_entry__["tags"] = list(set( (tags or []) + extra_tags ))
-    __record_entry__.pluck( "extra_tags" )
-
-    import os
-
-    archive_name    = os.path.basename(archive_path)
-    __record_entry__["archive_name"] = archive_name
-    __record_entry__["file_name"] = file_name
-
-    if not entry_name:
-        entry_name = 'extracted_' + archive_name
-    __record_entry__.pluck( "entry_name" )
-
-    __record_entry__.save( entry_name )
-    target_path     = __record_entry__.get_path(extra_dir_prefix)
-
-    if extra_dir_prefix:
-        os.makedirs( target_path )
-
     logging.warning(f"The resolved extraction_tool_entry '{extraction_tool_entry.get_name()}' located at '{extraction_tool_entry.get_path()}' uses the shell tool '{extraction_tool_entry['tool_path']}'")
-    retval = extraction_tool_entry.call('run', [], {"archive_path": archive_path, "target_path": target_path, "errorize_output": True, "archive_format": archive_format, "strip_components": strip_components})
+    retval = extraction_tool_entry.call('run', [], {"archive_path": archive_path, "target_path": abs_install_dir, "errorize_output": True, "archive_format": archive_format, "strip_components": strip_components})
     if retval == 0:
-        return __record_entry__
+        return stored_newborn_entry
     else:
-        logging.error(f"A problem occured when trying to extract '{archive_path}' into '{target_path}', bailing out")
-        __record_entry__.remove()
+        logging.error(f"A problem occured when trying to extract '{archive_path}' into '{abs_install_dir}', bailing out")
+        stored_newborn_entry.remove()
         return None

@@ -23,11 +23,10 @@ def path_to_list(path_or_list):
         return os.path.split(path_or_list)
 
 
-
 def make_abs_install_dir_if_necessary(newborn_entry_path, rel_install_dir):
     """
         The assumption here is that "rel_install_dir" contains the path that we want to be auto-created for us,
-        whereas "inside_install_dir" is the path that the user code will create as a side-effect of running.
+        whereas "inside_install_dir" is the path that the user code will create as a side-effect of extraction.
         Either can independently be a path list, a path string or empty.
     """
 
@@ -40,6 +39,9 @@ def make_abs_install_dir_if_necessary(newborn_entry_path, rel_install_dir):
     return abs_install_dir
 
 
-def get_path_inside_newborn_entry(abs_install_dir, inside_install_dir):
+def get_rel_result_dir(rel_install_dir, inside_install_dir):
 
-    return os.path.join(abs_install_dir, *path_to_list(inside_install_dir))
+    if rel_install_dir or inside_install_dir:
+        return os.path.join( *(path_to_list(rel_install_dir)), *(path_to_list(inside_install_dir)) )
+    else:
+        return None

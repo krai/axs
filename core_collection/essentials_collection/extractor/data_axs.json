@@ -3,7 +3,17 @@
         [ [ "extracted"], [["get_kernel"],["byname","extractor"],["extract"]], {} ]
     ],
 
-    "action_name": "extract",
+    "_parent_entries": [ [ "^", "byname", "entry_creator" ] ],
+
+    "newborn_entry_tags": [ "extracted" ],
+    "newborn_parent_names": [ ],
+    "newborn_name_template": "extracted_#{archive_name}#",
+    "newborn_entry_param_names": [ "archive_path", { "file_name": "rel_result_dir" }, "archive_format", "strip_components", "archive_name" ],
+    "rel_install_dir": "extracted",
+
+    "inside_install_dir": null,
+
+    "archive_name": [ "^^", "func", [ "os.path.basename", [ "^^", "get", "archive_path" ] ] ],
     "archive_format": ["^^", "detect_archive_format"],
     "tar_tool_query": "shell_tool,can_extract_tar",
     "zip_tool_query": "shell_tool,can_extract_zip",
@@ -11,8 +21,5 @@
                                     "zip" , "zip_tool_query" ],
                                     { "default_value": "tar_tool_query" }
                                 ]] ],
-    "extraction_tool_entry": [ "^", "byquery", [["^^", "get", "tool_query"]], {}, ["tool_query"] ],
-    "extra_dir_prefix": "extracted",
-    "file_name": ["^^", "join_paths"],
-    "extra_tags": ["extracted"]
+    "extraction_tool_entry": [ "^", "byquery", [["^^", "get", "tool_query"]], {}, ["tool_query"] ]
 }

@@ -35,12 +35,15 @@
     ]] ],
     "newborn_entry_path": [ "^^", "execute", [[
         [ "get", "stored_newborn_entry" ],
-        [ "get_path" ]
+        [ "get_path", "" ]
     ]] ],
 
-    "rel_install_dir": null,
+    "rel_install_dir": "",
     "abs_install_dir": [ "^^", "make_abs_install_dir_if_necessary" ],
 
-    "inside_install_dir" : null,
-    "path_inside_newborn_entry": [ "^^", "get_path_inside_newborn_entry" ]
+    "inside_install_dir" : "",
+    "abs_result_dir": [ "^^", "func", [ "os.path.join", [ "^^", "get", "abs_install_dir" ], [ "^^", "get", "inside_install_dir" ]] ],
+    "path_inside_newborn_entry": [ "^^", "get", "abs_result_dir" ],
+
+    "rel_result_dir": [ "^^", "get_rel_result_dir" ]
 }
