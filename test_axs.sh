@@ -106,13 +106,6 @@ axs byname examplepage_recipe , remove
 axs byquery shell_tool,can_download_url --- , remove
 assert_end url_downloading_recipe_activation_replay_and_removal
 
-# generate primes
-axs byquery compiled,generate_primes
-axs byquery program_output,generate_primes,up_to=20
-assert 'axs byname primes_up_to_20 , dig program_output.primes' '[2, 3, 5, 7, 11, 13, 17, 19]'
-axs byquery program_output,generate_primes,up_to=20 --- , remove
-axs byquery compiled,generate_primes --- , remove
-assert_end generate_primes
 
 export KERNEL_PYTHON_VERSION=`axs kernel_python_major_dot_minor`
 echo "kernel Python version: $KERNEL_PYTHON_VERSION"
@@ -139,10 +132,20 @@ else
     echo "Skipping the PACKAGE_INSTALL_AND_IMPORT test"
 fi
 
+
 if [ "$C_COMPILE_AND_RUN" == "on" ]; then
+    # square root
     assert 'axs byquery compiled,square_root , run --area=64' "When square's area is 64.0 its side is 8.0"
     axs byquery compiled,square_root --- , remove
     assert_end c_code_compilation_and_execution
+
+    # generate primes
+    axs byquery compiled,generate_primes
+    axs byquery program_output,generate_primes,up_to=20
+    assert 'axs byname primes_up_to_20 , dig program_output.primes' '[2, 3, 5, 7, 11, 13, 17, 19]'
+    axs byquery program_output,generate_primes,up_to=20 --- , remove
+    axs byquery compiled,generate_primes --- , remove
+    assert_end generate_primes
 
     # factorized numbers
     axs byquery program_output,factorizer,up_to=172
