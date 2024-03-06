@@ -23,6 +23,14 @@ def path_to_list(path_or_list):
         return os.path.split(path_or_list)
 
 
+def get_result_path(relative_to_dir, inside_install_dir):
+
+    if relative_to_dir or inside_install_dir:
+        return os.path.join( *(path_to_list(relative_to_dir)), *(path_to_list(inside_install_dir)) )
+    else:
+        return None
+
+
 def make_abs_install_dir_if_necessary(newborn_entry_path, rel_install_dir):
     """
         The assumption here is that "rel_install_dir" contains the path that we want to be auto-created for us,
@@ -37,11 +45,3 @@ def make_abs_install_dir_if_necessary(newborn_entry_path, rel_install_dir):
         abs_install_dir = newborn_entry_path
 
     return abs_install_dir
-
-
-def get_rel_result_dir(rel_install_dir, inside_install_dir):
-
-    if rel_install_dir or inside_install_dir:
-        return os.path.join( *(path_to_list(rel_install_dir)), *(path_to_list(inside_install_dir)) )
-    else:
-        return None
