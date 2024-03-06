@@ -134,8 +134,9 @@ Usage examples :
                 axs func ufun.is_in 1 ---='[0,true,4]'
                 axs func ufun.is_in --+ ---='[0,true,4]'
     """
+    candidate_type = type(candidate)
     for element in iterable:
-        if candidate is element:
+        if candidate_type==type(element) and candidate==element:
             return True
     return False
 
