@@ -2,25 +2,16 @@
     "_producer_rules": [
         [ [ "preprocessed", "dataset_name=coco" ], [["preprocess"]], {
                 "dataset_entry": [  "AS^IS", "^", "byquery", [[ "^^", "substitute", "dataset,dataset_name=#{dataset_name}#" ]], {}, [ "dataset_name" ] ],
-                "images_dir": [  "AS^IS", "^^", "dig", "dataset_entry.images_dir" ],
+                "src_images_dir": [  "AS^IS", "^^", "dig", "dataset_entry.images_dir" ],
                 "annotation_data": [  "AS^IS", "^^", "dig", "dataset_entry.annotation_data" ]
-          },
-          [
-            "resolution", "supported_extensions",
-            "data_type","new_file_extension", "file_name", "fof_name"
-          ]
-        ],
+          } ],
         [ [ "preprocessed", "dataset_name=openimages" ], [["preprocess"]], {
                 "dataset_entry": [  "AS^IS", "^", "byquery", [[ "^^", "substitute", "dataset,dataset_name=#{dataset_name}#" ]], {}, [ "dataset_name" ] ],
-                "images_dir": [  "AS^IS", "^^", "dig", "dataset_entry.images_dir" ],
+                "src_images_dir": [  "AS^IS", "^^", "dig", "dataset_entry.images_dir" ],
                 "annotation_data": [  "AS^IS", "^^", "dig", "dataset_entry.annotation_data" ]
-          },
-          [
-            "resolution", "supported_extensions",
-            "data_type","new_file_extension", "file_name", "fof_name"
-          ]
-        ]
+          } ]
     ],
+    "_parent_entries": [ [ "^", "byname", "entry_creator" ] ],
 
     "numpy_query":  [ "python_package", "package_name=numpy",  ["desired_python_version", ["^", "kernel_python_major_dot_minor"]] ],
     "pillow_query": [ "python_package", "package_name=pillow", ["desired_python_version", ["^", "kernel_python_major_dot_minor"]] ],
@@ -37,22 +28,17 @@
 
     "first_n_part": [ "^^", "case", [ [ "^^", "get", ["first_n", ""] ], [0, "", false], "" ],
                            { "default_value": [ "^^", "substitute", "_first.#{first_n}#" ] } ],
-    "entry_name": [ "^^", "substitute", "pillow_#{dataset_name}#_resized_for_detection_sq.#{resolution}##{first_n_part}#_images" ],
 
-    "output_entry": [ "^^", "execute", [[
-        [ "get", "__record_entry__" ],
-        [ "set_path", [ "^^", "get", "entry_name" ] ],
-        [ "attach", [ "^", "work_collection" ] ],
-        [ "plant", [
-            "tags", [ "preprocessed" ]
-          ] ]
-      ]] ],
+    "newborn_entry_tags": [ "preprocessed" ],
+    "newborn_parent_names": [ ],
+    "newborn_name_template": "pillow_#{dataset_name}#_resized_for_detection_sq.#{resolution}##{first_n_part}#_images",
+    "newborn_entry_param_names": [ "src_images_dir", "dataset_name", "first_n", "resolution", "supported_extensions", "data_type", "new_file_extension", "fof_name", { "file_name": "rel_result_dir" } ],
+    "rel_install_dir": "preprocessed",
 
     "resolution":           1200,
     "supported_extensions": ["jpeg", "jpg", "gif", "png"],
     "data_type":            "uint8",
     "new_file_extension":   "rgb8",
-    "file_name":            "preprocessed",
     "fof_name":             "original_dimensions.txt",
     "first_n":              null
 }

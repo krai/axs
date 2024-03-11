@@ -12,10 +12,10 @@ Usage examples :
                 axs byquery preprocessed,dataset_name=imagenet
 
                     # overriding the input directory to preprocess all 50k of pre-stored ImageNet:
-                axs byquery preprocessed,dataset_name=imagenet,images_directory=/datasets/dataset-imagenet-ilsvrc2012-val,entry_name=pillow_imagenet50k_cropped_resized_to_sq.224
+                axs byquery preprocessed,dataset_name=imagenet,src_images_dir=/datasets/dataset-imagenet-ilsvrc2012-val,entry_name=pillow_imagenet50k_cropped_resized_to_sq.224
 """
-def generate_file_list(images_directory, supported_extensions,calibration_dir=None, index_file=None, first_n=None, first_n_insert=None):
-    original_file_list = os.listdir(images_directory)
+def generate_file_list(src_images_dir, supported_extensions,calibration_dir=None, index_file=None, first_n=None, first_n_insert=None):
+    original_file_list = os.listdir(src_images_dir)
     sorted_filenames = [filename for filename in sorted(original_file_list) if any(filename.lower().endswith(extension) for extension in supported_extensions) ]
 
     if first_n:
@@ -87,14 +87,11 @@ def load_image(image_path,            # Full path to processing image
     return img
 
 
-def preprocess(dataset_name, images_directory, resolution, supported_extensions, crop_percentage, inter_size, convert_to_bgr, data_type, new_file_extension, file_name, first_n, input_file_list, stored_newborn_entry):
-
-    output_directory = stored_newborn_entry.get_path( file_name )
-    os.makedirs( output_directory )
+def preprocess(dataset_name, src_images_dir, resolution, supported_extensions, crop_percentage, inter_size, convert_to_bgr, data_type, new_file_extension, first_n, input_file_list, abs_install_dir, stored_newborn_entry):
 
     for current_idx, input_filename in enumerate(input_file_list):
 
-        full_input_path     = os.path.join(images_directory, input_filename)
+        full_input_path     = os.path.join(src_images_dir, input_filename)
 
         image_data = load_image(image_path = full_input_path,
                               resolution = resolution,
@@ -105,7 +102,7 @@ def preprocess(dataset_name, images_directory, resolution, supported_extensions,
 
         output_filename = input_filename.rsplit('.', 1)[0] + '.' + new_file_extension if new_file_extension else input_filename
 
-        full_output_path    = os.path.join(output_directory, output_filename)
+        full_output_path    = os.path.join(abs_install_dir, output_filename)
         image_data.tofile(full_output_path)
 
         print("[{}]:  Stored {}".format(current_idx+1, full_output_path) )

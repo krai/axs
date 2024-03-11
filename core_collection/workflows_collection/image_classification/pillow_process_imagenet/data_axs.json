@@ -1,13 +1,7 @@
 {
     "_producer_rules": [
-        [ [ "preprocessed", "dataset_name=imagenet", "preprocess_method?=pillow" ], [["preprocess"]], {},
-          [
-            "images_directory", "resolution", "supported_extensions", "crop_percentage", "inter_size",
-            "convert_to_bgr", "data_type", "new_file_extension", "file_name"
-          ]
-        ]
+        [ [ "preprocessed", "dataset_name=imagenet", "preprocess_method?=pillow" ], [["preprocess"]] ]
     ],
-
     "_parent_entries": [ [ "^", "byname", "entry_creator" ] ],
 
 
@@ -25,7 +19,7 @@
     ]] ],
 
     "imagenet_query": [ "extracted", "imagenet" ],
-    "images_directory": [ "^", "execute", [[
+    "src_images_dir": [ "^", "execute", [[
         [ "byquery", [[ "^^", "get", "imagenet_query" ]] ],
         [ "get_path" ]
     ]], {}, [ "imagenet_query" ] ],
@@ -38,9 +32,8 @@
     "newborn_entry_tags": [ "preprocessed" ],
     "newborn_parent_names": [ ],
     "newborn_name_template": "pillow_#{dataset_name}#_cropped_resized_to_sq.#{resolution}##{first_n_part}#_images",
-    "newborn_entry_param_names": [ "input_file_list", "first_n" ],
-
-    "output_entry": [ "^^", "get", "stored_newborn_entry" ],
+    "newborn_entry_param_names": [ "src_images_dir", "input_file_list", "dataset_name", "first_n", "resolution", "crop_percentage", "inter_size", "convert_to_bgr", "data_type", "new_file_extension", { "file_name": "rel_result_dir" } ],
+    "rel_install_dir": "preprocessed",
 
     "dataset_name":         "imagenet",
     "resolution":           224,
@@ -50,6 +43,5 @@
     "convert_to_bgr":       false,
     "data_type":            "uint8",
     "new_file_extension":   "rgb8",
-    "file_name":            "preprocessed",
     "first_n":              20
 }
