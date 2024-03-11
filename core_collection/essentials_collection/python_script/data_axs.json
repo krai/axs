@@ -3,7 +3,9 @@
 
     "abs_script_path": [ "^^", "get_path_from", "rel_script_path" ],
 
-    "script_extra_params": "",
+    "script_params_template": "",
+
+    "script_extra_params": [ "^^", "substitute", [ "^^", "get", "script_params_template" ] ],
 
     "shell_cmd_with_subs": "#{python_tool_entry.tool_path}# #{abs_script_path}# #{script_extra_params}#"
 }
