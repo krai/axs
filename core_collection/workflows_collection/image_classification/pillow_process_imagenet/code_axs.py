@@ -14,7 +14,7 @@ Usage examples :
                     # overriding the input directory to preprocess all 50k of pre-stored ImageNet:
                 axs byquery preprocessed,dataset_name=imagenet,src_images_dir=/datasets/dataset-imagenet-ilsvrc2012-val,entry_name=pillow_imagenet50k_cropped_resized_to_sq.224
 """
-def generate_file_list(src_images_dir, supported_extensions,calibration_dir=None, index_file=None, first_n=None, first_n_insert=None):
+def generate_file_list(src_images_dir, supported_extensions, first_n=None):
     original_file_list = os.listdir(src_images_dir)
     sorted_filenames = [filename for filename in sorted(original_file_list) if any(filename.lower().endswith(extension) for extension in supported_extensions) ]
 
@@ -23,6 +23,7 @@ def generate_file_list(src_images_dir, supported_extensions,calibration_dir=None
         assert len(sorted_filenames) == first_n
 
     return sorted_filenames
+
 
 # Load and preprocess image:
 # Mimic preprocessing steps from the official reference code.
@@ -87,7 +88,8 @@ def load_image(image_path,            # Full path to processing image
     return img
 
 
-def preprocess(dataset_name, src_images_dir, resolution, supported_extensions, crop_percentage, inter_size, convert_to_bgr, data_type, new_file_extension, first_n, input_file_list, abs_install_dir, stored_newborn_entry):
+def preprocess(src_images_dir, input_file_list, resolution, supported_extensions, crop_percentage, inter_size, convert_to_bgr, data_type, new_file_extension, abs_install_dir, stored_newborn_entry):
+    "Go through the input_file_list and preprocess all the files"
 
     for current_idx, input_filename in enumerate(input_file_list):
 

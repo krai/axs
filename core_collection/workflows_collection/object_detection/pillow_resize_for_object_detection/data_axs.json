@@ -1,15 +1,7 @@
 {
     "_producer_rules": [
-        [ [ "preprocessed", "dataset_name=coco" ], [["preprocess"]], {
-                "dataset_entry": [  "AS^IS", "^", "byquery", [[ "^^", "substitute", "dataset,dataset_name=#{dataset_name}#" ]], {}, [ "dataset_name" ] ],
-                "src_images_dir": [  "AS^IS", "^^", "dig", "dataset_entry.images_dir" ],
-                "annotation_data": [  "AS^IS", "^^", "dig", "dataset_entry.annotation_data" ]
-          } ],
-        [ [ "preprocessed", "dataset_name=openimages" ], [["preprocess"]], {
-                "dataset_entry": [  "AS^IS", "^", "byquery", [[ "^^", "substitute", "dataset,dataset_name=#{dataset_name}#" ]], {}, [ "dataset_name" ] ],
-                "src_images_dir": [  "AS^IS", "^^", "dig", "dataset_entry.images_dir" ],
-                "annotation_data": [  "AS^IS", "^^", "dig", "dataset_entry.annotation_data" ]
-          } ]
+        [ [ "preprocessed", "dataset_name=coco" ], [[ "preprocess" ]] ],
+        [ [ "preprocessed", "dataset_name=openimages" ], [[ "preprocess" ]] ]
     ],
     "_parent_entries": [ [ "^", "byname", "entry_creator" ] ],
 
@@ -25,6 +17,12 @@
         ["byquery", [[ "^^", "get", "pillow_query" ]] ],
         ["use"]
     ]] ],
+
+    "dataset_entry": [ "^", "byquery", [[ "^^", "substitute", "dataset,dataset_name=#{dataset_name}#" ]], {}, [ "dataset_name" ] ],
+    "src_images_dir": [  "^^", "dig", "dataset_entry.images_dir" ],
+    "annotation_data": [  "^^", "dig", "dataset_entry.annotation_data" ],
+
+    "input_file_list": [ "^^", "generate_file_list" ],
 
     "first_n_part": [ "^^", "case", [ [ "^^", "get", ["first_n", ""] ], [0, "", false], "" ],
                            { "default_value": [ "^^", "substitute", "_first.#{first_n}#" ] } ],

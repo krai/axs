@@ -1,6 +1,6 @@
 {
     "_producer_rules": [
-        [ [ "preprocessed", "dataset_name=imagenet", "preprocess_method?=pillow" ], [["preprocess"]] ]
+        [ [ "preprocessed", "dataset_name=imagenet", "preprocess_method?=pillow" ], [[ "preprocess" ]] ]
     ],
     "_parent_entries": [ [ "^", "byname", "entry_creator" ] ],
 
