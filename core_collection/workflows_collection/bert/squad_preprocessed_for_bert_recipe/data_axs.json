@@ -42,13 +42,10 @@
          [ "save" ]
     ]] ],
 
-    "preprocessed_squad_dirname": [ "^^", "execute", [[
+    "preprocessed_squad_dir": [ "^^", "execute", [[
         [ "get", "return_this_entry" ],
-        [ "get_path" ],
-        0,
-        [ "func", "os.path.dirname" ]
+        [ "get_path", "" ]
     ]] ],
-    "preprocessed_squad_dir": ["^^", "substitute", "#{preprocessed_squad_dirname}#/" ],
 
     "tensorflow_query": ["python_package", "package_name=tensorflow"],
     "absl_query": ["python_package", "package_name=absl-py"],
