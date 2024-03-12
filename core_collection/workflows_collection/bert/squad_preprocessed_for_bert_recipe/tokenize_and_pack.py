@@ -16,16 +16,10 @@ max_seq_length                  = int(sys.argv[5])
 max_query_length                = int(sys.argv[6])
 doc_stride                      = int(sys.argv[7])
 
-bert_code_root                  = sys.argv[8]
-bert_squad_code_dir             = sys.argv[9]
-
 calibration                     = sys.argv[10] == "yes"
 if calibration:
     calibration_option          = sys.argv[11]
     calibration_data_path       = sys.argv[12]
-
-sys.path.insert(0, bert_code_root)
-sys.path.insert(0, bert_squad_code_dir)
 
 from create_squad_data import read_squad_examples, convert_examples_to_features
 
