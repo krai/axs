@@ -1,0 +1,17 @@
+{
+    "_producer_rules": [
+        [ [ "downloaded", "rclone" ], [["get_kernel"],["byname","downloader"],["download"]], {
+            "url": "https://downloads.rclone.org/rclone-current-linux-amd64.zip"
+  	} ],
+        [ [ "extracted",  "rclone" ], [["get_kernel"],["byname","extractor"],["extract"]], {
+            "archive_format": "zip",
+            "archive_path": [ "^", "execute", [[
+                [ "byquery", [[ "^^", "substitute", "downloaded,rclone" ]] ],
+                [ "get_path" ]
+            ]] ],
+            "url": "https://downloads.rclone.org/rclone-current-linux-amd64.zip",
+	    "rel_result_dir": [  "AS^IS", "AS^IS", "AS^IS", "AS^IS", "^^", "find_file", "^rclone$", { "return_full": true } ]
+        }, [ ] ]
+
+    ]
+}

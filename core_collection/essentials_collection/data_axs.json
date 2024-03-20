@@ -20,6 +20,7 @@
 
         "tool_detector": "tool_detector",
 
-        "make_collection": "make_collection"
+        "make_collection": "make_collection",
+        "rclone_recipe": "rclone_recipe"
     }
 }
