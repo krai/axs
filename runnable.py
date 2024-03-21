@@ -538,21 +538,26 @@ Usage examples :
 
 
     def attr(self, attr_name, default_attr_value=None):
-        """Access an arbitrary Python's attribute that is a member of a reachable module.
+        """Access an arbitrary Python's attribute that is a member of a reachable module (or self).
 
 Usage examples :
                 axs attr json.__file__
                 axs byquery python_package,package_name=numpy , use , attr numpy.__version__
+                axs fresh_entry alpha , attr .entry_path
         """
         attr_object = None
-        for syll in attr_name.split('.'):
-            try:
-                if attr_object:
-                    attr_object = getattr(attr_object, syll)
-                else:
-                    attr_object =  __import__(syll)
-            except Exception:
-                attr_object = default_attr_value
+
+        for i, syll in enumerate( attr_name.split('.') ):
+            if i==0 and syll=="":
+                attr_object = self
+            else:
+                try:
+                    if attr_object:
+                        attr_object = getattr(attr_object, syll)
+                    else:
+                        attr_object =  __import__(syll)
+                except Exception:
+                    attr_object = default_attr_value
         return attr_object
 
 
