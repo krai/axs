@@ -49,28 +49,12 @@
         false, null
     ] ],
 
-    "repo_is_private": [ "^^", "execute", [[
-        [ "get", "repo_name" ],
-        [ "endswith", "-dev" ]
-    ]] ],
-
-
 
     "repo_name": [ "^^", "url_2_repo_name" ],
 
-    "effective_repo_name": [ "^^", "case", [
-        [ "^^", "func", [ "all", [ [ "^^", "get", "kernel_in_mlperf_mode" ], [ "^^", "get", "repo_is_private" ] ] ] ],
-        true, [ "^^", "execute", [[
-                [ "get", "repo_name" ],
-                [ "rpartition", "-dev" ],
-                [ "__getitem__", 0 ]
-            ]] ],
-        false, [ "^^", "get", "repo_name" ]
-    ] ],
+    "url": [ "^^", "substitute", "#{url_prefix}#/#{repo_name}#" ],
 
-    "url": [ "^^", "substitute", "#{url_prefix}#/#{effective_repo_name}#" ],
-
-    "rel_clone_dir": [ "^^", "substitute", "cloned_#{effective_repo_name}#" ],
+    "rel_clone_dir": [ "^^", "substitute", "cloned_#{repo_name}#" ],
 
 
 
@@ -83,6 +67,6 @@
 
     "newborn_entry_tags": [ "git_repo" ],
     "newborn_parent_names": [ "git" ],
-    "newborn_name_template": "#{effective_repo_name}##{checkout_part}##{patch_part}#",
-    "newborn_entry_param_names": [ "repo_name", "effective_repo_name", "checkout", "submodules", "abs_patch_path", "patch", "contained_files", "clone_options" ]
+    "newborn_name_template": "#{repo_name}##{checkout_part}##{patch_part}#",
+    "newborn_entry_param_names": [ "repo_name", "checkout", "submodules", "abs_patch_path", "patch", "contained_files", "clone_options" ]
 }
