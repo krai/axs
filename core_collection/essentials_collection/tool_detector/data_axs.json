@@ -312,6 +312,15 @@
                 "compile_infix": "",
                 "compile_suffix": "",
                 "capture_output": true
+        } ],
+        [ [ "shell_tool", "can_lscpu", "tool_name?=lscpu" ], [["detect"]], {
+                "shell_cmd_templates": {
+                    "json_output": "\"#{tool_path}#\" -J --output-all",
+                    "help": "\"#{tool_path}#\" -h",
+                    "version": "\"#{tool_path}#\" -V"
+                },
+                "cmd_key": "json_output",
+                "capture_output": true
         } ]
     ],
 
