@@ -45,5 +45,5 @@
     "abs_result_path": [ "^^", "get_result_path", [[ "^^", "get", "abs_install_dir" ]] ],
     "path_inside_newborn_entry": [ "^^", "get", "abs_result_path" ],
 
-    "rel_result_dir": [ "^^", "get_result_path", [[ "^^", "get", "rel_install_dir" ]] ]
+    "rel_result_path": [ "^^", "get_result_path", [[ "^^", "get", "rel_install_dir" ]] ]
 }

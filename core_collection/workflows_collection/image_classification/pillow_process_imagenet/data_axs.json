@@ -32,7 +32,7 @@
     "newborn_entry_tags": [ "preprocessed" ],
     "newborn_parent_names": [ ],
     "newborn_name_template": "pillow_#{dataset_name}#_cropped_resized_to_sq.#{resolution}##{first_n_part}#_images",
-    "newborn_entry_param_names": [ "src_images_dir", "input_file_list", "dataset_name", "first_n", "resolution", "crop_percentage", "inter_size", "convert_to_bgr", "data_type", "new_file_extension", { "file_name": "rel_result_dir" } ],
+    "newborn_entry_param_names": [ "src_images_dir", "input_file_list", "dataset_name", "first_n", "resolution", "crop_percentage", "inter_size", "convert_to_bgr", "data_type", "new_file_extension", { "file_name": "rel_result_path" } ],
     "rel_install_dir": "preprocessed",
 
     "dataset_name":         "imagenet",

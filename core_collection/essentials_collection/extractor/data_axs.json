@@ -8,7 +8,7 @@
     "newborn_entry_tags": [ "extracted" ],
     "newborn_parent_names": [ ],
     "newborn_name_template": "extracted_#{archive_name}#",
-    "newborn_entry_param_names": [ "archive_path", { "file_name": "rel_result_dir" }, "archive_format", "strip_components", "archive_name" ],
+    "newborn_entry_param_names": [ "archive_path", { "file_name": "rel_result_path" }, "archive_format", "strip_components", "archive_name" ],
     "rel_install_dir": "extracted",
 
     "inside_install_dir": null,

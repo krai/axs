@@ -30,7 +30,7 @@
     "newborn_entry_tags": [ "preprocessed" ],
     "newborn_parent_names": [ ],
     "newborn_name_template": "pillow_#{dataset_name}#_resized_for_detection_sq.#{resolution}##{first_n_part}#_images",
-    "newborn_entry_param_names": [ "src_images_dir", "dataset_name", "first_n", "resolution", "supported_extensions", "data_type", "new_file_extension", "fof_name", { "file_name": "rel_result_dir" } ],
+    "newborn_entry_param_names": [ "src_images_dir", "dataset_name", "first_n", "resolution", "supported_extensions", "data_type", "new_file_extension", "fof_name", { "file_name": "rel_result_path" } ],
     "rel_install_dir": "preprocessed",
 
     "resolution":           1200,
