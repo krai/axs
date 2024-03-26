@@ -1,8 +1,9 @@
 {
-    "_parent_entries": [ [ "^", "byname", "python_in_shell" ] ],
     "_producer_rules": [
-        [ [ "openimages_mlperf", "calibration" ], [["run"]], { "return_saved_record_entry": true } ]
+        [ [ "openimages_mlperf", "calibration" ], [[ "get", "pipeline" ]] ]
     ],
+    "_parent_entries": [ [ "^", "byname", "python_in_shell" ], [ "^", "byname", "entry_creator" ] ],
+
 
     "mlperf_inference_git_entry": [ "^", "byquery", "git_repo,repo_name=mlperf_inference_git" ],
 
@@ -19,15 +20,18 @@
         [ "^^", "python_sync_pip_package", [[ "python_package", "package_name=requests" ]] ]
     ],
 
-    "output_entry_path": [ "^^", "execute", [[
-        [ "get", "__record_entry__" ],
-        [ "set_path", "openimages_mlperf_calibration" ],
-        [ "plant", [ "tags", [ "calibration", "openimages_mlperf" ] ] ],
-        [ "attach", [ "^", "work_collection" ] ],
-        [ "save" ],
-        [ "get_path" ]
+
+    "newborn_entry_tags": [ "openimages_mlperf", "calibration" ],
+    "newborn_parent_names": [ ],
+    "newborn_name_template": "openimages_mlperf_calibration",
+    "newborn_entry_param_names": [
+    ],
+
+    "pipeline": [ "^^", "execute", [[
+        [ "run" ],
+        [ ],
+        [ "get", "stored_newborn_entry" ]
     ]] ],
 
-    "shell_cmd_with_subs": "./openimages_calibration_mlperf.sh  --dataset-path #{output_entry_path}#"
-
+    "shell_cmd_with_subs": "./openimages_calibration_mlperf.sh  --dataset-path #{newborn_entry_path}#"
 }
