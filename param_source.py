@@ -183,7 +183,7 @@ Usage examples :
             raise KeyError(param_name)
 
 
-    def dig(self, key_path, safe=False, parent_recursion=None):
+    def dig(self, key_path, safe=False, parent_recursion=None, safe_value=None):
         """Traverse the given path of keys into a parameter's internal structure.
             --safe allows it not to fail when the path is not traversable
 
@@ -220,7 +220,7 @@ Usage examples :
             return struct_ptr
         except (KeyError, IndexError, ValueError) as e:
             if safe:
-                return None
+                return safe_value
             else:
                 raise e
 
