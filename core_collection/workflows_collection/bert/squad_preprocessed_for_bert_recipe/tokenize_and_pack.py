@@ -18,10 +18,10 @@ max_seq_length                  = int(sys.argv[5])
 max_query_length                = int(sys.argv[6])
 doc_stride                      = int(sys.argv[7])
 
-calibration                     = sys.argv[10] == "yes"
+calibration                     = sys.argv[8] == "yes"
 if calibration:
-    calibration_option          = sys.argv[11]
-    calibration_data_path       = sys.argv[12]
+    calibration_option          = sys.argv[9]
+    calibration_data_path       = sys.argv[10]
 
 from create_squad_data import read_squad_examples, convert_examples_to_features
 
@@ -69,7 +69,6 @@ convert_examples_to_features(
     is_training=False,
     output_fn=append_feature,
     verbose_logging=False)
-
 
 # raw
 
