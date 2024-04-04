@@ -9,7 +9,7 @@ int main(int argc, char *argv[]) {
         float area;
         sscanf(argv[1], "%f", &area);
         float side = sqrt( area );
-        printf("When square's area is %.1f its side is %.1f\n", area, side);
+        printf("When square's area is %.1f its side is %.2f\n", area, side);
     } else {
         printf("Usage:\n\t%s <area>\n", argv[0]);
     }

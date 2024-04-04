@@ -135,7 +135,7 @@ fi
 
 if [ "$C_COMPILE_AND_RUN" == "on" ]; then
     # square root
-    assert 'axs byquery compiled,square_root , run --area=64' "When square's area is 64.0 its side is 8.0"
+    assert 'axs byquery compiled,square_root , run --area=64' "When square's area is 64.0 its side is 8.00"
     axs byquery compiled,square_root --- , remove
     assert_end c_code_compilation_and_execution
 

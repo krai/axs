@@ -1,35 +1,39 @@
 {
     "_producer_rules": [
-            [ [ "compiled", "square_root" ], [
-                    [ "get", "compiler_entry" ],
-                    [ "run", [], {
-                        "cmd_key": "compile_to_binary",
-                        "abs_binary_path": [ "^^", "dig", "return_this_entry.abs_binary_path" ],
-                        "abs_source_path": [ "^^", "get", "abs_source_path" ],
-                        "compile_suffix": "-lm",
-                        "capture_output": false
-                    } ]
-            ], {}, [ "return_this_entry" ] ]
+            [ [ "compiled", "square_root" ], [ [ "get", "pipeline" ] ] ]
     ],
+    "_parent_entries": [ [ "^", "byname", "entry_creator" ] ],
+
     "tags": [ "source_code", "square_root" ],
     "file_name": "square_rooter.c",
     "abs_source_path": [ "^^", "get_path" ],
+
+    "compiler_tool_entry": [ "^", "byquery", "shell_tool,can_compile_c" ],
+
     "area": 9,
+    "rel_binary_path": "square_root",
 
-    "compiler_entry": [ "^", "byquery", "shell_tool,can_compile_c" ],
+    "newborn_entry_tags": [ "compiled", "square_root" ],
+    "newborn_parent_names": [ "shell" ],
+    "newborn_name_template": "square_root_compiled_def.area_#{area}#",
+    "newborn_entry_param_mapping": {
+        "area": "#{area}#",
+        "capture_output": true,
+        "shell_cmd_with_subs": [ "AS#IS", "#{abs_bin_path}# #{area}#" ],
+        "file_name": "#{rel_binary_path}#",
+        "abs_bin_path": [ "AS^IS", "AS^IS", "^^", "get_path" ]
+    },
 
-    "return_this_entry": [ "^^", "execute", [[
-        [ "get_kernel" ],
-        [ "work_collection" ],
-        [ "attached_entry", [ "square_root_compiled", {
-                "_parent_entries": [ [ "AS^IS", "AS^IS", "^", "byname", "shell" ] ],
-                "tags": [ "compiled", "square_root"] ,
-                "binary_name": "square_rooter",
-                "area": [ "^^", "get", "area" ],
-                "abs_binary_path": ["AS^IS", "AS^IS", "^^", "get_path_from", "binary_name"],
-                "capture_output": true,
-                "shell_cmd_with_subs": "#{abs_binary_path}# #{area}#"
-            } ] ],
-        [ "save" ]
+    "pipeline": [ "^^", "execute", [[
+        [ "get", "compiler_tool_entry" ],
+        [ "run", [], {
+            "cmd_key": "compile_to_binary",
+            "abs_binary_path": [ "^^", "dig", "stored_newborn_entry.abs_bin_path"],
+            "abs_source_path": [ "^^", "get", "abs_source_path" ],
+            "compile_suffix": "-lm",
+            "capture_output": false
+        } ],
+        [ ],
+        [ "get", "stored_newborn_entry" ]
     ]] ]
 }
