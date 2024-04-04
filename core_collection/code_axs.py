@@ -74,21 +74,27 @@ class FilterPile:
 
         def parse_condition(condition, context):
 
-            if type(condition)==list:   # pre-parsed equality
+            if type(condition)==list and len(condition)==2:   # pre-parsed equality
                 key_path, val = condition
                 op = '='
                 comparison_lambda   = lambda x: x==val
 
-            else:   # assuming a string that needs to be parsed (even if a tag)
+            else:   # a pre-parsed binary op list or string that needs to be parsed (even if a tag)
                 from function_access import to_num_or_not_to_num
 
-                binary_op_match = re.match('([\w\.\-]*\w)(:=|\?=|===|==|=|!==|!=|<>|<=|>=|<|>|:|!:)(.*)$', condition)
-                if binary_op_match:
-                    key_path    = binary_op_match.group(1)
-                    op          = binary_op_match.group(2)
-                    pre_val     = binary_op_match.group(3)
-                    val         = to_num_or_not_to_num(pre_val)
+                if type(condition)==list and len(condition)==3:
+                    key_path, op, val = condition
+                    pre_val = str(val)
+                    binary_op_match = True
+                else:
+                    binary_op_match = re.match('([\w\.\-]*\w)(:=|\?=|===|==|=|!==|!=|<>|<=|>=|<|>|:|!:)(.*)$', condition)
+                    if binary_op_match:
+                        key_path    = binary_op_match.group(1)
+                        op          = binary_op_match.group(2)
+                        pre_val     = binary_op_match.group(3)
+                        val         = to_num_or_not_to_num(pre_val)
 
+                if binary_op_match:
                     if op in (':=',):           # auto-split
                         op = '='
                         pre_val = pre_val.split(':')
