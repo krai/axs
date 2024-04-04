@@ -256,7 +256,10 @@ Usage examples :
 
         # Structural recursion:
         if type(input_structure)==list:
-            return [self.substitute(e) for e in input_structure]                                            # all list elements are substituted
+            if len(input_structure)==2 and input_structure[0]=="AS#IS":
+                return input_structure[1]
+            else:
+                return [self.substitute(e) for e in input_structure]                                        # all list elements are substituted
         elif type(input_structure)==dict:
             return { self.substitute(k) : self.substitute(input_structure[k]) for k in input_structure }    # both keys and values are substituted
         elif type(input_structure)==str:
