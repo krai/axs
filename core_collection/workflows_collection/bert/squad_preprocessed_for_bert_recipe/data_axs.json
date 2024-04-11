@@ -69,9 +69,9 @@
     ],
 
     "squad_dataset_query":[ "downloaded", "squad_original" ],
-    "squad_dataset_entry": [ "^", "byquery", [[ "^^", "get", "squad_dataset_query" ]], {}, ["squad_dataset_query"] ],
     "squad_dataset_original_path": [ "^^", "execute", [[
-        [ "get", "squad_dataset_entry" ],
+        [ "get_kernel" ],
+        [ "byquery", [ [ "^^", "get", "squad_dataset_query" ] ] ],
         [ "get_path" ]
     ]] ],
 
