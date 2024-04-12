@@ -1,34 +1,14 @@
 {
     "_producer_rules": [
         [["git_repo","repo_name=cjson_source_git"], [["get_kernel"],["byname","git"],["clone"]], {}, ["url"] ],
-        [["lib","lib_name=cjson"], [
-            [ "get", "compiler_entry" ],
-            [ "run", [], {
-                "cmd_key": "compile_to_object",
-                "abs_object_path": [ "^^", "dig", "return_this_entry.cjson_o_path" ],
-                "abs_source_path": [ "^^", "get", "cjson_c_path" ],
-                "capture_output": false
-            } ]
-        ], {}, ["return_this_entry"] ]
+        [["lib","lib_name=cjson"], [ [ "get", "pipeline" ] ] ]
     ],
+    "_parent_entries": [ [ "^", "byname", "entry_creator" ] ],
 
     "url": "https://github.com/DaveGamble/cJSON",
 
-    "compiler_entry": [ "^", "byquery", "shell_tool,can_compile_c" ],
+    "compiler_tool_entry": [ "^", "byquery", "shell_tool,can_compile_c" ],
     "cjson_source_git": [ "^", "byquery", "git_repo,repo_name=cjson_source_git" ],
-
-    "return_this_entry": [ "^^", "execute", [[
-        [ "get_kernel" ],
-        [ "work_collection" ],
-        [ "attached_entry", [ "cjson_lib", {
-                "tags": [ "lib" ] ,
-                "lib_name": "cjson",
-                "cjson_o_path": ["AS^IS", "AS^IS", "^^", "get_path", "cJSON.o"],
-                "compiler_path": ["^^", "substitute", "#{compiler_entry.tool_path}#"],
-                "include_path": ["^^", "get", "cjson_include_path"]
-            } ] ],
-        [ "save" ]
-    ]] ],
 
     "cjson_c_path": ["^^", "execute", [[
         [ "get", "cjson_source_git" ],
@@ -38,5 +18,27 @@
     "cjson_include_path": ["^^", "execute", [[
         [ "get", "cjson_source_git" ],
         [ "get_path", "" ]
+    ]] ],
+
+    "newborn_entry_tags": [ "lib" ],
+    "newborn_parent_names": [],
+    "newborn_entry_name": "cjson_lib",
+    "newborn_entry_param_mapping": {
+        "lib_name": "cjson",
+        "cjson_o_path": ["AS^IS", "AS^IS", "^^", "get_path", "cJSON.o"],
+        "compiler_path": "#{compiler_tool_entry.tool_path}#",
+        "include_path": "#{cjson_include_path}#"
+    },
+
+    "pipeline": [ "^^", "execute", [[
+        [ "get", "compiler_tool_entry" ],
+        [ "run", [], {
+            "cmd_key": "compile_to_object",
+            "abs_object_path": [ "^^", "dig", "stored_newborn_entry.cjson_o_path" ],
+            "abs_source_path": [ "^^", "get", "cjson_c_path" ],
+            "capture_output": false
+        } ],
+        [ ],
+        [ "get", "stored_newborn_entry" ]
     ]] ]
 }

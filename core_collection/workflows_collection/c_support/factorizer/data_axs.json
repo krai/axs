@@ -1,65 +1,72 @@
 {
     "_producer_rules": [
-       [ [ "compiled", "factorizer" ], [
-            [ "get", "compiler_entry" ],
-            [ "run", [], {
-                "cmd_key": "compile_to_binary",
-                "compile_infix": [ "^^", "substitute", "-I#{cjson_lib_entry.include_path}#" ],
-                "abs_binary_path": [ "^^", "dig", "return_this_entry.abs_binary_path" ],
-                "abs_source_path": [ "^^", "get", "abs_source_path" ],
-                "compile_suffix": [ "^^", "dig", "cjson_lib_entry.cjson_o_path" ],
-                "capture_output": false
-            } ]
-        ], {}, ["abs_source_path", "return_this_entry", "cjson_lib_entry"] ],
-        [ [ "program_output",  "factorizer" ], [["get_kernel"],["byquery","compiled,factorizer"],["run"]] ]
+        [ [ "compiled",       "factorizer" ], [ [ "get", "compilation_pipeline" ] ] ],
+        [ [ "program_output", "factorizer" ], [ ["get_kernel"],["byquery", "compiled,factorizer"],["get", "execution_pipeline"] ] ]
     ],
+    "_parent_entries": [ [ "^", "byname", "entry_creator" ] ],
 
-    "tags": [ "source_code", "factorizer" ],     
+    "compiler_tool_entry": [ "^", "byquery", "shell_tool,can_compile_c" ],
+    "cjson_lib_entry": [ "^", "byquery", "lib,lib_name=cjson" ],
+
+    "tags": [ "source_code", "factorizer" ],
     "file_name": "factorizer.c",
     "abs_source_path": [ "^^", "get_path" ],
     "up_to": 12,
+
+    "output_file_name": "program_output.json",
     "binary_name_def": [ "^^", "case", [ [ "^", "func", "platform.system"] ,
         "Windows" , "factorizer.exe" ],
         { "default_value": "factorizer" }
     ],
-    "output_file_name": "program_output.json",
 
-    "return_this_entry": [ "^^", "execute", [[
-        [ "get_kernel" ],
-        [ "work_collection" ],
-        [ "attached_entry", [ "factorizer_compiled", {
-            "_parent_entries": [ [ "AS^IS", "AS^IS", "^", "byname", "shell" ] ],
-            "tags": [ "compiled", "factorizer"],
-            "binary_name": ["^^", "get", "binary_name_def"],
-            "abs_binary_path": ["AS^IS", "AS^IS", "^^", "get_path_from", "binary_name"],
-            "up_to": ["^^", "get", "up_to"],
-            "abs_input_file_path": [ "AS^IS", "AS^IS", "^^", "execute", [[
-                [ "get_kernel" ],
-                [ "byquery", [ "^^", "substitute", "program_output,generate_primes,up_to=#{up_to}#"] ],
-                [ "get_path_from","output_file_name" ]
-            ]] ],
-            "output_file_name": [ "^^", "get","output_file_name" ],
-            "abs_output_file_path": [ "AS^IS", "AS^IS","^^", "execute", [[
-                [ "get", "return_this_entry" ],
-                [ "get_path_from", "output_file_name" ]
-            ]] ],
-            "return_this_entry": [ "AS^IS", "AS^IS", "^^", "execute", [[
-                [ "get_kernel" ],
-                [ "work_collection" ],
-                [ "attached_entry", [ [ "^^", "substitute", "factorized_number_#{up_to}#" ],["^^", "substitute", {
-                    "_parent_entries": [ "AS^IS", [ "^", "byname", "base_experiment" ] ],
-                    "tags": [ "program_output", "factorizer" ],
-                    "up_to": "#{up_to}#",
-                    "output_file_name": "#{output_file_name}#"
-                } ] ] ],
-                [ "save" ]
-            ]] ],
-            "shell_cmd":[ "AS^IS", "AS^IS", "^^", "substitute", ["^^", "get", "shell_cmd_with_subs" ]],
-            "shell_cmd_with_subs": "#{abs_binary_path}# #{abs_input_file_path}# #{up_to}# #{abs_output_file_path}#"
-        } ] ], 
-        [ "save" ] 
-    ]] ],
+    "newborn_name_template": "factorizer_compiled_def_up_to_#{up_to}#",
+    "newborn_entry_tags": [ "compiled", "factorizer" ],
+    "newborn_parent_names": [ "shell", "entry_creator" ],
+    "newborn_entry_param_mapping": {
+        "binary_name": "#{binary_name_def}#",
+        "abs_binary_path": ["AS^IS", "AS^IS", "^^", "get_path_from", "binary_name"],
 
-    "compiler_entry": [ "^", "byquery", "shell_tool,can_compile_c" ],
-    "cjson_lib_entry": [ "^", "byquery", "lib,lib_name=cjson" ]
+        "abs_input_file_path": [ "AS^IS", "AS^IS", "^^", "execute", [[
+            [ "get_kernel" ],
+            [ "byquery", [ "^^", "substitute", [ "AS#IS", "program_output,generate_primes,up_to=#{up_to}#"] ] ],
+            [ "get_path_from","output_file_name" ]
+        ]] ],
+
+        "output_file_name": "#{output_file_name}#",
+        "abs_output_file_path": ["AS^IS", "AS^IS", "^^", "execute", [[
+            [ "get", "stored_newborn_entry" ],
+            [ "get_path_from", "output_file_name" ]
+        ]] ],
+
+        "up_to": "#{up_to}#",
+        "shell_cmd_with_subs": [ "AS#IS", "#{abs_binary_path}# #{abs_input_file_path}# #{up_to}# #{abs_output_file_path}#" ],
+
+        "newborn_name_template": [ "AS#IS", "factorized_number_#{up_to}#" ],
+        "newborn_parent_names": [ "base_experiment" ],
+        "newborn_entry_tags": [ "program_output", "factorizer" ],
+        "newborn_entry_param_mapping": {
+            "up_to": [ "AS#IS", "#{up_to}#" ],
+            "output_file_name": "#{output_file_name}#"
+        },
+
+        "execution_pipeline": [ "AS^IS", "AS^IS", "^^", "execute", [[
+            ["run"],
+            [ ],
+            [ "get", "stored_newborn_entry" ]
+        ]] ]
+    },
+
+    "compilation_pipeline": [ "^^", "execute", [[
+        [ "get", "compiler_tool_entry" ],
+        [ "run", [], {
+            "cmd_key": "compile_to_binary",
+            "compile_infix": [ "^^", "substitute", "-I#{cjson_lib_entry.include_path}#" ],
+            "abs_binary_path": [ "^^", "dig", "stored_newborn_entry.abs_binary_path" ],
+            "abs_source_path": [ "^^", "get", "abs_source_path" ],
+            "compile_suffix": [ "^^", "dig", "cjson_lib_entry.cjson_o_path" ],
+            "capture_output": false
+        } ],
+        [ ],
+        [ "get", "stored_newborn_entry" ]
+    ]] ]
 }
