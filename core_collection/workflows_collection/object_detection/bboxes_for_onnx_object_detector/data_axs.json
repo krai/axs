@@ -1,26 +1,57 @@
 {
-    "pillow_query": [ "python_package", "package_name=pillow", ["desired_python_version", ["^", "kernel_python_major_dot_minor"]] ],
+    "_producer_rules": [
+        [ [ "bboxed", "task=object_detection" ], [["get", "pipeline"]] ]
+    ],
+    "_parent_entries": [ [ "^", "byname", "entry_creator" ] ],
 
+
+    "model_part": [ "^^", "case", [ [ "^^", "get", ["model_name", null]],
+        null, ""],
+        { "default_value": ",model_name=#{model_name}#" }
+    ],
+    "dataset_part": [ "^^", "case", [ [ "^^", "get", ["dataset_name", null]],
+        null, ""],
+        { "default_value": ",dataset_name=#{dataset_name}#" }
+    ],
+    "experiment_query": [ "^^", "substitute", [ "^^", "substitute", "program_output,task=#{task}#,framework=#{framework}##{model_part}##{dataset_part}#" ] ],
+
+    "experiment_entry": [ "^", "byquery", [[ "^^", "get", "experiment_query" ]], {}, ["experiment_query"] ],
+
+    "input_images_directory": [ "^^", "dig", "experiment_entry.dataset_entry.images_dir" ],
+
+    "data_detections": [ "^^", "dig", "experiment_entry.program_output.detections" ],
+
+    "num_of_bboxes": null,
+
+
+    "experiment_model_name": [ "^^", "dig", "experiment_entry.model_name" ],
+    "experiment_dataset_name": [ "^^", "dig", "experiment_entry.dataset_entry.dataset_name" ],
+
+
+    "num_of_bboxes_part": [ "^^", "case", [ [ "^^", "get", ["num_of_bboxes", null]],
+        [null, ""], ""],
+        { "default_value": "_#{num_of_bboxes}#" }
+    ],
+    "newborn_entry_tags": [ "bboxed" ],
+    "newborn_parent_names": [ ],
+    "newborn_name_template": [ "^^", "substitute", "bboxed_by_#{experiment_model_name}#_on_#{experiment_dataset_name}##{num_of_bboxes_part}#" ],
+    "newborn_entry_param_names": [ "experiment_query", "input_images_directory", "num_of_bboxes" ],
+    "newborn_entry_param_mapping": {
+        "model_name": "#{experiment_model_name}#",
+        "dataset_name": "#{experiment_dataset_name}#"
+    },
+    "rel_install_dir": "bboxed",
+
+    "pipeline": [ "^^", "execute", [[
+        ["postprocess_add_detections"],
+        [],
+        [ "get", "stored_newborn_entry" ]
+    ]] ],
+
+    "pillow_query": [ "python_package", "package_name=pillow", ["desired_python_version", ["^", "kernel_python_major_dot_minor"]] ],
     "_BEFORE_CODE_LOADING": [ "^^", "execute", [[
         ["get_kernel"],
         ["byquery", [[ "^^", "get", "pillow_query" ]] ],
         ["use"]
-    ]] ],
-
-    "_producer_rules": [
-        [ [ "bboxed", "task=object_detection" ], [["postprocess_add_detections"]], {
-            "experiment_query": [ "AS^IS", "^^","substitute", [ [ "program_output", "task=object_detection", "framework=#{framework}#", "model_name=#{model_name}#","num_of_images=#{num_of_images}#" ]] ],
-            "experiment_entry": [ "AS^IS", "^", "byquery", [[ "^^", "get", "experiment_query" ]], {}, ["experiment_query"] ],
-            "input_images_directory":[ "AS^IS","^^", "dig", "experiment_entry.dataset_entry.images_dir" ],
-            "data_detections": [ "AS^IS", "^^", "execute", [[
-                ["dig", "experiment_entry.program_output"],
-                ["get","detections" ]
-            ]] ]
-        }
-        ]
-    ],
-
-    "file_name": "bboxed",
-    
-    "num_of_bboxes": ""
+    ]] ]
 }

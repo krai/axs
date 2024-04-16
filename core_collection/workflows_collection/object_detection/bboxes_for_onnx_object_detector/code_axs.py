@@ -24,22 +24,16 @@ def add_bboxes_to_image(input_file_path, output_file_path, bboxes, n):
 def clamp(n, minn, maxn):
     return max(min(maxn, n), minn)
 
-def postprocess_add_detections(input_images_directory, data_detections, file_name, num_of_bboxes, __record_entry__=None):
 
-    __record_entry__.save()
+def postprocess_add_detections(input_images_directory, data_detections, abs_install_dir, num_of_bboxes):
 
-    output_directory     = __record_entry__.get_path(file_name)
-
-    os.makedirs( output_directory )
     list_images = data_detections.keys()
     for i in list_images:
         bboxes = data_detections[i]["detections"]
         input_file_path = os.path.join(input_images_directory, i + ".jpg")
-        output_file_path = os.path.join(output_directory , i + "_bboxed" + ".jpg")
+        output_file_path = os.path.join(abs_install_dir , i + "_bboxed" + ".jpg")
         if num_of_bboxes:
             n = clamp(int(num_of_bboxes), 0, len(bboxes))
         else:
             n = len(bboxes)
         add_bboxes_to_image(input_file_path, output_file_path, bboxes, n)
-
-    return __record_entry__
