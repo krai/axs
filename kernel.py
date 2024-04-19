@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.332'     # TODO: update with every kernel change
+__version__ = '0.2.333'     # TODO: update with every kernel change
 
 import logging
 import os
@@ -95,7 +95,21 @@ Usage examples :
 
         if own_data is None:    # sic: retain the same empty dictionary if given
             own_data = {}
-        return Entry(entry_path=entry_path, own_data=own_data, own_functions=False, container=container, name=name, generated_name_prefix=generated_name_prefix, kernel=self)
+        return Entry(entry_path=entry_path, own_data=own_data, own_functions=False, container=container, name=name, generated_name_prefix=generated_name_prefix, is_stored=False, kernel=self)
+
+
+    def uncache(self, old_path):
+        if old_path and old_path in self.entry_cache:
+            del self.entry_cache[ old_path ]
+            logging.debug(f"[{self.get_name()}] Uncaching from under {old_path}")
+
+
+    def encache(self, new_path, entry):
+        new_path = os.path.realpath( new_path )
+        self.entry_cache[ new_path ] = entry
+        logging.debug(f"[{self.get_name()}] Caching under {new_path}")
+
+        return entry
 
 
     def bypath(self, path, name=None, container=None, own_data=None, parent_objects=None):
@@ -117,28 +131,19 @@ Usage examples :
             logging.debug(f"[{self.get_name()}] bypath: cache HIT for path={path}")
         else:
             logging.debug(f"[{self.get_name()}] bypath: cache MISS for path={path}")
+
             if path.endswith('.json'):      # ad-hoc data entry from a .json file
-                cache_hit = self.entry_cache[path] = Entry(name=name, parameters_path=path, own_functions=False, parent_objects=parent_objects or [], kernel=self)
+                entry_object = Entry(name=name, parameters_path=path, own_functions=False, parent_objects=parent_objects or [], is_stored=True, kernel=self)
             elif path.endswith('.py'):      # ad-hoc functions entry from a .py file
                 module_name = path[:-len('.py')]
-                cache_hit = self.entry_cache[path] = Entry(name=name, entry_path=path, own_data={}, module_name=module_name, parent_objects=parent_objects or [], kernel=self)
+                entry_object = Entry(name=name, entry_path=path, own_data={}, module_name=module_name, parent_objects=parent_objects or [], is_stored=True, kernel=self)
             else:
-                cache_hit = self.entry_cache[path] = Entry(name=name, entry_path=path, own_data=own_data, container=container, parent_objects=parent_objects or None, kernel=self)
+                entry_object = Entry(name=name, entry_path=path, own_data=own_data, container=container, parent_objects=parent_objects or None, kernel=self)
+
+            cache_hit = self.encache( path, entry_object )
             logging.debug(f"[{self.get_name()}] bypath: successfully CACHED {cache_hit.get_name()} under path={path}")
 
         return cache_hit
-
-
-    def cache_replace(self, old_path, new_path, entry):
-        """Invalidate the entry under the old_path and cache the one under the new_path
-        """
-        if old_path and old_path in self.entry_cache:
-            del self.entry_cache[ old_path ]
-            logging.debug(f"[{self.get_name()}] Uncaching from under {old_path}")
-
-        new_path = os.path.realpath( new_path )
-        self.entry_cache[ new_path ] = self
-        logging.debug(f"[{self.get_name()}] Caching under {new_path}")
 
 
     def core_collection(self):

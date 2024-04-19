@@ -17,7 +17,7 @@ class Entry(Runnable):
     MODULENAME_functions    = 'code_axs'     # the actual filename ends in .py
     PREFIX_gen_entryname    = 'generated_entry_'
 
-    def __init__(self, entry_path=None, parameters_path=None, module_name=None, container=None, generated_name_prefix=None, **kwargs):
+    def __init__(self, entry_path=None, parameters_path=None, module_name=None, container=None, generated_name_prefix=None, is_stored=None, **kwargs):
         "Accept setting entry_path in addition to parent's parameters"
 
         self.generated_name_prefix  = generated_name_prefix or self.PREFIX_gen_entryname
@@ -30,6 +30,7 @@ class Entry(Runnable):
 
         self.parameters_path        = parameters_path
         self.module_name            = module_name or self.MODULENAME_functions
+        self.is_stored              = is_stored if type(is_stored)==bool else os.path.exists(entry_path)
 
         super().__init__(**kwargs)
 
@@ -62,6 +63,9 @@ Usage examples :
 
         else:                                   # relative to cwd
             self.entry_path = os.path.realpath( new_path )
+
+        self.parameters_path    = None
+        self.name               = None
 
         return self
 
@@ -294,13 +298,10 @@ Usage examples :
                 axs fresh_entry , plant contained_entries '---={}' _parent_entries --,:=AS^IS:^:core_collection , save new_collection
         """
 
-        # FIXME: cache_replace() should be called even if new_path not defined, but it's the first time the entry is saved
         if new_path:
-            self.get_kernel().cache_replace(self.parameters_path or self.entry_path, new_path, self)
-
             self.set_path( new_path )
-            self.parameters_path    = None
-            self.name               = None
+        else:
+            new_path = self.get_path()
 
         parameters_full_path        = self.get_parameters_path()
 
@@ -315,6 +316,9 @@ Usage examples :
 
         self.call('attach')
 
+        self.get_kernel().encache( new_path, self )
+        self.is_stored  = True
+
         return self
 
 
@@ -326,14 +330,15 @@ Usage examples :
         """
         self.call('detach')
 
-        entry_path = self.get_path('')
-        if entry_path:
+        if self.is_stored:
+            entry_path = self.parameters_path or self.entry_path
             ufun.rmdir( entry_path )
             logging.info(f"[{self.get_name()}] {entry_path} removed from the filesystem")
-        else:
-            logging.warning(f"[{self.get_name()}] was not saved to the file system, so cannot be removed")
 
-        self.entry_path     = None
+            self.get_kernel().uncache( entry_path )
+            self.is_stored  = False
+        else:
+            logging.warning(f"[{self.get_name()}] was not stored in the file system, so cannot be removed")
 
         return self
 

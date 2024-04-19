@@ -87,7 +87,7 @@ Usage examples :
 
 
 def rmdir(dir_path):
-    """Recursively remove a non-empty directory
+    """Recursively remove a non-empty directory or file
 
 Usage examples :
                 axs func ufun.rmdir path/to/remove
@@ -102,7 +102,10 @@ Usage examples :
         else:
             raise
 
-    shutil.rmtree(dir_path, ignore_errors=False, onerror=handleRemoveReadonly)
+    if os.path.isdir( dir_path ):
+        shutil.rmtree(dir_path, ignore_errors=False, onerror=handleRemoveReadonly)
+    else:
+        os.remove( dir_path )
 
 
 def move_dir_contents_from_to(source_dir, dest_dir):
