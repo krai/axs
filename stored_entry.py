@@ -316,7 +316,9 @@ Usage examples :
 
         self.call('attach')
 
-        self.get_kernel().encache( new_path, self )
+        ak = self.get_kernel()
+        if ak:
+            ak.encache( new_path, self )
         self.is_stored  = True
 
         return self
@@ -335,7 +337,9 @@ Usage examples :
             ufun.rmdir( entry_path )
             logging.info(f"[{self.get_name()}] {entry_path} removed from the filesystem")
 
-            self.get_kernel().uncache( entry_path )
+            ak = self.get_kernel()
+            if ak:
+                ak.uncache( entry_path )
             self.is_stored  = False
         else:
             logging.warning(f"[{self.get_name()}] was not stored in the file system, so cannot be removed")
