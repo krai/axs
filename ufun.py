@@ -42,18 +42,23 @@ Usage examples :
     return json_string
 
 
-def rematch(input_string, regex, group=1):
+def rematch(input_string, regex, grab=1):
     """Find a substring matching a given regular expression and return it
 
 Usage examples :
-                axs byname kernel_python_tool , run ,0 func ufun.rematch '^Python\s((\d+)\.(\d+))\.\d+'    # parse the major.minor version from Python
+                axs byname kernel_python_tool , run ,0 func ufun.rematch '^Python\s((\d+)\.(\d+))\.\d+'     # parse the major.minor version from Python
+
+                axs func ufun.rematch A2B34C56 'A(\d)B(\d\d)C(\d)' --,=alpha,beta,gamma                     # parse multiple fields into a dictionary
     """
     searchObj = re.search(regex, input_string, re.MULTILINE)
     if searchObj:
-        if group>0:
-            return searchObj.group(group)
-        else:
+        if not grab:
             return True
+        elif type(grab)==list:
+            return { grab[i] : searchObj.group(i+1) for i in range(len(grab)) }
+        else:
+            return searchObj.group(grab)
+
     else:
         print(f'Failed to match "{input_string}" against "{regex}"', file=sys.stderr)
         return False
