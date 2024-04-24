@@ -2,6 +2,7 @@
 
 "A collection of utility functions"
 
+import datetime
 import errno
 import json
 import os
@@ -180,3 +181,16 @@ def repr_dict(d, exception_pairs=None):
         return repr(v)
 
     return ('{' + (','.join([ repr(k)+':'+safe_value(d[k]) for k in sorted(d.keys()) ])) + '}') if type(d)==dict else repr(d)
+
+
+def generate_current_timestamp(time_format=None, fs_safe=True):
+    """Generate the current timestamp in a readable format
+
+Usage examples :
+                axs func ufun.generate_current_timestamp                # safe to use in a filename by default
+                axs func ufun.generate_current_timestamp --fs_safe-     # colon as time separator is more readable, but not suitable for filenames
+                axs func ufun.generate_current_timestamp "%Y.%m.%d"     # an arbitrary timestamp format
+    """
+    time_format = time_format or ("%Y.%m.%d_%Hh%Mm%Ss" if fs_safe else "%Y.%m.%dT%H:%M:%S")
+
+    return datetime.datetime.now().strftime( time_format )
