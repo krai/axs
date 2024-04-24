@@ -89,7 +89,7 @@ Usage examples :
                 axs work_collection , get contained_entries , keys ,0 func ufun.join_with
                 axs noop --,=ab,cd,ef ,0 func ufun.join_with $'\n'      # note Bash-specific syntax for passing a carriage return
     """
-    return separator.join(things)
+    return separator.join( [ str(thing) for thing in things ] )
 
 
 def rmdir(dir_path):
