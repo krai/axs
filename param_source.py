@@ -225,7 +225,7 @@ Usage examples :
                 raise e
 
 
-    def substitute(self, input_structure):
+    def substitute(self, input_structure, times=1):
         """Perform single-level parameter substitutions in the given structure
 
 Usage examples :
@@ -254,18 +254,25 @@ Usage examples :
 
                 return output_string
 
-        # Structural recursion:
-        if type(input_structure)==list:
-            if len(input_structure)==2 and input_structure[0]=="AS#IS":
-                return input_structure[1]
+        def substitute_once(input_structure):
+            # Structural recursion:
+            if type(input_structure)==list:
+                if len(input_structure)==2 and input_structure[0]=="AS#IS":
+                    return input_structure[1]
+                else:
+                    return [substitute_once(e) for e in input_structure]                                        # all list elements are substituted
+            elif type(input_structure)==dict:
+                return { substitute_once(k) : substitute_once(input_structure[k]) for k in input_structure }    # both keys and values are substituted
+            elif type(input_structure)==str:
+                return scalar_substitute(input_structure)                                                       # ground step
             else:
-                return [self.substitute(e) for e in input_structure]                                        # all list elements are substituted
-        elif type(input_structure)==dict:
-            return { self.substitute(k) : self.substitute(input_structure[k]) for k in input_structure }    # both keys and values are substituted
-        elif type(input_structure)==str:
-            return scalar_substitute(input_structure)                                                       # ground step
-        else:
-            return input_structure                                                                          # basement step
+                return input_structure                                                                          # basement step
+
+        substituted_structure = input_structure
+        for _ in range(times):
+            substituted_structure = substitute_once(substituted_structure)
+
+        return substituted_structure
 
 
     def get(self, param_name, default_value=None):
