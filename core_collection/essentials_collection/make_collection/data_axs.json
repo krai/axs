@@ -5,14 +5,12 @@
 
     "new_collection_entry": [ "^^", "execute", [[
         [ "get_kernel" ],
-        [ "fresh_entry", [ "^^", "get", "collection_name" ] ],
-        [ "attach", [ "^", "work_collection" ] ],
-        [ "plant", [
-            "_parent_entries", [ "AS^IS", "AS^IS", [ "^", "core_collection" ] ],
-            "tags", [ "collection" ],
-            "contained_entries", {}
-          ] ],
-        [ "pluck", "collection_name" ],
+        [ "work_collection" ],
+        [ "attached_entry", [ [ "^^", "get", "collection_name" ], {
+                "_parent_entries": [ "AS^IS", "AS^IS", [ "^", "core_collection" ] ],
+                "tags": [ "collection" ],
+                "contained_entries": {}
+         } ] ],
         [ "save" ]
     ]] ]
 }
