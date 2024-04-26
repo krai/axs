@@ -47,7 +47,7 @@
     ]] ],
     "stored_newborn_entry": [ "^^", "execute", [[
         [ "get", "newborn_entry" ],
-        [ "save" ]
+        [ "save", [], { "on_collision": "timestamp" } ]
     ]] ],
     "newborn_entry_path": [ "^^", "execute", [[
         [ "get", "stored_newborn_entry" ],

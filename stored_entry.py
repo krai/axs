@@ -288,7 +288,7 @@ Usage examples :
             return [ "^", "fresh_entry", [], fresh_entry_opt_args ]
 
 
-    def save(self, new_path=None):
+    def save(self, new_path=None, on_collision="force"):    # FIXME: "force" mimics old behaviour. To benefit from the change we need to switch to "raise"
         """Store [updated] own_data of the entry
             Note1: the entry didn't have to have existed prior to saving
             Note2: only parameters get stored
@@ -303,16 +303,40 @@ Usage examples :
         else:
             new_path = self.get_path()
 
-        parameters_full_path        = self.get_parameters_path()
+        parameters_path        = self.get_parameters_path()
+        parameters_dirname, parameters_basename = os.path.split( parameters_path )
 
-        # Autovivify the directories in between if necessary:
-        parameters_dirname      = os.path.dirname( parameters_full_path )
-        if parameters_dirname and not os.path.exists(parameters_dirname):
+        if parameters_dirname and not self.is_stored:   # directory needs to be created
+            if os.path.exists( parameters_dirname):     # unexpected collision
+
+                if on_collision in ("force", "ignore"):
+                    logging.warning(f"[{self.get_name()}] Saving into existing directory {parameters_dirname} in --on_collision=force mode")
+
+                elif on_collision=="timestamp":
+                    prev_parameters_dirname = parameters_dirname
+                    parameters_dirname += '_' + ufun.generate_current_timestamp(fs_safe=True)
+                    logging.warning(f"[{self.get_name()}] Collision when saving into existing directory {prev_parameters_dirname}, switching to {parameters_dirname} in --on_collision=timestamp mode")
+
+                    if self.parameters_path:
+                        parameters_path = os.path.join( parameters_dirname, parameters_basename)
+                    else:
+                        self.name       = os.path.basename(parameters_dirname)
+                        self.entry_path = None
+                        parameters_path = self.get_parameters_path()
+                        parameters_dirname, parameters_basename = os.path.split( parameters_path )
+
+                    if os.path.exists(parameters_dirname):  # still a collision?
+                        raise FileExistsError( f"Cannot save to {prev_parameters_dirname} or {parameters_dirname} as both directories exist. Please investigate or use --on_collision=force to override" )
+
+                else: # elif on_collision=="raise":
+                    raise FileExistsError( f"Cannot save to {parameters_dirname} as the directory exists. Use --on_collision=force to override" )
+
             os.makedirs(parameters_dirname)
 
-        json_string = ufun.save_json( self.pickle_struct(self.own_data()), parameters_full_path, indent=4 )
 
-        logging.info(f"[{self.get_name()}] parameters {json_string} saved to '{parameters_full_path}'")
+        json_string = ufun.save_json( self.pickle_struct(self.own_data()), parameters_path, indent=4 )
+
+        logging.info(f"[{self.get_name()}] parameters {json_string} saved to '{parameters_path}'")
 
         self.call('attach')
 

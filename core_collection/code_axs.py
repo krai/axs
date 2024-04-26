@@ -407,13 +407,13 @@ def add_entry_path(new_entry_path, new_entry_name=None, __entry__=None):
             raise(KeyError(f"There was already another entry named {new_entry_name} with path {existing_rel_path}, remove it first"))
     else:
         __entry__.plant(['contained_entries', new_entry_name], trimmed_new_entry_path)
-        return __entry__.save()
+        return __entry__.save( on_collision="force" )   # we expect a collision
 
 
 def remove_entry_name(old_entry_name, __entry__):
 
     contained_entries       = __entry__.pluck(['contained_entries', old_entry_name])
-    return __entry__.save()
+    return __entry__.save( on_collision="force" )   # we expect a collision
 
 
 if __name__ == '__main__':
