@@ -191,6 +191,6 @@ Usage examples :
                 axs func ufun.generate_current_timestamp --fs_safe-     # colon as time separator is more readable, but not suitable for filenames
                 axs func ufun.generate_current_timestamp "%Y.%m.%d"     # an arbitrary timestamp format
     """
-    time_format = time_format or ("%Y.%m.%d_%Hh%Mm%Ss" if fs_safe else "%Y.%m.%dT%H:%M:%S")
+    time_format = time_format or ("%Y.%m.%d_%Hh%Mm%Ss" if fs_safe else "%Y.%m.%d_%H:%M:%S")
 
     return datetime.datetime.now().strftime( time_format )
