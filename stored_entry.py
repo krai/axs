@@ -146,12 +146,12 @@ Usage examples :
         candidates = ufun.fs_find(self.get_path(''), regex, looking_for_dir=looking_for_dir, return_full=return_full, topdown=topdown)
 
         if not abs_paths:
-            candidates = [ self.trim_path(c) for c in candidates ]
+            candidates = [ self.trim_path(c).split( os.path.sep ) for c in candidates ]     # each trimmed path is a list in our internal "portable relative path format"
 
         if return_all:
             return candidates
         else:
-            return candidates[0].split( os.path.sep )   # still a list -- it is our internal "portable relative path format"
+            return candidates[0]
 
 
     def get_name(self):
