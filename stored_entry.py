@@ -211,29 +211,14 @@ Usage examples :
         return self
 
 
-    def own_data(self, data_dict=None):
-        """Lazy-load, cache and return own data from the file system
+    def pure_data_loader(self):
+        "Returns the dictionary loaded or the (stringifiable) exception object"
 
-Usage examples :
-                axs byname base_map , own_data
-                axs byname derived_map , own_data
-        """
-
-        if data_dict is not None:
-            self.own_data_cache = data_dict
-            self.parent_objects = None  # magic request to reload the parents
-            return self
-
-        elif self.own_data_cache is None:   # lazy-loading condition
-            parameters_path = self.get_parameters_path()
-            if os.path.isfile( parameters_path ):
-                self.own_data_cache = ufun.load_json( parameters_path )
-                self.touch('_AFTER_DATA_LOADING')
-            else:
-                logging.warning(f"[{self.get_name()}] parameters file {parameters_path} did not exist, initializing to empty parameters")
-                self.own_data_cache = {}
-
-        return self.own_data_cache
+        parameters_path = self.get_parameters_path()
+        try:
+            return ufun.load_json( parameters_path )
+        except OSError as e:
+            return e
 
 
     def own_functions(self):

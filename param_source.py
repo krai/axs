@@ -18,8 +18,10 @@ class ParamSource:
         "A trivial constructor"
 
         self.name                   = name
-        self.own_data_cache         = own_data
-        self.parent_objects         = parent_objects
+        self.parent_objects         = parent_objects    # sic! The order of initializations is important; data-defined parents have a higher priority than code-assigned ones
+
+        self.set_own_data( own_data )
+
         self.runtime_stack_cache    = []
         self.blocked_param_set      = {}
 
@@ -40,17 +42,41 @@ class ParamSource:
         return self.name
 
 
-    def own_data(self, data_dict=None):
-        "Placeholder for lazy-loading parameters in subclasses that support it"
+    def set_own_data(self, data_dict):
 
-        if data_dict is not None:
-            self.own_data_cache = data_dict
+        self.own_data_cache = data_dict
+
+        if type(data_dict)==dict and self.PARAMNAME_parent_entries in data_dict:
+            self.parent_objects = None      # trigger lazy-reloading of parents
+
+
+    def pure_data_loader(self):
+        "To be overloaded by classes that know how to load data"
+
+        return {}
+
+
+    def own_data(self, data_dict=None):
+        """Lazy-load, cache and return own data from the file system
+
+Usage examples :
+                axs byname base_map , own_data
+                axs byname derived_map , own_data
+        """
+        if data_dict is not None:           # setter mode, so returns self
+            self.set_own_data( data_dict )
             return self
 
-        elif self.own_data_cache is None:
-            self.own_data_cache = {}
+        elif self.own_data_cache is None:   # getter in lazy-loading mode
+            loaded_data = self.pure_data_loader()
+            if type(loaded_data)==dict:
+                self.set_own_data( loaded_data )
+                self.touch('_AFTER_DATA_LOADING')
+            else:
+                logging.warning(f"[{self.get_name()}] {loaded_data}, initializing to empty parameters (unstored)")
+                self.set_own_data( {} )
 
-        return self.own_data_cache
+        return self.own_data_cache          # any getter returns here
 
 
     def parents_loaded(self):
