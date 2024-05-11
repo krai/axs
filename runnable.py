@@ -293,30 +293,15 @@ Usage examples :
             logging.debug(f"[{self.get_name()}]  Call '{cache_key}' NOT TAKEN from cache, have to run...")
 
 
-        # pre-initializing each deep override from its full underlying stack value
-        edit_dict       = edit_dict or {}
-        override_dict   = {}
         if export_params and slice_relative_to:
             override_dict = slice_relative_to.slice( *export_params )
         else:
             override_dict   = {}
 
-        for edit_path in edit_dict:
-            dot_pos     = edit_path.find('.')
-            augment     = edit_path.endswith('+')
-            if dot_pos>-1 or augment:   # if both are True, dot should be found to the left of plus
-                if dot_pos>-1:
-                    edit_key = edit_path[:dot_pos]
-                elif augment:
-                    edit_key = edit_path[:-1]
+        override_dict.update( edit_dict or {} )
 
-                override_dict[edit_key] = deepcopy( self.__getitem__(edit_key, perform_nested_calls=False) )    # delay the interpretation to be able to edit expressions first
+        rt_call_specific    = Runnable(name='rt_call_specific_'+action_name+'/'+str(pos_params), own_data=override_dict, parent_objects = [ self ])     # FIXME: overlapping entry names are not unique
 
-        rt_call_specific    = ParamSource(name='rt_call_specific_'+action_name+'/'+str(pos_params), own_data=override_dict)     # FIXME: overlapping entry names are not unique
-
-        # now planting all the edits into the new object (potentially editing expressions):
-        merged_edits = (x for p in edit_dict for x in (p, edit_dict[p]))
-        rt_call_specific.plant( *merged_edits )
 
         self.runtime_stack().append( rt_call_specific )
 
@@ -345,7 +330,7 @@ Usage examples :
 
         if action_name=='func':         # at least propagate edit_dict.  FIXME: maybe rely on func's signature if available?
             joint_arg_tuple     = pos_params
-            optional_arg_dict   = edit_dict
+            optional_arg_dict   = override_dict
         else:
             action_object, joint_arg_tuple, optional_arg_dict   = function_access.prep(action_object, pos_params, self, captured_mapping)
 

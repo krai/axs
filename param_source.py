@@ -2,6 +2,8 @@
 
 import logging
 import re
+from copy import deepcopy
+
 
 import ufun
 
@@ -19,10 +21,10 @@ class ParamSource:
 
         self.name                   = name
         self.parent_objects         = parent_objects    # sic! The order of initializations is important; data-defined parents have a higher priority than code-assigned ones
+        self.runtime_stack_cache    = []
 
         self.set_own_data( own_data )
 
-        self.runtime_stack_cache    = []
         self.blocked_param_set      = {}
 
         logging.debug(f"[{self.get_name()}] Initializing the ParamSource with own_data={self.own_data_cache}, inheriting from {'some parents' or 'no parents'}")
@@ -42,12 +44,28 @@ class ParamSource:
         return self.name
 
 
-    def set_own_data(self, data_dict):
+    def set_own_data(self, mix_dict):
 
-        self.own_data_cache = data_dict
+        if type(mix_dict)==dict:
+            final_value_dict    = {}
+            pure_edits_dict     = {}
+            for key_path in mix_dict:
+                if key_path.find('.')>-1 or key_path.endswith('+'):
+                    pure_edits_dict[ key_path ] = mix_dict[ key_path ]
+                else:
+                    final_value_dict[ key_path ] = mix_dict[ key_path ]
 
-        if type(data_dict)==dict and self.PARAMNAME_parent_entries in data_dict:
-            self.parent_objects = None      # trigger lazy-reloading of parents
+            self.own_data_cache = final_value_dict
+
+            if self.PARAMNAME_parent_entries in final_value_dict:
+                self.parent_objects = None      # trigger lazy-reloading of parents
+
+            # now planting all the edits into the new object (potentially editing expressions):
+            merged_edits = (x for p in pure_edits_dict for x in (p, pure_edits_dict[p]))
+            self.plant( *merged_edits )
+
+        else:
+            self.own_data_cache = mix_dict
 
 
     def pure_data_loader(self):
@@ -104,6 +122,11 @@ Usage examples :
         "Returns its own single argument"
 
         return arg
+
+
+    def sum2(self, a, b):
+
+        return a+b
 
 
     def enumerate(self, *args):
@@ -363,6 +386,18 @@ Usage examples :
 
             if type(key_path)!=list:
                 key_path = key_path.split('.')
+
+            # pre-clone if necessary:
+            if (len(key_path)>1 or key_path[-1].endswith('+')) and (key_path[0] not in self.own_data()):
+                top_key = key_path[0]
+                if top_key.endswith('+'):
+                    top_key = top_key[:-1]      # trim it off
+                # print("BEFORE pre-cloning", top_key)
+                self.__setitem__( top_key, deepcopy( self.__getitem__(top_key, perform_nested_calls=False) ) )
+                # print("AFTER pre-cloning", top_key)
+            # else:
+                # print("NOT pre-cloning", key_path)
+
 
             struct_ptr = self.own_data()
 
