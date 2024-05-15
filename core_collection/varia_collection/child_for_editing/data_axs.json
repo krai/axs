@@ -1,0 +1,19 @@
+{
+    "_parent_entries": [
+        [
+            "^",
+            "byname",
+            "base_for_editing"
+        ]
+    ],
+    "number+": 900,
+    "string+": "de",
+    "list+": [
+        40,
+        50
+    ],
+    "dic+": {
+        "gamma": 300,
+        "delta": 400
+    }
+}

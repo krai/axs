@@ -6,6 +6,8 @@
     "contained_entries": {
         "base_map": "base_map",
         "derived_map": "derived_map",
+        "base_for_editing": "base_for_editing",
+        "child_for_editing": "child_for_editing",
         "be_like": "be_like",
         "dont_be_like": "dont_be_like",
         "numpy_import_test": "numpy_import_test",
