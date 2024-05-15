@@ -44,18 +44,22 @@ class ParamSource:
         return self.name
 
 
-    def set_own_data(self, mix_dict):
+    def set_own_data(self, mix_dict, topup=False):
 
         if type(mix_dict)==dict:
-            final_value_dict    = {}
+            if (not topup or
+                not hasattr(self, "own_data_cache") or
+                self.own_data_cache is None) :
+                    self.own_data_cache = {}
+
+            final_value_dict = self.own_data_cache
+
             pure_edits_dict     = {}
             for key_path in mix_dict:
                 if key_path.find('.')>-1 or key_path.endswith('+'):
                     pure_edits_dict[ key_path ] = mix_dict[ key_path ]
                 else:
                     final_value_dict[ key_path ] = mix_dict[ key_path ]
-
-            self.own_data_cache = final_value_dict
 
             if self.PARAMNAME_parent_entries in final_value_dict:
                 self.parent_objects = None      # trigger lazy-reloading of parents
@@ -392,11 +396,7 @@ Usage examples :
                 top_key = key_path[0]
                 if top_key.endswith('+'):
                     top_key = top_key[:-1]      # trim it off
-                # print("BEFORE pre-cloning", top_key)
                 self.__setitem__( top_key, deepcopy( self.__getitem__(top_key, perform_nested_calls=False) ) )
-                # print("AFTER pre-cloning", top_key)
-            # else:
-                # print("NOT pre-cloning", key_path)
 
 
             struct_ptr = self.own_data()

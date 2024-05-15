@@ -293,14 +293,14 @@ Usage examples :
             logging.debug(f"[{self.get_name()}]  Call '{cache_key}' NOT TAKEN from cache, have to run...")
 
 
-        if export_params and slice_relative_to:
-            override_dict = slice_relative_to.slice( *export_params )
-        else:
-            override_dict   = {}
+        ak = self.get_kernel()
 
-        override_dict.update( edit_dict or {} )
 
-        rt_call_specific    = Runnable(name='rt_call_specific_'+action_name+'/'+str(pos_params), own_data=override_dict, parent_objects = [ self ])     # FIXME: overlapping entry names are not unique
+        imported_slice = slice_relative_to.slice( *export_params ) if (export_params and slice_relative_to) else {}
+
+        rt_call_specific = Runnable(name='rt_call_specific_'+action_name+'/'+str(pos_params), own_data=imported_slice, parent_objects = [ self ], kernel=ak)     # FIXME: overlapping entry names are not unique
+
+        rt_call_specific.set_own_data( edit_dict or {} , topup=True)    # topping up with all the edits
 
 
         self.runtime_stack().append( rt_call_specific )
@@ -310,12 +310,9 @@ Usage examples :
 
         rt_call_specific.own_data( self.nested_calls( rt_call_specific.own_data() ) )   # perform the delayed interpretation of expressions
 
-
         captured_mapping    = {}    # retain the pointer to perform modifications later
-        ak = self.get_kernel()
         if ak:
             call_record_entry   = ak.fresh_entry(container=ak.record_container(), own_data=captured_mapping, generated_name_prefix=f"generated_by_{self.get_name()}_on_{action_name}_")
-            rt_call_specific['__record_entry__'] = call_record_entry    # the order is important: first nested_calls() (potentially blocked by {"AS^IS": {}}  then add __record_entry__
 
         if pos_params is None:
             pos_params = []                                 # allow pos_params to be missing
@@ -330,8 +327,9 @@ Usage examples :
 
         if action_name=='func':         # at least propagate edit_dict.  FIXME: maybe rely on func's signature if available?
             joint_arg_tuple     = pos_params
-            optional_arg_dict   = override_dict
+            optional_arg_dict   = rt_call_specific.own_data()
         else:
+            rt_call_specific['__record_entry__'] = call_record_entry    # the order is important: first nested_calls() (potentially blocked by {"AS^IS": {}}  then add __record_entry__
             action_object, joint_arg_tuple, optional_arg_dict   = function_access.prep(action_object, pos_params, self, captured_mapping)
 
         if ak:
