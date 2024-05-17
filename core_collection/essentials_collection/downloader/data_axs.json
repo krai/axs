@@ -1,6 +1,11 @@
 {
     "_producer_rules": [
-        [ [ "downloaded" ], [["get_kernel"],["byname","downloader"],["download"]], {} ]
+        [ [ "downloaded" ], [["download"]], {} ],
+        [ [ "downloaded", "example" ], [["download"]], {
+            "url": "http://example.com/",
+            "newborn_entry_name": "examplepage_downloaded",
+            "file_path": "example.html"
+        } ]
     ],
 
     "_parent_entries": [ [ "^", "byname", "entry_creator" ] ],
