@@ -310,9 +310,11 @@ Usage examples :
 
         rt_call_specific.own_data( self.nested_calls( rt_call_specific.own_data() ) )   # perform the delayed interpretation of expressions
 
-        captured_mapping    = {}    # retain the pointer to perform modifications later
         if ak:
-            call_record_entry   = ak.fresh_entry(container=ak.record_container(), own_data=captured_mapping, generated_name_prefix=f"generated_by_{self.get_name()}_on_{action_name}_")
+            call_record_entry   = ak.fresh_entry(container=ak.record_container(), generated_name_prefix=f"generated_by_{self.get_name()}_on_{action_name}_")
+            captured_mapping    = call_record_entry.own_data()  # retain the pointer to perform modifications later
+        else:
+            captured_mapping    = None # request not to capture the mapping
 
         if pos_params is None:
             pos_params = []                                 # allow pos_params to be missing
@@ -331,6 +333,7 @@ Usage examples :
         else:
             rt_call_specific['__record_entry__'] = call_record_entry    # the order is important: first nested_calls() (potentially blocked by {"AS^IS": {}}  then add __record_entry__
             action_object, joint_arg_tuple, optional_arg_dict   = function_access.prep(action_object, pos_params, self, captured_mapping)
+
 
         if ak:
             # adding all key-value pairs that were mentioned in the edit_dict, but not needed by the call(), to make sure they also get recorded
