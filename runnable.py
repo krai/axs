@@ -314,7 +314,8 @@ Usage examples :
             call_record_entry   = ak.fresh_entry(container=ak.record_container(), generated_name_prefix=f"generated_by_{self.get_name()}_on_{action_name}_")
             captured_mapping    = call_record_entry.own_data()  # retain the pointer to perform modifications later
         else:
-            captured_mapping    = None # request not to capture the mapping
+            captured_mapping    = None  # request not to capture the mapping
+            call_record_entry   = None  # to please a testing edge case
 
         if pos_params is None:
             pos_params = []                                 # allow pos_params to be missing
