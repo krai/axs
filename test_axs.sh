@@ -82,6 +82,21 @@ assert 'axs byname base_for_editing , get dic' "{'alpha': 100, 'gamma': 200}"
 assert 'axs byname base_for_editing , get dic --dic+,::=gamma:300,delta:400' "{'alpha': 100, 'gamma': 300, 'delta': 400}"
 assert_end editing_override
 
+assert 'axs byname child_for_editing , get number' '907'
+assert 'axs byname child_for_editing , get string' 'abcde'
+assert 'axs byname child_for_editing , get list' '[10, 20, 30, 40, 50]'
+assert 'axs byname child_for_editing , get dic' "{'alpha': 100, 'gamma': 300, 'delta': 400}"
+assert 'axs byname child_for_editing , get number --number+=980' '1887'
+assert 'axs byname child_for_editing , get number --number+=90' '997'
+assert 'axs byname child_for_editing , get string --string+=fgh' 'abcdefgh'
+assert 'axs byname child_for_editing , get list --list+,=60,70' '[10, 20, 30, 40, 50, 60, 70]'
+assert 'axs byname child_for_editing , get dic --dic+,::=gamma:500,delta:600' "{'alpha': 100, 'gamma': 500, 'delta': 600}"
+assert 'axs byname child_for_editing , get dic --dic+,::=beta:800' "{'alpha': 100, 'gamma': 300, 'delta': 400, 'beta': 800}"
+assert 'axs byname child_for_editing , get dic --empty_dic+,::=beta:500' "{'alpha': 100, 'gamma': 300, 'delta': 400}"
+assert 'axs byname child_for_editing , get empty_dic --empty_dic+,::=beta:500' "{'beta': 500}"
+assert 'axs byname child_for_editing , get empty_list --empty_list+,=100,200' "[100, 200]"
+assert_end editing_child_override
+
 #axs byname git , clone --repo_name=counting_collection
 axs byquery git_repo,collection,repo_name=counting_collection,url_prefix=https://github.com/ens-lg4
 export REPO_DIG_OUTPUT=`axs byname French , dig number_mapping.5`
