@@ -192,16 +192,21 @@ Usage examples :
             logging.debug(f"[{asking_entry.get_name()} -> {self.get_name()}]  parameter '{param_name}' is not contained here, skipping further")
 
 
+    def get_stack_value_generator(self, param_name, asking_entry):
+
+        for runtime_entry in self.runtime_stack():
+            yield from runtime_entry.get_stack_value_generator( param_name, asking_entry )
+
+        yield from self.get_own_value_generator( param_name, asking_entry )
+
+
     def getitem_generator(self, param_name, parent_recursion=None, asking_entry=None):
         "Walk the potential sources of the parameter (runtime, own_data and the parents recursively)"
 
         asking_entry = asking_entry or self
         logging.debug(f"[{self.get_name()}] Attempt to access parameter '{param_name}'...")
 
-        for runtime_entry in self.runtime_stack():
-            yield from runtime_entry.get_own_value_generator( param_name, asking_entry )
-
-        yield from self.get_own_value_generator( param_name, asking_entry )
+        yield from self.get_stack_value_generator( param_name, asking_entry )
 
         # trust the boolean value if it was defined,
         # otherwise the parameter's inheritability is encoded in its name:

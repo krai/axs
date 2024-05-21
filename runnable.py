@@ -304,11 +304,12 @@ Usage examples :
         rt_call_specific.set_own_data( edit_dict or {} , topup=True)    # topping up with all the edits
 
 
-        self.runtime_stack().append( rt_call_specific )
+        self.runtime_stack().append( rt_call_specific )     # FIXME: lots of collisions related to this
 
         if nested_context:
-            self.runtime_stack().extend( nested_context )
+            rt_call_specific.runtime_stack( nested_context )
 
+        # FIXME: this is a candidate for deletion. Be sure to seriously test the hell out of it
         rt_call_specific.own_data( self.nested_calls( rt_call_specific.own_data() ) )   # perform the delayed interpretation of expressions
 
         if ak:
@@ -358,10 +359,6 @@ Usage examples :
 
 
         result          = function_access.feed(action_object, joint_arg_tuple, optional_arg_dict)
-
-        if nested_context:
-            for i in range(len( nested_context )):
-                self.runtime_stack().pop()
 
         self.runtime_stack().pop()
 
@@ -456,19 +453,15 @@ Usage examples :
         """
         max_call_params     = 3     # action, pos_params, edit_dict
         pipeline_wide_data  = pipeline_wide_data or {}
-        rt_pipeline_wide    = self.get_kernel().bypath(path=f'rt_pipeline_wide_{Runnable.pipeline_counter}', own_data=pipeline_wide_data)  # the "service" pipeline-wide entry
+#        rt_pipeline_wide    = self.get_kernel().bypath(path=f'rt_pipeline_wide_{Runnable.pipeline_counter}', own_data=pipeline_wide_data)  # the "service" pipeline-wide entry
+        rt_pipeline_wide    = Runnable(name=f'rt_pipeline_wide_{Runnable.pipeline_counter}', own_data=pipeline_wide_data, kernel=self.get_kernel()) # the "service" pipeline-wide entry
         Runnable.pipeline_counter += 1
 
-#        inherited_context   = self.runtime_stack()
         local_context       = [ rt_pipeline_wide ]
         result              = entry = self
         insert_stash        = None
 
         for call_idx, call_params in enumerate(pipeline):
-
-#            if hasattr(result, 'call') and result!=entry:
-#                result.runtime_stack_cache = inherited_context
-#                local_context.append( entry )
 
             if type(call_params) == int:    # a number is a signal to insert the previous result into the pos_params of the next call
                 insert_stash = (call_params, result)
