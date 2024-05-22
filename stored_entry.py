@@ -285,6 +285,7 @@ Usage examples :
 
         if new_path:
             self.set_path( new_path )
+            self.is_stored = False
         else:
             new_path = self.get_path()
 
@@ -292,7 +293,7 @@ Usage examples :
         parameters_dirname, parameters_basename = os.path.split( parameters_path )
 
         if parameters_dirname and not self.is_stored:   # directory needs to be created
-            if os.path.exists( parameters_dirname):     # unexpected collision
+            if os.path.exists( parameters_dirname ):    # unexpected collision
 
                 if on_collision in ("force", "ignore"):
                     logging.warning(f"[{self.get_name()}] Saving into existing directory {parameters_dirname} in --on_collision=force mode")
@@ -312,12 +313,14 @@ Usage examples :
 
                     if os.path.exists(parameters_dirname):  # still a collision?
                         raise FileExistsError( f"Cannot save to {prev_parameters_dirname} or {parameters_dirname} as both directories exist. Please investigate or use --on_collision=force to override" )
+                    else:
+                        os.makedirs( parameters_dirname )
 
                 else: # elif on_collision=="raise":
                     raise FileExistsError( f"Cannot save to {parameters_dirname} as the directory exists. Use --on_collision=force to override" )
 
-            os.makedirs(parameters_dirname)
-
+            else:
+                os.makedirs( parameters_dirname )
 
         json_string = ufun.save_json( self.pickle_struct(self.own_data()), parameters_path, indent=4 )
 
@@ -354,6 +357,7 @@ Usage examples :
             logging.warning(f"[{self.get_name()}] was not stored in the file system, so cannot be removed")
 
         return self
+
 
 if __name__ == '__main__':
 
