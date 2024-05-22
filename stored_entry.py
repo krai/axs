@@ -354,6 +354,24 @@ Usage examples :
             logging.warning(f"[{self.get_name()}] was not stored in the file system, so cannot be removed")
 
         return self
+    
+        
+    def throw(self, error: str): # TODO: Is it possible to find out the field name? E.g. "v"
+        """Throw an error
+Usage examples :
+                "v": [ "^^", "throw", "Override this" ]
+        """
+        logging.error(error)
+        raise Exception(error)
+    
+    def throw_if_none(self, val, error):
+        """Throw an error if the value is none, else return the value
+Usage examples :
+                axs byname maybe_entry , throw_if_none "maybe_entry doesn't exist" , remove
+        """
+        if val is None:
+            self.throw(error)
+        return val
 
 
 if __name__ == '__main__':
