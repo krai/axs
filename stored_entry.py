@@ -355,15 +355,6 @@ Usage examples :
 
         return self
     
-        
-    def throw(self, error: str): # TODO: Is it possible to find out the field name? E.g. "v"
-        """Throw an error
-Usage examples :
-                "v": [ "^^", "throw", "Override this" ]
-        """
-        logging.error(error)
-        raise Exception(error)
-    
     def throw_if_none(self, val, error):
         """Throw an error if the value is none, else return the value
 Usage examples :

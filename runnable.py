@@ -4,11 +4,12 @@ import inspect
 import logging
 import re
 import sys
-
-import ufun
-import function_access
-from param_source import ParamSource
 from copy import deepcopy
+
+import function_access
+import ufun
+from param_source import ParamSource
+
 
 class Runnable(ParamSource):
     """An object of Runnable class is a non-persistent container of parameters (inherited) and code (own)
@@ -614,6 +615,15 @@ Usage examples :
         else:
             return input_structure                                                          # basement step
 
+    def throw(self, error_message, exception_class="Exception"): # TODO: Is it possible to find out the field name? E.g. "v"
+        """Throw an error
+Usage examples :
+                "x": [ "^^", "throw", "Override this" ]
+                "y": [ "^^", "throw", "Override this", "FileNotFoundError" ]
+        """
+        logging.error(f"Raising exception: {exception_class}({error_message})")
+        exception_class = eval(exception_class)
+        raise exception_class(error_message)
 
 def plus_one(number):
     "Adds 1 to the argument"
