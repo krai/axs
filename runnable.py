@@ -61,6 +61,7 @@ Usage examples :
     def reach_function(self, function_name):
         "Find a Runnable's function through the inheritance hierarchy"
 
+        ancestor_name_order = []
         for parent_obj, ancestry_path in self.parent_generator():
             own_functions   = parent_obj.own_functions()
 
@@ -68,8 +69,10 @@ Usage examples :
                 found_function = getattr(own_functions, function_name)
                 if inspect.isfunction(found_function):
                     return found_function, ancestry_path
+            else:
+                ancestor_name_order += [ parent_obj.get_name() ]
 
-        return None, None
+        return None, ancestor_name_order
 
 
     def reach_action(self, action_name, _ancestry_path=None):
@@ -91,8 +94,8 @@ Usage examples :
 
             return getattr(self, action_name)
         else:
-            raise NameError( "could not find the action '{}' neither along the ancestry path '{}' nor in the {} class".
-                              format(action_name, ' --> '.join(_ancestry_path),  self.__class__.__name__) )
+            raise NameError( "could not find the action '{}' neither among the ancestors ({}) nor in the {} class".
+                              format(action_name, ', '.join(ancestry_path),  self.__class__.__name__) )
 
 
     def can(self, action_name):
@@ -659,4 +662,4 @@ if __name__ == '__main__':
     try:
         print(f"child.call('nonexistent')={child.call('nonexistent')}\n")
     except NameError as e:
-        assert str(e)=="could not find the action 'nonexistent' neither along the ancestry path 'child' nor in the Runnable class"
+        assert str(e)=="could not find the action 'nonexistent' neither among the ancestors (child) nor in the Runnable class"
