@@ -122,6 +122,17 @@ Usage examples :
         return repr([parent_object.get_name() for parent_object in parent_objects]) if parent_objects else ""
 
 
+    def parent_generator(self, _ancestry_path=None):
+        "Yields the entry and its' parents in order"
+
+        new_ancestry_path = (_ancestry_path or []) + [ self.get_name() ]
+
+        yield self, new_ancestry_path
+
+        for parent_object in self.parents_loaded():
+            yield from parent_object.parent_generator( new_ancestry_path )
+
+
     def noop(self, arg):
         "Returns its own single argument"
 

@@ -58,27 +58,18 @@ Usage examples :
         return function_access.list_function_names(own_functions) if own_functions else []
 
 
-    def reach_function(self, function_name, _ancestry_path):
-        "Recursively find a Runnable's function - either its own or belonging to the nearest parent."
+    def reach_function(self, function_name):
+        "Find a Runnable's function through the inheritance hierarchy"
 
-        _ancestry_path.append( self.get_name() )
+        for parent_obj, ancestry_path in self.parent_generator():
+            own_functions   = parent_obj.own_functions()
 
-        own_functions   = self.own_functions()
+            if hasattr(own_functions, function_name):
+                found_function = getattr(own_functions, function_name)
+                if inspect.isfunction(found_function):
+                    return found_function, ancestry_path
 
-        if hasattr(own_functions, function_name):
-            found_function = getattr(own_functions, function_name)
-            if inspect.isfunction(found_function):
-                return found_function
-
-        found_function = None
-        for parent_object in self.parents_loaded():
-            found_function = parent_object.reach_function(function_name, _ancestry_path)
-            if found_function:
-                break
-            else:
-                _ancestry_path.pop()
-
-        return found_function
+        return None, None
 
 
     def reach_action(self, action_name, _ancestry_path=None):
@@ -88,15 +79,16 @@ Usage examples :
         if _ancestry_path == None:  # if we have to initialize it internally, the value will be lost to the caller
             _ancestry_path = []
 
-        function_object = self.reach_function( action_name, _ancestry_path )
+        function_object, ancestry_path = self.reach_function( action_name )
         if function_object:
             logging.debug(f"[{self.get_name()}] reach_action({action_name}) was found as a function")
 
+            _ancestry_path.extend( ancestry_path )
             return function_object
+
         elif hasattr(self, action_name):
             logging.debug(f"[{self.get_name()}] reach_action({action_name}) was found as a class method")
 
-            _ancestry_path.clear()  # empty the specific list given to us - a form of feedback
             return getattr(self, action_name)
         else:
             raise NameError( "could not find the action '{}' neither along the ancestry path '{}' nor in the {} class".
