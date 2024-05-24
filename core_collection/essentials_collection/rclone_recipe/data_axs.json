@@ -10,7 +10,7 @@
                 [ "byquery", [[ "^^", "substitute", "downloaded,rclone" ]] ],
                 [ "get_path" ]
             ]] ],
-	    "rel_result_path": [  "AS^IS", "AS^IS", "AS^IS", "AS^IS", "^^", "find_file", "^rclone$", { "return_full": true } ]
+	    "rel_result_path": [  "AS^IS", "AS^IS", "AS^IS", "^^", "find_file", "^rclone$", { "return_full": true } ]
         }, [ "url" ] ]
     ],
 

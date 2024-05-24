@@ -88,12 +88,12 @@
         [ [ "shell_tool", "can_extract_tar" ], [["detect"]], {
                 "tool_name": "tar",
                 "strip_components": 0,
-                "uncompression_insert": [ "AS^IS", "AS^IS", "AS^IS", "AS^IS", "^^", "case",   [ ["^^", "get", "archive_format"],
+                "uncompression_insert": [ "AS^IS", "AS^IS", "AS^IS", "^^", "case",   [ ["^^", "get", "archive_format"],
                     "tar", "",
                     "tgz", "z",
                     "txz", "J"
                 ] ],
-                "strip_components_insert": [ "AS^IS", "AS^IS", "AS^IS", "AS^IS", "^^", "case",   [ ["^^", "get", "strip_components"],
+                "strip_components_insert": [ "AS^IS", "AS^IS", "AS^IS", "^^", "case",   [ ["^^", "get", "strip_components"],
                     0, ""
                 ], {"default_value": ["^^", "substitute", "--strip-components #{strip_components}#"] } ],
                 "shell_cmd_templates": {
