@@ -303,7 +303,7 @@ Usage examples :
                 axs byname derived_map , substitute '#{first}#, #{third}# und #{fifth}#' --first=Erste
                 axs byname counting_collection , byname castellano , substitute '#{number_mapping.3}# + #{number_mapping.5}# = #{number_mapping.8}#'
         """
-        pre_pattern     = '{}([\w\.]+){}'.format(re.escape('#{'), re.escape('}#'))
+        pre_pattern     = '{}([\\w\\.]+){}'.format(re.escape('#{'), re.escape('}#'))
         full_pattern    = re.compile(     pre_pattern+'$' )
         sub_pattern     = re.compile( '('+pre_pattern+')' )
 

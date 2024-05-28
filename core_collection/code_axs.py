@@ -87,7 +87,7 @@ class FilterPile:
                     pre_val = str(val)
                     binary_op_match = True
                 else:
-                    binary_op_match = re.match('([\w\.\-]*\w)(:=|\?=|===|==|=|!==|!=|<>|<=|>=|<|>|:|!:)(.*)$', condition)
+                    binary_op_match = re.match('([\\w\\.\\-]*\\w)(:=|\\?=|===|==|=|!==|!=|<>|<=|>=|<|>|:|!:)(.*)$', condition)
                     if binary_op_match:
                         key_path    = binary_op_match.group(1)
                         op          = binary_op_match.group(2)
@@ -129,7 +129,7 @@ class FilterPile:
                     else:
                         raise SyntaxError(f"Could not parse the condition '{condition}' in {context}")
                 else:
-                    unary_op_match = re.match('([\w\.]*\w)(\.|!\.|\?|\+|-)$', condition)
+                    unary_op_match = re.match('([\\w\\.]*\\w)(\\.|!\\.|\\?|\\+|-)$', condition)
                     if unary_op_match:
                         key_path    = unary_op_match.group(1)
                         op          = unary_op_match.group(2)
@@ -147,7 +147,7 @@ class FilterPile:
                         else:
                             raise SyntaxError(f"Could not parse the condition '{condition}' in {context}")
                     else:
-                        tag_match = re.match('([!^-])?(\w+)$', condition)
+                        tag_match = re.match('([!^-])?(\\w+)$', condition)
                         if tag_match:
                             key_path    = 'tags'
                             val         = tag_match.group(2)
