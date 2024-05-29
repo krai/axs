@@ -5,6 +5,10 @@ os:         linux
 dist:       focal
 language:   python
 
+branches:
+  except:
+    - /^mlperf_.*/  # Exclude tags starting with "mlperf_"
+
 matrix:
   fast_finish: true
   allow_failures:
