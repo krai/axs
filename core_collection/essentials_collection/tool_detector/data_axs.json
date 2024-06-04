@@ -6,14 +6,14 @@
     "_producer_rules": [
         [ [ "shell_tool", "can_download_url_from_rclone" ] , [["detect"]], {
                 "tool_name": "rclone",
-		"tool_path": [ "^", "execute", [[
-		    [ "byquery", [ ["extracted", "rclone"] ] ],
-		    [ "get_path" ]
-		]]],
-		"rclone_config_path": [ "^", "execute", [[
-			[ "byquery", [ ["rclone_config", "mlc_inference"] ] ],
-			[ "get_path" ]
-		]]],
+        		"tool_path": [ "^", "execute", [[
+        		    [ "byquery", [ ["extracted", "rclone"] ] ],
+        		    [ "get_path" ]
+        		]]],
+        		"rclone_config_path": [ "^", "execute", [[
+        			[ "byquery", [ ["rclone_config", "mlc_inference"] ] ],
+        			[ "get_path" ]
+        		]]],
                 "shell_cmd_templates": {
                     "help": "\"#{tool_path}#\" --help",
                     "version": "\"#{tool_path}#\" --version",
