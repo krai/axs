@@ -458,7 +458,7 @@ Usage examples :
         return self.plant(*key_paths, pluck=True)
 
 
-    def case(self, question, *answer_value_pairs, default_value=None):
+    def case(self, question, *answer_value_pairs, default_value=None, execute_value=False):
         """An ordered key-to-value mapper, used for decision-making.
 
 Usage examples :
@@ -467,14 +467,16 @@ Usage examples :
         """
 
         avp_length  = len(answer_value_pairs)
+        final_value = default_value
         for i in range(0, avp_length, 2):
             answer  = answer_value_pairs[i]
             value   = answer_value_pairs[i+1]
 
             if (type(question)==type(answer) and question==answer) or (type(answer)==list and ufun.is_in(question,answer) ):
-                    return value
+                final_value = value
+                break
 
-        return default_value
+        return self.execute( final_value ) if execute_value else final_value
 
 
 if __name__ == '__main__':
