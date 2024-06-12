@@ -26,7 +26,10 @@
 
     "_parent_entries": [ [ "^", "byname", "entry_creator" ] ],
 
-    "patch_tool_entry": [ "^", "byquery", "shell_tool,can_patch" ],
+    "patch_tool_entry": [ "^^", "case", [ [ "^^", "get", [ "abs_patch_path", null] ],
+        null, [[ "noop", null ]] ],
+        { "default_value": [["get_kernel"],["byquery", "shell_tool,can_patch"]], "execute_value": true } ],
+
     "patch_part": [ "^^", "case", [ [ "^^", "get", ["patch", ""] ], ["", false, null, "None"], "" ],
         { "default_value": [ "^^", "func", [ "re.sub", "\\W", "_", [ "^^", "substitute", "_#{patch}#" ] ] ] }
      ],
