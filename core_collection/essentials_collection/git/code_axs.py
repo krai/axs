@@ -46,7 +46,7 @@ Usage examples :
         return None
 
 
-def clone(repo_name=None, url=None, rel_clone_dir=None, abs_result_path=None, newborn_entry=None, newborn_entry_path=None, move_on_up=True, checkout=None, submodules=False, abs_patch_path=None, git_tool_entry=None, patch_tool_entry=None, clone_options="", tags=None, contained_files=None, __entry__=None):
+def clone(repo_name=None, url=None, rel_clone_dir=None, abs_result_path=None, newborn_entry=None, newborn_entry_path=None, move_on_up=True, checkout=None, submodules=False, abs_patch_path=None, git_tool_entry=None, patch_tool_entry=None, clone_options="", tags=None, contained_files=None):
     """Clone a git repository into an Entry,
 
 Usage examples :
@@ -107,7 +107,7 @@ Usage examples :
 
                 axs byname git , pull `axs core_collection , get_path`
     """
-#    __entry__.call('subst_run', "\"#{tool_path}#\" -C \"#{repo_path}#\" pull --ff-only", { 'repo_path': repo_path} )
+#    git_tool_entry.call('subst_run', "\"#{tool_path}#\" -C \"#{repo_path}#\" pull --ff-only", { 'repo_path': repo_path} )
     git_tool_entry.call('run', [], { "cmd_key": "pull", "repo_path": repo_path} )
 
     return git_tool_entry

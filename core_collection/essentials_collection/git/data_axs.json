@@ -11,7 +11,7 @@
 
     "git_tool_entry": [ "^", "byquery", "shell_tool,can_git" ],
 
-    "patch_tool_entry": [ "^^", "case", [ [ "^^", "get", ["patch", null] ],
+    "patch_tool_entry": [ "^^", "case", [ [ "^^", "get", [ "abs_patch_path", null] ],
         null, [[ "noop", null ]] ],
         { "default_value": [["get_kernel"],["byquery", "shell_tool,can_patch"]], "execute_value": true } ],
 
