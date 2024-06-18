@@ -43,8 +43,9 @@ def flatten_options(pip_options):
     return flattened_options
 
 
-def install(package_name, flattened_options=None, installable=None, abs_install_dir=None, abs_patch_path=None, newborn_entry=None, __entry__=None):
+def install(installable, install_package, newborn_entry=None, patch_tool_entry=None, abs_patch_path=None):
     """Install a pip package into a separate entry, so that it could be easily use'd.
+    Technically this is a function wrapper around a recorded expression "available_package_versions".
 
 Usage examples :
 
@@ -73,14 +74,12 @@ Usage examples :
             axs byquery 'python_package,package_name=deps_for_project_A,installable="-r path/to/project_A/requirements.txt"'
     """
 
-    return_code = __entry__.call('get', 'install_package', {
-        "installable": installable,
-        "abs_install_dir": abs_install_dir,
-        "flattened_options": flattened_options,
-    } )
+    if install_package:     # the non-zero (shell) return value of a recorded expression indicates an error:
+        logging.error(f"A problem occured when trying to install {installable}, bailing out")
+        newborn_entry.remove()
+        return None
 
-    if abs_patch_path:
-        patch_tool_entry = __entry__['patch_tool_entry']
+    elif patch_tool_entry:
         newborn_entry.parent_objects = None
         abs_packages_dir = newborn_entry["abs_packages_dir"]
 
@@ -89,27 +88,23 @@ Usage examples :
         retval = patch_tool_entry.call('run', [], { 'entry_path': abs_packages_dir, 'abs_patch_path': abs_patch_path} )
         if retval != 0:
             logging.error(f"could not patch \"{abs_packages_dir}\" with \"{abs_patch_path}\", bailing out")
+            newborn_entry.remove()
             return None
 
-    if return_code:
-        logging.error(f"A problem occured when trying to install {installable}, bailing out")
-        newborn_entry.remove()
-        return None
-    else:
-        return newborn_entry
+    return newborn_entry
 
 
-def available_versions(package_name, force_binary=False, __entry__=None):
-    """Install a pip package into a separate entry, so that it could be easily use'd.
+def available_versions(available_package_versions):
+    """Find which versions of a given package are available.
+    Technically this is a function wrapper around a recorded expression "available_package_versions".
 
 Usage examples :
 
     # return the list of available versions for a specific package:
-            axs .pip.available_versions --package_name=scipy
-    """
-    versions_list = __entry__.call('get', 'available_package_versions', {
-        'package_name': package_name,
-        'force_binary': force_binary,
-    } )
+            axs byname pip , available_versions --package_name=numpy
 
-    return versions_list
+    # return the list of available versions for a specific package , specifically requiring only binary/precompiled packages:
+            axs byname pip , available_versions --package_name=numpy --force_binary+
+    """
+
+    return available_package_versions

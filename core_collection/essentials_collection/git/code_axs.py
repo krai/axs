@@ -46,7 +46,7 @@ Usage examples :
         return None
 
 
-def clone(repo_name=None, url=None, rel_clone_dir=None, newborn_entry=None, newborn_entry_path=None, move_on_up=True, checkout=None, submodules=False, abs_patch_path=None, patch=None, clone_options="", tags=None, contained_files=None, __entry__=None):
+def clone(repo_name=None, url=None, rel_clone_dir=None, abs_result_path=None, newborn_entry=None, newborn_entry_path=None, move_on_up=True, checkout=None, submodules=False, abs_patch_path=None, git_tool_entry=None, patch_tool_entry=None, clone_options="", tags=None, contained_files=None):
     """Clone a git repository into an Entry,
 
 Usage examples :
@@ -62,32 +62,29 @@ Clean-up:
                 axs byname counting_collection , remove
     """
 
-    assert __entry__ != None, "__entry__ should be defined"
+    assert git_tool_entry != None, "git_tool_entry should be defined"
 
-    retval = __entry__.call('run', [], { "cmd_key": "clone", "container_path": newborn_entry_path, "url": url, "clone_subdir": rel_clone_dir, "clone_options": clone_options, "capture_output": False } )
+    retval = git_tool_entry.call('run', [], { "cmd_key": "clone", "container_path": newborn_entry_path, "url": url, "clone_subdir": rel_clone_dir, "clone_options": clone_options, "capture_output": False } )
     if retval == 0:
 
-        abs_clone_dir = os.path.join(newborn_entry_path, rel_clone_dir)
-
         if checkout:
-            __entry__.call('run', [], { "cmd_key": "checkout", "repo_path": abs_clone_dir, "checkout": checkout } )
+            git_tool_entry.call('run', [], { "cmd_key": "checkout", "repo_path": abs_result_path, "checkout": checkout } )
 
         if submodules:
-            __entry__.call('run', [], { "cmd_key": "submodules_1", "repo_path": abs_clone_dir } )
-            __entry__.call('run', [], { "cmd_key": "submodules_2", "repo_path": abs_clone_dir } )
+            git_tool_entry.call('run', [], { "cmd_key": "submodules_1", "repo_path": abs_result_path } )
+            git_tool_entry.call('run', [], { "cmd_key": "submodules_2", "repo_path": abs_result_path } )
 
-        if abs_patch_path:
-            patch_tool_entry = __entry__['patch_tool_entry']
+        if patch_tool_entry:
             logging.warning(f"The resolved patch_tool_entry '{patch_tool_entry.get_name()}' located at '{patch_tool_entry.get_path()}' uses the shell tool '{patch_tool_entry['tool_path']}'")
 
-            retval = patch_tool_entry.call('run', [], { 'entry_path': abs_clone_dir, 'abs_patch_path': abs_patch_path} )
+            retval = patch_tool_entry.call('run', [], { 'entry_path': abs_result_path, 'abs_patch_path': abs_patch_path} )
             if retval != 0:
-                logging.error(f"could not patch \"{abs_clone_dir}\" with \"{abs_patch_path}\", bailing out")
+                logging.error(f"could not patch \"{abs_result_path}\" with \"{abs_patch_path}\", bailing out")
                 return None
 
         if move_on_up:
-            ufun.move_dir_contents_from_to( abs_clone_dir, newborn_entry_path )
-            ufun.rmdir( abs_clone_dir )
+            ufun.move_dir_contents_from_to( abs_result_path, newborn_entry_path )
+            ufun.rmdir( abs_result_path )
         else:
             newborn_entry['file_name'] = rel_clone_dir
             if tags and 'collection' in tags:
@@ -102,7 +99,7 @@ Clean-up:
         return None
 
 
-def pull(repo_path,  __entry__=None):
+def pull(repo_path,  git_tool_entry):
     """Pull the repository contained in an entry.
 
 Usage examples :
@@ -110,7 +107,7 @@ Usage examples :
 
                 axs byname git , pull `axs core_collection , get_path`
     """
-#    __entry__.call('subst_run', "\"#{tool_path}#\" -C \"#{repo_path}#\" pull --ff-only", { 'repo_path': repo_path} )
-    __entry__.call('run', [], { "cmd_key": "pull", "repo_path": repo_path} )
+#    git_tool_entry.call('subst_run', "\"#{tool_path}#\" -C \"#{repo_path}#\" pull --ff-only", { 'repo_path': repo_path} )
+    git_tool_entry.call('run', [], { "cmd_key": "pull", "repo_path": repo_path} )
 
-    return __entry__
+    return git_tool_entry

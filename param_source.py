@@ -122,6 +122,17 @@ Usage examples :
         return repr([parent_object.get_name() for parent_object in parent_objects]) if parent_objects else ""
 
 
+    def parent_generator(self, _ancestry_path=None):
+        "Yields the entry and its' parents in order"
+
+        new_ancestry_path = (_ancestry_path or []) + [ self.get_name() ]
+
+        yield self, new_ancestry_path
+
+        for parent_object in self.parents_loaded():
+            yield from parent_object.parent_generator( new_ancestry_path )
+
+
     def noop(self, arg):
         "Returns its own single argument"
 
@@ -192,27 +203,36 @@ Usage examples :
             logging.debug(f"[{asking_entry.get_name()} -> {self.get_name()}]  parameter '{param_name}' is not contained here, skipping further")
 
 
+    def get_stack_value_generator(self, param_name, asking_entry):
+
+        for runtime_entry in self.runtime_stack():
+            yield from runtime_entry.get_stack_value_generator( param_name, asking_entry )
+
+        yield from self.get_own_value_generator( param_name, asking_entry )
+
+
     def getitem_generator(self, param_name, parent_recursion=None, asking_entry=None):
         "Walk the potential sources of the parameter (runtime, own_data and the parents recursively)"
 
         asking_entry = asking_entry or self
         logging.debug(f"[{self.get_name()}] Attempt to access parameter '{param_name}'...")
 
-        for runtime_entry in self.runtime_stack():
-            yield from runtime_entry.get_own_value_generator( param_name, asking_entry )
-
-        yield from self.get_own_value_generator( param_name, asking_entry )
+        yield from self.get_stack_value_generator( param_name, asking_entry )
 
         # trust the boolean value if it was defined,
         # otherwise the parameter's inheritability is encoded in its name:
         if parent_recursion if parent_recursion is not None else param_name[0]!='_':
             for parent_object in self.parents_loaded():
-                logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}', fallback to the parent '{parent_object.get_name()}'")
-                try:
-                    yield from parent_object.getitem_generator(param_name, asking_entry=asking_entry)
-                except StopIteration:
-                    logging.debug(f"[{self.get_name()}]  My parent '{parent_object.get_name()}'' did not know about '{param_name}'")
-                    pass
+                if parent_object:
+                    logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}', fallback to the parent '{parent_object.get_name()}'")
+                    try:
+                        yield from parent_object.getitem_generator(param_name, asking_entry=asking_entry)
+                    except StopIteration:
+                        logging.debug(f"[{self.get_name()}]  My parent '{parent_object.get_name()}'' did not know about '{param_name}'")
+                        pass
+                else:
+                    raise RuntimeError( f"Some of entry {self.get_name()}'s parents could not be loaded, so their values cannot be inherited." ) # NB: part of the message should stay verbatim!
+
         else:
             logging.debug(f"[{self.get_name()}]  No parent recursion for '{param_name}', skipping further")
 
@@ -287,7 +307,7 @@ Usage examples :
                 axs byname derived_map , substitute '#{first}#, #{third}# und #{fifth}#' --first=Erste
                 axs byname counting_collection , byname castellano , substitute '#{number_mapping.3}# + #{number_mapping.5}# = #{number_mapping.8}#'
         """
-        pre_pattern     = '{}([\w\.]+){}'.format(re.escape('#{'), re.escape('}#'))
+        pre_pattern     = '{}([\\w\\.]+){}'.format(re.escape('#{'), re.escape('}#'))
         full_pattern    = re.compile(     pre_pattern+'$' )
         sub_pattern     = re.compile( '('+pre_pattern+')' )
 
@@ -442,7 +462,7 @@ Usage examples :
         return self.plant(*key_paths, pluck=True)
 
 
-    def case(self, question, *answer_value_pairs, default_value=None):
+    def case(self, question, *answer_value_pairs, default_value=None, execute_value=False):
         """An ordered key-to-value mapper, used for decision-making.
 
 Usage examples :
@@ -451,14 +471,16 @@ Usage examples :
         """
 
         avp_length  = len(answer_value_pairs)
+        final_value = default_value
         for i in range(0, avp_length, 2):
             answer  = answer_value_pairs[i]
             value   = answer_value_pairs[i+1]
 
             if (type(question)==type(answer) and question==answer) or (type(answer)==list and ufun.is_in(question,answer) ):
-                    return value
+                final_value = value
+                break
 
-        return default_value
+        return self.execute( final_value ) if execute_value else final_value
 
 
 if __name__ == '__main__':

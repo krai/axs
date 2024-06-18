@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import imp
+import importlib.util
 import logging
 import os
 import sys
@@ -237,16 +237,18 @@ Usage examples :
             if entry_path:
                 module_name = self.get_module_name()
 
-                try:
-                    (open_file_descriptor, path_to_module, module_description) = imp.find_module( module_name, [entry_path] )
-                except ImportError as e:
-                    self.own_functions_cache = False
-                else:
+                file_path = os.path.join( entry_path , module_name+'.py' )
+                if os.path.exists( file_path ):
+                    spec = importlib.util.spec_from_file_location(module_name, file_path)
                     self.own_functions_cache = False    # to avoid infinite recursion
                     self.touch('_BEFORE_CODE_LOADING')
+                    self.own_functions_cache = importlib.util.module_from_spec(spec)
                     sys.path.insert( 0, entry_path )    # allow (and prefer) code imports local to the entry
-                    self.own_functions_cache = imp.load_module(path_to_module, open_file_descriptor, path_to_module, module_description) or False
+                    spec.loader.exec_module( self.own_functions_cache )
                     sys.path.pop( 0 )                   # /allow (and prefer) code imports local to the entry
+
+                else:
+                    self.own_functions_cache = False
 
             else:
                 logging.debug(f"[{self.get_name()}] The entry does not have a path, so no functions either")

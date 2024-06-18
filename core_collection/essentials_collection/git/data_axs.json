@@ -7,11 +7,16 @@
         } ]
     ],
 
-    "_parent_entries": [ [ "^", "byquery", "shell_tool,can_git" ], [ "^", "byname", "entry_creator" ] ],
+    "_parent_entries": [ [ "^", "byname", "entry_creator" ] ],
 
-    "patch_tool_entry": [ "^", "byquery", "shell_tool,can_patch" ],
+    "git_tool_entry": [ "^", "byquery", "shell_tool,can_git" ],
+
+    "patch_tool_entry": [ "^^", "case", [ [ "^^", "get", [ "abs_patch_path", null] ],
+        null, [[ "noop", null ]] ],
+        { "default_value": [["get_kernel"],["byquery", "shell_tool,can_patch"]], "execute_value": true } ],
 
     "git_url": [ "^^", "execute", [[
+        [ "get", "git_tool_entry" ],
         [ "run", [], {
             "cmd_key": "origin_url",
             "repo_path": [ "^^", "get", "repo_path" ],
@@ -28,6 +33,7 @@
     "repo_path": [ "^^", "get_path" ],
 
     "current_checkout": [ "^^", "execute", [[
+        [ "get", "git_tool_entry" ],
         [ "run", [], {
             "cmd_key": "branch",
             "repo_path": [ "^^", "get", "repo_path" ],
@@ -55,7 +61,7 @@
     "url": [ "^^", "substitute", "#{url_prefix}#/#{repo_name}#" ],
 
     "rel_clone_dir": [ "^^", "substitute", "cloned_#{repo_name}#" ],
-
+    "inside_install_dir": [ "^^", "get", "rel_clone_dir" ],
 
 
     "checkout_part": [ "^^", "case", [ [ "^^", "get", ["checkout", ""] ], ["", false, null, "None"], "" ],

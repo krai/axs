@@ -58,27 +58,21 @@ Usage examples :
         return function_access.list_function_names(own_functions) if own_functions else []
 
 
-    def reach_function(self, function_name, _ancestry_path):
-        "Recursively find a Runnable's function - either its own or belonging to the nearest parent."
+    def reach_function(self, function_name):
+        "Find a Runnable's function through the inheritance hierarchy"
 
-        _ancestry_path.append( self.get_name() )
+        ancestor_name_order = []
+        for parent_obj, ancestry_path in self.parent_generator():
+            own_functions   = parent_obj.own_functions()
 
-        own_functions   = self.own_functions()
-
-        if hasattr(own_functions, function_name):
-            found_function = getattr(own_functions, function_name)
-            if inspect.isfunction(found_function):
-                return found_function
-
-        found_function = None
-        for parent_object in self.parents_loaded():
-            found_function = parent_object.reach_function(function_name, _ancestry_path)
-            if found_function:
-                break
+            if hasattr(own_functions, function_name):
+                found_function = getattr(own_functions, function_name)
+                if inspect.isfunction(found_function):
+                    return found_function, ancestry_path
             else:
-                _ancestry_path.pop()
+                ancestor_name_order += [ parent_obj.get_name() ]
 
-        return found_function
+        return None, ancestor_name_order
 
 
     def reach_action(self, action_name, _ancestry_path=None):
@@ -88,19 +82,20 @@ Usage examples :
         if _ancestry_path == None:  # if we have to initialize it internally, the value will be lost to the caller
             _ancestry_path = []
 
-        function_object = self.reach_function( action_name, _ancestry_path )
+        function_object, ancestry_path = self.reach_function( action_name )
         if function_object:
             logging.debug(f"[{self.get_name()}] reach_action({action_name}) was found as a function")
 
+            _ancestry_path.extend( ancestry_path )
             return function_object
+
         elif hasattr(self, action_name):
             logging.debug(f"[{self.get_name()}] reach_action({action_name}) was found as a class method")
 
-            _ancestry_path.clear()  # empty the specific list given to us - a form of feedback
             return getattr(self, action_name)
         else:
-            raise NameError( "could not find the action '{}' neither along the ancestry path '{}' nor in the {} class".
-                              format(action_name, ' --> '.join(_ancestry_path),  self.__class__.__name__) )
+            raise NameError( "could not find the action '{}' neither among the ancestors ({}) nor in the {} class".
+                              format(action_name, ', '.join(ancestry_path),  self.__class__.__name__) )
 
 
     def can(self, action_name):
@@ -304,11 +299,12 @@ Usage examples :
         rt_call_specific.set_own_data( edit_dict or {} , topup=True)    # topping up with all the edits
 
 
-        self.runtime_stack().append( rt_call_specific )
+        self.runtime_stack().append( rt_call_specific )     # FIXME: lots of collisions related to this
 
         if nested_context:
-            self.runtime_stack().extend( nested_context )
+            rt_call_specific.runtime_stack( nested_context )
 
+        # FIXME: this is a candidate for deletion. Be sure to seriously test the hell out of it
         rt_call_specific.own_data( self.nested_calls( rt_call_specific.own_data() ) )   # perform the delayed interpretation of expressions
 
         if ak:
@@ -358,10 +354,6 @@ Usage examples :
 
 
         result          = function_access.feed(action_object, joint_arg_tuple, optional_arg_dict)
-
-        if nested_context:
-            for i in range(len( nested_context )):
-                self.runtime_stack().pop()
 
         self.runtime_stack().pop()
 
@@ -456,19 +448,15 @@ Usage examples :
         """
         max_call_params     = 3     # action, pos_params, edit_dict
         pipeline_wide_data  = pipeline_wide_data or {}
-        rt_pipeline_wide    = self.get_kernel().bypath(path=f'rt_pipeline_wide_{Runnable.pipeline_counter}', own_data=pipeline_wide_data)  # the "service" pipeline-wide entry
+#        rt_pipeline_wide    = self.get_kernel().bypath(path=f'rt_pipeline_wide_{Runnable.pipeline_counter}', own_data=pipeline_wide_data)  # the "service" pipeline-wide entry
+        rt_pipeline_wide    = Runnable(name=f'rt_pipeline_wide_{Runnable.pipeline_counter}', own_data=pipeline_wide_data, kernel=self.get_kernel()) # the "service" pipeline-wide entry
         Runnable.pipeline_counter += 1
 
-#        inherited_context   = self.runtime_stack()
         local_context       = [ rt_pipeline_wide ]
         result              = entry = self
         insert_stash        = None
 
         for call_idx, call_params in enumerate(pipeline):
-
-#            if hasattr(result, 'call') and result!=entry:
-#                result.runtime_stack_cache = inherited_context
-#                local_context.append( entry )
 
             if type(call_params) == int:    # a number is a signal to insert the previous result into the pos_params of the next call
                 insert_stash = (call_params, result)
@@ -674,4 +662,4 @@ if __name__ == '__main__':
     try:
         print(f"child.call('nonexistent')={child.call('nonexistent')}\n")
     except NameError as e:
-        assert str(e)=="could not find the action 'nonexistent' neither along the ancestry path 'child' nor in the Runnable class"
+        assert str(e)=="could not find the action 'nonexistent' neither among the ancestors (child, dad, granddad, mum) nor in the Runnable class"
