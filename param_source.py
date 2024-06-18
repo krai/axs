@@ -223,12 +223,16 @@ Usage examples :
         # otherwise the parameter's inheritability is encoded in its name:
         if parent_recursion if parent_recursion is not None else param_name[0]!='_':
             for parent_object in self.parents_loaded():
-                logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}', fallback to the parent '{parent_object.get_name()}'")
-                try:
-                    yield from parent_object.getitem_generator(param_name, asking_entry=asking_entry)
-                except StopIteration:
-                    logging.debug(f"[{self.get_name()}]  My parent '{parent_object.get_name()}'' did not know about '{param_name}'")
-                    pass
+                if parent_object:
+                    logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}', fallback to the parent '{parent_object.get_name()}'")
+                    try:
+                        yield from parent_object.getitem_generator(param_name, asking_entry=asking_entry)
+                    except StopIteration:
+                        logging.debug(f"[{self.get_name()}]  My parent '{parent_object.get_name()}'' did not know about '{param_name}'")
+                        pass
+                else:
+                    raise RuntimeError( f"Some of entry {self.get_name()}'s parents could not be loaded, so their values cannot be inherited." ) # NB: part of the message should stay verbatim!
+
         else:
             logging.debug(f"[{self.get_name()}]  No parent recursion for '{param_name}', skipping further")
 
