@@ -42,6 +42,8 @@
             "output_file_name": "#{output_file_name}#"
         },
 
+        "collection_name": [ "AS^IS", "AS^IS", "^^", "get", [ "experiment_collection_name", [ "^^", "get", "work_collection_name" ] ] ],
+
         "execution_pipeline": [ "AS^IS", "AS^IS", "^^", "execute", [[
             ["run"],
             [ ],
