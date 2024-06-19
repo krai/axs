@@ -291,12 +291,22 @@ Usage examples :
 
         ak = self.get_kernel()
 
-
         imported_slice = slice_relative_to.slice( *export_params ) if (export_params and slice_relative_to) else {}
 
         rt_call_specific = Runnable(name='rt_call_specific_'+action_name+'/'+str(pos_params), own_data=imported_slice, parent_objects = [ self ], kernel=ak)     # FIXME: overlapping entry names are not unique
 
-        rt_call_specific.set_own_data( edit_dict or {} , topup=True)    # topping up with all the edits
+        local_edits  = {}
+        for one_edit in edit_dict or {}:
+            if one_edit.startswith('.'):    # remote edits of a named entry
+                _, remote_entry_name, remote_edit = one_edit.split('.', 2)
+                print(f"THIS IS A REMOTE EDIT: {remote_entry_name} :: {remote_edit} -> {edit_dict[one_edit]}")
+
+                remote_entry = ak.byname( remote_entry_name )
+                remote_entry.set_own_data( { remote_edit: edit_dict[one_edit] }, topup=True )   # FIXME: we are editing LIVE entries, DO NOT SAVE!
+            else:
+                local_edits.update( { one_edit: edit_dict[one_edit] } )
+
+        rt_call_specific.set_own_data( local_edits, topup=True)   # topping up with all the local edits
 
 
         self.runtime_stack().append( rt_call_specific )     # FIXME: lots of collisions related to this
