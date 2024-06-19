@@ -31,15 +31,3 @@ def ext_use_python_deps(python_deps=None, inherit_env_keys=None, extra_env=None)
         new_env['PATH'] = os.pathsep.join( path_parts )
 
     return new_env
-
-
-def python_sync_pip_package(package_query, python_tool_entry):
-    """A helper function to synchronize installed pip packages with the "workflow python" version.
-
-Usage examples:
-                axs bypath want_a_pip_sync_package , get python_deps --scipy_pip_query+=,no_deps --desired_python_version=3.9
-    """
-    if type(package_query)!=list:
-        package_query = package_query.split(',')
-
-    return python_tool_entry.get_kernel().byquery( package_query + [[ "desired_python_version", python_tool_entry["desired_python_version"] ]] )

@@ -10,6 +10,8 @@
         "extractor": "extractor",
         "git": "git",
 
+        "python_user": "python_user",
+
         "pip": "pip",
         "base_pip_package": "base_pip_package",
 
