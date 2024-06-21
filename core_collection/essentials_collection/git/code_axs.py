@@ -46,7 +46,7 @@ Usage examples :
         return None
 
 
-def clone(repo_name=None, url=None, rel_clone_dir=None, abs_result_path=None, newborn_entry=None, newborn_entry_path=None, move_on_up=True, checkout=None, submodules=False, abs_patch_path=None, git_tool_entry=None, patch_tool_entry=None, clone_options="", tags=None, contained_files=None):
+def clone(repo_name=None, url=None, env=None, rel_clone_dir=None, abs_result_path=None, newborn_entry=None, newborn_entry_path=None, move_on_up=True, checkout=None, submodules=False, abs_patch_path=None, git_tool_entry=None, patch_tool_entry=None, clone_options="", tags=None, contained_files=None):
     """Clone a git repository into an Entry,
 
 Usage examples :
@@ -64,7 +64,7 @@ Clean-up:
 
     assert git_tool_entry != None, "git_tool_entry should be defined"
 
-    retval = git_tool_entry.call('run', [], { "cmd_key": "clone", "container_path": newborn_entry_path, "url": url, "clone_subdir": rel_clone_dir, "clone_options": clone_options, "capture_output": False } )
+    retval = git_tool_entry.call('run', [], { "cmd_key": "clone", "container_path": newborn_entry_path, "url": url, "env": env, "clone_subdir": rel_clone_dir, "clone_options": clone_options, "capture_output": False } )
     if retval == 0:
 
         if checkout:
@@ -99,7 +99,7 @@ Clean-up:
         return None
 
 
-def pull(repo_path,  git_tool_entry):
+def pull(repo_path,  git_tool_entry, __entry__):
     """Pull the repository contained in an entry.
 
 Usage examples :
@@ -107,7 +107,24 @@ Usage examples :
 
                 axs byname git , pull `axs core_collection , get_path`
     """
-#    git_tool_entry.call('subst_run', "\"#{tool_path}#\" -C \"#{repo_path}#\" pull --ff-only", { 'repo_path': repo_path} )
-    git_tool_entry.call('run', [], { "cmd_key": "pull", "repo_path": repo_path} )
+    retval = git_tool_entry.call('run', [], { "cmd_key": "pull", "repo_path": repo_path} )
+    if retval == 0:
+        return __entry__
+    else:
+        logging.error(f"could not run:\n\tgit {rest_of_cmd}\nreturn value = {retval}, bailing out")
+        return None
 
-    return git_tool_entry
+
+def git(rest_of_cmd, env, repo_path, git_tool_entry, __entry__):
+    """Run an arbitrary git command in a git_repo
+
+Usage examples :
+                axs byname axs2mlperf , git branch
+    """
+    retval = git_tool_entry.call('run', [], { "cmd_key": "generic", "rest_of_cmd": rest_of_cmd, "env": env, "repo_path": repo_path, "capture_output": False} )
+    if retval == 0:
+        return __entry__
+    else:
+        logging.error(f"could not run:\n\tgit {rest_of_cmd}\nreturn value = {retval}, bailing out")
+        return None
+
