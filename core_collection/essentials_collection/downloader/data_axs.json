@@ -28,7 +28,11 @@
 
 
     "downloading_tool_query": "shell_tool,can_download_url",
-    "downloading_tool_entry": [ "^", "byquery", [[ "^^", "get", "downloading_tool_query" ]], {}, ["downloading_tool_query"] ],
+    "downloading_tool_query_add_for_creation": true,
+    "downloading_tool_entry": [ "^", "byquery",
+        [[ "^^", "get", "downloading_tool_query" ],
+         [ "^^", "get", "downloading_tool_query_add_for_creation"]
+        ], {}, ["downloading_tool_query", "downloading_tool_query_add_for_creation"] ],
 
     "md5_tool_query": [ "^^", "case", [[ "^^", "get", ["md5", null]],
         [ null, "" ], "" ],
