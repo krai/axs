@@ -59,7 +59,7 @@ Usage examples :
             self.entry_path = new_path
 
         elif self.container_object:             # relative to container
-            self.entry_path = os.path.join( self.container_object.get_path( new_path ) )
+            self.entry_path = os.path.join( self.container_object.call("get_path", new_path ) )
 
         else:                                   # relative to cwd
             self.entry_path = os.path.realpath( new_path )
@@ -271,7 +271,7 @@ Usage examples :
         else:
             fresh_entry_opt_args = { "own_data": self.pickle_struct(self.own_data()) }
             if self.container_object:
-                fresh_entry_opt_args["container"] = self.container_object.pickle_one()
+                fresh_entry_opt_args["container"] = self.container_object.call("pickle_one")
             return [ "^", "fresh_entry", [], fresh_entry_opt_args ]
 
 

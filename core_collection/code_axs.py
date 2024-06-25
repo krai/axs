@@ -10,9 +10,9 @@ import os
 def walk(__entry__, skip_entry_names=None):
     """An internal recursive generator not to be called directly
     """
-    ak = __entry__.get_kernel()
+    ak = __entry__.call("get_kernel")
     assert ak != None, "__entry__'s kernel should be defined"
-    collection_own_name = __entry__.get_name()
+    collection_own_name = __entry__.call("get_name")
 
     seen_entry_names = set()
     try:
@@ -28,7 +28,7 @@ def walk(__entry__, skip_entry_names=None):
             relative_entry_path = contained_entries[entry_name]
             logging.debug(f"collection({collection_own_name}): mapping {entry_name} to relative_entry_path={relative_entry_path}")
 
-            contained_entry = ak.bypath(path=__entry__.get_path(relative_entry_path), name=entry_name, container=__entry__)
+            contained_entry = ak.bypath(path=__entry__.call("get_path", relative_entry_path), name=entry_name, container=__entry__)
 
             # Have to resort to duck typing to avoid triggering dependencies by testing if contained_entry.can('walk'):
             if 'contained_entries' in contained_entry.own_data():
@@ -42,7 +42,7 @@ def walk(__entry__, skip_entry_names=None):
 
     except RuntimeError as e:
         if str(e)=="dictionary changed size during iteration":
-            print(f"Collection {__entry__.get_name()} modified under iteration, checking the new ones")
+            print(f"collection {collection_own_name} modified under iteration, checking the new ones")
             yield from walk(__entry__, seen_entry_names)
         else:
             raise e
@@ -53,7 +53,7 @@ def attached_entry(entry_path=None, own_data=None, generated_name_prefix=None, _
 Usage examples :
                 axs work_collection , attached_entry ultimate_answer ---='{"answer":42}' , save
     """
-    return __entry__.get_kernel().fresh_entry(container=__entry__, entry_path=entry_path, own_data=own_data, generated_name_prefix=generated_name_prefix)
+    return __entry__.call("get_kernel").fresh_entry(container=__entry__, entry_path=entry_path, own_data=own_data, generated_name_prefix=generated_name_prefix)
 
 
 def byname(entry_name, __entry__):
@@ -326,9 +326,11 @@ Usage examples :
     """
     assert __entry__ != None, "__entry__ should be defined"
 
+    collection_own_name = __entry__.call("get_name")
+
     parsed_query        = FilterPile( query, "Query" )
     if not parsed_query.filter_list:
-        logging.debug(f"[{__entry__.get_name()}] the query was empty => returning None")
+        logging.debug(f"[{collection_own_name}] the query was empty => returning None")
         return None
 
     # trying to match the Query in turn against each existing and walkable entry, first match returns:
@@ -338,10 +340,10 @@ Usage examples :
 
     # if a matching entry does not exist, see if we can produce it with a matching Rule
     if produce_if_not_found and len(parsed_query.posi_tag_set):
-        logging.info(f"[{__entry__.get_name()}] byquery({query}) did not find anything, but there are tags: {parsed_query.posi_tag_set} , trying to find a producer...")
+        logging.info(f"[{collection_own_name}] byquery({query}) did not find anything, but there are tags: {parsed_query.posi_tag_set} , trying to find a producer...")
 
         matching_rules = find_matching_rules(parsed_query, __entry__)
-        logging.info(f"[{__entry__.get_name()}] A total of {len(matching_rules)} matched rules found.\n")
+        logging.info(f"[{collection_own_name}] A total of {len(matching_rules)} matched rules found.\n")
 
         match_idx = 0
         for advertising_entry, unprocessed_rule, parsed_rule in matching_rules:
@@ -387,7 +389,7 @@ Usage examples :
                 logging.info(f"Matched Rule #{match_idx}/{len(matching_rules)} didn't produce a result, {len(matching_rules)-match_idx} more matched rules to try...\n")
 
     else:
-        logging.debug(f"[{__entry__.get_name()}] byquery({query}) did not find anything, and no matching _producer_rules => returning None")
+        logging.debug(f"[{collection_own_name}] byquery({query}) did not find anything, and no matching _producer_rules => returning None")
         return None
 
 
@@ -396,24 +398,24 @@ def add_entry_path(new_entry_path, new_entry_name=None, __entry__=None):
     """
     assert __entry__ != None, "__entry__ should be defined"
 
-    trimmed_new_entry_path  = __entry__.trim_path( new_entry_path )
+    trimmed_new_entry_path  = __entry__.call("trim_path", new_entry_path )
     new_entry_name          = new_entry_name or os.path.basename( trimmed_new_entry_path )
     existing_rel_path       = __entry__.dig(['contained_entries', new_entry_name], safe=True)
 
     if existing_rel_path:
         if existing_rel_path == trimmed_new_entry_path:
-            logging.warning(f"The entry {existing_rel_path} has already been attached to the {__entry__.get_name()} collection, skipping")
+            logging.warning(f'The entry {existing_rel_path} has already been attached to the {__entry__.call("get_name")} collection, skipping')
         else:
             raise(KeyError(f"There was already another entry named {new_entry_name} with path {existing_rel_path}, remove it first"))
     else:
-        __entry__.plant(['contained_entries', new_entry_name], trimmed_new_entry_path)
-        return __entry__.save( on_collision="force" )   # we expect a collision
+        __entry__.call("plant", [['contained_entries', new_entry_name], trimmed_new_entry_path])
+        return __entry__.call("save", [], { "on_collision": "force" } )   # we expect a collision
 
 
 def remove_entry_name(old_entry_name, __entry__):
 
-    contained_entries       = __entry__.pluck(['contained_entries', old_entry_name])
-    return __entry__.save( on_collision="force" )   # we expect a collision
+    contained_entries       = __entry__.call("pluck", [['contained_entries', old_entry_name]])
+    return __entry__.call("save", [], { "on_collision": "force" } )   # we expect a collision
 
 
 if __name__ == '__main__':
