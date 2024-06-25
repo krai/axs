@@ -111,7 +111,7 @@ Usage examples :
     if retval == 0:
         return __entry__
     else:
-        logging.error(f"could not run:\n\tgit {rest_of_cmd}\nreturn value = {retval}, bailing out")
+        logging.error(f"could not pull {repo_path} ; return value = {retval}, bailing out")
         return None
 
 
