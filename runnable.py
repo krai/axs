@@ -367,7 +367,7 @@ Usage examples :
 
         self.runtime_stack().pop()
 
-        if ak and result!=call_record_entry :
+        if ak and type(result)!=type(call_record_entry) or result!=call_record_entry :
             call_record_entry['__result__'] = result    # only visible if save()d after execution (not all application cases)
 
         logging.debug(f'[{self.get_name()}]  called action "{action_name}" with {pos_params}, got {result}')
@@ -583,7 +583,16 @@ Usage examples :
                 axs python_api '_= self.version().split('.')''
                 axs byquery package_name=scipy , python_api 'import scipy\nfrom scipy.special import exp10\n_=exp10([1,2,5,10])'
                 axs byquery package_name=numpy , python_api 'syll=self["abs_packages_dir"].split("/"); _=syll[-1]' '; '
+
+Deprecated, please use these (near) equivalents instead:
+
+                axs noop --,=10,20,30 ,0 func len
+                axs version , split '.'
+                axs byname git , attr .entry_path
+                axs byquery python_package,package_name=scipy , use , , func scipy.special.exp10 --,=1,2,5,10
+                axs byquery python_package,package_name=numpy , get abs_packages_dir , split / , __getitem__ -1
         """
+        logging.error(f"DEPRECATED: python_api({src_text})")
         exec( src_text.replace(line_sep, '\n') )       # working around newline encoding in shells
         return locals().get('_')
 
