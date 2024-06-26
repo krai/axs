@@ -604,7 +604,7 @@ Deprecated, please use these (near) equivalents instead:
             return [self.pickle_struct(e) for e in input_structure]                         # all list elements are pickled
         elif type(input_structure)==dict:
             return { k : self.pickle_struct(input_structure[k]) for k in input_structure }  # only values are pickled
-        elif hasattr(input_structure, 'pickle_one'):
+        elif hasattr(input_structure, 'pickle_one') and not inspect.isclass(input_structure):
             return input_structure.pickle_one()                                             # ground step
         else:
             return input_structure                                                          # basement step
