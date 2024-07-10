@@ -80,7 +80,8 @@
                 "shell_cmd_templates": {
                     "help": "\"#{tool_path}#\" --help",
                     "version": "\"#{tool_path}#\" --version",
-                    "dload": "\"#{tool_path}#\" -L -o \"#{target_path}#\" #{url}#"
+                    "dload": "\"#{tool_path}#\" -L -o \"#{target_path}#\" #{url}#",
+                    "rest_post": "\"#{tool_path}#\" \"#{url}#\" -H \"Content-Type: application/json\" -d '#{rest_input_json}#'"
                 },
                 "cmd_key": "dload"
         } ],
