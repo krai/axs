@@ -22,7 +22,7 @@ Usage examples:
     return __entry__.call( 'run', __entry__.substitute(template) )
 
 
-def run(shell_cmd, env=None, in_dir=None, capture_output=False, errorize_output=False, capture_stderr=False, split_to_lines=False, return_saved_record_entry=False, return_this_entry=None, get_and_return_on_success=None, __entry__=None, __record_entry__=None):
+def run(shell_cmd, env=None, in_dir=None, capture_output=False, errorize_output=False, capture_stderr=False, suppress_stderr=False, split_to_lines=False, return_saved_record_entry=False, return_this_entry=None, get_and_return_on_success=None, __entry__=None, __record_entry__=None):
     """Run the given shell command in the given environment
 
 Usage examples:
@@ -51,7 +51,12 @@ Usage examples:
     else:
         stdout_target = None
 
-    stderr_target = subprocess.PIPE if capture_stderr else None
+    if capture_stderr:
+        stderr_target = subprocess.PIPE
+    elif suppress_stderr:
+        stderr_target = subprocess.DEVNULL
+    else:
+        stderr_target = None
 
     if env:
         env = { k: str(env[k]) for k in env }   # cast all env's values to strings
