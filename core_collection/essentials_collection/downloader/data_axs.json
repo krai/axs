@@ -43,5 +43,9 @@
     "uncompress_tool_query": [ "^^", "case", [[ "^^", "get", ["uncompress_format", null]],
         [ null, "" ], "" ],
         { "default_value":  [ "^^", "substitute", "shell_tool,can_uncompress_#{uncompress_format}#" ] } ],
-    "uncompress_tool_entry": [ "^", "byquery", [[ "^^", "get", "uncompress_tool_query" ]], {}, ["uncompress_tool_query"] ]
+    "uncompress_tool_entry": [ "^", "byquery", [[ "^^", "get", "uncompress_tool_query" ]], {}, ["uncompress_tool_query"] ],
+
+    "patch_tool_entry": [ "^^", "case", [ [ "^^", "get", [ "abs_patch_path", null] ],
+        null, [[ "noop", null ]] ],
+    { "default_value": [["get_kernel"],["byquery", "shell_tool,can_patch"]], "execute_value": true } ]
 }

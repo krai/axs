@@ -40,7 +40,7 @@ def get_uncompressed_split_file_path(split_file_path, uncompress_format):
         return split_file_path
 
 
-def download(url, abs_result_path, stored_newborn_entry, newborn_entry_path, md5=None, uncompress_format=None, downloading_tool_entry=None, md5_tool_entry=None, uncompress_tool_entry=None):
+def download(url, abs_result_path, stored_newborn_entry, newborn_entry_path, downloading_tool_entry=None, md5=None, md5_tool_entry=None, uncompress_format=None, uncompress_tool_entry=None, abs_patch_path=None, patch_tool_entry=None):
     """Create a new entry and download the url into it
 
 Usage examples:
@@ -108,6 +108,15 @@ Usage examples:
                 logging.error(f"Uncompression from {uncompress_format} successful")
         else:
             logging.error(f"Uncompression from {uncompress_format} requested, but failed to detect a suitable tool")
+            stored_newborn_entry.remove()
+            return None
+
+    if patch_tool_entry:
+        logging.warning(f"The resolved patch_tool_entry '{patch_tool_entry.get_name()}' located at '{patch_tool_entry.get_path()}' uses the shell tool '{patch_tool_entry['tool_path']}'")
+
+        retval = patch_tool_entry.call('run', [], { 'entry_path': abs_result_path, 'abs_patch_path': abs_patch_path} )
+        if retval != 0:
+            logging.error(f"could not patch \"{abs_result_path}\" with \"{abs_patch_path}\", bailing out")
             stored_newborn_entry.remove()
             return None
 
