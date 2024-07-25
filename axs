@@ -57,7 +57,7 @@ def cli_parse(arglist):
         if arglist[i]==',':     # just skip the pipeline link separator
             i += 1
         elif arglist[i].startswith(','):
-            insert_position = int(arglist[i][1:])
+            insert_position = to_num_or_not_to_num(arglist[i][1:])
             pipeline.append( insert_position )
             i += 1
 
