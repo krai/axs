@@ -22,7 +22,7 @@ Usage examples:
     return __entry__.call( 'run', __entry__.substitute(template) )
 
 
-def run(shell_cmd, env=None, in_dir=None, capture_output=False, errorize_output=False, capture_stderr=False, suppress_stderr=False, split_to_lines=False, return_saved_record_entry=False, return_this_entry=None, get_and_return_on_success=None, __entry__=None, __record_entry__=None):
+def run(shell_cmd, in_dir=None, env=None, capture_output=False, errorize_output=False, capture_stderr=False, suppress_stderr=False, split_to_lines=False, return_saved_record_entry=False, return_this_entry=None, get_and_return_on_success=None, __entry__=None, __record_entry__=None):
     """Run the given shell command in the given environment
 
 Usage examples:
@@ -34,6 +34,9 @@ Usage examples:
     # first create a downloading tool, then use it:
                 axs fresh_entry ---own_data='{"_parent_entries":[["AS^IS","^","byname","shell"]]}' , plant tool_name wget tool_path --:=^^:which:wget shell_cmd '--:=AS^IS:^^:substitute:#{tool_path}# -O #{target_path}# #{url}#' tags --,=shell_tool,can_download_url , save wget_tool
                 axs bypath wget_tool , run --url=https://example.com --target_path=example.html
+
+    # run an interactive shell inside a given entry:
+                axs byname axs2mlperf , get_path ,1 .shell.run bash
     """
     if type(shell_cmd)==list:   # making sure all components are strings
         shell_cmd = [str(x) for x in shell_cmd]
