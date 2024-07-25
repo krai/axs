@@ -41,7 +41,7 @@ Usage examples:
     if type(shell_cmd)==list:   # making sure all components are strings
         shell_cmd = [str(x) for x in shell_cmd]
 
-    logging.warning(f"shell.run() about to execute (with env={env}, in_dir={in_dir}, capture_output={capture_output}, errorize_output={errorize_output}, capture_stderr={capture_stderr}, split_to_lines={split_to_lines}):\n\t{shell_cmd}\n" + (' '*8 + '^'*len(shell_cmd)) )
+    logging.warning(f"shell.run() about to execute (with in_dir={in_dir}, env={env}, capture_output={capture_output}, errorize_output={errorize_output}, capture_stderr={capture_stderr}, split_to_lines={split_to_lines}):\n\t{shell_cmd}\n" + (' '*8 + '^'*len(shell_cmd)) )
 
     if in_dir:
         prev_dir = os.getcwd()

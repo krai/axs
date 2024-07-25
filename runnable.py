@@ -468,12 +468,10 @@ Usage examples :
 
         for call_idx, call_params in enumerate(pipeline):
 
-            if type(call_params) == int:    # a number is a signal to insert the previous result into the pos_params of the next call
-                passing_param = (call_params, result)
-                entry = self
-
-            elif type(call_params) == str:  # a (string) param name is a signal to add the previous result into edit_dict of the next call
-                passing_param = {call_params: result}
+            if type(call_params) in (int, str): # a number is a signal to insert the previous result into the pos_params of the next call,
+                                                # a string param name is a signal to add the previous result into edit_dict of the next call
+                protected_result = { self.ESCAPE_do_not_process : result } if type(result) in (dict, list) else result
+                passing_param = (call_params, protected_result)
                 entry = self
 
             elif call_params == []:         # an empty list is a signal to start again from self
@@ -495,15 +493,13 @@ Usage examples :
                     pos_params = [ pos_params ]     # simplified syntax for single positional parameter actions
 
                 if passing_param:
-                    if type(passing_param) == int:      # insert the previous call's result into pos_params of the current call
-                        insert_position, insert_result = passing_param
+                    param_position_or_name, param_value = passing_param
+                    if type(param_position_or_name) == int:     # insert the previous call's result into pos_params of the current call
                         insert_position_offset = 1 if action_name=='func' else 0
-                        if type(insert_result) in (dict, list):
-                            insert_result = { self.ESCAPE_do_not_process : insert_result }
                         pos_params = pos_params[:]      # make a shallow copy to avoid editing original entry data
-                        pos_params.insert( insert_position+insert_position_offset, insert_result )
-                    elif type(passing_param) == dict:   # add the previous call's result to the edit_dict of the current call
-                        edit_dict.update( passing_param )
+                        pos_params.insert( param_position_or_name+insert_position_offset, param_value )
+                    elif type(param_position_or_name) == str:   # add the previous call's result to the edit_dict of the current call
+                        edit_dict[param_position_or_name] = param_value
 
                     passing_param = None     # empty it after use
 
