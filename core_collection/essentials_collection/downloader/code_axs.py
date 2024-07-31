@@ -40,7 +40,7 @@ def get_uncompressed_split_file_path(split_file_path, uncompress_format):
         return split_file_path
 
 
-def download(url, abs_result_path, stored_newborn_entry, newborn_entry_path, downloading_tool_entry=None, md5=None, md5_tool_entry=None, uncompress_format=None, uncompress_tool_entry=None, abs_patch_path=None, patch_tool_entry=None):
+def download(url, abs_result_path, stored_newborn_entry, newborn_entry_path, downloading_tool_entry=None, downloading_tool_cmd_key=None, md5=None, md5_tool_entry=None, uncompress_format=None, uncompress_tool_entry=None, abs_patch_path=None, patch_tool_entry=None):
     """Create a new entry and download the url into it
 
 Usage examples:
@@ -71,7 +71,7 @@ Usage examples:
 
     if downloading_tool_entry:
         logging.warning(f"The resolved downloading_tool_entry '{downloading_tool_entry.get_name()}' located at '{downloading_tool_entry.get_path()}' uses the shell tool '{downloading_tool_entry['tool_path']}'")
-        retval = downloading_tool_entry.call('run', [], {"url": url, "target_path": abs_result_path, "record_entry_path": newborn_entry_path})
+        retval = downloading_tool_entry.call('run', [], {"url": url, "target_path": abs_result_path, "record_entry_path": newborn_entry_path, "cmd_key": downloading_tool_cmd_key})
         if retval != 0:
             logging.error(f"A problem occured when trying to download '{url}' into '{abs_result_path}', bailing out")
             stored_newborn_entry.remove()

@@ -33,6 +33,7 @@
         [[ "^^", "get", "downloading_tool_query" ],
          [ "^^", "get", "downloading_tool_query_add_for_creation"]
         ], {}, ["downloading_tool_query", "downloading_tool_query_add_for_creation"] ],
+    "downloading_tool_cmd_key": "dload",
 
     "md5_tool_query": [ "^^", "case", [[ "^^", "get", ["md5", null]],
         [ null, "" ], "" ],
