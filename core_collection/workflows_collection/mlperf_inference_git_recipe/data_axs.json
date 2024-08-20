@@ -32,6 +32,7 @@
         "gptj_accuracy_script": [ "language", "gpt-j", "evaluation.py" ],
 
         "llama2_openorca_preprocess_script": [ "language", "llama2-70b", "processorca.py" ],
+        "llama2_reference_loadgen_script": [ "language", "llama2-70b", "main.py" ],
         "llama2_accuracy_script": [ "language", "llama2-70b", "evaluate-accuracy.py" ],
 
         "diffusion_coco2014_download_dir": [  "text_to_image", "tools" ],
