@@ -173,8 +173,43 @@
                 ]] ]
             }, ["exec_suffixes"]
         ],
-        [ [ "shell_tool", "can_python", "desired_python_version." ], [["detect"]],
+        [ [ "shell_tool", "can_python", "desired_python_version.", "source?=detected" ], [["detect"]],
             {   "tool_name": [ "AS^IS", "^^", "substitute", "python#{desired_python_version}#" ],
+                "shell_cmd_templates": {
+                    "version": "\"#{tool_path}#\" --version",
+                    "pip_install": "\"#{tool_path}#\" -m pip install #{installable}# --prefix=#{abs_install_dir}# --ignore-installed #{flattened_options}#",
+                    "pip_available_versions": "\"#{tool_path}#\" -m pip install #{package_name}#==88.88.88 #{flattened_options}# #{force_binary_str}#"
+                },
+                "cmd_key": "version",
+                "capture_output": true,
+                "tool_version": [ "AS^IS", "^^", "case", [ ["^^", "get", ["tool_path", ""] ],
+                    [null,""], [ [ "noop", null ] ] ], { "execute_value": true, "default_value": [
+                        [ "run", [], { "shell_cmd_with_subs": "\"#{tool_path}#\" --version" } ],
+                        [ "split", " " ],
+                        [ "__getitem__", 1 ]
+                    ] } ],
+                "major_dot_minor": [ "AS^IS", "^^", "execute", [[
+                    [ "get", "tool_version" ],
+                    0,
+                    [ "func", "str" ],
+                    [ "rsplit", [".", 1] ],
+                    [ "__getitem__", 0 ]
+                ]] ]
+            }, ["exec_suffixes"]
+        ],
+        [ [ "shell_tool", "can_python", "desired_python_version.", "source?=built" ], [["detect"]],
+            {   "minor_version": [ "AS^IS", "^^", "execute", [[
+                    [ "get", "desired_python_version" ],
+                    [ "split", "." ],
+                    [ "__getitem__", 1 ],
+                    0,
+                    [ "func", "int" ]
+                ]] ],
+                "tool_path": [ "AS^IS", "^^", "execute", [[
+                    [ "get_kernel" ],
+                    [ "byquery", [ ["installed", "python3", [ "minor_version", [ "^^", "get", "minor_version" ] ] ] ] ],
+                    [ "get_path" ]
+                ]]],
                 "shell_cmd_templates": {
                     "version": "\"#{tool_path}#\" --version",
                     "pip_install": "\"#{tool_path}#\" -m pip install #{installable}# --prefix=#{abs_install_dir}# --ignore-installed #{flattened_options}#",
@@ -188,11 +223,11 @@
                     [ "__getitem__", 1 ]
                 ]] ],
                 "major_dot_minor": [ "AS^IS", "^^", "execute", [[
-                    [ "get", "tool_version"],
+                    [ "get", "tool_version" ],
                     [ "rsplit", [".", 1] ],
                     [ "__getitem__", 0 ]
                 ]] ]
-            }, ["exec_suffixes"]
+            }
         ],
         [ [ "shell_tool", "can_python", "desired_python_version!." ], [["detect"]],
             {   "tool_name": [ "AS^IS", "^^", "substitute", "python#{desired_python_version}#", { "desired_python_version": ["^", "kernel_python_major_dot_minor"] } ],
