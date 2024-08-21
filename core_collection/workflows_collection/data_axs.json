@@ -12,6 +12,7 @@
         "bert": "bert",
         "gptj": "gptj",
         "c_support": "c_support",
-        "nvidia_gpu_support": "nvidia_gpu_support"
+        "nvidia_gpu_support": "nvidia_gpu_support",
+        "python_from_source_recipe": "python_from_source_recipe"
     }
 }
