@@ -395,11 +395,20 @@ Usage examples :
                 head = input_structure[0]
                 if head=='^^':
                     side_effects_count += 1
-                    return self.call( *input_structure[1:], slice_relative_to=self )
+                    try:
+                        return self.call( *input_structure[1:], slice_relative_to=self )
+                    except Exception as e:
+                        as_part = f"\nas part of\n\t{unprocessed_struct}" if input_structure!=unprocessed_struct else ""
+                        logging.error(f"[{self.get_name()}] While computing\n\t{input_structure}{as_part}\nthe following exception was raised:\n\t{e.__class__.__name__}({e})\n"+ ("="*120) )
+                        raise e
                 elif head=='^':
                     side_effects_count += 1
-                    return self.get_kernel().call( *input_structure[1:], slice_relative_to=self )
-#                    return self.get_kernel().call( *input_structure[1:], nested_context=[ self ] )  # need to keep the context if we want to nest Entry-based expressions into a Kernel-based expression
+                    try:
+                        return self.get_kernel().call( *input_structure[1:], slice_relative_to=self )
+                    except Exception as e:
+                        as_part = f" as part of {unprocessed_struct}" if input_structure!=unprocessed_struct else ""
+                        print("-"*120 + f"\n[{self.get_name()}] While computing {input_structure}{as_part} the following exception was raised:\n\t{e.__class__.__name__}({e})\n"+ "="*120, file=sys.stderr)
+                        raise e
                 elif head==self.ESCAPE_do_not_process:
                     side_effects_count += 1                                                         # it is only a "side effect" for the purposes of our GC-facilitating decision making below
                     return deepcopy( input_structure[1:] )                                          # drop the escape symbol, keeping the rest of the substructure intact
@@ -414,12 +423,7 @@ Usage examples :
             else:
                 return input_structure
 
-        processed_struct = None
-        try:
-            processed_struct = nested_calls_rec(unprocessed_struct)
-        except Exception as e:
-            print("-"*120 + f"\nWhile computing nested_calls in {unprocessed_struct} the following exception was raised: {e}\n"+ "="*120, file=sys.stderr)
-            raise(e)
+        processed_struct = nested_calls_rec(unprocessed_struct)
 
         return processed_struct if side_effects_count else unprocessed_struct                   # keeping the original if unchanged should help with GC
 
