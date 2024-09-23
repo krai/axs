@@ -1,8 +1,9 @@
 {
-    "_parent_entries": [ [ "^", "byname", "python_in_shell" ] ],
     "_producer_rules": [
-        [ [ "downloaded", "openimages_mlperf" ], [["run"]], { "return_saved_record_entry": true } ]
+        [ [ "downloaded", "openimages_mlperf" ], [[ "get", "pipeline" ]] ]
     ],
+    "_parent_entries": [ [ "^", "byname", "python_in_shell" ], [ "^", "byname", "entry_creator" ] ],
+
 
     "mlperf_inference_git_entry": [ "^", "byquery", "git_repo,repo_name=mlperf_inference_git" ],
 
@@ -14,12 +15,12 @@
     "openimages_mlperf_v2_1_path":  [ "^^", "execute", [[
         [ "get", "openimages_annotations_v21_entry" ],
         [ "get_path" ]
-]] ],
+    ]] ],
     "validation": false,
     "command_end":[  "^^", "case", [ [ "^^", "get", "validation" ],
                     true, [ "^^", "substitute", "cp #{openimages_mlperf_v2_1_path}# #{output_entry_path}#/annotations" ]],
                     { "default_value": "" }
-],
+    ],
     "entry_name_end": [  "^^", "case", [ [ "^^", "get", "validation" ],
                     true, "_validation"],
                     { "default_value": "" }
@@ -32,16 +33,19 @@
         [ "^^", "python_sync_pip_package", [[ "python_package", "package_name=requests" ]] ]
     ],
 
-    "output_entry_path": [ "^^", "execute", [[
-        [ "get", "__record_entry__" ],
-        [ "set_path", [ "^^", "substitute", "downloaded_openimages#{entry_name_end}#"] ],
-        [ "plant", [ "tags", [ "downloaded", "openimages_mlperf" ] ] ],
-        [ "plant", [ "validation", [ "^^", "substitute", "#{validation}#" ] ] ],
-        [ "attach", [ "^", "work_collection" ] ],
-        [ "save" ],
-        [ "get_path" ]
+
+    "newborn_entry_tags": [ "downloaded", "openimages_mlperf" ],
+    "newborn_parent_names": [ ],
+    "newborn_name_template": "downloaded_openimages#{entry_name_end}#",
+    "newborn_entry_param_names": [
+        "validation"
+    ],
+
+    "pipeline": [ "^^", "execute", [[
+        [ "run" ],
+        [ ],
+        [ "get", "stored_newborn_entry" ]
     ]] ],
 
-    "shell_cmd_with_subs": "./openimages_mlperf.sh --dataset-path #{output_entry_path}#; #{command_end}#"
-
+    "shell_cmd_with_subs": "./openimages_mlperf.sh --dataset-path #{newborn_entry_path}#; #{command_end}#"
 }

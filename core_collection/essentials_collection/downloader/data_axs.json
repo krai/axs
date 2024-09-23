@@ -1,26 +1,52 @@
 {
     "_producer_rules": [
-        [ [ "downloaded" ], [["get_kernel"],["byname","downloader"],["download"]], {} ]
+        [ [ "downloaded" ], [["download"]], {} ],
+        [ [ "downloaded", "example" ], [["download"]], {
+            "url": "http://example.com/",
+            "newborn_entry_name": "examplepage_downloaded",
+            "file_path": "example.html"
+        } ]
     ],
 
-    "action_name": "download",
-    "uncompress_format": "",
-    "extra_tags": ["downloaded"],
+    "_parent_entries": [ [ "^", "byname", "entry_creator" ] ],
 
     "split_file_path": [ "^^", "get_split_file_path" ],
-    "file_name": [ "^^", "get_uncompressed_split_file_path" ],
-    "entry_name": [ "^^", "execute", [[
+    "inside_install_dir": [ "^^", "get", "split_file_path" ],
+
+    "uncompressed_split_file_path": [ "^^", "get_uncompressed_split_file_path" ],
+    "newborn_entry_name": [ "^^", "execute", [[
         [ "noop", "_" ],
         [ "join", [[ "^^", "execute", [[
-                        [ "noop", [[ "^^", "get", "extra_tags" ]] ],
-                        [ "__add__", [[ "^^", "get_uncompressed_split_file_path" ]] ]
+                        [ "noop", [[ "downloaded" ]] ],
+                        [ "__add__", [[ "^^", "get", "uncompressed_split_file_path" ]] ]
                     ]] ]]
         ]
     ]] ],
+    "newborn_entry_tags": [ "downloaded" ],
+    "newborn_parent_names": [ ],
+    "newborn_entry_param_names": [ "url", { "file_name": "uncompressed_split_file_path" }, "md5", "uncompress_format", "downloading_tool_entry", "md5_tool_entry", "uncompress_tool_entry" ],
+
 
     "downloading_tool_query": "shell_tool,can_download_url",
-    "downloading_tool_entry": [ "^", "byquery", [[ "^^", "get", "downloading_tool_query" ]], {}, ["downloading_tool_query"] ],
+    "downloading_tool_query_add_for_creation": true,
+    "downloading_tool_entry": [ "^", "byquery",
+        [[ "^^", "get", "downloading_tool_query" ],
+         [ "^^", "get", "downloading_tool_query_add_for_creation"]
+        ], {}, ["downloading_tool_query", "downloading_tool_query_add_for_creation"] ],
+    "downloading_tool_cmd_key": "dload",
 
-    "md5_tool_entry": [ "^", "byquery", "shell_tool,can_compute_md5" ],
-    "uncompress_tool_entry": [ "^", "byquery", [[ "^^", "substitute", "shell_tool,can_uncompress_#{uncompress_format}#" ]], {}, ["uncompress_format"] ]
+    "md5_tool_query": [ "^^", "case", [[ "^^", "get", ["md5", null]],
+        [ null, "" ], "" ],
+        { "default_value": "shell_tool,can_compute_md5" } ],
+    "md5_tool_entry": [ "^", "byquery", [[ "^^", "get", "md5_tool_query" ]], {}, ["md5_tool_query"] ],
+
+    "uncompress_format": "",
+    "uncompress_tool_query": [ "^^", "case", [[ "^^", "get", ["uncompress_format", null]],
+        [ null, "" ], "" ],
+        { "default_value":  [ "^^", "substitute", "shell_tool,can_uncompress_#{uncompress_format}#" ] } ],
+    "uncompress_tool_entry": [ "^", "byquery", [[ "^^", "get", "uncompress_tool_query" ]], {}, ["uncompress_tool_query"] ],
+
+    "patch_tool_entry": [ "^^", "case", [ [ "^^", "get", [ "abs_patch_path", null] ],
+        null, [[ "noop", null ]] ],
+    { "default_value": [["get_kernel"],["byquery", "shell_tool,can_patch"]], "execute_value": true } ]
 }

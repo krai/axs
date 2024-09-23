@@ -5,8 +5,12 @@
 
         [ [ "python_package", "package_name==onnxruntime-gpu", ["desired_python_version", "3.6"] ], [["install"]], { "pip_options": "protobuf==3.19.4" }, ["desired_python_version"] ],
         [ [ "python_package", "package_name==onnxruntime", ["desired_python_version", "3.6"] ], [["install"]], { "pip_options": "protobuf==3.19.4" }, ["desired_python_version"] ],
+        [ [ "python_package", "package_name==onnxruntime", ["desired_python_version", "3.9"] ], [["install"]], { "pip_options": "\"numpy<2\"" }, ["desired_python_version"] ],
+        [ [ "python_package", "package_name==onnxruntime", ["desired_python_version", "3.10"] ], [["install"]], { "pip_options": "\"numpy<2\"" }, ["desired_python_version"] ],
+
         [ [ "python_package", "package_name==tensorflow", ["desired_python_version", "3.6"] ], [["install"]], { "pip_options": "protobuf==3.19.4" }, ["desired_python_version"] ],
         [ [ "python_package", "package_name==transformers", ["desired_python_version", "3.6"] ], [["install"]], { "package_version": "4.2.2" }, ["desired_python_version"] ],
+        [ [ "python_package", "package_name==tensorflow" ], [["install"]], { "pip_options": "\"urllib3<2\"" } ],
         [ [ "python_package", "package_name==transformers" ], [["install"]], { "pip_options": "\"urllib3<2\"" } ],
         [ [ "python_package", "package_name==accelerate"], [["install"]], { "pip_options": "\"urllib3<2\"" } ],
         [ [ "python_package", "package_name==datasets"], [["install"]], { "pip_options": "\"urllib3<2\"" } ],
@@ -23,14 +27,27 @@
         [ [ "python_package" ], [["install"]], {}, ["desired_python_version"] ]
     ],
 
+    "_parent_entries": [ [ "^", "byname", "entry_creator" ] ],
+
+    "patch_tool_entry": [ "^^", "case", [ [ "^^", "get", [ "abs_patch_path", null] ],
+        null, [[ "noop", null ]] ],
+        { "default_value": [["get_kernel"],["byquery", "shell_tool,can_patch"]], "execute_value": true } ],
+
+    "patch_part": [ "^^", "case", [ [ "^^", "get", ["patch", ""] ], ["", false, null, "None"], "" ],
+        { "default_value": [ "^^", "func", [ "re.sub", "\\W", "_", [ "^^", "substitute", "_#{patch}#" ] ] ] }
+     ],
+    "newborn_entry_tags": [ "python_package" ],
+    "newborn_parent_names": [ "base_pip_package" ],
+    "newborn_name_template": "#{package_name}##{version_suffix_name}#_package_for_python#{python_major_dot_minor}##{patch_part}#",
+    "newborn_entry_param_names": [ "package_name", "package_version", "pip_options", "installable", "python_major_dot_minor", "desired_python_version", "abs_patch_path", "patch" ],
+    "rel_install_dir": "install",
+
     "version_suffix_cmd": [ "^^", "case", [ [ "^^", "get", ["package_version", ""]] , "" , "" ], {"default_value":  [ "^^", "substitute", "==#{package_version}#"] } ],
     "installable": [ "^^", "substitute", "#{package_name}##{version_suffix_cmd}#"],
 
     "desired_python_version": ["^", "kernel_python_major_dot_minor"],
     "python_tool_entry": [ "^", "byquery", [[ "shell_tool", "can_python", ["desired_python_version", ["^^", "get", "desired_python_version"]] ]], {}, ["desired_python_version"] ],
     "python_major_dot_minor": [ "^^", "dig", "python_tool_entry.major_dot_minor" ],
-
-    "rel_install_dir": "install",
 
     "pip_options": "",
     "install_package": [ "^^", "execute", [[
@@ -61,6 +78,5 @@
         [ "split", ", " ]
     ]] ],
 
-    "version_suffix_name": [ "^^", "case", [ [ "^^", "get", ["package_version", ""]] , "" , "" ], {"default_value":  [ "^^", "substitute", "_#{package_version}#"] } ],
-    "pip_entry_name": [ "^^", "substitute", "#{package_name}##{version_suffix_name}#_package_for_python#{python_major_dot_minor}#"]
+    "version_suffix_name": [ "^^", "case", [ [ "^^", "get", ["package_version", ""]] , "" , "" ], {"default_value":  [ "^^", "substitute", "_#{package_version}#"] } ]
 }

@@ -3,7 +3,7 @@
         [ [ "downloaded", "coco_annotation" ], [["get_kernel"],["byname","downloader"],["download"]], {
         }, ["url", "md5"] ],
         [ [ "extracted",  "coco_annotation" ], [["get_kernel"],["byname","extractor"],["extract"]], {
-        }, [ "archive_path", "extra_dir_prefix", "internal_file_name" ] ]
+        }, [ "archive_path", "rel_install_dir", "inside_install_dir" ] ]
     ],
 
     "url": "http://images.cocodataset.org/annotations/annotations_trainval2017.zip",
@@ -13,6 +13,6 @@
              [ "byquery", [[ "^^", "substitute", "downloaded,coco_annotation" ]] ],
              [ "get_path" ]
     ]], {}, [] ],
-    "extra_dir_prefix": "",
-    "internal_file_name": "annotations"
+    "rel_install_dir": "",
+    "inside_install_dir": "annotations"
 }

@@ -24,22 +24,14 @@ def ext_use_python_deps(python_deps=None, inherit_env_keys=None, extra_env=None)
     if python_deps:     # Note the OS-independent way of joining individual paths
         new_env['PYTHONPATH']   = os.pathsep.join( [ dep if type(dep)==str else ( dep.get('abs_packages_dir') or dep.get_path(dep.get('file_name')) ) for dep in python_deps ] )
 
-        path_parts  = [ new_env.get('PATH') ] if new_env.get('PATH') else []
+        path_parts  = []
         for dep in python_deps:
             if dep and type(dep)!=str and dep.get('abs_bin_dir'):
                 path_parts.append( dep.get('abs_bin_dir') )
+
+        if new_env.get('PATH'):
+            path_parts.append( new_env.get('PATH') )
+
         new_env['PATH'] = os.pathsep.join( path_parts )
 
     return new_env
-
-
-def python_sync_pip_package(package_query, python_tool_entry):
-    """A helper function to synchronize installed pip packages with the "workflow python" version.
-
-Usage examples:
-                axs bypath want_a_pip_sync_package , get python_deps --scipy_pip_query+=,no_deps --desired_python_version=3.9
-    """
-    if type(package_query)!=list:
-        package_query = package_query.split(',')
-
-    return python_tool_entry.get_kernel().byquery( package_query + [[ "desired_python_version", python_tool_entry["desired_python_version"] ]] )

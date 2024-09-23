@@ -5,6 +5,10 @@ os:         linux
 dist:       focal
 language:   python
 
+branches:
+  except:
+    - /^mlperf_.*/  # Exclude tags starting with "mlperf_"
+
 matrix:
   fast_finish: true
   allow_failures:
@@ -103,14 +107,15 @@ matrix:
         - ONNX_CLASSIFY=on
         - PYTHON_EXE=python
 
-    - name: "Python 3.6 on FreeBSD"
+    - name: "Python 3.8 on FreeBSD"
       os: freebsd
+      addons:
+        pkg:
+          - bash
       language: python
-      python: 3.6
+      python: 3.8
       env:
         - PYTHON_EXE=python
-      before_install:
-        - sudo pkg install -y bash
 
     - name: "Python 3.6 on IBM Power"
       arch: ppc64le
@@ -144,8 +149,8 @@ install:
     - which git
     - git --version
     - wget https://raw.github.com/lehmannro/assert.sh/master/assert.sh
-    - axs byname pip , available_versions numpy --+
-    - axs byname pip , available_versions pillow --+
+    - axs byname pip , available_versions --package_name=numpy --force_binary+
+    - axs byname pip , available_versions --package_name=pillow --force_binary+
 
 script:
     - ${PYTHON_EXE} function_access.py

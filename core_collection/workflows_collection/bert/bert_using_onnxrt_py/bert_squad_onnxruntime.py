@@ -43,7 +43,7 @@ output_logits_dict = {}
 sess_options = onnxruntime.SessionOptions()
 
 print("Loading BERT model and weights from {} ...".format(bert_model_path))
-sess = onnxruntime.InferenceSession(bert_model_path, sess_options, providers =list(set(supported_execution_providers) & set(rt.get_available_providers())) )
+sess = onnxruntime.InferenceSession(bert_model_path, sess_options, providers=list(set(supported_execution_providers) & set(onnxruntime.get_available_providers())) )
 
 session_execution_provider=sess.get_providers()
 print("Session execution provider: ", sess.get_providers(), file=sys.stderr)

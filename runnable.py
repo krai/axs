@@ -4,11 +4,12 @@ import inspect
 import logging
 import re
 import sys
-
-import ufun
-import function_access
-from param_source import ParamSource
 from copy import deepcopy
+
+import function_access
+import ufun
+from param_source import ParamSource
+
 
 class Runnable(ParamSource):
     """An object of Runnable class is a non-persistent container of parameters (inherited) and code (own)
@@ -57,27 +58,21 @@ Usage examples :
         return function_access.list_function_names(own_functions) if own_functions else []
 
 
-    def reach_function(self, function_name, _ancestry_path):
-        "Recursively find a Runnable's function - either its own or belonging to the nearest parent."
+    def reach_function(self, function_name):
+        "Find a Runnable's function through the inheritance hierarchy"
 
-        _ancestry_path.append( self.get_name() )
+        ancestor_name_order = []
+        for parent_obj, ancestry_path in self.parent_generator():
+            own_functions   = parent_obj.own_functions()
 
-        own_functions   = self.own_functions()
-
-        if hasattr(own_functions, function_name):
-            found_function = getattr(own_functions, function_name)
-            if inspect.isfunction(found_function):
-                return found_function
-
-        found_function = None
-        for parent_object in self.parents_loaded():
-            found_function = parent_object.reach_function(function_name, _ancestry_path)
-            if found_function:
-                break
+            if hasattr(own_functions, function_name):
+                found_function = getattr(own_functions, function_name)
+                if inspect.isfunction(found_function):
+                    return found_function, ancestry_path
             else:
-                _ancestry_path.pop()
+                ancestor_name_order += [ parent_obj.get_name() ]
 
-        return found_function
+        return None, ancestor_name_order
 
 
     def reach_action(self, action_name, _ancestry_path=None):
@@ -87,19 +82,20 @@ Usage examples :
         if _ancestry_path == None:  # if we have to initialize it internally, the value will be lost to the caller
             _ancestry_path = []
 
-        function_object = self.reach_function( action_name, _ancestry_path )
+        function_object, ancestry_path = self.reach_function( action_name )
         if function_object:
             logging.debug(f"[{self.get_name()}] reach_action({action_name}) was found as a function")
 
+            _ancestry_path.extend( ancestry_path )
             return function_object
+
         elif hasattr(self, action_name):
             logging.debug(f"[{self.get_name()}] reach_action({action_name}) was found as a class method")
 
-            _ancestry_path.clear()  # empty the specific list given to us - a form of feedback
             return getattr(self, action_name)
         else:
-            raise NameError( "could not find the action '{}' neither along the ancestry path '{}' nor in the {} class".
-                              format(action_name, ' --> '.join(_ancestry_path),  self.__class__.__name__) )
+            raise NameError( "could not find the action '{}' neither among the ancestors ({}) nor in the {} class".
+                              format(action_name, ', '.join(ancestry_path),  self.__class__.__name__) )
 
 
     def can(self, action_name):
@@ -210,6 +206,8 @@ Usage examples :
         """Lazy parameter access: returns the parameter value from self or the closest parent,
             automatically executing nested_calls on the result.
         """
+        logging.debug(f"[{self.get_name()}]  Looking for [{param_name}]...")
+
         if param_name=='__entry__':
             return self
 
@@ -222,18 +220,23 @@ Usage examples :
             raise KeyError(param_name)
 
         if perform_nested_calls:
-            value_source_entry.blocked_param_set.add( param_name )
+            if param_name not in value_source_entry.blocked_param_set:
+                value_source_entry.blocked_param_set[param_name] = set()
+
+            value_source_entry.blocked_param_set[param_name].add(self.get_name())
+
             logging.debug(f"[{self.get_name()}]  BLOCKING '{param_name}' in order to compute nested_calls on {unprocessed_value} ...")
             try:
                 param_value = self.nested_calls(unprocessed_value)
             except Exception as e:
                 logging.debug(f"[{self.get_name()}]  unBLOCKING '{param_name}' after attempt to compute nested_calls on {unprocessed_value} ...")
-                value_source_entry.blocked_param_set.remove( param_name )
+                del value_source_entry.blocked_param_set[param_name]
                 raise e
             logging.debug(f"[{self.get_name()}]  unBLOCKING '{param_name}' after computing nested_calls on {unprocessed_value} ...")
-            value_source_entry.blocked_param_set.remove( param_name )
+
+            value_source_entry.blocked_param_set[param_name].remove(self.get_name())
         else:
-                param_value = unprocessed_value
+            param_value = unprocessed_value
 
         logging.debug(f"[{self.get_name()}]  Got {param_name}={param_value}")
 
@@ -286,44 +289,40 @@ Usage examples :
             logging.debug(f"[{self.get_name()}]  Call '{cache_key}' NOT TAKEN from cache, have to run...")
 
 
-        # pre-initializing each deep override from its full underlying stack value
-        edit_dict       = edit_dict or {}
-        override_dict   = {}
-        if export_params and slice_relative_to:
-            override_dict = slice_relative_to.slice( *export_params )
-        else:
-            override_dict   = {}
+        ak = self.get_kernel()
 
-        for edit_path in edit_dict:
-            dot_pos     = edit_path.find('.')
-            augment     = edit_path.endswith('+')
-            if dot_pos>-1 or augment:   # if both are True, dot should be found to the left of plus
-                if dot_pos>-1:
-                    edit_key = edit_path[:dot_pos]
-                elif augment:
-                    edit_key = edit_path[:-1]
+        imported_slice = slice_relative_to.slice( *export_params ) if (export_params and slice_relative_to) else {}
 
-                override_dict[edit_key] = deepcopy( self.__getitem__(edit_key, perform_nested_calls=False) )    # delay the interpretation to be able to edit expressions first
+        rt_call_specific = Runnable(name='rt_call_specific_'+action_name+'/'+str(pos_params), own_data=imported_slice, parent_objects = [ self ], kernel=ak)     # FIXME: overlapping entry names are not unique
 
-        rt_call_specific    = ParamSource(name='rt_call_specific_'+action_name+'/'+str(pos_params), own_data=override_dict)     # FIXME: overlapping entry names are not unique
+        local_edits  = {}
+        for one_edit in edit_dict or {}:
+            if one_edit.startswith('.'):    # remote edits of a named entry
+                _, remote_entry_name, remote_edit = one_edit.split('.', 2)
+                print(f"THIS IS A REMOTE EDIT: {remote_entry_name} :: {remote_edit} -> {edit_dict[one_edit]}")
 
-        # now planting all the edits into the new object (potentially editing expressions):
-        merged_edits = (x for p in edit_dict for x in (p, edit_dict[p]))
-        rt_call_specific.plant( *merged_edits )
+                remote_entry = ak.byname( remote_entry_name )
+                remote_entry.set_own_data( { remote_edit: edit_dict[one_edit] }, topup=True )   # FIXME: we are editing LIVE entries, DO NOT SAVE!
+            else:
+                local_edits.update( { one_edit: edit_dict[one_edit] } )
 
-        self.runtime_stack().append( rt_call_specific )
+        rt_call_specific.set_own_data( local_edits, topup=True)   # topping up with all the local edits
+
+
+        self.runtime_stack().append( rt_call_specific )     # FIXME: lots of collisions related to this
 
         if nested_context:
-            self.runtime_stack().extend( nested_context )
+            rt_call_specific.runtime_stack( nested_context )
 
+        # FIXME: this is a candidate for deletion. Be sure to seriously test the hell out of it
         rt_call_specific.own_data( self.nested_calls( rt_call_specific.own_data() ) )   # perform the delayed interpretation of expressions
 
-
-        captured_mapping    = {}    # retain the pointer to perform modifications later
-        ak = self.get_kernel()
         if ak:
-            call_record_entry   = ak.fresh_entry(container=ak.record_container(), own_data=captured_mapping, generated_name_prefix=f"generated_by_{self.get_name()}_on_{action_name}_")
-            rt_call_specific['__record_entry__'] = call_record_entry    # the order is important: first nested_calls() (potentially blocked by {"AS^IS": {}}  then add __record_entry__
+            call_record_entry   = ak.fresh_entry(container=ak.record_container(), generated_name_prefix=f"generated_by_{self.get_name()}_on_{action_name}_")
+            captured_mapping    = call_record_entry.own_data()  # retain the pointer to perform modifications later
+        else:
+            captured_mapping    = None  # request not to capture the mapping
+            call_record_entry   = None  # to please a testing edge case
 
         if pos_params is None:
             pos_params = []                                 # allow pos_params to be missing
@@ -338,9 +337,11 @@ Usage examples :
 
         if action_name=='func':         # at least propagate edit_dict.  FIXME: maybe rely on func's signature if available?
             joint_arg_tuple     = pos_params
-            optional_arg_dict   = edit_dict
+            optional_arg_dict   = rt_call_specific.own_data()
         else:
+            rt_call_specific['__record_entry__'] = call_record_entry    # the order is important: first nested_calls() (potentially blocked by {"AS^IS": {}}  then add __record_entry__
             action_object, joint_arg_tuple, optional_arg_dict   = function_access.prep(action_object, pos_params, self, captured_mapping)
+
 
         if ak:
             # adding all key-value pairs that were mentioned in the edit_dict, but not needed by the call(), to make sure they also get recorded
@@ -363,10 +364,6 @@ Usage examples :
 
 
         result          = function_access.feed(action_object, joint_arg_tuple, optional_arg_dict)
-
-        if nested_context:
-            for i in range(len( nested_context )):
-                self.runtime_stack().pop()
 
         self.runtime_stack().pop()
 
@@ -398,11 +395,20 @@ Usage examples :
                 head = input_structure[0]
                 if head=='^^':
                     side_effects_count += 1
-                    return self.call( *input_structure[1:] )
+                    try:
+                        return self.call( *input_structure[1:], slice_relative_to=self )
+                    except Exception as e:
+                        as_part = f"\nas part of\n\t{unprocessed_struct}" if input_structure!=unprocessed_struct else ""
+                        logging.error(f"[{self.get_name()}] While computing\n\t{input_structure}{as_part}\nthe following exception was raised:\n\t{e.__class__.__name__}({e})\n"+ ("="*120) )
+                        raise e
                 elif head=='^':
                     side_effects_count += 1
-                    return self.get_kernel().call( *input_structure[1:], slice_relative_to=self )
-#                    return self.get_kernel().call( *input_structure[1:], nested_context=[ self ] )  # need to keep the context if we want to nest Entry-based expressions into a Kernel-based expression
+                    try:
+                        return self.get_kernel().call( *input_structure[1:], slice_relative_to=self )
+                    except Exception as e:
+                        as_part = f" as part of {unprocessed_struct}" if input_structure!=unprocessed_struct else ""
+                        print("-"*120 + f"\n[{self.get_name()}] While computing {input_structure}{as_part} the following exception was raised:\n\t{e.__class__.__name__}({e})\n"+ "="*120, file=sys.stderr)
+                        raise e
                 elif head==self.ESCAPE_do_not_process:
                     side_effects_count += 1                                                         # it is only a "side effect" for the purposes of our GC-facilitating decision making below
                     return deepcopy( input_structure[1:] )                                          # drop the escape symbol, keeping the rest of the substructure intact
@@ -417,12 +423,7 @@ Usage examples :
             else:
                 return input_structure
 
-        processed_struct = None
-        try:
-            processed_struct = nested_calls_rec(unprocessed_struct)
-        except Exception as e:
-            print("-"*120 + f"\nWhile computing nested_calls in {unprocessed_struct} the following exception was raised: {e}\n"+ "="*120, file=sys.stderr)
-            raise(e)
+        processed_struct = nested_calls_rec(unprocessed_struct)
 
         return processed_struct if side_effects_count else unprocessed_struct                   # keeping the original if unchanged should help with GC
 
@@ -461,22 +462,20 @@ Usage examples :
         """
         max_call_params     = 3     # action, pos_params, edit_dict
         pipeline_wide_data  = pipeline_wide_data or {}
-        rt_pipeline_wide    = self.get_kernel().bypath(path=f'rt_pipeline_wide_{Runnable.pipeline_counter}', own_data=pipeline_wide_data)  # the "service" pipeline-wide entry
+#        rt_pipeline_wide    = self.get_kernel().bypath(path=f'rt_pipeline_wide_{Runnable.pipeline_counter}', own_data=pipeline_wide_data)  # the "service" pipeline-wide entry
+        rt_pipeline_wide    = Runnable(name=f'rt_pipeline_wide_{Runnable.pipeline_counter}', own_data=pipeline_wide_data, kernel=self.get_kernel()) # the "service" pipeline-wide entry
         Runnable.pipeline_counter += 1
 
-#        inherited_context   = self.runtime_stack()
         local_context       = [ rt_pipeline_wide ]
         result              = entry = self
-        insert_stash        = None
+        passing_param       = None
 
         for call_idx, call_params in enumerate(pipeline):
 
-#            if hasattr(result, 'call') and result!=entry:
-#                result.runtime_stack_cache = inherited_context
-#                local_context.append( entry )
-
-            if type(call_params) == int:    # a number is a signal to insert the previous result into the pos_params of the next call
-                insert_stash = (call_params, result)
+            if type(call_params) in (int, str): # a number is a signal to insert the previous result into the pos_params of the next call,
+                                                # a string param name is a signal to add the previous result into edit_dict of the next call
+                protected_result = { self.ESCAPE_do_not_process : result } if type(result) in (dict, list) else result
+                passing_param = (call_params, protected_result)
                 entry = self
 
             elif call_params == []:         # an empty list is a signal to start again from self
@@ -497,14 +496,17 @@ Usage examples :
                 if type(pos_params)!=list:      # first ensure pos_params is a list
                     pos_params = [ pos_params ]     # simplified syntax for single positional parameter actions
 
-                if insert_stash:                # insert the previous call's result into pos_params of the current call
-                    insert_position, insert_result = insert_stash
-                    insert_position_offset = 1 if action_name=='func' else 0
-                    if type(insert_result) in (dict, list):
-                        insert_result = { self.ESCAPE_do_not_process : insert_result }
-                    pos_params = pos_params[:]      # make a shallow copy to avoid editing original entry data
-                    pos_params.insert( insert_position+insert_position_offset, insert_result )
-                    insert_stash = None     # empty it after use
+                if passing_param:
+                    param_position_or_name, param_value = passing_param
+                    if type(param_position_or_name) == int:     # insert the previous call's result into pos_params of the current call
+                        insert_position_offset = 1 if action_name=='func' else 0
+                        pos_params = pos_params[:]      # make a shallow copy to avoid editing original entry data
+                        pos_params.insert( param_position_or_name+insert_position_offset, param_value )
+                    elif type(param_position_or_name) == str:   # add the previous call's result to the edit_dict of the current call
+                        edit_dict[param_position_or_name] = param_value
+
+                    passing_param = None     # empty it after use
+
 
                 if hasattr(entry, 'call'):                                  # an Entry-specific or Runnable-generic method ("func" called on an Entry will fire here)
                     # print(f"Before call({action_name}, {pos_params}, {edit_dict}, export:{export_params}, rel:+++{self}---)")
@@ -513,7 +515,7 @@ Usage examples :
                     action_object   = getattr(entry, action_name)
                     pos_params      = rt_pipeline_wide.nested_calls(pos_params)              # perform all nested calls if there are any
                     result          = function_access.feed(action_object, pos_params, edit_dict)
-                elif action_name[0]=='.':   # presumably a qualified name, let's start from self
+                elif action_name[0]=='.':   # presumably a qualified action_name, let's start from self
                     result = self.call(action_name, pos_params, edit_dict, export_params, slice_relative_to=self, call_record_entry_ptr=call_record_entry_ptr, nested_context=local_context)
                 else:
                     display_pipeline = "\n\t".join([str(step) for step in ["["]+pipeline]) + "\n]"
@@ -531,21 +533,26 @@ Usage examples :
 
 
     def attr(self, attr_name, default_attr_value=None):
-        """Access an arbitrary Python's attribute that is a member of a reachable module.
+        """Access an arbitrary Python's attribute that is a member of a reachable module (or self).
 
 Usage examples :
                 axs attr json.__file__
                 axs byquery python_package,package_name=numpy , use , attr numpy.__version__
+                axs fresh_entry alpha , attr .entry_path
         """
         attr_object = None
-        for syll in attr_name.split('.'):
-            try:
-                if attr_object:
-                    attr_object = getattr(attr_object, syll)
-                else:
-                    attr_object =  __import__(syll)
-            except Exception:
-                attr_object = default_attr_value
+
+        for i, syll in enumerate( attr_name.split('.') ):
+            if i==0 and syll=="":
+                attr_object = self
+            else:
+                try:
+                    if attr_object:
+                        attr_object = getattr(attr_object, syll)
+                    else:
+                        attr_object =  __import__(syll)
+                except Exception:
+                    attr_object = default_attr_value
         return attr_object
 
 
@@ -602,6 +609,15 @@ Usage examples :
         else:
             return input_structure                                                          # basement step
 
+    def throw(self, error_message, exception_class="Exception"): # TODO: Is it possible to find out the field name? E.g. "v"
+        """Throw an error
+Usage examples :
+                "x": [ "^^", "throw", "Override this" ]
+                "y": [ "^^", "throw", "Override this", "FileNotFoundError" ]
+        """
+        logging.error(f"Raising exception: {exception_class}({error_message})")
+        exception_class = eval(exception_class)
+        raise exception_class(error_message)
 
 def plus_one(number):
     "Adds 1 to the argument"
@@ -665,4 +681,4 @@ if __name__ == '__main__':
     try:
         print(f"child.call('nonexistent')={child.call('nonexistent')}\n")
     except NameError as e:
-        assert str(e)=="could not find the action 'nonexistent' neither along the ancestry path 'child' nor in the Runnable class"
+        assert str(e)=="could not find the action 'nonexistent' neither among the ancestors (child, dad, granddad, mum) nor in the Runnable class"

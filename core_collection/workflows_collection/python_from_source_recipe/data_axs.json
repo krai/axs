@@ -1,0 +1,48 @@
+{
+    "_producer_rules": [
+        [ [ "downloaded", "python3" ], [["get_kernel"],["byname","downloader"],["download"]], {
+            "url": [ "AS^IS", "^^", "substitute", "https://www.python.org/ftp/python/3.#{minor_version}#.#{patch_version}#/Python-3.#{minor_version}#.#{patch_version}#.tgz" ]
+        }, [ "minor_version", "patch_version" ] ],
+
+        [ [ "extracted",  "python3" ], [["get_kernel"],["byname","extractor"],["extract"]], {
+            "rel_install_dir": null,
+            "inside_install_dir": [ "AS^IS", "^^", "substitute", "Python-3.#{minor_version}#.#{patch_version}#" ]
+        }, [ "minor_version", "patch_version", "archive_path" ] ],
+
+        [ [ "installed", "python3" ], [[ "get", "pipeline"]] ]
+    ],
+    "_parent_entries": [ [ "^", "byname", "entry_creator" ] , [ "^", "byname", "shell" ] ],
+
+    "minor_version": 9,
+    "patch_version": [ "^^", "case", [[ "^^", "get", "minor_version" ],
+        8,  19,
+        9,  18,
+        10, 14,
+        11, 9,
+        12, 5
+    ], { "default_value": 0 } ],
+
+    "archive_path": [ "AS^IS", "^", "execute", [[
+        [ "byquery", [[ "^^", "substitute", "downloaded,python3,minor_version=#{minor_version}#,patch_version=#{patch_version}#" ]] ],
+        [ "get_path" ]
+    ]], {}, ["minor_version","patch_version"] ],
+
+    "rel_result_path": [ "bin", [ "AS^IS", "^^", "substitute", "python3.#{minor_version}#" ] ],
+    "newborn_name_template": "installed_Python-3.#{minor_version}#.#{patch_version}#",
+    "newborn_entry_tags": [ "installed", "python3" ],
+    "newborn_entry_param_names": [ "minor_version", "patch_version", { "file_name": "rel_result_path" } ],
+
+    "in_dir": [ "^^", "execute", [[
+        [ "get_kernel" ],
+        [ "byquery", [[ "^^", "substitute", "extracted,python3,minor_version=#{minor_version}#,patch_version=#{patch_version}#" ]] ],
+        [ "get_path" ]
+    ]] ],
+
+    "shell_cmd_with_subs": "./configure --prefix=#{newborn_entry_path}# ; make ; make install",
+
+    "pipeline": [ "^^", "execute", [[
+        [ "run" ],
+        [],
+        [ "get", "stored_newborn_entry" ]
+    ]] ]
+}

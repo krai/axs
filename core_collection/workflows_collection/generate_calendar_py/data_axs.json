@@ -1,30 +1,27 @@
 {
-    "_parent_entries": [ [ "^", "byname", "python_script" ] ],
     "_producer_rules": [
-        [ [ "program_output", "calendar" ], [["run"]], { "return_saved_record_entry": false } ]
+        [ [ "program_output", "calendar" ], [[ "get", "pipeline" ]] ]
     ],
-    
+    "_parent_entries": [ [ "^", "byname", "python_script" ], [ "^", "byname", "entry_creator" ] ],
+
     "python_deps": [ ],
 
-    "first_weekday": 0,
-    "month": 10,
     "year": 2022,
-    
-    "return_this_entry": [ "^^", "execute", [[
-        [ "get_kernel" ],
-        [ "work_collection" ],
-        [ "attached_entry", [ ["^^", "substitute", "calendar_#{year}#_#{month}#_#{first_weekday}#" ],["^^", "substitute", {
-            "_parent_entries": [ "AS^IS", [ "^", "byname", "base_experiment" ] ],
-            "tags": [ "program_output", "calendar" ]
-         } ] ] ],
-        [ "plant", [ "^^", "slice", [
-            "year",
-            "month",
-            "first_weekday"
-          ], { "plantable": true } ] ],
-        [ "save" ]
-      ]] ],
+    "month": 10,
+    "first_weekday": 0,
+
+    "newborn_entry_tags": [ "program_output", "calendar" ],
+    "newborn_parent_names": [ "base_experiment" ],
+    "newborn_name_template": "calendar_#{year}#_#{month}#_#{first_weekday}#",
+    "newborn_entry_param_names": [ "year", "month", "first_weekday" ],
+
+    "pipeline": [ "^^", "execute", [[
+        [ "run" ],
+        [ ],
+        [ "get", "stored_newborn_entry" ]
+    ]] ],
      
     "rel_script_path": "generate_calendar.py",
-    "script_extra_params": [ "^^", "substitute", "\"#{return_this_entry.input_json_file_path}#\" \"#{return_this_entry.output_json_file_path}#\" " ]
+
+    "script_params_template": "\"#{stored_newborn_entry.input_json_file_path}#\" \"#{stored_newborn_entry.output_json_file_path}#\" "
 }

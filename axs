@@ -8,6 +8,7 @@ import logging
 import re
 import sys
 
+logging.basicConfig( level=logging.INFO )
 #logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")   # put this BEFORE IMPORTING the kernel to see logging from the kernel
 
 from function_access import to_num_or_not_to_num
@@ -56,7 +57,7 @@ def cli_parse(arglist):
         if arglist[i]==',':     # just skip the pipeline link separator
             i += 1
         elif arglist[i].startswith(','):
-            insert_position = int(arglist[i][1:])
+            insert_position = to_num_or_not_to_num(arglist[i][1:])
             pipeline.append( insert_position )
             i += 1
 
@@ -79,11 +80,11 @@ def cli_parse(arglist):
                     if re.match(r'^(\w*):(?:(\w*):)?$', arglist[i]):                # input and/or output label(s)
                         matched = re.match(r'^(\w*):(?:(\w*):)?$', arglist[i])
                         curr_link.extend( [ None, call_pos_params, call_params, matched.group(1), matched.group(2) ] )
-                    elif re.match(r'^([\w\.]+)$', arglist[i]):                      # a normal action (qualified or local)
+                    elif re.match(r'^(?:\.[\w\-]*\.)?(?:\w+\.)*\w+$', arglist[i]):                      # a normal action (qualified or local)
                         curr_link.extend( [ arglist[i], call_pos_params, call_params ] )
                     else:
                         raise(Exception("Parsing error - cannot understand non-option '{}' before an action".format(arglist[i])))
-                elif curr_link[0] is None and re.match(r'^([\w\.]+)$', arglist[i]): # a normal action (qualified or local) after input/output label(s)
+                elif curr_link[0] is None and re.match(r'^(?:\.[\w\-]*\.)?(?:\w+\.)*\w+$', arglist[i]): # a normal action (qualified or local) after input/output label(s)
                     curr_link[0] = arglist[i]
                 else:
                     call_pos_params.append( to_num_or_not_to_num(arglist[i]) )      # a positional argument
@@ -138,7 +139,7 @@ def main():
     try:
         return ak.execute(pipeline)
     except RuntimeError as e:
-        print(str(e), file=sys.stderr)
+        logging.error(f"RuntimeError: {e}")
 
 if __name__ == '__main__':
     print(ak.pickle_struct(main()))

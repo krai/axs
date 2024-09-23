@@ -1,0 +1,16 @@
+{
+    "_producer_rules": [
+        [ [ "collection"  ], [["get", "new_collection_entry"]], {} ]
+    ],
+
+    "new_collection_entry": [ "^^", "execute", [[
+        [ "get_kernel" ],
+        [ "work_collection" ],
+        [ "attached_entry", [ [ "^^", "get", "collection_name" ], {
+                "_parent_entries": [ "AS^IS", "AS^IS", [ "^", "core_collection" ] ],
+                "tags": [ "collection" ],
+                "contained_entries": {}
+         } ] ],
+        [ "save" ]
+    ]] ]
+}

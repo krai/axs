@@ -1,0 +1,5 @@
+{
+    "desired_python_version": ["^", "kernel_python_major_dot_minor"],
+    "python_tool_entry": [ "^", "byquery", [[ "shell_tool", "can_python", ["desired_python_version", ["^^", "get", "desired_python_version"]] ]], {}, ["desired_python_version"] ],
+    "python_major_dot_minor": [ "^^", "dig", "python_tool_entry.major_dot_minor" ]
+}

@@ -1,13 +1,23 @@
 {
+    "_parent_entries": [ [ "^", "byname", "python_script" ] ],
     
     "output_entry_parents": [ ],
     "output_entry_common_param_names": [ "dataset_name", "model_name", "framework" ],
     "output_entry_param_names": [ ],
     "output_entry_subs_listmap": [ ],
     "output_entry_tags": [ "program_output" ],
+
+    "work_collection_name": [ "^", "execute", [[
+        [ "work_collection" ],
+        [ "get_name" ]
+    ]] ],
+    "experiment_collection_name": [ "^^", "get", "work_collection_name" ],
+
+    "collection_object": [ "^", "byquery", ["^^", "substitute", "collection,collection_name=#{experiment_collection_name}#" ], { "parent_recursion": true }, [ "experiment_collection_name" ] ],
+
     "output_entry": [ "^^", "execute", [[
         [ "get", "__record_entry__" ],
-        [ "attach", [ "^", "work_collection" ] ],
+        [ "attach",  [ "^^", "get", "collection_object" ] ],
         [ "plant", [
                 "_parent_entries", ["^^", "get", "output_entry_parents" ],
                 "tags", ["^^", "get", "output_entry_tags" ]
@@ -19,5 +29,7 @@
     ]] ],
     
     "input_file_path": [ "^^", "dig", "output_entry.input_json_file_path" ],
-    "output_file_path": [ "^^", "dig", "output_entry.output_json_file_path" ]
+    "output_file_path": [ "^^", "dig", "output_entry.output_json_file_path" ],
+
+    "script_params_template": "\"#{input_file_path}#\" \"#{output_file_path}#\""
 }

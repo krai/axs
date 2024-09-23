@@ -1,0 +1,20 @@
+{
+    "_parent_entries": [ [ "^", "byname", "shell" ] ],
+    "_producer_rules": [
+        [ [ "downloaded", "rclone" ], [["get_kernel"],["byname","downloader"],["download"]], {
+        }, [ "url" ] ],
+
+        [ [ "extracted",  "rclone" ], [["get_kernel"],["byname","extractor"],["extract"]], {
+            "archive_format": "zip",
+            "archive_path": [ "^", "execute", [[
+                [ "byquery", [[ "^^", "substitute", "downloaded,rclone" ]] ],
+                [ "get_path" ]
+            ]] ],
+	    "rel_result_path": [  "AS^IS", "AS^IS", "AS^IS", "^^", "find_file", "^rclone$", { "return_full": true } ]
+        }, [ "url" ] ]
+    ],
+
+    "shell_cmd": [ "^^", "get_path", "install.sh"],
+    "capture_output": true,
+    "url": [ "^^", "run" ]
+}

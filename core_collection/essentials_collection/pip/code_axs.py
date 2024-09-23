@@ -3,11 +3,21 @@
 """ This entry knows how to install pip packages into generated entries.
 
 Usage examples :
-                axs byname pip , install numpy
 
-                axs byname pip , install numpy 1.16.4
+    # install a given pip package:
+            axs byname pip , install numpy
 
-                axs byname pip , get available_package_versions --package_name=tensorrt --pip_options="--extra-index-url https://pypi.nvidia.com"
+    # install a specific version of the given pip package:
+            axs byname pip , install numpy 1.16.4
+
+    # check available versions for a specific package (optionally from a specific index)
+            axs byname pip , get available_package_versions --package_name=tensorrt --pip_options="--extra-index-url https://pypi.nvidia.com"
+
+    # get an attribute from a specific package:
+            axs byquery python_package,package_name=numpy , use , , attr numpy.pi
+
+    # run a function from a specific package:
+            axs byquery python_package,package_name=numpy , use , , func numpy.log 10
 """
 
 import logging
@@ -33,58 +43,68 @@ def flatten_options(pip_options):
     return flattened_options
 
 
-# Please note: some of the parameters below, although not directly used by the method,
-#   must still be present in order to be automatically recorded via __record_entry__ mechanism.
-#
-def install(package_name, flattened_options=None, installable=None, pip_entry_name=None, rel_install_dir=None, rel_packages_dir=None, python_major_dot_minor=None, tags=None,  __record_entry__=None, __entry__=None):
+def install(installable, install_package, newborn_entry=None, patch_tool_entry=None, abs_patch_path=None):
     """Install a pip package into a separate entry, so that it could be easily use'd.
+    Technically this is a function wrapper around a recorded expression "available_package_versions".
 
 Usage examples :
-                axs byname pip , install numpy 1.16.4
 
-                axs byname pip , install numpy
+    # install a given pip package:
+            axs .pip.install numpy
 
-                axs byname pip , install scipy 1.5.1 --pip_options,=no-deps --tags,=python_package,no_deps
+    # install a specific version of the given pip package:
+            axs .pip.install numpy 1.16.4
 
-                axs byname pip , install --package_name=torchvision --package_version=0.11.1+cu113 --pip_options="torch==1.10.0+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html"
+    # only install the specific package, without dependencies:
+            axs byname pip , install scipy 1.5.1 --pip_options,=no-deps --tags,=python_package,no_deps
 
-            # installing from a wheel file:
-                axs byname pip , install mlperf_loadgen 1.1 --installable=$HOME/work_collection/mlperf_inference_git/loadgen/dist/mlperf_loadgen-1.1-cp36-cp36m-macosx_10_9_x86_64.whl
+    # install a specific package with a specific version with a specific dependency version, given a "links file" :
+            axs byname pip , install --package_name=torchvision --package_version=0.11.1+cu113 --pip_options="torch==1.10.0+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html"
+
+    # install a package from a given wheel file:
+            axs byname pip , install mlperf_loadgen 1.1 --installable=$HOME/work_collection/mlperf_inference_git/loadgen/dist/mlperf_loadgen-1.1-cp36-cp36m-macosx_10_9_x86_64.whl
+
+    # install a package using a rule:
+            axs byquery python_package,package_name=numpy
+
+    # install a package with a given version & without dependencies, using a rule:
+            axs byquery python_package,package_name=scipy,package_version=1.2.1,no_deps
+
+    # install all dependencies for project_A from its requirements.txt file, using a rule (note the correct quotes and their escaping) :
+            axs byquery 'python_package,package_name=deps_for_project_A,installable="-r path/to/project_A/requirements.txt"'
     """
 
-    __record_entry__.pluck("pip_entry_name")
-    if rel_packages_dir is None:
-        __record_entry__.pluck("rel_packages_dir")
-
-    __record_entry__["tags"]                = tags or ["python_package"]
-    __record_entry__["_parent_entries"]     = [ [ "^", "byname", "base_pip_package" ] ]
-
-    __record_entry__.parent_objects         = None      # reload parents
-    __record_entry__.save( pip_entry_name )
-    abs_install_dir   = __record_entry__["abs_install_dir"]
-
-    os.makedirs( abs_install_dir )
-#    os.makedirs( os.path.join(abs_install_dir, 'lib') )
-#    os.symlink( 'lib', os.path.join(abs_install_dir, 'lib64') )
-
-    return_code = __entry__.call('get', 'install_package', {
-        "installable": installable,
-        "abs_install_dir": abs_install_dir,
-        "flattened_options": flattened_options,
-    } )
-    if return_code:
+    if install_package:     # the non-zero (shell) return value of a recorded expression indicates an error:
         logging.error(f"A problem occured when trying to install {installable}, bailing out")
-        __record_entry__.remove()
+        newborn_entry.remove()
         return None
-    else:
-        return __record_entry__
+
+    elif patch_tool_entry:
+        newborn_entry.parent_objects = None
+        abs_packages_dir = newborn_entry["abs_packages_dir"]
+
+        logging.warning(f"The resolved patch_tool_entry '{patch_tool_entry.get_name()}' located at '{patch_tool_entry.get_path()}' uses the shell tool '{patch_tool_entry['tool_path']}'")
+
+        retval = patch_tool_entry.call('run', [], { 'entry_path': abs_packages_dir, 'abs_patch_path': abs_patch_path} )
+        if retval != 0:
+            logging.error(f"could not patch \"{abs_packages_dir}\" with \"{abs_patch_path}\", bailing out")
+            newborn_entry.remove()
+            return None
+
+    return newborn_entry
 
 
-def available_versions(package_name, force_binary=False, __entry__=None):
+def available_versions(available_package_versions):
+    """Find which versions of a given package are available.
+    Technically this is a function wrapper around a recorded expression "available_package_versions".
 
-    versions_list = __entry__.call('get', 'available_package_versions', {
-        'package_name': package_name,
-        'force_binary': force_binary,
-    } )
+Usage examples :
 
-    return versions_list
+    # return the list of available versions for a specific package:
+            axs byname pip , available_versions --package_name=numpy
+
+    # return the list of available versions for a specific package , specifically requiring only binary/precompiled packages:
+            axs byname pip , available_versions --package_name=numpy --force_binary+
+    """
+
+    return available_package_versions

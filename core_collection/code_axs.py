@@ -70,24 +70,31 @@ class FilterPile:
 
     def __init__(self, conditions, context):
 
+        import re
+
         def parse_condition(condition, context):
 
-            if type(condition)==list:   # pre-parsed equality
+            if type(condition)==list and len(condition)==2:   # pre-parsed equality
                 key_path, val = condition
                 op = '='
                 comparison_lambda   = lambda x: x==val
 
-            else:   # assuming a string that needs to be parsed (even if a tag)
-                import re
+            else:   # a pre-parsed binary op list or string that needs to be parsed (even if a tag)
                 from function_access import to_num_or_not_to_num
 
-                binary_op_match = re.match('([\w\.\-]*\w)(:=|\?=|===|==|=|!==|!=|<>|<=|>=|<|>|:|!:)(.*)$', condition)
-                if binary_op_match:
-                    key_path    = binary_op_match.group(1)
-                    op          = binary_op_match.group(2)
-                    pre_val     = binary_op_match.group(3)
-                    val         = to_num_or_not_to_num(pre_val)
+                if type(condition)==list and len(condition)==3:
+                    key_path, op, val = condition
+                    pre_val = str(val)
+                    binary_op_match = True
+                else:
+                    binary_op_match = re.match('([\\w\\.\\-]*\\w)(:=|\\?=|===|==|=|!==|!=|<>|<=|>=|<|>|:|!:)(.*)$', condition)
+                    if binary_op_match:
+                        key_path    = binary_op_match.group(1)
+                        op          = binary_op_match.group(2)
+                        pre_val     = binary_op_match.group(3)
+                        val         = to_num_or_not_to_num(pre_val)
 
+                if binary_op_match:
                     if op in (':=',):           # auto-split
                         op = '='
                         pre_val = pre_val.split(':')
@@ -122,7 +129,7 @@ class FilterPile:
                     else:
                         raise SyntaxError(f"Could not parse the condition '{condition}' in {context}")
                 else:
-                    unary_op_match = re.match('([\w\.]*\w)(\.|!\.|\?|\+|-)$', condition)
+                    unary_op_match = re.match('([\\w\\.]*\\w)(\\.|!\\.|\\?|\\+|-)$', condition)
                     if unary_op_match:
                         key_path    = unary_op_match.group(1)
                         op          = unary_op_match.group(2)
@@ -140,7 +147,7 @@ class FilterPile:
                         else:
                             raise SyntaxError(f"Could not parse the condition '{condition}' in {context}")
                     else:
-                        tag_match = re.match('([!^-])?(\w+)$', condition)
+                        tag_match = re.match('([!^-])?(\\w+)$', condition)
                         if tag_match:
                             key_path    = 'tags'
                             val         = tag_match.group(2)
@@ -156,7 +163,7 @@ class FilterPile:
             return key_path, op, val, comparison_lambda
 
 
-        self.conditions    = conditions if type(conditions)==list else conditions.split(',')
+        self.conditions    = conditions if type(conditions)==list else re.split(r',(?=(?:[^"]*"[^"]*")*[^"]*$)', conditions)
         self.context       = context
         self.posi_tag_set  = set()
         self.posi_val_dict = {}
@@ -185,9 +192,17 @@ class FilterPile:
 
         candidate_still_ok = True
         for key_path, op, val, query_comparison_lambda, split_key_path in self.filter_list:
-            if not query_comparison_lambda( candidate_entry.dig(split_key_path, safe=True, parent_recursion=parent_recursion) ):
-                candidate_still_ok = False
-                break
+            try:
+                if not query_comparison_lambda( candidate_entry.dig(split_key_path, safe=True, parent_recursion=parent_recursion) ):
+                    candidate_still_ok = False
+                    break
+            except RuntimeError as e:
+                if parent_recursion and ("could not be loaded" in str(e)) :
+                    logging.warning( str(e) )
+                    candidate_still_ok = False
+                    break
+                else:
+                    raise(e)
         return candidate_still_ok
 
 
@@ -242,8 +257,12 @@ def find_matching_rules(parsed_query, __entry__):
 
                     if op=='tag+': continue     # we have matched them directly above
 
+                    if op=='tag-':  # rule doesn't want the query to contain a certain tag
+                        qr_conditions_ok = rule_val not in parsed_query.posi_tag_set
+                        break
+
                     # we allow (only) equalities on the rule side not to have a match on the query side
-                    if (key_path in parsed_query.posi_val_dict):    # does the query contain a specific value for this rule condition's key_path?
+                    elif (key_path in parsed_query.posi_val_dict):    # does the query contain a specific value for this rule condition's key_path?
                         qr_conditions_ok = rule_comparison_lambda( parsed_query.posi_val_dict[key_path] )       # if so, use this value in evaluating this rule condition
                     else:
                         qr_conditions_ok = (((op=='?=') and (key_path not in parsed_query.mentioned_set)) or    # ignore optional(selective) matches
@@ -258,8 +277,12 @@ def find_matching_rules(parsed_query, __entry__):
 
                         if op=='tag+': continue     # we have matched them directly above
 
+                        if op=='tag-':  # query doesn't want the rule to contain a certain tag
+                            qr_conditions_ok = query_val not in parsed_rule.posi_tag_set
+                            break
+
                         # we allow (only) equalities on the query side not to have a match on the rule side
-                        if (key_path in parsed_rule.posi_val_dict): # does the rule contain a specific value for this query condition's key_path?
+                        elif (key_path in parsed_rule.posi_val_dict): # does the rule contain a specific value for this query condition's key_path?
                             qr_conditions_ok = query_comparison_lambda( parsed_rule.posi_val_dict[key_path] )   # if so, use this value in evaluating this query condition
                         else:
                             qr_conditions_ok = (op=='=')                                                        # otherwise this query condition must set a value
@@ -315,15 +338,15 @@ Usage examples :
 
     # if a matching entry does not exist, see if we can produce it with a matching Rule
     if produce_if_not_found and len(parsed_query.posi_tag_set):
-        logging.warning(f"[{__entry__.get_name()}] byquery({query}) did not find anything, but there are tags: {parsed_query.posi_tag_set} , trying to find a producer...")
+        logging.info(f"[{__entry__.get_name()}] byquery({query}) did not find anything, but there are tags: {parsed_query.posi_tag_set} , trying to find a producer...")
 
         matching_rules = find_matching_rules(parsed_query, __entry__)
-        logging.warning(f"[{__entry__.get_name()}] A total of {len(matching_rules)} matched rules found.\n")
+        logging.info(f"[{__entry__.get_name()}] A total of {len(matching_rules)} matched rules found.\n")
 
         match_idx = 0
         for advertising_entry, unprocessed_rule, parsed_rule in matching_rules:
             match_idx += 1  # matches are 1-based
-            logging.warning(f"Matched Rule #{match_idx}/{len(matching_rules)}: {unprocessed_rule[0]} from Entry '{advertising_entry.get_name()}'...")
+            logging.info(f"Matched Rule #{match_idx}/{len(matching_rules)}: {unprocessed_rule[0]} from Entry '{advertising_entry.get_name()}'...")
 
             rule_vector         = advertising_entry.nested_calls(unprocessed_rule)
             producer_pipeline   = rule_vector[1]
@@ -337,7 +360,10 @@ Usage examples :
             cumulative_params.update( parsed_rule.posi_val_dict )           # rules on top (may override some defaults)
             cumulative_params.update( parsed_query.posi_val_dict )          # query on top (may override some defaults)
             cumulative_params["tags"] = list(parsed_query.posi_tag_set)     # FIXME:  parsed_rule.posi_tag_set should include it
-            logging.warning(f"Pipeline: {producer_pipeline}, Cumulative params: {cumulative_params}")
+            if type(produce_if_not_found)==dict:
+                cumulative_params.update( produce_if_not_found )            # highest priority override only in case there was no match and we are generating
+            cumulative_params["__cumulative_param_names"] = list( cumulative_params.keys() )
+            logging.info(f"Pipeline: {producer_pipeline}, Cumulative params: {cumulative_params}")
 
             if type(producer_pipeline[0])==list:
                 new_entry = advertising_entry.execute(producer_pipeline, cumulative_params)
@@ -350,10 +376,15 @@ Usage examples :
                 raise SyntaxError(f"Rule parsing error: a single-call action with its own named parameters is ambiguous: {producer_pipeline}")
 
             if new_entry:
-                logging.warning(f"Matched Rule #{match_idx}/{len(matching_rules)} produced a result.\n")
-                return new_entry
+                if not isinstance(new_entry, type(__entry__)):
+                    raise RuntimeError( f"Matched Rule #{match_idx}/{len(matching_rules)} produced something ( {repr(new_entry)} ), which is not an Entry - PLEASE INVESTIGATE" )
+                elif parsed_query.matches_entry( new_entry, parent_recursion ):
+                    logging.info(f"Matched Rule #{match_idx}/{len(matching_rules)} produced an entry, which matches the original query.\n")
+                    return new_entry
+                else:
+                    raise RuntimeError( f"Matched Rule #{match_idx}/{len(matching_rules)} produced an entry, but it failed to match the original query {query} - PLEASE INVESTIGATE" )
             else:
-                logging.warning(f"Matched Rule #{match_idx}/{len(matching_rules)} didn't produce a result, {len(matching_rules)-match_idx} more matched rules to try...\n")
+                logging.info(f"Matched Rule #{match_idx}/{len(matching_rules)} didn't produce a result, {len(matching_rules)-match_idx} more matched rules to try...\n")
 
     else:
         logging.debug(f"[{__entry__.get_name()}] byquery({query}) did not find anything, and no matching _producer_rules => returning None")
@@ -376,13 +407,13 @@ def add_entry_path(new_entry_path, new_entry_name=None, __entry__=None):
             raise(KeyError(f"There was already another entry named {new_entry_name} with path {existing_rel_path}, remove it first"))
     else:
         __entry__.plant(['contained_entries', new_entry_name], trimmed_new_entry_path)
-        return __entry__.save()
+        return __entry__.save( on_collision="force" )   # we expect a collision
 
 
 def remove_entry_name(old_entry_name, __entry__):
 
     contained_entries       = __entry__.pluck(['contained_entries', old_entry_name])
-    return __entry__.save()
+    return __entry__.save( on_collision="force" )   # we expect a collision
 
 
 if __name__ == '__main__':

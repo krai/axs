@@ -3,7 +3,7 @@
         [ [ "downloaded", "squad_original" ], [["get_kernel"],["byname","downloader"],["download"]], {
             "url": "https://raw.githubusercontent.com/rajpurkar/SQuAD-explorer/master/dataset/dev-v1.1.json",
             "md5": "3e85deb501d4e538b6bc56f786231552",
-            "entry_name": "downloaded_squad_1.1_original"
+            "newborn_entry_name": "downloaded_squad_1.1_original"
 
         } ]
     ]

@@ -1,12 +1,12 @@
  {
-    "_parent_entries": [ [ "^", "byname", "python_script" ] ],
     "_producer_rules": [
-        [ [ "preprocessed", "dataset_name=squad_v1_1" ], [["run"]], {} ]
+        [ [ "preprocessed", "dataset_name=squad_v1_1" ], [[ "get", "pipeline" ]] ]
     ],
+    "_parent_entries": [ [ "^", "byname", "python_script" ], [ "^", "byname", "entry_creator" ] ],
 
     "calibration" : "no",
     "calibration_option": "features",
-    "calibration_data_query": ["^^", "substitute", "downloaded,calibrate,dataset=squad_v1_1,calibration_option=#{calibration_option}#"],
+    "calibration_data_query": ["^^", "substitute", "downloaded,calibrate,dataset_name=squad_v1_1,calibration_option=#{calibration_option}#"],
     "calibration_data_entry": [ "^", "byquery", [[ "^^", "get", "calibration_data_query" ]], {}, ["calibration_data_query"] ],
     "_calibration_data_path": [ "^^", "execute", [[
         [ "get", "calibration_data_entry" ],
@@ -14,7 +14,7 @@
     ]], {}, ["calibration_data_entry"] ],
     "calibration_data_path": ["^^", "get", [[ "^^", "case",   [ ["^^", "get", "calibration"],
                                 "yes" , "_calibration_data_path" ],
-                                { "default_value": "" }
+                                { "default_value": null }
                             ]] ],
 
     "dataset_name": "squad_v1_1",
@@ -23,42 +23,31 @@
     "dataset_doc_stride": 128,
 
     "preprocessed_squad_files_prefix": "preprocessed_squad_v1.1",
+    "pickled_file_name": [ "^^", "substitute", "#{preprocessed_squad_files_prefix}#.pickled" ],
 
-    "return_saved_record_entry": false,
-    "return_this_entry": [ "^^", "execute", [[
-        [ "get_kernel" ],
-        [ "work_collection" ],
-        [ "attached_entry", [ ["^^", "substitute", "preprocessed_squad_v1_1_msl_#{dataset_max_seq_length}#_calibration_#{calibration}#"] , ["^^", "substitute", {
-            "_parent_entries": [ "AS^IS", [ "^", "byname", "base_experiment" ] ],
-            "tags": ["preprocessed"],
-            "dataset_name": "#{dataset_name}#",
-            "dataset_max_seq_length": "#{dataset_max_seq_length}#",
-            "calibration": "#{calibration}#",
-            "calibration_option": "#{calibration_option}#",
-            "calibration_data_path": "#{calibration_data_path}#",
-            "files_prefix": "#{preprocessed_squad_files_prefix}#",
-            "file_name": "#{preprocessed_squad_files_prefix}#.pickled"
-         } ] ] ],
-         [ "save" ]
-    ]] ],
+    "newborn_entry_tags": [ "preprocessed" ],
+    "newborn_parent_names": [ "base_experiment" ],
+    "newborn_name_template": "preprocessed_squad_v1_1_msl_#{dataset_max_seq_length}#_calibration_#{calibration}#",
+    "newborn_entry_param_names": [
+        "dataset_name",
+        "dataset_max_seq_length",
+        "calibration",
+        "calibration_option",
+        "calibration_data_path",
+        { "files_prefix": "preprocessed_squad_files_prefix" },
+        { "file_name": "pickled_file_name" }
+    ],
 
-    "preprocessed_squad_dirname": [ "^^", "execute", [[
-        [ "get", "return_this_entry" ],
-        [ "get_path" ],
-        0,
-        [ "func", "os.path.dirname" ]
+    "pipeline": [ "^^", "execute", [[
+        [ "run" ],
+        [ ],
+        [ "get", "stored_newborn_entry" ]
     ]] ],
-    "preprocessed_squad_dir": ["^^", "substitute", "#{preprocessed_squad_dirname}#/" ],
 
     "tensorflow_query": ["python_package", "package_name=tensorflow"],
     "absl_query": ["python_package", "package_name=absl-py"],
     "transformers_query": ["python_package", "package_name=transformers"],
 
-    "python_deps": [
-        [ "^^", "python_sync_pip_package", [[ "^^", "get", "absl_query" ]] ],
-        [ "^^", "python_sync_pip_package", [[ "^^", "get", "tensorflow_query" ]] ],
-        [ "^^", "python_sync_pip_package", [[ "^^", "get", "transformers_query" ]] ]
-    ],
     "mlperf_inference_git_entry": [ "^", "byquery", "git_repo,repo_name=mlperf_inference_git" ],
 
     "bert_code_root": [ "^^", "execute", [[
@@ -71,10 +60,18 @@
         [ "get_path_of", "bert_squad_code_dir" ]
     ]] ],
 
+    "python_deps": [
+        [ "^^", "python_sync_pip_package", [[ "^^", "get", "absl_query" ]] ],
+        [ "^^", "python_sync_pip_package", [[ "^^", "get", "tensorflow_query" ]] ],
+        [ "^^", "python_sync_pip_package", [[ "^^", "get", "transformers_query" ]] ],
+        [ "^^", "get", "bert_code_root" ],
+        [ "^^", "get", "bert_squad_code_dir" ]
+    ],
+
     "squad_dataset_query":[ "downloaded", "squad_original" ],
-    "squad_dataset_entry": [ "^", "byquery", [[ "^^", "get", "squad_dataset_query" ]], {}, ["squad_dataset_query"] ],
     "squad_dataset_original_path": [ "^^", "execute", [[
-        [ "get", "squad_dataset_entry" ],
+        [ "get_kernel" ],
+        [ "byquery", [ [ "^^", "get", "squad_dataset_query" ] ] ],
         [ "get_path" ]
     ]] ],
 
@@ -84,6 +81,8 @@
         [ "get", "squad_tokenization_vocab_entry" ],
         [ "get_path" ]
     ]] ],
+
     "rel_script_path": "tokenize_and_pack.py",
-    "script_extra_params": [ "^^", "substitute", "\"#{squad_dataset_original_path}#\" \"#{squad_tokenization_vocab_path}#\" \"#{preprocessed_squad_dir}#\" \"#{preprocessed_squad_files_prefix}#\" #{dataset_max_seq_length}# #{dataset_max_query_length}# #{dataset_doc_stride}# \"#{bert_code_root}#\" \"#{bert_squad_code_dir}#\" #{calibration}# #{calibration_option}# \"#{calibration_data_path}#\"" ]
+
+    "script_params_template": "\"#{squad_dataset_original_path}#\" \"#{squad_tokenization_vocab_path}#\" \"#{newborn_entry_path}#\" \"#{preprocessed_squad_files_prefix}#\" #{dataset_max_seq_length}# #{dataset_max_query_length}# #{dataset_doc_stride}# #{calibration}# #{calibration_option}# \"#{calibration_data_path}#\""
 }

@@ -1,0 +1,68 @@
+{
+    "_producer_rules": [
+        [ [ "newborn_from_rule" ], [["get", "stored_newborn_entry"]], {
+            "name": "Martian",
+            "newborn_parent_names": [ "shell" ],
+            "newborn_entry_param_names": [ "greeting", "shell_cmd_with_subs" ],
+            "newborn_entry_param_mapping": { "address_as": "#{name}#", "pronouns": [ "who", "whom" ] }
+        } ]
+    ],
+
+    "greeting": "Hi",
+    "name": "Earthling",
+    "shell_cmd_with_subs": "echo #{greeting}#, #{name}#",
+
+    "newborn_name_template": "newborn_greeting.#{greeting}#_name.#{name}#",
+    "newborn_entry_name": [ "^^", "substitute", [ "^^", "get", "newborn_name_template" ] ],
+    "newborn_entry_tags": [ "newborn_without_rule" ],
+    "newborn_parent_names": [ ],
+    "newborn_entry_param_names": [ ],
+
+    "newborn_entry_param_mapping": { },
+    "newborn_entry_param_listmap": [ "^^", "execute", [[
+        [ "get", "newborn_entry_param_mapping" ],
+        [ "items" ],
+        0,
+        [ "func", "itertools.chain.from_iterable" ],
+        0,
+        [ "func", "list" ]
+    ]] ],
+
+
+    "work_collection_name": [ "^", "execute", [[
+        [ "work_collection" ],
+        [ "get_name" ]
+    ]] ],
+    "collection_name": [ "^^", "get", "work_collection_name" ],
+
+    "collection_object": [ "^", "byquery", ["^^", "substitute", "collection,collection_name=#{collection_name}#" ],
+                                           { "parent_recursion": true }, [ "collection_name" ] ],
+
+    "newborn_entry": [ "^^", "execute", [[
+        [ "get", "collection_object" ],
+        [ "attached_entry", [ ["^^", "get", "newborn_entry_name" ], {
+                "tags": [ "^^", "get", [ "tags", [ "^^", "get", "newborn_entry_tags" ] ] ]
+         } ] ],
+        [ "plant", [ "_parent_entries", [ "^^", "parent_list_from_names" ] ] ],
+        [ "plant", [ "^^", "slice", ["^^", "get", ["__cumulative_param_names", []] ], { "plantable": true, "skip_missing": true } ] ],
+        [ "plant", [ "^^", "slice", ["^^", "get", "newborn_entry_param_names" ], { "plantable": true, "skip_missing": true } ] ],
+        [ "plant", [ "^^", "substitute", [[ "^^", "get", "newborn_entry_param_listmap" ]] ] ]
+    ]] ],
+    "stored_newborn_entry": [ "^^", "execute", [[
+        [ "get", "newborn_entry" ],
+        [ "save", [], { "on_collision": "timestamp" } ]
+    ]] ],
+    "newborn_entry_path": [ "^^", "execute", [[
+        [ "get", "stored_newborn_entry" ],
+        [ "get_path", "" ]
+    ]] ],
+
+    "rel_install_dir": "",
+    "abs_install_dir": [ "^^", "make_abs_install_dir_if_necessary" ],
+
+    "inside_install_dir" : "",
+    "abs_result_path": [ "^^", "get_result_path", [[ "^^", "get", "abs_install_dir" ]] ],
+    "path_inside_newborn_entry": [ "^^", "get", "abs_result_path" ],
+
+    "rel_result_path": [ "^^", "get_result_path", [[ "^^", "get", "rel_install_dir" ]] ]
+}

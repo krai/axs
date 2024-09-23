@@ -2,6 +2,7 @@
 
 "A collection of utility functions"
 
+import datetime
 import errno
 import json
 import os
@@ -42,18 +43,23 @@ Usage examples :
     return json_string
 
 
-def rematch(input_string, regex, group=1):
+def rematch(input_string, regex, grab=1):
     """Find a substring matching a given regular expression and return it
 
 Usage examples :
-                axs byname kernel_python_tool , run ,0 func ufun.rematch '^Python\s((\d+)\.(\d+))\.\d+'    # parse the major.minor version from Python
+                axs byname kernel_python_tool , run ,0 func ufun.rematch '^Python\s((\d+)\.(\d+))\.\d+'     # parse the major.minor version from Python
+
+                axs func ufun.rematch A2B34C56 'A(\d)B(\d\d)C(\d)' --,=alpha,beta,gamma                     # parse multiple fields into a dictionary
     """
     searchObj = re.search(regex, input_string, re.MULTILINE)
     if searchObj:
-        if group>0:
-            return searchObj.group(group)
-        else:
+        if not grab:
             return True
+        elif type(grab)==list:
+            return { grab[i] : searchObj.group(i+1) for i in range(len(grab)) }
+        else:
+            return searchObj.group(grab)
+
     else:
         print(f'Failed to match "{input_string}" against "{regex}"', file=sys.stderr)
         return False
@@ -83,11 +89,11 @@ Usage examples :
                 axs work_collection , get contained_entries , keys ,0 func ufun.join_with
                 axs noop --,=ab,cd,ef ,0 func ufun.join_with $'\n'      # note Bash-specific syntax for passing a carriage return
     """
-    return separator.join(things)
+    return separator.join( [ str(thing) for thing in things ] )
 
 
 def rmdir(dir_path):
-    """Recursively remove a non-empty directory
+    """Recursively remove a non-empty directory or file
 
 Usage examples :
                 axs func ufun.rmdir path/to/remove
@@ -102,7 +108,20 @@ Usage examples :
         else:
             raise
 
-    shutil.rmtree(dir_path, ignore_errors=False, onerror=handleRemoveReadonly)
+    if os.path.isdir( dir_path ):
+        shutil.rmtree(dir_path, ignore_errors=False, onerror=handleRemoveReadonly)
+    else:
+        os.remove( dir_path )
+
+
+def move_dir_contents_from_to(source_dir, dest_dir):
+
+    all_filenames = os.listdir(source_dir)
+
+    for filename in all_filenames:
+        source_path = os.path.join(source_dir, filename)
+        dest_path   = os.path.join(dest_dir, filename)
+        shutil.move(source_path, dest_path)
 
 
 def is_in(candidate, iterable):
@@ -124,8 +143,9 @@ Usage examples :
                 axs func ufun.is_in 1 ---='[0,true,4]'
                 axs func ufun.is_in --+ ---='[0,true,4]'
     """
+    candidate_type = type(candidate)
     for element in iterable:
-        if candidate is element:
+        if candidate_type==type(element) and candidate==element:
             return True
     return False
 
@@ -161,3 +181,16 @@ def repr_dict(d, exception_pairs=None):
         return repr(v)
 
     return ('{' + (','.join([ repr(k)+':'+safe_value(d[k]) for k in sorted(d.keys()) ])) + '}') if type(d)==dict else repr(d)
+
+
+def generate_current_timestamp(time_format=None, fs_safe=True):
+    """Generate the current timestamp in a readable format
+
+Usage examples :
+                axs func ufun.generate_current_timestamp                # safe to use in a filename by default
+                axs func ufun.generate_current_timestamp --fs_safe-     # colon as time separator is more readable, but not suitable for filenames
+                axs func ufun.generate_current_timestamp "%Y.%m.%d"     # an arbitrary timestamp format
+    """
+    time_format = time_format or ("%Y.%m.%d_%Hh%Mm%Ss" if fs_safe else "%Y.%m.%d_%H:%M:%S")
+
+    return datetime.datetime.now().strftime( time_format )

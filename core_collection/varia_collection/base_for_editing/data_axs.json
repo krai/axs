@@ -1,0 +1,15 @@
+{
+    "number": 7,
+    "string": "abc",
+    "list": [
+        10,
+        20,
+        30
+    ],
+    "dic": {
+        "alpha": 100,
+        "gamma": 200
+    },
+    "empty_dic": {},
+    "empty_list": []
+}

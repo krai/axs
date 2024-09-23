@@ -10,11 +10,12 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.263'     # TODO: update with every kernel change
+__version__ = '0.2.387'     # TODO: update with every kernel change
 
 import logging
 import os
 import sys
+
 from runnable import Runnable
 from stored_entry import Entry
 
@@ -95,7 +96,21 @@ Usage examples :
 
         if own_data is None:    # sic: retain the same empty dictionary if given
             own_data = {}
-        return Entry(entry_path=entry_path, own_data=own_data, own_functions=False, container=container, name=name, generated_name_prefix=generated_name_prefix, kernel=self)
+        return Entry(entry_path=entry_path, own_data=own_data, own_functions=False, container=container, name=name, generated_name_prefix=generated_name_prefix, is_stored=False, kernel=self)
+
+
+    def uncache(self, old_path):
+        if old_path and old_path in self.entry_cache:
+            del self.entry_cache[ old_path ]
+            logging.debug(f"[{self.get_name()}] Uncaching from under {old_path}")
+
+
+    def encache(self, new_path, entry):
+        new_path = os.path.realpath( new_path )
+        self.entry_cache[ new_path ] = entry
+        logging.debug(f"[{self.get_name()}] Caching under {new_path}")
+
+        return entry
 
 
     def bypath(self, path, name=None, container=None, own_data=None, parent_objects=None):
@@ -117,28 +132,19 @@ Usage examples :
             logging.debug(f"[{self.get_name()}] bypath: cache HIT for path={path}")
         else:
             logging.debug(f"[{self.get_name()}] bypath: cache MISS for path={path}")
+
             if path.endswith('.json'):      # ad-hoc data entry from a .json file
-                cache_hit = self.entry_cache[path] = Entry(name=name, parameters_path=path, own_functions=False, parent_objects=parent_objects or [], kernel=self)
+                entry_object = Entry(name=name, parameters_path=path, own_functions=False, parent_objects=parent_objects or [], is_stored=True, kernel=self)
             elif path.endswith('.py'):      # ad-hoc functions entry from a .py file
                 module_name = path[:-len('.py')]
-                cache_hit = self.entry_cache[path] = Entry(name=name, entry_path=path, own_data={}, module_name=module_name, parent_objects=parent_objects or [], kernel=self)
+                entry_object = Entry(name=name, entry_path=path, own_data={}, module_name=module_name, parent_objects=parent_objects or [], is_stored=True, kernel=self)
             else:
-                cache_hit = self.entry_cache[path] = Entry(name=name, entry_path=path, own_data=own_data, container=container, parent_objects=parent_objects or None, kernel=self)
+                entry_object = Entry(name=name, entry_path=path, own_data=own_data, container=container, parent_objects=parent_objects or None, kernel=self)
+
+            cache_hit = self.encache( path, entry_object )
             logging.debug(f"[{self.get_name()}] bypath: successfully CACHED {cache_hit.get_name()} under path={path}")
 
         return cache_hit
-
-
-    def cache_replace(self, old_path, new_path, entry):
-        """Invalidate the entry under the old_path and cache the one under the new_path
-        """
-        if old_path and old_path in self.entry_cache:
-            del self.entry_cache[ old_path ]
-            logging.debug(f"[{self.get_name()}] Uncaching from under {old_path}")
-
-        new_path = os.path.realpath( new_path )
-        self.entry_cache[ new_path ] = self
-        logging.debug(f"[{self.get_name()}] Caching under {new_path}")
 
 
     def core_collection(self):
@@ -172,10 +178,16 @@ Usage examples :
             logging.warning(f"[{self.get_name()}] Creating new empty work_collection at {work_collection_path}...")
             work_collection_data = {
                 self.PARAMNAME_parent_entries: [[ "^", "core_collection" ]],
-                "tags": [ "collection" ]
+                "tags": [ "collection" ],
+                "contained_entries": {
+                    "core_collection": [ "^", "execute", [[
+                        [ "core_collection" ],
+                        [ "get_path" ]
+                    ]] ]
+                }
             }
             work_collection_object = self.bypath(work_collection_path, name="work_collection", own_data=work_collection_data)
-            work_collection_object.call('add_entry_path', [ self.kernel_path( 'core_collection' ) ] )
+            work_collection_object.save()
 
         self.record_container( work_collection_object )     # to avoid infinite recursion
         return work_collection_object
@@ -202,6 +214,7 @@ Usage examples :
                 axs all_byquery python_package --template="python_#{python_version}# package #{package_name}#"
                 axs all_byquery tags. --template="tags=#{tags}#"
                 axs all_byquery deleteme+ ---='[["remove"]]'
+                axs all_byquery git_repo ---='[["pull"]]'
         """
         logging.debug(f"[{self.get_name()}] all_byquery({query}, {pipeline}, {template})")
         return self.work_collection().call('all_byquery', [query, pipeline, template, parent_recursion])

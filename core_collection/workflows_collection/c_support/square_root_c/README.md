@@ -32,9 +32,3 @@ and how parameters are passed into the compiled code and the specific "experimen
 ```
 (compile with default *area*=49, then set *area* to 64 for a specific run)
 
-## Rule-based execution:
-
-```
-    axs byquery compute,square_root,area=81
-```
-(compile with default *area*, then set *area* to 81 for a specific run)

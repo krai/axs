@@ -3,9 +3,11 @@
         [ [ "git_repo", "repo_name=mlperf_inference_git", "patch=number_of_beams" ], [["get_kernel"],["byname","git"],["clone"]], {
             "COMMENT": "obsolete variation, but kept here as an example",
             "abs_patch_path": [ "^^", "get_path", "number_of_beams.patch" ],
+            "checkout": "bcaa08a3d4ca7c923c2adcb10ae76ba23e77985c",
             "submodules": false
         }, [ "url", "checkout", "contained_files" ] ],
-        [ [ "git_repo", "repo_name=mlperf_inference_git" ], [["get_kernel"],["byname","git"],["clone"]], {
+        [ [ "git_repo", "repo_name=mlperf_inference_git", "patch!." ], [["get_kernel"],["byname","git"],["clone"]], {
+            "clone_options": "--depth 1"
         }, [ "url", "checkout", "submodules", "contained_files" ] ]
     ],
     "url": "https://github.com/mlcommons/inference",
@@ -14,6 +16,7 @@
     "contained_files": {
         "mlperf_conf_file": [ "mlperf.conf" ],
 
+        "loadgen": [ "loadgen" ],
         "vision_tools_dir": [ "vision", "classification_and_detection", "tools" ],
         "classification_accuracy_script": [ "vision", "classification_and_detection", "tools", "accuracy-imagenet.py" ],
         "coco_detection_accuracy_script": [ "vision", "classification_and_detection", "tools", "accuracy-coco.py" ],
@@ -27,6 +30,17 @@
         "gptj_cnndm_download_script": [ "language", "gpt-j", "download_cnndm.py" ],
         "gptj_reference_loadgen_script": [ "language", "gpt-j", "main.py" ],
         "gptj_accuracy_script": [ "language", "gpt-j", "evaluation.py" ],
+
+        "llama2_openorca_preprocess_script": [ "language", "llama2-70b", "processorca.py" ],
+        "llama2_reference_loadgen_script": [ "language", "llama2-70b", "main.py" ],
+        "llama2_accuracy_script": [ "language", "llama2-70b", "evaluate-accuracy.py" ],
+
+        "diffusion_coco2014_download_dir": [  "text_to_image", "tools" ],
+        "diffusion_coco2014_download_script": [  "text_to_image", "tools", "download-coco-2014.sh" ],
+        "diffusion_reference_script": [  "text_to_image", "main.py" ],
+
+	"mixtral_reference_script": [  "language", "mixtral-8x7b", "main.py" ],
+	"mixtral_reference_accuracy_script": [  "language", "mixtral-8x7b", "evaluate-accuracy.py" ],
 
         "submission_accuracy_truncator_script": [ "tools", "submission", "truncate_accuracy_log.py" ],
         "submission_checker_script": [ "tools", "submission", "submission_checker.py" ],

@@ -72,14 +72,30 @@ axs bypath dad      , remove
 axs bypath granddad , remove
 assert_end entry_creation_multiple_inheritance_and_removal
 
-axs work_collection , attached_entry base_for_editing ---='{"number":7, "string": "abc", "list": [10, 20, 30], "dic": {"alpha": 100, "beta": 200}}' , save
 assert 'axs byname base_for_editing , get number' '7'
 assert 'axs byname base_for_editing , get number --number+=980' '987'
+assert 'axs byname base_for_editing , get string' 'abc'
 assert 'axs byname base_for_editing , get string --string+=de' 'abcde'
+assert 'axs byname base_for_editing , get list' '[10, 20, 30]'
 assert 'axs byname base_for_editing , get list --list+,=40,50' '[10, 20, 30, 40, 50]'
-assert 'axs byname base_for_editing , get dic --dic+,::=gamma:300,delta:400' "{'alpha': 100, 'beta': 200, 'gamma': 300, 'delta': 400}"
-axs byname base_for_editing , remove
-assert_end incremental_override
+assert 'axs byname base_for_editing , get dic' "{'alpha': 100, 'gamma': 200}"
+assert 'axs byname base_for_editing , get dic --dic+,::=gamma:300,delta:400' "{'alpha': 100, 'gamma': 300, 'delta': 400}"
+assert_end editing_override
+
+assert 'axs byname child_for_editing , get number' '907'
+assert 'axs byname child_for_editing , get string' 'abcde'
+assert 'axs byname child_for_editing , get list' '[10, 20, 30, 40, 50]'
+assert 'axs byname child_for_editing , get dic' "{'alpha': 100, 'gamma': 300, 'delta': 400}"
+assert 'axs byname child_for_editing , get number --number+=980' '1887'
+assert 'axs byname child_for_editing , get number --number+=90' '997'
+assert 'axs byname child_for_editing , get string --string+=fgh' 'abcdefgh'
+assert 'axs byname child_for_editing , get list --list+,=60,70' '[10, 20, 30, 40, 50, 60, 70]'
+assert 'axs byname child_for_editing , get dic --dic+,::=gamma:500,delta:600' "{'alpha': 100, 'gamma': 500, 'delta': 600}"
+assert 'axs byname child_for_editing , get dic --dic+,::=beta:800' "{'alpha': 100, 'gamma': 300, 'delta': 400, 'beta': 800}"
+assert 'axs byname child_for_editing , get dic --empty_dic+,::=beta:500' "{'alpha': 100, 'gamma': 300, 'delta': 400}"
+assert 'axs byname child_for_editing , get empty_dic --empty_dic+,::=beta:500' "{'beta': 500}"
+assert 'axs byname child_for_editing , get empty_list --empty_list+,=100,200' "[100, 200]"
+assert_end editing_child_override
 
 #axs byname git , clone --repo_name=counting_collection
 axs byquery git_repo,collection,repo_name=counting_collection,url_prefix=https://github.com/ens-lg4
@@ -90,7 +106,7 @@ axs byname counting_collection , remove
 axs byquery shell_tool,can_git --- , remove
 assert_end git_cloning_collection_access_and_removal
 
-axs work_collection , attached_entry examplepage_recipe , plant url http://example.com/ entry_name examplepage_downloaded file_path example.html _parent_entries --,:=AS^IS:^:byname:downloader , save
+axs work_collection , attached_entry examplepage_recipe , plant url http://example.com/ newborn_entry_name examplepage_downloaded file_path example.html _parent_entries --,:=AS^IS:^:byname:downloader , save
 axs byname examplepage_recipe , download
 assert 'axs byquery downloaded,file_name:=example.html , file_path: get_path , , byquery shell_tool,can_compute_md5 , run' '84238dfc8092e5d9c0dac8ef93371a07'
 axs byquery shell_tool,can_compute_md5 --- , remove
@@ -106,13 +122,6 @@ axs byname examplepage_recipe , remove
 axs byquery shell_tool,can_download_url --- , remove
 assert_end url_downloading_recipe_activation_replay_and_removal
 
-# generate primes
-axs byquery compiled,generate_primes
-axs byquery program_output,generate_primes,up_to=20
-assert 'axs byname primes_up_to_20 , dig program_output.primes' '[2, 3, 5, 7, 11, 13, 17, 19]'
-axs byquery program_output,generate_primes,up_to=20 --- , remove
-axs byquery compiled,generate_primes --- , remove
-assert_end generate_primes
 
 export KERNEL_PYTHON_VERSION=`axs kernel_python_major_dot_minor`
 echo "kernel Python version: $KERNEL_PYTHON_VERSION"
@@ -139,11 +148,20 @@ else
     echo "Skipping the PACKAGE_INSTALL_AND_IMPORT test"
 fi
 
+
 if [ "$C_COMPILE_AND_RUN" == "on" ]; then
-    axs byquery compiled,square_root , run --area=36
-    assert 'axs byquery compute,square_root,area=64' "When square's area is 64.0 its side is 8.0"
+    # square root
+    assert 'axs byquery compiled,square_root , run --area=64' "When square's area is 64.0 its side is 8.00"
     axs byquery compiled,square_root --- , remove
     assert_end c_code_compilation_and_execution
+
+    # generate primes
+    axs byquery compiled,generate_primes
+    axs byquery program_output,generate_primes,up_to=20
+    assert 'axs byname primes_up_to_20 , dig program_output.primes' '[2, 3, 5, 7, 11, 13, 17, 19]'
+    axs byquery program_output,generate_primes,up_to=20 --- , remove
+    axs byquery compiled,generate_primes --- , remove
+    assert_end generate_primes
 
     # factorized numbers
     axs byquery program_output,factorizer,up_to=172
@@ -195,7 +213,7 @@ if [ "$PYTORCH_CLASSIFY" == "on" ] || [ "$ONNX_CLASSIFY" == "on" ] || [ "$TF_CLA
         # The following line is split into two to provide more insight into what is going on.
         # Otherwise assert() blocks all the error output and the command looks "stuck" for quite a while.
 
-        if [ "$KERNEL_PYTHON_MINOR_VERSION" -lt "6" ]; then    # compare MINOR versions numerically
+        if [ "$KERNEL_PYTHON_MINOR_VERSION" -le "6" ]; then    # compare MINOR versions numerically
             export ONNXRUNTIME_QUERY_MOD="--onnxruntime_query+=package_version=1.9.0"
         elif [ "$KERNEL_PYTHON_MINOR_VERSION" -lt "10" ]; then
             export ONNXRUNTIME_QUERY_MOD="--onnxruntime_query+=package_version=1.10.0"
@@ -290,7 +308,7 @@ if [ "$PYTORCH_BERT_DEMO" == "on" ]; then
 fi
 
 if [ "$ONNX_BERT_SQUAD" == "on" ]; then
-    axs byquery preprocessed,dataset_name=squad_v1_1
+    #axs byquery preprocessed,dataset_name=squad_v1_1
     axs byquery program_output,task=bert,framework=onnxrt,batch_count=20
     export ACCURACY_OUTPUT=`axs byquery program_output,task=bert,framework=onnxrt,batch_count=20 , get accuracy_dict`
     echo "Accuracy: $ACCURACY_OUTPUT"

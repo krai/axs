@@ -1,5 +1,5 @@
 {
-    "_parent_entries": [ [ "^", "byname", "python_script" ], [ "^", "byname", "base_benchmark_program" ], [ "^", "byname", "nvidia_gpu_support" ] ],
+    "_parent_entries": [ [ "^", "byname", "base_benchmark_program" ], [ "^", "byname", "nvidia_gpu_support" ] ],
     "_producer_rules": [
         [ [ "program_output", "task=bert", "framework=onnxrt" ], [["run"]], { "return_saved_record_entry": true } ]
     ],
@@ -42,7 +42,7 @@
     ]] ],
 
     "batch_size": 1,
-    "batch_count": "1",
+    "batch_count": 1,
 
     "dataset_max_seq_length": 384,
     "preprocessed_squad_query":[ "preprocessed", "dataset_name=squad_v1_1", [ "^^", "substitute", "dataset_max_seq_length=#{dataset_max_seq_length}#" ] ],
@@ -70,7 +70,5 @@
 
     "errorize_output": true,
 
-    "rel_script_path": "bert_squad_onnxruntime.py",
-
-    "script_extra_params": [ "^^", "substitute", "\"#{input_file_path}#\" \"#{output_file_path}#\"" ]
+    "rel_script_path": "bert_squad_onnxruntime.py"
 }

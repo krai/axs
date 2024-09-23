@@ -3,7 +3,7 @@
         [ [ "downloaded", "coco_images" ], [["get_kernel"],["byname","downloader"],["download"]], {
         }, ["url", "md5"] ],
         [ [ "extracted",  "coco_images" ], [["get_kernel"],["byname","extractor"],["extract"]], {
-        }, [ "archive_path", "extra_dir_prefix", "internal_file_name" ] ]
+        }, [ "archive_path", "rel_install_dir", "inside_install_dir" ] ]
     ],
 
     "url": "http://images.cocodataset.org/zips/val2017.zip",
@@ -13,6 +13,6 @@
              [ "byquery", [[ "^^", "substitute", "downloaded,coco_images" ]] ],
              [ "get_path" ]
     ]], {}, [] ],
-    "extra_dir_prefix": "",
-    "internal_file_name": "val2017"
+    "rel_install_dir": "",
+    "inside_install_dir": "val2017"
 }

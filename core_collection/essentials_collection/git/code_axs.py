@@ -1,20 +1,32 @@
 #!/usr/bin/env python3
 
-""" This entry knows how to download git repositories.
+""" This entry knows how to download and query git repositories.
     They may either become collections or regular entries.
+
+Usage examples :
+    # obtain the URL of the kernel's repository:
+            axs byname git , get git_url
+
+    # obtain the URL of a given repository:
+            axs byname axs2mlperf , get git_url
+
+    # obtain the URL of a given repository using query:
+            axs byquery git_repo,collection,repo_name=axs2mlperf , get git_url
+
+    # obtain the checkout (branch or tag) of the kernel's repository:
+            axs byname git , get current_checkout
+
+    # obtain the checkout (branch or tag) of a given repository:
+            axs byname axs2mlperf , get current_checkout
+
+    # obtain the checkout (branch or tag) of a given repository using query:
+            axs byquery git_repo,collection,repo_name=axs2mlperf , get current_checkout
 """
 
 import os
 import logging
 
-
-def propose_checkout(current_checkout):
-    """Cannot use "case" in data_axs.json due to the current bug (clash of nested "case"-s), so implementing in code_axs.py :
-    """
-    if current_checkout.startswith("mlperf_"):
-        return current_checkout
-    else:
-        return None
+import ufun
 
 
 def url_2_repo_name(url=None):
@@ -34,7 +46,7 @@ Usage examples :
         return None
 
 
-def clone(repo_name=None, url=None, repo_dir_name=None, git_tool_entry=None, container_entry=None, checkout=None, submodules=False, abs_patch_path=None, patch=None, tags=None, contained_files=None, __entry__=None):
+def clone(repo_name=None, url=None, env=None, rel_clone_dir=None, abs_result_path=None, newborn_entry=None, newborn_entry_path=None, move_on_up=True, checkout=None, submodules=False, abs_patch_path=None, git_tool_entry=None, patch_tool_entry=None, clone_options="", tags=None, contained_files=None):
     """Clone a git repository into an Entry,
 
 Usage examples :
@@ -50,65 +62,44 @@ Clean-up:
                 axs byname counting_collection , remove
     """
 
-    assert __entry__ != None, "__entry__ should be defined"
-    ak = __entry__.get_kernel()
-    assert ak != None, "__entry__'s kernel should be defined"
+    assert git_tool_entry != None, "git_tool_entry should be defined"
 
-    container_path  = container_entry.get_path('')
-    entry_path      = container_entry.get_path( repo_dir_name )
-    tool_path       = git_tool_entry["tool_path"]
-
-    logging.warning(f"The resolved git_tool_entry '{git_tool_entry.get_name()}' located at '{git_tool_entry.get_path()}' uses the shell tool '{tool_path}'")
-
-    retval = git_tool_entry.call('run', f"\"{tool_path}\" -C \"{container_path}\" clone {url} {repo_dir_name}", {"capture_output": False} )
+    retval = git_tool_entry.call('run', [], { "cmd_key": "clone", "container_path": newborn_entry_path, "url": url, "env": env, "clone_subdir": rel_clone_dir, "clone_options": clone_options, "capture_output": False } )
     if retval == 0:
+
         if checkout:
-            git_tool_entry.call('run', f"\"{tool_path}\" -C \"{entry_path}\" checkout \"{checkout}\"" )
+            git_tool_entry.call('run', [], { "cmd_key": "checkout", "repo_path": abs_result_path, "checkout": checkout } )
 
         if submodules:
-            git_tool_entry.call('run', f"\"{tool_path}\" -C \"{entry_path}\" submodule init" )
-            git_tool_entry.call('run', f"\"{tool_path}\" -C \"{entry_path}\" submodule update" )
+            git_tool_entry.call('run', [], { "cmd_key": "submodules_1", "repo_path": abs_result_path } )
+            git_tool_entry.call('run', [], { "cmd_key": "submodules_2", "repo_path": abs_result_path } )
 
-        if abs_patch_path:
-            patch_tool_entry = __entry__['patch_tool_entry']
+        if patch_tool_entry:
             logging.warning(f"The resolved patch_tool_entry '{patch_tool_entry.get_name()}' located at '{patch_tool_entry.get_path()}' uses the shell tool '{patch_tool_entry['tool_path']}'")
 
-            retval = patch_tool_entry.call('run', [], { 'entry_path': entry_path, 'abs_patch_path': abs_patch_path} )
+            retval = patch_tool_entry.call('run', [], { 'entry_path': abs_result_path, 'abs_patch_path': abs_patch_path} )
             if retval != 0:
-                logging.error(f"could not patch \"{entry_path}\" with \"{abs_patch_path}\", bailing out")
+                logging.error(f"could not patch \"{abs_result_path}\" with \"{abs_patch_path}\", bailing out")
                 return None
 
-        result_entry                = ak.bypath( entry_path )   # "discover" the Entry after cloning, then either create or augment the data
-        result_entry['repo_name']   = repo_name
-        result_entry['tags']        = tags or [ 'git_repo' ]
+        if move_on_up:
+            ufun.move_dir_contents_from_to( abs_result_path, newborn_entry_path )
+            ufun.rmdir( abs_result_path )
+        else:
+            newborn_entry['file_name'] = rel_clone_dir
+            if tags and 'collection' in tags:
+                newborn_entry['contained_entries'] = { rel_clone_dir: rel_clone_dir }
+            newborn_entry.save()
 
-        parent_entries              = result_entry.own_data().get('_parent_entries', [])
-        if [ "^", "byname", "git" ] not in parent_entries:
-            result_entry['_parent_entries'] = parent_entries + [ [ "^", "byname", "git" ] ]
-            result_entry.parent_objects = None      # reload parents
-
-        if checkout:
-            result_entry['checkout']        = checkout
-
-        result_entry['submodules']          = submodules
-
-        if abs_patch_path:
-            result_entry['abs_patch_path']  = abs_patch_path
-            result_entry['patch']           = patch
-
-        if contained_files:
-            result_entry['contained_files']  = contained_files
-
-        result_entry.attach( container_entry ).save()
-
-        return result_entry
+        return newborn_entry
 
     else:
         logging.error(f"A problem (retval={retval}) occured when trying to clone '{repo_name}' at {url} , bailing out")
+        newborn_entry.remove()
         return None
 
 
-def pull(repo_path, git_tool_entry, __entry__=None):
+def pull(repo_path,  git_tool_entry, __entry__):
     """Pull the repository contained in an entry.
 
 Usage examples :
@@ -116,7 +107,24 @@ Usage examples :
 
                 axs byname git , pull `axs core_collection , get_path`
     """
-    tool_path       = git_tool_entry["tool_path"]
-    git_tool_entry.call('run', f"\"{tool_path}\" -C \"{repo_path}\" pull --ff-only" )
+    retval = git_tool_entry.call('run', [], { "cmd_key": "pull", "repo_path": repo_path} )
+    if retval == 0:
+        return __entry__
+    else:
+        logging.error(f"could not pull {repo_path} ; return value = {retval}, bailing out")
+        return None
 
-    return __entry__
+
+def git(rest_of_cmd, env, repo_path, git_tool_entry, __entry__):
+    """Run an arbitrary git command in a git_repo
+
+Usage examples :
+                axs byname axs2mlperf , git branch
+    """
+    retval = git_tool_entry.call('run', [], { "cmd_key": "generic", "rest_of_cmd": rest_of_cmd, "env": env, "repo_path": repo_path, "capture_output": False} )
+    if retval == 0:
+        return __entry__
+    else:
+        logging.error(f"could not run:\n\tgit {rest_of_cmd}\nreturn value = {retval}, bailing out")
+        return None
+

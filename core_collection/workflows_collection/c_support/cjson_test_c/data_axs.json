@@ -1,37 +1,44 @@
 {
-    "_parent_entries": [ [ "^", "byname", "shell" ] ],
     "_producer_rules": [
-            [ [ "compiled", "cjson_test" ], [["run"]], {}, ["compiler_entry", "shell_cmd_with_subs", "cjson_lib_entry", "return_this_entry", "abs_source_path"] ]
+       [ [ "compiled", "cjson_test" ], [ [ "get", "pipeline" ] ] ]
     ],
+    "_parent_entries": [ [ "^", "byname", "entry_creator" ] ],
+
+    "compiler_tool_entry": [ "^", "byquery", "shell_tool,can_compile_c" ],
+    "cjson_lib_entry": [ "^", "byquery", "lib,lib_name=cjson" ],
+
     "tags": [ "source_code", "cjson_test" ],
     "file_name": "cjson_test.c",
     "abs_source_path": [ "^^", "get_path" ],
 
-    "dictionary_file_name": "values.json",
     "output_file_name": "output_file.json",
-
+    "dictionary_file_name": "values.json",
     "abs_dictionary_path": [ "^^", "get_path_from", "dictionary_file_name" ],
 
-    "return_this_entry": [ "^^", "execute", [[
-        [ "get_kernel" ],
-        [ "work_collection" ],
-        [ "attached_entry", [ "cjson_test_compiled", {
-                "_parent_entries": [ [ "AS^IS", "AS^IS", "^", "byname", "shell" ] ],
-                "tags": [ "compiled", "cjson_test"] ,
-                "binary_name": "cjson_test",
-                "abs_binary_path": ["AS^IS", "AS^IS", "^^", "get_path_from", "binary_name"],
-                "capture_output": true,
-                "dictionary_path": [ "^^", "get", "abs_dictionary_path" ],
-                "output_file_name": "output_file.json",
-                "abs_output_file_path": ["AS^IS", "AS^IS", "^^", "get_path_from", "output_file_name"],
-                "shell_cmd_with_subs": "#{abs_binary_path}# #{dictionary_path}# #{abs_output_file_path}#"
-            } ] ],
-        [ "save" ]
-    ]] ],
+    "newborn_entry_tags": [ "compiled", "cjson_test" ],
+    "newborn_parent_names": [ "shell" ],
+    "newborn_entry_name": "cjson_test_compiled",
+    "newborn_entry_param_mapping": {
+        "binary_name": "cjson_test",
+        "abs_binary_path": ["AS^IS", "AS^IS", "^^", "get_path_from", "binary_name"],
+        "output_file_name": "output_file.json",
+        "abs_output_file_path": ["AS^IS", "AS^IS", "^^", "get_path_from", "output_file_name"],
+        "dictionary_path": "#{abs_dictionary_path}#",
+        "shell_cmd_with_subs": [ "AS#IS", "#{abs_binary_path}# #{dictionary_path}# #{abs_output_file_path}#" ],
+        "capture_output": true
+    },
 
-    "compiler_entry": [ "^", "byquery", "shell_tool,can_compile_c" ],
-
-    "cjson_lib_entry": [ "^", "byquery", "lib,lib_name=cjson" ],
-
-    "shell_cmd_with_subs": "\"#{compiler_entry.tool_path}#\" -I#{cjson_lib_entry.include_path}# -o #{return_this_entry.abs_binary_path}# #{abs_source_path}# #{cjson_lib_entry.cjson_o_path}#"
+    "pipeline": [ "^^", "execute", [[
+        [ "get", "compiler_tool_entry" ],
+        [ "run", [], {
+            "cmd_key": "compile_to_binary",
+            "compile_infix": [ "^^", "substitute", "-I#{cjson_lib_entry.include_path}#" ],
+            "abs_binary_path": [ "^^", "dig", "stored_newborn_entry.abs_binary_path" ],
+            "abs_source_path": [ "^^", "get", "abs_source_path" ],
+            "compile_suffix": [ "^^", "dig", "cjson_lib_entry.cjson_o_path" ],
+            "capture_output": false
+        } ],
+        [ ],
+        [ "get", "stored_newborn_entry" ]
+    ]] ]
 }
