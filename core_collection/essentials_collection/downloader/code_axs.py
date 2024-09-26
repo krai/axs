@@ -73,7 +73,7 @@ Usage examples:
         logging.warning(f"The resolved downloading_tool_entry '{downloading_tool_entry.get_name()}' located at '{downloading_tool_entry.get_path()}' uses the shell tool '{downloading_tool_entry['tool_path']}'")
 
         downloading_tool_param_topup = {"url": url, "target_path": abs_result_path, "record_entry_path": newborn_entry_path, "cmd_key": downloading_tool_cmd_key}
-        downloading_tool_params |= {k:v for k,v in downloading_tool_param_topup.items() if v is not None}
+        downloading_tool_params.update( {k:v for k,v in downloading_tool_param_topup.items() if v is not None} )
 
         retval = downloading_tool_entry.call('run', [], downloading_tool_params)
         if retval != 0:
