@@ -95,12 +95,15 @@ def cli_parse(arglist):
                     call_param_json     = matched.group(6)
                     call_param_value    = json.loads( call_param_json )
                 else:
-                    matched = re.match(r'^--(([\w\.]*\+?)((\^{1,2})(\w+))?)([\ ,;:/]{0,3})=(.*)$', arglist[i])  # scalar value, list, list-of-lists or dictionary
+                    matched = re.match(r'^--(([\w\.]*\+?)((\^{1,2})(\w+))?)([\ ,;:/]{0,3})(#?)=(.*)$', arglist[i])  # scalar value, list, list-of-lists or dictionary
                     if matched:
                         delimiters          = list(matched.group(6))
-                        call_param_value    = matched.group(7)
+                        substitute_first    = matched.group(7)
+                        call_param_value    = matched.group(8)
 
-                        if len(delimiters)==3 and delimiters[1]==delimiters[2]:     # a dictionary
+                        if substitute_first:
+                            call_param_value    = [ '^^', 'substitute', call_param_value ]
+                        elif len(delimiters)==3 and delimiters[1]==delimiters[2]:     # a dictionary
                             call_param_value    = dict([ [ to_num_or_not_to_num(elem) for elem in group.split(delimiters[1]) ] for group in call_param_value.split(delimiters[0]) ])
                         elif len(delimiters)==2:                                    # a 2D list
                             call_param_value    = [ [ to_num_or_not_to_num(elem) for elem in group.split(delimiters[1]) ] for group in call_param_value.split(delimiters[0]) ]
