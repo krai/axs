@@ -376,6 +376,18 @@
                 "docker_image": "ubuntu",
                 "docker_image_tag": "latest",
                 "run_in_docker": "bash"
+        } ],
+        [ [ "shell_tool", "can_ssh" ], [["detect"]], {
+                "tool_name": "ssh",
+                "shell_cmd_templates": {
+                    "help": "\"#{tool_path}#\" -h",
+                    "version": "\"#{tool_path}#\" -V",
+                    "run": "\"#{tool_path}#\" #{ssh_options}# #{ssh_hostname}# '#{run_in_ssh}#'"
+                },
+                "cmd_key": "run",
+                "ssh_options": "",
+                "ssh_hostname": "chai.a",
+                "run_in_ssh": "echo Hello ; hostname"
         } ]
     ],
 
