@@ -1,0 +1,9 @@
+{
+    "_parent_entries": [ [ "^", "core_collection" ] ],
+    "tags": [
+        "collection"
+    ],
+    "contained_entries": {
+        "get_file_from_docker": "get_file_from_docker"
+    }
+}
