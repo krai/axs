@@ -3,6 +3,7 @@ import graphviz
 import json
 import networkx as nx
 import subprocess
+import os
 from kernel import default_kernel as ak
 from networkx.drawing.nx_pydot import read_dot
 
@@ -36,7 +37,6 @@ def draw(target, return_this_entry=None, __entry__=None):
         if output_entries:
             # Extract all 'byname' entries from "output_entry_parents" as objects to byname as key
             byname_entries = extract_byname_entries(output_entries)
-            #print("byname_entries:", byname_entries)
 
         for key, val in target_data.items():
             if "_parent_entries" in str(val):
@@ -189,31 +189,30 @@ def extract_byname_entries(output_entries):
 
 def draw_collection(collection_name, __entry__=None):
     """ Generate Dependency Graph for all entries in the collection.   
+
+        Usage examples: 
+            axs byname graph_collection, draw_collection work_collection
     """
     collection_entry = __entry__.get_kernel().byname(collection_name)
-    #print("collection_entry: ", collection_entry)
+ 
     if collection_name!=None:
         collection_path = collection_entry.get_path()
-        #print("collection_path: ", collection_path)
         draw(collection_name, return_this_entry=collection_entry, __entry__=collection_entry)
         image_path = f'{collection_path}/image.png'
         dot_file_path = f'{collection_path}/image'
         print("image_path: ", image_path)
         print("dot_file_path: ", dot_file_path)
         try:
-        # Construct the graph-easy command
             cmd = ['graph-easy', dot_file_path]
-        
-        # Run the command and capture the output
             result = subprocess.run(cmd, capture_output=True, text=True)
         
         # Check if the command was successful
             if result.returncode == 0:
                 print("Graph-Easy output:")
-                print(result.stdout)  # Print the graph-easy output
+                print(result.stdout)  
             else:
                 print(f"Graph-Easy failed with error code {result.returncode}")
-                print(result.stderr)  # Print any errors that occurred
+                print(result.stderr)  
 
         except FileNotFoundError:
             print("graph-easy command not found. Please ensure it is installed.")
@@ -275,8 +274,10 @@ def print_hierarchy(entry_name, __entry__, indent_level=0, d=None, output=False)
         if parents:
             for parent in parents:
                 parent_name = parent if isinstance(parent, str) else parent.get_name()
+                parent_path = parent.get_path()
+                parent_dir = os.path.dirname(parent_path)
                 print(f"{base_indent}|")
-                print(f"{base_indent}+-{parent.get_path()}")
+                print(f"{base_indent}+-{parent_dir}")
                 print_hierarchy(parent_name, __entry__, indent_level + 1, d=d)
         
         
@@ -287,8 +288,10 @@ def print_hierarchy(entry_name, __entry__, indent_level=0, d=None, output=False)
                     for entry in byname_entries:
                         output_name = entry if isinstance(entry, str) else entry.get_name()
                         output_entry = __entry__.get_kernel().byname(entry)
+                        output_path = output_entry.get_path()
+                        output_dir = os.path.dirname(output_path)
                         print(f"{output_indent}|")
-                        print(f"{output_indent}-->{output_entry.get_path()} --> Output Parents")
+                        print(f"{output_indent}-->{output_dir} :: Output Parents")
                         print_hierarchy(output_name, __entry__, indent_level + 1, d=d, output=True)
     
     return "Tree printed successfully!" 
