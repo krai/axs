@@ -376,7 +376,11 @@
                 "docker_options": "-it",
                 "docker_image": "ubuntu",
                 "docker_image_tag": "latest",
-                "dockerfile_dir": ".",
+                "dockerfile_dir": [ "AS^IS", "AS^IS", "AS^IS", "^^", "execute", [[
+                    [ "get_kernel" ],
+                    [ "byquery", [[ "dockerfile", [ "docker_image", [ "^^", "get", "docker_image" ] ] ]] ],
+                    [ "get_path", "" ]
+                ]] ],
                 "run_in_docker": "bash"
         } ],
         [ [ "shell_tool", "can_ssh" ], [["detect"]], {
