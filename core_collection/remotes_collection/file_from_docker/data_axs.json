@@ -1,13 +1,12 @@
 {
     "_producer_rules": [
-        [ [ "ran_in_docker", "file_from_docker" ], [[ "get", "pipeline" ]] ]
+        [ [ "run_remotely", "remote_type=docker", "exchange_type=files" ], [[ "get", "pipeline" ]] ]
     ],
     "_parent_entries": [ [ "^", "byquery", "shell_tool,can_docker" ], [ "^", "byname", "entry_creator" ] ],
 
     "full_filepath": "/etc/lsb-release",
     "base_filename": [ "^^", "func", [ "os.path.basename", [ "^^", "get", "full_filepath" ] ] ],
 
-    "newborn_entry_tags": [ "ran_in_docker", "file_from_docker" ],
     "newborn_parent_names": [ ],
     "newborn_name_template": "file_#{base_filename}#_captured_from_docker_#{docker_image}#_#{docker_image_tag}#",
     "newborn_entry_param_names": [ "full_filepath", "base_filename" ],

@@ -9,11 +9,11 @@
 
 Usage examples :
                     # all default parameters:
-                axs byquery ran_in_ssh,file_from_ssh
+                axs byquery run_remotely,remote_type=ssh,exchange_type=files
 
                     # run on a different machine
-                axs byquery ran_in_ssh,file_from_ssh,ssh_hostname=velociti.a
+                axs byquery run_remotely,remote_type=ssh,exchange_type=files,ssh_hostname=velociti.a
 
                     # ask for a different file:
-                axs byquery ran_in_ssh,file_from_ssh,full_filepath=/etc/passwd
+                axs byquery run_remotely,remote_type=ssh,exchange_type=files,full_filepath=/etc/passwd
 """

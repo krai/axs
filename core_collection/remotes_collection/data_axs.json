@@ -4,8 +4,8 @@
         "collection"
     ],
     "contained_entries": {
-        "get_file_from_docker": "get_file_from_docker",
-        "get_file_from_ssh": "get_file_from_ssh",
+        "file_from_docker": "file_from_docker",
+        "file_from_ssh": "file_from_ssh",
         "axs_kernel_dockerfile": "axs_kernel_dockerfile"
     }
 }

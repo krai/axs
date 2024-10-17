@@ -8,11 +8,11 @@
 
 Usage examples :
                     # all default parameters:
-                axs byquery ran_in_docker,file_from_docker
+                axs byquery run_remotely,remote_type=docker,exchange_type=files
 
                     # run in a different image (which in this case affects the contents of /etc/lsb-release file)
-                axs byquery ran_in_docker,file_from_docker,docker_image=ubuntu:jammy
+                axs byquery run_remotely,remote_type=docker,exchange_type=files,docker_image=ubuntu:jammy
 
                     # ask for a different file:
-                axs byquery ran_in_docker,file_from_docker,full_filepath=/etc/passwd
+                axs byquery run_remotely,remote_type=docker,exchange_type=files,full_filepath=/etc/passwd
 """
