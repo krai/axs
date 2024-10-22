@@ -370,12 +370,14 @@
                     "help": "\"#{tool_path}#\" help",
                     "version": "\"#{tool_path}#\" version",
                     "build": "\"#{tool_path}#\" build -t #{docker_image}#:#{docker_image_tag}# #{dockerfile_dir}#",
-                    "run": "\"#{tool_path}#\" run #{docker_options}# #{docker_image}#:#{docker_image_tag}# #{run_in_docker}#"
+                    "run": "\"#{tool_path}#\" run #{docker_options}# #{docker_image}#:#{docker_image_tag}# #{run_in_docker}#",
+                    "exec": "\"#{tool_path}#\" exec #{docker_options}# #{docker_container}# #{run_in_docker}#"
                 },
                 "cmd_key": "run",
                 "docker_options": "-it",
                 "docker_image": "ubuntu",
                 "docker_image_tag": "latest",
+                "docker_container": "#{docker_image}#_#{docker_image_tag}#_cont",
                 "dockerfile_dir": [ "AS^IS", "AS^IS", "AS^IS", "^^", "execute", [[
                     [ "get_kernel" ],
                     [ "byquery", [[ "dockerfile", [ "docker_image", [ "^^", "get", "docker_image" ] ] ]] ],
