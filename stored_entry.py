@@ -257,6 +257,18 @@ Usage examples :
         return self.own_functions_cache
 
 
+    def reload(self):
+        """Triggers reloading data, code and clears call cache.
+
+            Useful when another axs process is allowed to update entries and we need to pick up the changes.
+        """
+        self.own_data_cache         = None
+        self.call_cache             = {}
+        self.own_functions_cache    = None
+
+        return self
+
+
     def pickle_one(self):
         """Return a command that would (hopefully) load *this* entry at a later time. Used recursively by pickle_struct()
         """
