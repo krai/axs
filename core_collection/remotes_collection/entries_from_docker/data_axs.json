@@ -1,0 +1,53 @@
+{
+    "_producer_rules": [
+        [ [ "program_output", "remote_type=docker", "exchange_type=entries", "task=image_classification", "framework=onnxrt" ], [[ "get", "pipeline" ]] ],
+
+        [ [ "program_output", "remote_type=docker", "exchange_type=entries", "task=image_classification", "framework=pytorch" ], [[ "get", "pipeline" ]] ],
+
+        [ [ "program_output", "remote_type=docker", "exchange_type=entries", "task=image_classification", "framework=tf" ], [[ "get", "pipeline" ]] ],
+
+        [ [ "program_output", "remote_type=docker", "exchange_type=entries", "task=object_detection", "framework=onnxrt" ], [[ "get", "pipeline" ]] ],
+
+        [ [ "program_output", "remote_type=docker", "exchange_type=entries", "task=bert", "framework=onnxrt" ], [[ "get", "pipeline" ]] ]
+    ],
+
+    "hostname": [ "^", "func", "socket.gethostname" ],
+    "exchange_collection_name": [ "^^", "substitute", "docker_on_#{hostname}#_exchange_collection" ],
+    "exchange_collection": [ "^^", "execute", [[
+        [ "get_kernel" ],
+        [ "byquery", [[ "collection", [ "collection_name", [ "^^", "get", "exchange_collection_name" ] ] ]], { "parent_recursion": true } ]
+    ]] ],
+    "exchange_collection_path_on_host": [ "^^", "execute", [[
+        [ "get", "exchange_collection" ],
+        [ "get_path", "" ]
+    ]] ],
+    "exchange_collection_path_in_docker": [ "^^", "substitute", "/home/krai/work_collection/#{exchange_collection_name}#" ],
+
+    "docker_image": "axs_kernel",
+    "docker_container": [ "^^", "substitute", "#{docker_image}#_cont" ],
+    "docker_tool": [ "^", "byquery", "shell_tool,can_docker" ],
+
+    "pipeline": [ "^^", "execute", [[
+        [ "get", "docker_tool" ],
+        [ "run", [], {
+            "docker_image": [ "^^", "get", "docker_image" ],
+            "docker_container": [ "^^", "get", "docker_container" ],
+            "cmd_key": "run",
+            "docker_options": [ "^^", "substitute", "-it -d --rm --name #{docker_container}# -v #{exchange_collection_path_on_host}#:#{exchange_collection_path_in_docker}#" ],
+            "run_in_docker": "cat"
+        } ],
+        [ ],
+        [ "get", "docker_tool" ],
+        [ "run", [], {
+            "docker_image": [ "^^", "get", "docker_image" ],
+            "docker_container": [ "^^", "get", "docker_container" ],
+            "cmd_key": "exec",
+            "docker_options": [ "^^", "substitute", "-it" ],
+            "run_in_docker": [ "^^", "substitute", "axs byquery #{__query}# --.image_classification_using_onnxrt_py.experiment_collection_name=#{exchange_collection_name}#" ]
+        } ],
+        [ ],
+        [ "get", "exchange_collection" ],
+        [ "reload" ],
+        [ "byquery", [[ "^^", "get", "__query" ]] ]
+    ]] ]
+}
