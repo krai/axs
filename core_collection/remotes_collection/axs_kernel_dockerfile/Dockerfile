@@ -30,4 +30,7 @@ WORKDIR /home/krai
 RUN git clone https://github.com/krai/axs
 ENV PATH="$PATH:/home/krai/axs"
 
+# Trigger pre-creation of an (initially empty) work_collection
+RUN axs work_collection
+
 CMD [ "/bin/bash" ]
