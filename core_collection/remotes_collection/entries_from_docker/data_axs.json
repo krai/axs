@@ -27,6 +27,12 @@
     "docker_container": [ "^^", "substitute", "#{docker_image}#_cont" ],
     "docker_tool": [ "^", "byquery", "shell_tool,can_docker" ],
 
+    "modified_query": [ "^^", "execute", [[
+        [ "get", "__query" ],
+        [ "replace", [",remote_type=docker", ""] ],
+        [ "replace", [",exchange_type=entries", ""] ]
+    ]] ],
+
     "pipeline": [ "^^", "execute", [[
         [ "get", "docker_tool" ],
         [ "run", [], {
@@ -43,7 +49,7 @@
             "docker_container": [ "^^", "get", "docker_container" ],
             "cmd_key": "exec",
             "docker_options": [ "^^", "substitute", "-it" ],
-            "run_in_docker": [ "^^", "substitute", "axs byquery #{__query}# --.image_classification_using_onnxrt_py.experiment_collection_name=#{exchange_collection_name}#" ]
+            "run_in_docker": [ "^^", "substitute", "axs byquery #{modified_query}# --,::=remote_type:docker,exchange_type=entries --.image_classification_using_onnxrt_py.experiment_collection_name=#{exchange_collection_name}#" ]
         } ],
         [ ],
         [ "get", "exchange_collection" ],
