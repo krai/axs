@@ -3,13 +3,20 @@
 """ A simple CommandLine API for this framework.
 """
 
+import getpass
 import json
 import logging
+import os
 import re
+import socket
 import sys
 
-logging.basicConfig( level=logging.INFO )
-#logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")   # put this BEFORE IMPORTING the kernel to see logging from the kernel
+log_indocker = 'inDocker:' if os.path.exists('/.dockerenv') else ''
+log_username = getpass.getuser()
+log_hostname = socket.gethostname()
+
+logging.basicConfig(level=logging.INFO, format=f"%(levelname)s:{log_indocker}{log_username}@{log_hostname} %(filename)s:%(funcName)s:%(lineno)s %(message)s")
+#logging.basicConfig(level=logging.DEBUG, format=f"%(levelname)s:{log_username}@{log_hostname} %(filename)s:%(funcName)s:%(lineno)s %(message)s") # put this BEFORE IMPORTING the kernel to see logging from the kernel
 
 from function_access import to_num_or_not_to_num
 from kernel import default_kernel as ak
