@@ -46,7 +46,7 @@ Usage examples :
         return None
 
 
-def clone(repo_name=None, url=None, env=None, rel_clone_dir=None, abs_result_path=None, newborn_entry=None, newborn_entry_path=None, move_on_up=True, checkout=None, submodules=False, abs_patch_path=None, git_tool_entry=None, patch_tool_entry=None, clone_options="", tags=None, contained_files=None):
+def clone(repo_name=None, url=None, env=None, rel_clone_dir=None, abs_result_path=None, cloned_axs_data_path=None, newborn_entry=None, newborn_entry_path=None, move_on_up=True, checkout=None, submodules=False, abs_patch_path=None, git_tool_entry=None, patch_tool_entry=None, clone_options="", tags=None, contained_files=None):
     """Clone a git repository into an Entry,
 
 Usage examples :
@@ -81,6 +81,9 @@ Clean-up:
             if retval != 0:
                 logging.error(f"could not patch \"{abs_result_path}\" with \"{abs_patch_path}\", bailing out")
                 return None
+
+        if os.path.exists( cloned_axs_data_path ):
+            newborn_entry["contained_entries"] = ufun.load_json( cloned_axs_data_path )["contained_entries"]
 
         if move_on_up:
             ufun.move_dir_contents_from_to( abs_result_path, newborn_entry_path )

@@ -287,7 +287,7 @@ Usage examples :
             return [ "^", "fresh_entry", [], fresh_entry_opt_args ]
 
 
-    def save(self, new_path=None, on_collision="force"):    # FIXME: "force" mimics old behaviour. To benefit from the change we need to switch to "raise"
+    def save(self, new_path=None, on_collision="force", completed=False):    # FIXME: "force" mimics old behaviour. To benefit from the change we need to switch to "raise"
         """Store [updated] own_data of the entry
             Note1: the entry didn't have to have existed prior to saving
             Note2: only parameters get stored
@@ -302,6 +302,8 @@ Usage examples :
             self.is_stored = False
         else:
             new_path = self.get_path()
+
+        self["__completed"] = completed
 
         parameters_path        = self.get_parameters_path()
         parameters_dirname, parameters_basename = os.path.split( parameters_path )
