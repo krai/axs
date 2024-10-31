@@ -10,11 +10,13 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.408'     # TODO: update with every kernel change
+__version__ = '0.2.409'     # TODO: update with every kernel change
 
 import logging
 import os
 import sys
+
+import ufun
 
 from runnable import Runnable
 from stored_entry import Entry
@@ -187,7 +189,7 @@ Usage examples :
                 }
             }
             work_collection_object = self.bypath(work_collection_path, name="work_collection", own_data=work_collection_data)
-            work_collection_object.save()
+            work_collection_object.save( completed=ufun.generate_current_timestamp() )
 
         self.record_container( work_collection_object )     # to avoid infinite recursion
         return work_collection_object
