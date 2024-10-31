@@ -40,7 +40,7 @@
             "docker_container": [ "^^", "get", "docker_container" ],
             "cmd_key": "run",
             "docker_options": [ "^^", "substitute", "-it -d --rm --name #{docker_container}# -v #{exchange_collection_path_on_host}#:#{exchange_collection_path_in_docker}#" ],
-            "run_in_docker": "cat"
+            "run_in_docker": [ "^^", "substitute", "'watch -g axs byquery #{modified_query}# ---'" ]
         } ],
         [ ],
         [ "get", "docker_tool" ],
