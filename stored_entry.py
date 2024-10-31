@@ -287,7 +287,7 @@ Usage examples :
             return [ "^", "fresh_entry", [], fresh_entry_opt_args ]
 
 
-    def save(self, new_path=None, on_collision="force", completed=False):    # FIXME: "force" mimics old behaviour. To benefit from the change we need to switch to "raise"
+    def save(self, new_path=None, on_collision="force", completed=None):    # FIXME: "force" mimics old behaviour. To benefit from the change we need to switch to "raise"
         """Store [updated] own_data of the entry
             Note1: the entry didn't have to have existed prior to saving
             Note2: only parameters get stored
@@ -303,7 +303,10 @@ Usage examples :
         else:
             new_path = self.get_path()
 
-        self["__completed"] = completed
+        own_data = self.own_data()
+
+        if ("__completed" in own_data) or ("__query" in own_data) or (completed is not None):
+            self["__completed"] = completed or False
 
         parameters_path        = self.get_parameters_path()
         parameters_dirname, parameters_basename = os.path.split( parameters_path )
@@ -338,7 +341,7 @@ Usage examples :
             else:
                 os.makedirs( parameters_dirname )
 
-        json_string = ufun.save_json( self.pickle_struct(self.own_data()), parameters_path, indent=4 )
+        json_string = ufun.save_json( self.pickle_struct(own_data), parameters_path, indent=4 )
 
         logging.info(f"[{self.get_name()}] parameters {json_string} saved to '{parameters_path}'")
 
