@@ -4,7 +4,7 @@ SHELL ["/bin/bash", "-c"]
 
 ENTRYPOINT ["/bin/bash", "-c"]
 
-# Download system dependencies
+# Install system dependencies for axs:
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -y\
  && apt install -y apt-utils\
@@ -15,22 +15,15 @@ RUN apt update -y\
  vim sudo curl\
  && apt clean
 
-# Create user 'krai' in group 'kraig'.
-ARG GROUP_ID=1500
-ARG USER_ID=2000
-RUN groupadd -g ${GROUP_ID} kraig\
- && useradd -u ${USER_ID} -g kraig --create-home --shell /bin/bash krai
-USER krai:kraig
+# Optional, if commits from containers are expected:
 RUN git config --global user.name "krai"\
  && git config --global user.email "info@krai.ai"
 
-WORKDIR /home/krai
-
-# Install the kernel of the X workflow automation framework.
+# Install the axs kernel:
 RUN git clone https://github.com/krai/axs
-ENV PATH="$PATH:/home/krai/axs"
+ENV PATH="$PATH:$HOME/axs"
 
-# Trigger pre-creation of an (initially empty) work_collection
+# Trigger pre-creation of an (initially empty) work_collection:
 RUN axs work_collection
 
 CMD [ "/bin/bash" ]

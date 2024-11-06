@@ -13,15 +13,36 @@
 
     "hostname": [ "^", "func", "socket.gethostname" ],
     "exchange_collection_name": [ "^^", "substitute", "docker_on_#{hostname}#_exchange_collection" ],
-    "exchange_collection": [ "^^", "execute", [[
+    "pre_exchange_collection": [ "^^", "execute", [[
         [ "get_kernel" ],
         [ "byquery", [[ "collection", [ "collection_name", [ "^^", "get", "exchange_collection_name" ] ] ]], { "parent_recursion": true } ]
+    ]] ],
+    "pre_exchange_collection_path_on_host": [ "^^", "execute", [[
+        [ "get", "pre_exchange_collection" ],
+        [ "get_path", "" ]
+    ]] ],
+
+    "group_on_host": "krai",
+    "exchange_collection": [ "^^", "execute", [[
+        [ ".shell.run", [ "^^", "substitute", "chgrp -R #{group_on_host}# #{pre_exchange_collection_path_on_host}#" ] ],
+        [ ],
+        [ ".shell.run", [ "^^", "substitute", "chmod -R g+ws #{pre_exchange_collection_path_on_host}#" ] ],
+        [ ],
+        [ ".shell.run", [ "^^", "substitute", "setfacl -R -d -m group:#{group_on_host}#:rwx #{pre_exchange_collection_path_on_host}#" ] ],
+        [ ],
+        [ "get", "pre_exchange_collection" ]
     ]] ],
     "exchange_collection_path_on_host": [ "^^", "execute", [[
         [ "get", "exchange_collection" ],
         [ "get_path", "" ]
     ]] ],
-    "exchange_collection_path_in_docker": [ "^^", "substitute", "/home/krai/work_collection/#{exchange_collection_name}#" ],
+
+    "user_in_docker": "root",
+    "home_dir_in_docker": [ "^^", "case", [ ["^^", "get", "user_in_docker"],
+        "root", "/root" ],
+        { "default_value": [ "^^", "substitute", "/home/#{user_in_docker}#"] }
+    ],
+    "exchange_collection_path_in_docker": [ "^^", "substitute", "#{home_dir_in_docker}#/work_collection/#{exchange_collection_name}#" ],
 
     "docker_image": "axs_kernel",
     "docker_container": [ "^^", "substitute", "#{docker_image}#_cont" ],
@@ -39,7 +60,7 @@
             "docker_image": [ "^^", "get", "docker_image" ],
             "docker_container": [ "^^", "get", "docker_container" ],
             "cmd_key": "run",
-            "docker_options": [ "^^", "substitute", "-it -d --rm --name #{docker_container}# -v #{exchange_collection_path_on_host}#:#{exchange_collection_path_in_docker}#" ],
+            "docker_options": [ "^^", "substitute", "-it -d --rm --name #{docker_container}# --user #{user_in_docker}# -v #{exchange_collection_path_on_host}#:#{exchange_collection_path_in_docker}#" ],
             "run_in_docker": [ "^^", "substitute", "'watch -g axs byquery #{modified_query}# ---'" ]
         } ],
         [ ],
@@ -48,7 +69,7 @@
             "docker_image": [ "^^", "get", "docker_image" ],
             "docker_container": [ "^^", "get", "docker_container" ],
             "cmd_key": "exec",
-            "docker_options": [ "^^", "substitute", "-it" ],
+            "docker_options": [ "^^", "substitute", "-it --user #{user_in_docker}#" ],
             "run_in_docker": [ "^^", "substitute", "axs byquery #{modified_query}# --,::=remote_type:docker,exchange_type:entries --.image_classification_using_onnxrt_py.experiment_collection_name=#{exchange_collection_name}#" ]
         } ],
         [ ],
