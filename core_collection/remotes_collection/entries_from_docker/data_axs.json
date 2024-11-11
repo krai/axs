@@ -48,6 +48,7 @@
     "docker_image": "axs_kernel",
     "docker_container": [ "^^", "substitute", "#{docker_image}#_cont" ],
     "docker_tool": [ "^", "byquery", "shell_tool,can_docker" ],
+    "docker_run_extra_options": "",
 
     "modified_query": [ "^^", "execute", [[
         [ "get", "__query" ],
@@ -62,8 +63,9 @@
         [ "run", [], {
             "docker_image": [ "^^", "get", "docker_image" ],
             "docker_container": [ "^^", "get", "docker_container" ],
+            "docker_run_extra_options": [ "^^", "get", "docker_run_extra_options" ],
             "cmd_key": "run",
-            "docker_options": [ "^^", "substitute", "-it -d --rm --name #{docker_container}# --user #{user_in_docker}# #{host_entries_mapping}#" ],
+            "docker_options": [ "^^", "substitute", "-it -d --rm --name #{docker_container}# --user #{user_in_docker}# #{host_entries_mapping}# #{docker_run_extra_options}#" ],
             "run_in_docker": [ "^^", "substitute", "'watch -g axs byquery #{modified_query}# --- \"2>/dev/null\"'" ]
         } ],
         [ ],
