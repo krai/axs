@@ -9,11 +9,9 @@ To run a pipeline in that docker image, run the following on the host:
     axs byquery program_output,remote_type=docker,exchange_type=entries,task=image_classification,framework=onnxrt
 """
 
-import os.path
-
 def host_entries_mapping(host_entries_to_pass_down, host_paths_to_pass_down):
 
-    return ' '.join( [ f"-v {he.get_path()}:/mnt/{he.get_name()}" for he in host_entries_to_pass_down ] + [ f"-v {hp}:/mnt/{os.path.basename(hp)}" for hp in host_paths_to_pass_down ] )
+    return ' '.join( [ f"-v {he.get_path()}:/mnt/{he.get_name()}" for he in host_entries_to_pass_down ] + [ f"-v {hp}:{hp}" for hp in host_paths_to_pass_down ] )
 
 
 def container_entries_access(host_entries_to_pass_down):
