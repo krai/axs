@@ -39,10 +39,18 @@
         [ "get_kernel" ],
         [ "byname", [ "^^", "get", "execution_entry_name" ] ]
     ]] ],
-    "host_entries_to_pass_down": [
+    "EXAMPLE_host_entries_to_pass_down": [
         [ "^^", "get", "exchange_collection" ],
         [ "^^", "dig", "execution_entry.model_entry" ]
     ],
+    "host_entries_to_pass_down": [
+        [ "^^", "get", "exchange_collection" ]
+    ],
+    "EXAMPLE_host_paths_to_pass_down": [
+        "/etc/resolv.conf",
+        "/data/models"
+    ],
+    "host_paths_to_pass_down": [],
 
     "user_in_docker": "root",
     "docker_image": "axs_kernel",
