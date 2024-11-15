@@ -1,0 +1,25 @@
+{
+    "_producer_rules": [
+        [ [ "run_remotely", "remote_type=ssh", "exchange_type=files" ], [[ "get", "pipeline" ]] ]
+    ],
+    "_parent_entries": [ [ "^", "byquery", "shell_tool,can_ssh" ], [ "^", "byname", "entry_creator" ] ],
+
+    "full_filepath": "/etc/lsb-release",
+    "base_filename": [ "^^", "func", [ "os.path.basename", [ "^^", "get", "full_filepath" ] ] ],
+
+    "newborn_parent_names": [ ],
+    "newborn_name_template": "file_#{base_filename}#_captured_from_ssh_#{ssh_hostname}#",
+    "newborn_entry_param_names": [ "full_filepath", "base_filename", "ssh_hostname" ],
+
+    "rel_install_dir": "exchange",
+
+    "ssh_reverse_port": 9876,
+    "ssh_options": [ "^^", "substitute", "-R #{ssh_reverse_port}#:127.0.0.1:22" ],
+    "run_in_ssh": [ "^^", "substitute", "scp -P#{ssh_reverse_port}# #{full_filepath}# 127.0.0.1:#{abs_install_dir}#" ],
+
+    "pipeline": [ "^^", "execute", [[
+        [ "run" ],
+        [ ],
+        [ "get", "stored_newborn_entry" ]
+    ]] ]
+}

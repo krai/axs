@@ -1,0 +1,4 @@
+{
+    "tags": [ "dockerfile" ],
+    "docker_image": "axs_kernel"
+}

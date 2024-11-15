@@ -6,6 +6,7 @@
     "contained_entries": {
         "essentials_collection": "essentials_collection",
         "workflows_collection": "workflows_collection",
+        "remotes_collection": "remotes_collection",
         "varia_collection": "varia_collection"
     }
 }

@@ -63,6 +63,11 @@
     "rel_clone_dir": [ "^^", "substitute", "cloned_#{repo_name}#" ],
     "inside_install_dir": [ "^^", "get", "rel_clone_dir" ],
 
+    "cloned_axs_data_path": [ "^^", "execute", [[
+        [ "get", "abs_result_path" ],
+        0,
+        [ "func", ["os.path.join", "data_axs.json"] ]
+    ]] ],
 
     "checkout_part": [ "^^", "case", [ [ "^^", "get", ["checkout", ""] ], ["", false, null, "None"], "" ],
                                 { "default_value": [ "^^", "func", [ "re.sub", "\\W", "_", [ "^^", "substitute", "_#{checkout}#" ] ] ] }

@@ -1,0 +1,12 @@
+{
+    "_parent_entries": [ [ "^", "core_collection" ] ],
+    "tags": [
+        "collection"
+    ],
+    "contained_entries": {
+        "file_from_docker": "file_from_docker",
+        "file_from_ssh": "file_from_ssh",
+        "entries_from_docker": "entries_from_docker",
+        "axs_kernel_dockerfile": "axs_kernel_dockerfile"
+    }
+}

@@ -6,6 +6,7 @@
 from copy import deepcopy
 import logging
 import os
+import ufun
 
 def walk(__entry__, skip_entry_names=None):
     """An internal recursive generator not to be called directly
@@ -334,7 +335,11 @@ Usage examples :
     # trying to match the Query in turn against each existing and walkable entry, first match returns:
     for candidate_entry in walk(__entry__):
         if parsed_query.matches_entry( candidate_entry, parent_recursion ):
-            return candidate_entry
+            if candidate_entry.get('__completed', True):    # either explicitly completed, or not carrying this attribute at all, probably a static Entry
+                return candidate_entry
+            else:
+                logging.info(f"[{__entry__.get_name()}] byquery({query}) found incomplete Entry {candidate_entry.get_name()} in {candidate_entry.get_path()} , which may either be in progress or dead - PLEASE INVESTIGATE")
+                return None     # FIXME: we cannot yet distinguish between a botched installation and a still-running one
 
     # if a matching entry does not exist, see if we can produce it with a matching Rule
     if produce_if_not_found and len(parsed_query.posi_tag_set):
@@ -379,7 +384,8 @@ Usage examples :
                 if not isinstance(new_entry, type(__entry__)):
                     raise RuntimeError( f"Matched Rule #{match_idx}/{len(matching_rules)} produced something ( {repr(new_entry)} ), which is not an Entry - PLEASE INVESTIGATE" )
                 elif parsed_query.matches_entry( new_entry, parent_recursion ):
-                    logging.info(f"Matched Rule #{match_idx}/{len(matching_rules)} produced an entry, which matches the original query.\n")
+                    logging.info(f"Matched Rule #{match_idx}/{len(matching_rules)} produced an entry, which matches the original query, finalizing...\n")
+                    new_entry.save( on_collision="force", completed=ufun.generate_current_timestamp() )   # we expect a collision
                     return new_entry
                 else:
                     raise RuntimeError( f"Matched Rule #{match_idx}/{len(matching_rules)} produced an entry, but it failed to match the original query {query} - PLEASE INVESTIGATE" )
@@ -407,13 +413,13 @@ def add_entry_path(new_entry_path, new_entry_name=None, __entry__=None):
             raise(KeyError(f"There was already another entry named {new_entry_name} with path {existing_rel_path}, remove it first"))
     else:
         __entry__.plant(['contained_entries', new_entry_name], trimmed_new_entry_path)
-        return __entry__.save( on_collision="force" )   # we expect a collision
+        return __entry__.save( on_collision="force", completed=ufun.generate_current_timestamp() )   # we expect a collision
 
 
 def remove_entry_name(old_entry_name, __entry__):
 
     contained_entries       = __entry__.pluck(['contained_entries', old_entry_name])
-    return __entry__.save( on_collision="force" )   # we expect a collision
+    return __entry__.save( on_collision="force", completed=ufun.generate_current_timestamp() )   # we expect a collision
 
 
 if __name__ == '__main__':

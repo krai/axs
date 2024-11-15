@@ -22,7 +22,7 @@ Usage examples:
     return __entry__.call( 'run', __entry__.substitute(template) )
 
 
-def run(shell_cmd, in_dir=None, env=None, capture_output=False, errorize_output=False, capture_stderr=False, suppress_stderr=False, split_to_lines=False, return_saved_record_entry=False, return_this_entry=None, get_and_return_on_success=None, __entry__=None, __record_entry__=None):
+def run(shell_cmd, in_dir=None, env=None, capture_output=False, errorize_output=False, capture_stderr=False, suppress_stderr=False, split_to_lines=False, return_saved_record_entry=False, return_this_entry=None, get_and_return_on_success=None, n_attempts=1, __entry__=None, __record_entry__=None):
     """Run the given shell command in the given environment
 
 Usage examples:
@@ -41,7 +41,6 @@ Usage examples:
     if type(shell_cmd)==list:   # making sure all components are strings
         shell_cmd = [str(x) for x in shell_cmd]
 
-    logging.warning(f"shell.run() about to execute (with in_dir={in_dir}, env={env}, capture_output={capture_output}, errorize_output={errorize_output}, capture_stderr={capture_stderr}, split_to_lines={split_to_lines}):\n\t{shell_cmd}\n" + (' '*8 + '^'*len(shell_cmd)) )
 
     if in_dir:
         prev_dir = os.getcwd()
@@ -64,7 +63,15 @@ Usage examples:
     if env:
         env = { k: str(env[k]) for k in env }   # cast all env's values to strings
 
-    completed_process = subprocess.run(shell_cmd, shell = (type(shell_cmd)!=list), env=env, stdout=stdout_target, stderr=stderr_target)
+    while n_attempts:
+        logging.warning(f"shell.run() about to execute (with in_dir={in_dir}, env={env}, capture_output={capture_output}, errorize_output={errorize_output}, capture_stderr={capture_stderr}, split_to_lines={split_to_lines}):\n\t{shell_cmd}\n" + (' '*8 + '^'*len(shell_cmd)) )
+
+        completed_process = subprocess.run(shell_cmd, shell = (type(shell_cmd)!=list), env=env, stdout=stdout_target, stderr=stderr_target)
+        if completed_process.returncode==0:
+            break
+        else:
+            n_attempts-=1
+            logging.warning(f"shell.run() failed with return code {completed_process.returncode}, {n_attempts} remaining")
 
     if in_dir:
         os.chdir( prev_dir )

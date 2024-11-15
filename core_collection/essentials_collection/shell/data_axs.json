@@ -14,5 +14,7 @@
         "mc": "echo Merry Christmas",
         "gb": "echo Good bye"
     },
-    "cmd_key": "default"
+    "cmd_key": "default",
+
+    "n_attempts": 1
 }

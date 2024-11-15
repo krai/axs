@@ -1,0 +1,93 @@
+{
+    "_producer_rules": [
+        [ [ "program_output", "remote_type=docker", "exchange_type=entries", "task=image_classification", "framework=onnxrt" ], [[ "get", "pipeline" ]] ],
+
+        [ [ "program_output", "remote_type=docker", "exchange_type=entries", "task=image_classification", "framework=pytorch" ], [[ "get", "pipeline" ]] ],
+
+        [ [ "program_output", "remote_type=docker", "exchange_type=entries", "task=image_classification", "framework=tf" ], [[ "get", "pipeline" ]] ],
+
+        [ [ "program_output", "remote_type=docker", "exchange_type=entries", "task=object_detection", "framework=onnxrt" ], [[ "get", "pipeline" ]] ],
+
+        [ [ "program_output", "remote_type=docker", "exchange_type=entries", "task=bert", "framework=onnxrt" ], [[ "get", "pipeline" ]] ]
+    ],
+
+    "hostname": [ "^", "func", "socket.gethostname" ],
+    "exchange_collection_name": [ "^^", "substitute", "docker_on_#{hostname}#_exchange_collection" ],
+    "pre_exchange_collection": [ "^^", "execute", [[
+        [ "get_kernel" ],
+        [ "byquery", [[ "collection", [ "collection_name", [ "^^", "get", "exchange_collection_name" ] ] ]], { "parent_recursion": true } ]
+    ]] ],
+    "pre_exchange_collection_path_on_host": [ "^^", "execute", [[
+        [ "get", "pre_exchange_collection" ],
+        [ "get_path", "" ]
+    ]] ],
+
+    "group_on_host": "krai",
+    "exchange_collection": [ "^^", "execute", [[
+        [ ".shell.run", [ "^^", "substitute", "chgrp -R #{group_on_host}# #{pre_exchange_collection_path_on_host}#" ] ],
+        [ ],
+        [ ".shell.run", [ "^^", "substitute", "chmod -R g+ws #{pre_exchange_collection_path_on_host}#" ] ],
+        [ ],
+        [ ".shell.run", [ "^^", "substitute", "setfacl -R -d -m group:#{group_on_host}#:rwx #{pre_exchange_collection_path_on_host}#" ] ],
+        [ ],
+        [ "get", "pre_exchange_collection" ]
+    ]] ],
+
+    "execution_entry_name": "image_classification_using_onnxrt_py",
+    "execution_entry_product_collection_name": "experiment_collection_name",
+    "execution_entry": [ "^^", "execute", [[
+        [ "get_kernel" ],
+        [ "byname", [ "^^", "get", "execution_entry_name" ] ]
+    ]] ],
+    "EXAMPLE_host_entries_to_pass_down": [
+        [ "^^", "get", "exchange_collection" ],
+        [ "^^", "dig", "execution_entry.model_entry" ]
+    ],
+    "host_entries_to_pass_down": [
+        [ "^^", "get", "exchange_collection" ]
+    ],
+    "EXAMPLE_host_paths_to_pass_down": [
+        "/etc/resolv.conf",
+        "/data/models"
+    ],
+    "host_paths_to_pass_down": [],
+
+    "user_in_docker": "root",
+    "docker_image": "axs_kernel",
+    "docker_container": [ "^^", "substitute", "#{docker_image}#_cont" ],
+    "docker_tool": [ "^", "byquery", "shell_tool,can_docker" ],
+    "docker_run_extra_options": "",
+
+    "modified_query": [ "^^", "execute", [[
+        [ "get", "__query" ],
+        [ "replace", [",remote_type=docker", ""] ],
+        [ "replace", [",exchange_type=entries", ""] ]
+    ]] ],
+
+    "host_entries_mapping": [ "^^", "host_entries_mapping" ],
+    "container_entries_access": [ "^^", "container_entries_access" ],
+    "pipeline": [ "^^", "execute", [[
+        [ "get", "docker_tool" ],
+        [ "run", [], {
+            "docker_image": [ "^^", "get", "docker_image" ],
+            "docker_container": [ "^^", "get", "docker_container" ],
+            "docker_run_extra_options": [ "^^", "get", "docker_run_extra_options" ],
+            "cmd_key": "run",
+            "docker_options": [ "^^", "substitute", "-it -d --rm --name #{docker_container}# --user #{user_in_docker}# #{host_entries_mapping}# #{docker_run_extra_options}#" ],
+            "run_in_docker": [ "^^", "substitute", "'watch -g axs byquery #{modified_query}# --- \"2>/dev/null\"'" ]
+        } ],
+        [ ],
+        [ "get", "docker_tool" ],
+        [ "run", [], {
+            "docker_image": [ "^^", "get", "docker_image" ],
+            "docker_container": [ "^^", "get", "docker_container" ],
+            "cmd_key": "exec",
+            "docker_options": [ "^^", "substitute", "-it --user #{user_in_docker}#" ],
+            "run_in_docker": [ "^^", "substitute", "#{container_entries_access}# , byquery #{modified_query}# --,::=remote_type:docker,exchange_type:entries --.#{execution_entry_name}#.#{execution_entry_product_collection_name}#=#{exchange_collection_name}#" ]
+        } ],
+        [ ],
+        [ "get", "exchange_collection" ],
+        [ "reload" ],
+        [ "byquery", [[ "^^", "get", "__query" ]] ]
+    ]] ]
+}
