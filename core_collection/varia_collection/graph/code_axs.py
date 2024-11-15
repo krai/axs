@@ -226,7 +226,7 @@ def print_hierarchy(entry_name, __entry__, indent_level=0, d=None, output=False)
     Recursive function to print the entry, parent hierarchy in a tree-like structure with max_depth 'd'.
 
     Usage examples:
-        axs byname hierarchy, print_hierarchy llmcb_using_qaic_kilt
+        axs byname graph , print_hierarchy llmcb_using_qaic_kilt
         
     """
     entry = __entry__.get_kernel().byname(entry_name)

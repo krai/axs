@@ -3,7 +3,7 @@ Set the target entry that we would like to draw a dependency graph for, e.g., im
 ```
 export TARGET=image_classification_using_tf_py
 ```
-`AXS` command to generate the graph:
+### `AXS` command to generate the graph:
 ```
 axs byquery graph_output,target=${TARGET}
 ```
@@ -54,6 +54,72 @@ digraph {
         }
 }
 ```
+### `AXS` command to print the hierarchy tree:
+```
+axs byname graph , print_hierarchy llmcb_using_qaic_kilt
+```
+
+<Details><Pre>
+saheli@chai:~/axs/core_collection/varia_collection/graph$ axs byname graph , print_hierarchy llmcb_using_qaic_kilt
+output_entries_list: ['AS^IS', ['^', 'byname', 'base_llama2_loadgen_experiment'], ['^', 'byname', 'base_qaic_experiment'], ['^', 'byname', 'traced_kilt_entry']]
+{'traced_kilt_entry', 'base_llama2_loadgen_experiment', 'base_qaic_experiment'}
+output_entries_list: ['AS^IS', ['^', 'byname', 'base_mixtral_loadgen_experiment'], ['^', 'byname', 'base_qaic_experiment'], ['^', 'byname', 'traced_kilt_entry']]
+{'traced_kilt_entry', 'base_llama2_loadgen_experiment', 'base_mixtral_loadgen_experiment', 'base_qaic_experiment'}
+llmcb_using_qaic_kilt
+|
++-/home/saheli/axs/core_collection/essentials_collection
+    shell
+|
++-/home/saheli/work_collection/axs2kilt-dev
+    base_llmcb_kilt_program
+    |
+    +-/home/saheli/work_collection/axs2kilt-dev
+        base_kilt_program
+        |
+        +-/home/saheli/work_collection/axs2mlperf
+            base_loadgen_program
+            |
+            +-/home/saheli/work_collection/axs2mlperf
+                cpufreq_support
+|
++-/home/saheli/work_collection/axs2mlperf
+    base_loadgen_program
+    |
+    +-/home/saheli/work_collection/axs2mlperf
+        cpufreq_support
+|
++-/home/saheli/work_collection/axs2qaic-dev
+    base_qaic_program
+    |
+    +-/home/saheli/work_collection/axs2mlperf
+        base_loadgen_program
+        |
+        +-/home/saheli/work_collection/axs2mlperf
+            cpufreq_support
+|
++-/home/saheli/work_collection/axs2qaic-dev
+    qaic_sdk_info
+|
+-->/home/saheli/work_collection/axs2kilt-dev :: Output Parents
+    traced_kilt_entry
+|
+-->/home/saheli/work_collection/axs2mlperf :: Output Parents
+    base_llama2_loadgen_experiment
+    |
+    +-/home/saheli/work_collection/axs2mlperf
+        base_loadgen_experiment
+|
+-->/home/saheli/work_collection/axs2mlperf :: Output Parents
+    base_mixtral_loadgen_experiment
+    |
+    +-/home/saheli/work_collection/axs2mlperf
+        base_loadgen_experiment
+|
+-->/home/saheli/work_collection/axs2qaic-dev :: Output Parents
+    base_qaic_experiment
+Tree printed successfully!
+</Details></Pre>
+
 ## Running tests
 The next step is to run the tests.
 
@@ -77,3 +143,4 @@ collected 2 items
 test_parent_and_output_entries.py::test_compare_dot_and_json_for_target PASSED
 test_parent_and_output_entries.py::test_compare_dot_and_json_for_target_output PASSED
  </Details></Pre>
+
