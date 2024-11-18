@@ -371,6 +371,7 @@
                     "version": "\"#{tool_path}#\" version",
                     "build": "\"#{tool_path}#\" build -t #{docker_image}#:#{docker_image_tag}# #{dockerfile_dir}#",
                     "run": "\"#{tool_path}#\" run #{docker_options}# #{docker_image}#:#{docker_image_tag}# #{run_in_docker}#",
+                    "stop": "\"#{tool_path}#\" stop #{docker_container}#",
                     "exec": "\"#{tool_path}#\" exec #{docker_options}# #{docker_container}# #{run_in_docker}#"
                 },
                 "cmd_key": "run",
