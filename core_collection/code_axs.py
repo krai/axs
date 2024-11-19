@@ -385,7 +385,8 @@ Usage examples :
                     raise RuntimeError( f"Matched Rule #{match_idx}/{len(matching_rules)} produced something ( {repr(new_entry)} ), which is not an Entry - PLEASE INVESTIGATE" )
                 elif parsed_query.matches_entry( new_entry, parent_recursion ):
                     logging.info(f"Matched Rule #{match_idx}/{len(matching_rules)} produced an entry, which matches the original query, finalizing...\n")
-                    new_entry.save( on_collision="force", completed=ufun.generate_current_timestamp() )   # we expect a collision
+                    if not new_entry.get("__completed", True):
+                        new_entry.save( on_collision="force", completed=ufun.generate_current_timestamp() )   # we expect a collision
                     return new_entry
                 else:
                     raise RuntimeError( f"Matched Rule #{match_idx}/{len(matching_rules)} produced an entry, but it failed to match the original query {query} - PLEASE INVESTIGATE" )
