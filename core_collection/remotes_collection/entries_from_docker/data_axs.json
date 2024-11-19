@@ -54,7 +54,6 @@
 
     "user_in_docker": "root",
     "docker_image": "axs_kernel",
-    "docker_container": [ "^^", "substitute", "#{docker_image}#_cont" ],
     "docker_tool": [ "^", "byquery", "shell_tool,can_docker" ],
     "docker_run_extra_options": "",
 
@@ -66,21 +65,21 @@
 
     "host_entries_mapping": [ "^^", "host_entries_mapping" ],
     "container_entries_access": [ "^^", "container_entries_access" ],
+    "container_id": [ "^^", "execute", [[
+        [ "get", "docker_tool" ],
+        [ "run", [], {
+            "docker_image": [ "^^", "get", "docker_image" ],
+            "docker_run_extra_options": [ "^^", "get", "docker_run_extra_options" ],
+            "cmd_key": "run",
+            "capture_output": true,
+            "docker_options": [ "^^", "substitute", "-it -d --rm --user #{user_in_docker}# #{host_entries_mapping}# #{docker_run_extra_options}#" ],
+            "run_in_docker": [ "^^", "substitute", "'watch -g axs byquery #{modified_query}# --- \"2>/dev/null\"'" ]
+        } ]
+    ]] ],
     "pipeline": [ "^^", "execute", [[
         [ "get", "docker_tool" ],
         [ "run", [], {
-            "docker_image": [ "^^", "get", "docker_image" ],
-            "docker_container": [ "^^", "get", "docker_container" ],
-            "docker_run_extra_options": [ "^^", "get", "docker_run_extra_options" ],
-            "cmd_key": "run",
-            "docker_options": [ "^^", "substitute", "-it -d --rm --name #{docker_container}# --user #{user_in_docker}# #{host_entries_mapping}# #{docker_run_extra_options}#" ],
-            "run_in_docker": [ "^^", "substitute", "'watch -g axs byquery #{modified_query}# --- \"2>/dev/null\"'" ]
-        } ],
-        [ ],
-        [ "get", "docker_tool" ],
-        [ "run", [], {
-            "docker_image": [ "^^", "get", "docker_image" ],
-            "docker_container": [ "^^", "get", "docker_container" ],
+            "docker_container": [ "^^", "get", "container_id" ],
             "cmd_key": "exec",
             "docker_options": [ "^^", "substitute", "-it --user #{user_in_docker}#" ],
             "run_in_docker": [ "^^", "substitute", "#{container_entries_access}# , byquery #{modified_query}# --,::=remote_type:docker,exchange_type:entries --.#{execution_entry_name}#.#{execution_entry_product_collection_name}#=#{exchange_collection_name}#" ]
