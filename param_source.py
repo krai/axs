@@ -441,7 +441,12 @@ Usage examples :
                 elif pluck:
                     struct_ptr.pop(key_syllable)
                 elif augment:
-                    struct_ptr[key_syllable] = ufun.augment( struct_ptr[key_syllable], value )
+                    if hasattr(self, "nested_calls"):       # if calls are needed, make sure they happen before augmentation
+                        prev_value = self.nested_calls( struct_ptr[key_syllable] )
+                        value = self.nested_calls( value )
+                    else:
+                        prev_value = struct_ptr[key_syllable]
+                    struct_ptr[key_syllable] = ufun.augment( prev_value, value )
                 else:
                     struct_ptr[key_syllable] = value
 
