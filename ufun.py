@@ -168,6 +168,33 @@ Usage examples :
         return orig_structure + diff                        # list top-up with another list  OR  string concatenation  OR  adding numbers
 
 
+def edit_structure(struct_ptr, key_path, value=None, edit_mode='ASSIGN'):
+
+    last_idx = len(key_path)-1
+    for key_idx, key_syllable in enumerate(key_path):
+
+        if type(struct_ptr)==list:  # descend into lists with numeric indices
+            key_syllable = int(key_syllable)
+            padding_size = key_syllable-len(struct_ptr)+1
+            struct_ptr.extend([None]*(padding_size-1))  # explicit list vivification
+            if padding_size>0:
+                struct_ptr.append({})
+        elif key_syllable not in struct_ptr:
+            struct_ptr[key_syllable] = {}               # explicit dict vivification
+
+        if key_idx<last_idx:
+            struct_ptr = struct_ptr[key_syllable]       # iterative descent
+        elif edit_mode == 'PLUCK':
+            struct_ptr.pop(key_syllable)
+        elif edit_mode == 'AUGMENT':
+            prev_value = struct_ptr[key_syllable]
+            struct_ptr[key_syllable] = augment( prev_value, value )
+        elif edit_mode == 'ASSIGN':
+            struct_ptr[key_syllable] = value
+
+    return struct_ptr
+
+
 def repr_dict(d, exception_pairs=None):
     """A safer way to print a dictionary that may contain 1st-level references to self or self-containing objects.
         Note exception_pairs has to be a list of pairs.

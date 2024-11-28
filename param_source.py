@@ -411,45 +411,24 @@ Usage examples :
             if type(key_path)!=list:
                 key_path = key_path.split('.')
 
+            if key_path[-1].endswith('+'):
+                key_path[-1] = key_path[-1][:-1]    # trim off that '+'
+                edit_mode = 'AUGMENT'
+            elif pluck:
+                edit_mode = 'PLUCK'
+            else:
+                edit_mode = 'ASSIGN'
+
             # pre-clone if necessary:
-            if (len(key_path)>1 or key_path[-1].endswith('+')) and (key_path[0] not in self.own_data()):
+            if (len(key_path)>1 or edit_mode == 'AUGMENT') and (key_path[0] not in self.own_data()):
                 top_key = key_path[0]
-                if top_key.endswith('+'):
-                    top_key = top_key[:-1]      # trim it off
-                self.__setitem__( top_key, deepcopy( self.__getitem__(top_key, perform_nested_calls=False) ) )
+#                self.__setitem__( top_key, deepcopy( self.__getitem__(top_key, perform_nested_calls=False) ) )
+                self.__setitem__( top_key, deepcopy( self.__getitem__(top_key, perform_nested_calls=True) ) )
 
+            if (edit_mode == 'AUGMENT') and hasattr(self, "nested_calls"):
+                value = self.nested_calls( value )
 
-            struct_ptr = self.own_data()
-
-            last_idx = len(key_path)-1
-            for key_idx, key_syllable in enumerate(key_path):
-                augment = key_syllable.endswith('+')
-                if augment:
-                    key_syllable = key_syllable[:-1]
-
-                if type(struct_ptr)==list:  # descend into lists with numeric indices
-                    key_syllable = int(key_syllable)
-                    padding_size = key_syllable-len(struct_ptr)+1
-                    struct_ptr.extend([None]*(padding_size-1))  # explicit list vivification
-                    if padding_size>0:
-                        struct_ptr.append({})
-                elif key_syllable not in struct_ptr:
-                    struct_ptr[key_syllable] = {}               # explicit dict vivification
-
-                if key_idx<last_idx:
-                    struct_ptr = struct_ptr[key_syllable]       # iterative descent
-                elif pluck:
-                    struct_ptr.pop(key_syllable)
-                elif augment:
-                    if hasattr(self, "nested_calls"):       # if calls are needed, make sure they happen before augmentation
-                        prev_value = self.nested_calls( struct_ptr[key_syllable] )
-                        value = self.nested_calls( value )
-                    else:
-                        prev_value = struct_ptr[key_syllable]
-                    struct_ptr[key_syllable] = ufun.augment( prev_value, value )
-                else:
-                    struct_ptr[key_syllable] = value
-
+            ufun.edit_structure(self.own_data(), key_path, value, edit_mode)
 
             if key_path == [ self.PARAMNAME_parent_entries ]:   # magic request to reload the parents
                 self.parent_objects = None
