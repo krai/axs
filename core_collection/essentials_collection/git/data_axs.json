@@ -51,9 +51,9 @@
 
     "checkout": [ "^^", "case", [
         [ "^^", "get", "kernel_in_mlperf_mode" ],
-        true, [ "^^", "get", "current_checkout" ],
-        false, null
-    ] ],
+        true, [[ "get", "current_checkout" ]],
+        false, [[ "noop", null ]]
+    ], { "execute_value": true } ],
 
 
     "repo_name": [ "^^", "url_2_repo_name" ],
@@ -69,11 +69,11 @@
         [ "func", ["os.path.join", "data_axs.json"] ]
     ]] ],
 
-    "checkout_part": [ "^^", "case", [ [ "^^", "get", ["checkout", ""] ], ["", false, null, "None"], "" ],
-                                { "default_value": [ "^^", "func", [ "re.sub", "\\W", "_", [ "^^", "substitute", "_#{checkout}#" ] ] ] }
+    "checkout_part": [ "^^", "case", [ [ "^^", "get", ["checkout", ""] ], ["", false, null, "None"], [[ "noop", ""]] ],
+                                { "execute_value": true, "default_value": [["substitute", "_#{checkout}#"], 2, [ "func", [ "re.sub", "\\W", "_" ] ]] }
                      ],
-    "patch_part": [ "^^", "case", [ [ "^^", "get", ["patch", ""] ], ["", false, null, "None"], "" ],
-                                { "default_value": [ "^^", "func", [ "re.sub", "\\W", "_", [ "^^", "substitute", "_#{patch}#" ] ] ] }
+    "patch_part":    [ "^^", "case", [ [ "^^", "get", ["patch", ""] ], ["", false, null, "None"], [[ "noop", ""]] ],
+                                { "execute_value": true, "default_value": [["substitute", "_#{patch}#"], 2, [ "func", [ "re.sub", "\\W", "_" ] ]] }
                      ],
 
     "newborn_entry_tags": [ "git_repo" ],
