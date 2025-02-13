@@ -61,9 +61,9 @@
     ]] ],
 
     "python_deps": [
-        [ "^^", "python_sync_pip_package", [[ "^^", "get", "absl_query" ]] ],
         [ "^^", "python_sync_pip_package", [[ "^^", "get", "tensorflow_query" ]] ],
         [ "^^", "python_sync_pip_package", [[ "^^", "get", "transformers_query" ]] ],
+        [ "^^", "python_sync_pip_package", [[ "^^", "get", "absl_query" ]] ],
         [ "^^", "get", "bert_code_root" ],
         [ "^^", "get", "bert_squad_code_dir" ]
     ],
