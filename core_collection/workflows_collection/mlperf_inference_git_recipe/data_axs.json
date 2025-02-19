@@ -35,12 +35,14 @@
         "llama2_reference_loadgen_script": [ "language", "llama2-70b", "main.py" ],
         "llama2_accuracy_script": [ "language", "llama2-70b", "evaluate-accuracy.py" ],
 
+        "llama3_1_accuracy_script": [ "language", "llama3.1-405b", "evaluate-accuracy.py" ],
+
         "diffusion_coco2014_download_dir": [  "text_to_image", "tools" ],
         "diffusion_coco2014_download_script": [  "text_to_image", "tools", "download-coco-2014.sh" ],
         "diffusion_reference_script": [  "text_to_image", "main.py" ],
 
-	"mixtral_reference_script": [  "language", "mixtral-8x7b", "main.py" ],
-	"mixtral_reference_accuracy_script": [  "language", "mixtral-8x7b", "evaluate-accuracy.py" ],
+        "mixtral_reference_script": [  "language", "mixtral-8x7b", "main.py" ],
+        "mixtral_reference_accuracy_script": [  "language", "mixtral-8x7b", "evaluate-accuracy.py" ],
 
         "submission_accuracy_truncator_script": [ "tools", "submission", "truncate_accuracy_log.py" ],
         "submission_checker_script": [ "tools", "submission", "submission_checker.py" ],
