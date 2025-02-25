@@ -82,6 +82,26 @@ Usage examples :
     return containing_subdirs
 
 
+def generate_index(collection_path=".", is_work_collection=False):
+    """Find a non-recursive list of directories that are contained in a given directory
+        and turn it into an index structure compatible with "contained_entries"
+
+Usage examples :
+                axs func ufun.generate_index $HOME/work_collection --+ ,0 func json.dumps --indent=8
+    """
+
+    contained_entry_names = []
+    for entry_name in os.listdir( collection_path ):
+        if os.path.isdir( os.path.join(collection_path, entry_name)) and not entry_name.startswith('.'):
+            contained_entry_names.append( entry_name )
+
+    generated_index = { "core_collection": [ "^", "execute", [[ [ "core_collection" ], [ "get_path" ] ]] ] } if is_work_collection else {}
+
+    generated_index.update( { entry_name: entry_name for entry_name in contained_entry_names } )
+
+    return generated_index
+
+
 def join_with(things, separator=' '):
     """Reverse the order of arguments for String.join() to simplify its use in pipelines
 
