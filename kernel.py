@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.427'     # TODO: update with every kernel change
+__version__ = '0.2.428'     # TODO: update with every kernel change
 
 import logging
 import os
@@ -181,12 +181,7 @@ Usage examples :
             work_collection_data = {
                 self.PARAMNAME_parent_entries: [[ "^", "core_collection" ]],
                 "tags": [ "collection" ],
-                "contained_entries": {
-                    "core_collection": [ "^", "execute", [[
-                        [ "core_collection" ],
-                        [ "get_path" ]
-                    ]] ]
-                }
+                "contained_entries": { }
             }
             work_collection_object = self.bypath(work_collection_path, name="work_collection", own_data=work_collection_data)
             work_collection_object.save( completed=ufun.generate_current_timestamp() )
@@ -202,7 +197,7 @@ Usage examples :
                 axs byname pip , help
         """
         logging.debug(f"[{self.get_name()}] byname({entry_name})")
-        return self.work_collection().call('byname', [entry_name])
+        return self.work_collection().call('byname', [entry_name,  self.core_collection()])
 
 
     def all_byquery(self, query, pipeline=None, template=None, parent_recursion=False):
@@ -218,8 +213,8 @@ Usage examples :
                 axs all_byquery deleteme+ ---='[["remove"]]'
                 axs all_byquery git_repo ---='[["pull"]]'
         """
-        logging.debug(f"[{self.get_name()}] all_byquery({query}, {pipeline}, {template})")
-        return self.work_collection().call('all_byquery', [query, pipeline, template, parent_recursion])
+        logging.debug(f"[{self.get_name()}] all_byquery({query}, pipeline={pipeline}, template={template}, parent_recursion={parent_recursion})")
+        return self.work_collection().call('all_byquery', [query, pipeline, template, parent_recursion, self.core_collection()] )
 
 
     def show_matching_rules(self, query):
@@ -229,7 +224,7 @@ Usage examples :
                 axs show_matching_rules shell_tool,can_download_url_from_zenodo
         """
         logging.debug(f"[{self.get_name()}] show_matching_rules({query})")
-        return self.work_collection().call('show_matching_rules', [query])
+        return self.work_collection().call('show_matching_rules', [query, self.core_collection()])
 
 
     def byquery(self, query, produce_if_not_found=True, parent_recursion=False):
@@ -240,8 +235,8 @@ Usage examples :
                 axs byquery person.,be!=Be
                 axs byquery person.,be!=Be --parent_recursion+ , get_path
         """
-        logging.debug(f"[{self.get_name()}] byquery({query})")
-        return self.work_collection().call('byquery', [query, produce_if_not_found, parent_recursion])
+        logging.debug(f"[{self.get_name()}] byquery({query}, produce_if_not_found={produce_if_not_found}, parent_recursion={parent_recursion})")
+        return self.work_collection().call('byquery', [query, produce_if_not_found, parent_recursion, self.core_collection()] )
 
 
 #logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")
