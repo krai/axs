@@ -239,6 +239,18 @@ Usage examples :
         return self.work_collection().call('byquery', [query, produce_if_not_found, parent_recursion, self.core_collection()] )
 
 
+## The following method ALMOST works, but "lambda *p, **d" is too generic for function_access.py , so we always end up with an empty d={}
+#
+#    def __getattr__(self, method_name):
+#        if method_name in ("byname", "all_byquery", "show_matching_rules", "byquery"):
+#            # generic method dispatching to the chain of {work_collection -> core_collection} :
+#            return lambda *p, **d: print(f"p={p}, d={d}") or d.update({"trailing_collection": self.core_collection()}) or self.work_collection().call(method_name, list(p), d)
+#        else:
+#            # fallback to "missing attribute" that prompts further search down the Entry hierarchy:
+#            raise AttributeError(method_name)
+
+
+
 #logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")
 
 default_kernel = MicroKernel(name="DefaultKernel")
