@@ -12,7 +12,6 @@ def walk(__entry__, skip_entry_names=None, trailing_collection=None):
     """An internal recursive generator not to be called directly
     """
     ak = __entry__.get_kernel()
-    assert ak != None, "__entry__'s kernel should be defined"
     collection_own_name = __entry__.get_name()
 
     seen_entry_names = set()
@@ -29,7 +28,7 @@ def walk(__entry__, skip_entry_names=None, trailing_collection=None):
             relative_entry_path = contained_entries[entry_name]
             logging.debug(f"collection({collection_own_name}): mapping {entry_name} to relative_entry_path={relative_entry_path}")
 
-            contained_entry = ak.bypath(path=__entry__.get_path(relative_entry_path), name=entry_name, container=__entry__) # FIXME: should go via call_cache
+            contained_entry = __entry__.__class__.bypath(path=__entry__.get_path(relative_entry_path), name=entry_name, container=__entry__, kernel=ak) # FIXME: should go via call_cache
 
             # Have to resort to checking the declared type to avoid triggering dependencies by testing if contained_entry.can('walk'):
             if 'collection' in contained_entry.own_data().get("tags",[]):
@@ -58,7 +57,7 @@ def attached_entry(entry_path=None, own_data=None, generated_name_prefix=None, _
 Usage examples :
                 axs work_collection , attached_entry ultimate_answer ---='{"answer":42}' , save
     """
-    return __entry__.get_kernel().fresh_entry(container=__entry__, entry_path=entry_path, own_data=own_data, generated_name_prefix=generated_name_prefix)
+    return __entry__.__class__.fresh_entry(container=__entry__, entry_path=entry_path, own_data=own_data, generated_name_prefix=generated_name_prefix, kernel=__entry__.get_kernel())
 
 
 def byname(entry_name, trailing_collection=None, __entry__=None):

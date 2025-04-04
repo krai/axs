@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.429'     # TODO: update with every kernel change
+__version__ = '0.2.430'     # TODO: update with every kernel change
 
 import logging
 import os
@@ -31,11 +31,10 @@ Usage examples :
                 axs help help
     """
 
-    def __init__(self, entry_cache=None, **kwargs):
-        self.entry_cache            = entry_cache or {}
+    def __init__(self, **kwargs):
         self.record_container_value = None
         super().__init__(kernel=self, **kwargs)
-        logging.debug(f"[{self.get_name()}] Initializing the MicroKernel with entry_cache={self.entry_cache}")
+        logging.debug(f"[{self.get_name()}] Initializing the MicroKernel")
 
 
     def version(self):
@@ -95,24 +94,7 @@ Usage examples :
                 axs fresh_entry , plant message "Hello, world" , save hello
                 axs fresh_entry ---own_data='{"greeting":"Hello", "name":"world", "_parent_entries":[["AS^IS", "^","byname","shell"]]}' , run ---='[["^^","substitute","echo #{greeting}#, #{name}#"]]'
         """
-
-        if own_data is None:    # sic: retain the same empty dictionary if given
-            own_data = {}
-        return Entry(entry_path=entry_path, own_data=own_data, own_functions=False, container=container, name=name, generated_name_prefix=generated_name_prefix, is_stored=False, kernel=self)
-
-
-    def uncache(self, old_path):
-        if old_path and old_path in self.entry_cache:
-            del self.entry_cache[ old_path ]
-            logging.debug(f"[{self.get_name()}] Uncaching from under {old_path}")
-
-
-    def encache(self, new_path, entry):
-        new_path = os.path.realpath( new_path )
-        self.entry_cache[ new_path ] = entry
-        logging.debug(f"[{self.get_name()}] Caching under {new_path}")
-
-        return entry
+        return Entry.fresh_entry(entry_path=entry_path, own_data=own_data, container=container, name=name, generated_name_prefix=generated_name_prefix, kernel=self)
 
 
     def bypath(self, path, name=None, container=None, own_data=None, parent_objects=None):
@@ -126,27 +108,7 @@ Usage examples :
                 axs elem: bypath only_data/carbon.json , get_kernel , code: bypath only_code/iterative.py --parent_objects,:=^:get:elem , factorial --:=^^:get:number
                 axs elem: bypath only_data/oxygen.json , get_kernel , lat: bypath latin --parent_objects,:=^:get:elem , get weight
         """
-        path = os.path.realpath( path )
-
-        cache_hit = self.entry_cache.get(path)
-
-        if cache_hit:
-            logging.debug(f"[{self.get_name()}] bypath: cache HIT for path={path}")
-        else:
-            logging.debug(f"[{self.get_name()}] bypath: cache MISS for path={path}")
-
-            if path.endswith('.json'):      # ad-hoc data entry from a .json file
-                entry_object = Entry(name=name, parameters_path=path, own_functions=False, parent_objects=parent_objects or [], is_stored=True, kernel=self)
-            elif path.endswith('.py'):      # ad-hoc functions entry from a .py file
-                module_name = path[:-len('.py')]
-                entry_object = Entry(name=name, entry_path=path, own_data={}, module_name=module_name, parent_objects=parent_objects or [], is_stored=True, kernel=self)
-            else:
-                entry_object = Entry(name=name, entry_path=path, own_data=own_data, container=container, parent_objects=parent_objects or None, kernel=self)
-
-            cache_hit = self.encache( path, entry_object )
-            logging.debug(f"[{self.get_name()}] bypath: successfully CACHED {cache_hit.get_name()} under path={path}")
-
-        return cache_hit
+        return Entry.bypath( path, name=name, container=container, own_data=own_data, parent_objects=parent_objects, kernel=self )
 
 
     def core_collection(self):

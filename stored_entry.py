@@ -13,6 +13,77 @@ from runnable import Runnable
 class Entry(Runnable):
     "An Entry is a Runnable stored in the file system"
 
+    # Class-wide non-compulsory caching mechanism starts here:
+    entry_cache = {}
+
+    @classmethod
+    def uncache(cls, old_path):
+        if old_path and old_path in cls.entry_cache:
+            del cls.entry_cache[ old_path ]
+            logging.debug(f"[{cls}] Uncaching from under {old_path}")
+
+    @classmethod
+    def encache(cls, new_path, entry):
+        new_path = os.path.realpath( new_path )
+        cls.entry_cache[ new_path ] = entry
+        logging.debug(f"[{cls}] Caching under {new_path}")
+
+        return entry
+
+
+    @classmethod
+    def bypath(cls, path, name=None, container=None, own_data=None, parent_objects=None, kernel=None):
+        """Fetch an entry by its path, cached by the path
+            Ad-hoc entries built either form a data file (.json) or functions' file (.py) can also be created, and even manually stacked
+
+Usage examples :
+                axs bypath counting_collection/germanic/dutch , dig number_mapping.5
+                axs bypath only_data/oxygen.json , substitute "Element #{name}# has symbol #{symbol}#, atomic number #{number}# and weight #{weight}#"
+                axs bypath only_code/iterative.py , factorial 6
+                axs elem: bypath only_data/carbon.json , get_kernel , code: bypath only_code/iterative.py --parent_objects,:=^:get:elem , factorial --:=^^:get:number
+                axs elem: bypath only_data/oxygen.json , get_kernel , lat: bypath latin --parent_objects,:=^:get:elem , get weight
+        """
+        path = os.path.realpath( path )
+
+        cache_hit = cls.entry_cache.get(path)
+
+        if cache_hit:
+            logging.debug(f"[{cls}] bypath: cache HIT for path={path}")
+        else:
+            logging.debug(f"[{cls}] bypath: cache MISS for path={path}")
+
+            if path.endswith('.json'):      # ad-hoc data entry from a .json file
+                entry_object = Entry(name=name, parameters_path=path, own_functions=False, parent_objects=parent_objects or [], is_stored=True, kernel=kernel)
+            elif path.endswith('.py'):      # ad-hoc functions entry from a .py file
+                module_name = path[:-len('.py')]
+                entry_object = Entry(name=name, entry_path=path, own_data={}, module_name=module_name, parent_objects=parent_objects or [], is_stored=True, kernel=kernel)
+            else:
+                entry_object = Entry(name=name, entry_path=path, own_data=own_data, container=container, parent_objects=parent_objects or None, kernel=kernel)
+
+            cache_hit = cls.encache( path, entry_object )
+            logging.debug(f"[{cls}] bypath: successfully CACHED {cache_hit.get_name()} under path={path}")
+
+        return cache_hit
+
+
+    @classmethod
+    def fresh_entry(cls, entry_path=None, own_data=None, container=None, name=None, generated_name_prefix=None, kernel=None):
+        """Constructor for a fresh unstored Entry (optional data, no code, no filesystem path),
+            which is not attached to any container (collection).
+            It can be gradually populated with (more) data and stored later.
+
+Usage examples :
+                axs fresh_entry coordinates , plant x 10 y -5 , save
+                axs fresh_entry , plant message "Hello, world" , save hello
+                axs fresh_entry ---own_data='{"greeting":"Hello", "name":"world", "_parent_entries":[["AS^IS", "^","byname","shell"]]}' , run ---='[["^^","substitute","echo #{greeting}#, #{name}#"]]'
+        """
+
+        if own_data is None:    # sic: retain the same empty dictionary if given
+            own_data = {}
+        return Entry(entry_path=entry_path, own_data=own_data, own_functions=False, container=container, name=name, generated_name_prefix=generated_name_prefix, is_stored=False, kernel=kernel)
+
+
+
     FILENAME_parameters     = 'data_axs.json'
     MODULENAME_functions    = 'code_axs'     # the actual filename ends in .py
     PREFIX_gen_entryname    = 'generated_entry_'
@@ -170,13 +241,6 @@ Usage examples :
 
     def get_container(self):
         return self.container_object
-
-
-    def bypath(self, path, name=None):
-        """A parameterization of MicroKernel.bypath() that is always relative to the "current" entry,
-            mainly used by collections.
-        """
-        return self.get_kernel().bypath(self.get_path(path), name, container=self)
 
 
     def attach(self, container=None):
@@ -347,9 +411,7 @@ Usage examples :
 
         self.call('attach')
 
-        ak = self.get_kernel()
-        if ak:
-            ak.encache( new_path, self )
+        self.__class__.encache( new_path, self )
         self.is_stored  = True
 
         return self
@@ -368,9 +430,7 @@ Usage examples :
             ufun.rmdir( entry_path )
             logging.info(f"[{self.get_name()}] {entry_path} removed from the filesystem")
 
-            ak = self.get_kernel()
-            if ak:
-                ak.uncache( entry_path )
+            self.__class__.uncache( entry_path )
             self.is_stored  = False
         else:
             logging.warning(f"[{self.get_name()}] was not stored in the file system, so cannot be removed")
