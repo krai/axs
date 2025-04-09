@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.430'     # TODO: update with every kernel change
+__version__ = '0.2.431'     # TODO: update with every kernel change
 
 import logging
 import os
@@ -159,7 +159,7 @@ Usage examples :
                 axs byname pip , help
         """
         logging.debug(f"[{self.get_name()}] byname({entry_name})")
-        return self.work_collection().call('byname', [entry_name,  self.core_collection()])
+        return self.work_collection().call('byname', [entry_name,  [self.core_collection()] ])
 
 
     def all_byquery(self, query, pipeline=None, template=None, parent_recursion=False):
@@ -176,7 +176,7 @@ Usage examples :
                 axs all_byquery git_repo ---='[["pull"]]'
         """
         logging.debug(f"[{self.get_name()}] all_byquery({query}, pipeline={pipeline}, template={template}, parent_recursion={parent_recursion})")
-        return self.work_collection().call('all_byquery', [query, pipeline, template, parent_recursion, self.core_collection()] )
+        return self.work_collection().call('all_byquery', [query, pipeline, template, parent_recursion, [self.core_collection()] ])
 
 
     def show_matching_rules(self, query):
@@ -186,7 +186,7 @@ Usage examples :
                 axs show_matching_rules shell_tool,can_download_url_from_zenodo
         """
         logging.debug(f"[{self.get_name()}] show_matching_rules({query})")
-        return self.work_collection().call('show_matching_rules', [query, self.core_collection()])
+        return self.work_collection().call('show_matching_rules', [query, [self.core_collection()] ])
 
 
     def byquery(self, query, produce_if_not_found=True, parent_recursion=False):
@@ -198,7 +198,7 @@ Usage examples :
                 axs byquery person.,be!=Be --parent_recursion+ , get_path
         """
         logging.debug(f"[{self.get_name()}] byquery({query}, produce_if_not_found={produce_if_not_found}, parent_recursion={parent_recursion})")
-        return self.work_collection().call('byquery', [query, produce_if_not_found, parent_recursion, self.core_collection()] )
+        return self.work_collection().call('byquery', [query, produce_if_not_found, parent_recursion, [self.core_collection()] ] )
 
 
 ## The following method ALMOST works, but "lambda *p, **d" is too generic for function_access.py , so we always end up with an empty d={}
@@ -206,7 +206,7 @@ Usage examples :
 #    def __getattr__(self, method_name):
 #        if method_name in ("byname", "all_byquery", "show_matching_rules", "byquery"):
 #            # generic method dispatching to the chain of {work_collection -> core_collection} :
-#            return lambda *p, **d: print(f"p={p}, d={d}") or d.update({"trailing_collection": self.core_collection()}) or self.work_collection().call(method_name, list(p), d)
+#            return lambda *p, **d: print(f"p={p}, d={d}") or d.update({"trailing_collections": [self.core_collection()]}) or self.work_collection().call(method_name, list(p), d)
 #        else:
 #            # fallback to "missing attribute" that prompts further search down the Entry hierarchy:
 #            raise AttributeError(method_name)

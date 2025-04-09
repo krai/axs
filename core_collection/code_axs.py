@@ -8,11 +8,12 @@ import logging
 import os
 import ufun
 
-def walk(__entry__, skip_entry_names=None, trailing_collection=None):
+def walk(__entry__, skip_entry_names=None, trailing_collections=None):
     """An internal recursive generator not to be called directly
     """
     ak = __entry__.get_kernel()
     collection_own_name = __entry__.get_name()
+    trailing_collections = trailing_collections or []
 
     seen_entry_names = set()
     try:
@@ -40,7 +41,7 @@ def walk(__entry__, skip_entry_names=None, trailing_collection=None):
                 yield contained_entry
             seen_entry_names.add( entry_name )
 
-        if trailing_collection:
+        for trailing_collection in trailing_collections:
             yield from walk(trailing_collection)
 
     except RuntimeError as e:
@@ -60,10 +61,10 @@ Usage examples :
     return __entry__.__class__.fresh_entry(container=__entry__, entry_path=entry_path, own_data=own_data, generated_name_prefix=generated_name_prefix, kernel=__entry__.get_kernel())
 
 
-def byname(entry_name, trailing_collection=None, __entry__=None):
+def byname(entry_name, trailing_collections=None, __entry__=None):
     """Fetch an entry by name
     """
-    for candidate_entry in walk(__entry__, trailing_collection=trailing_collection):
+    for candidate_entry in walk(__entry__, trailing_collections=trailing_collections):
         if candidate_entry.get_name() == entry_name:
             return candidate_entry
     return None
@@ -210,7 +211,7 @@ class FilterPile:
         return candidate_still_ok
 
 
-def all_byquery(query, pipeline=None, template=None, parent_recursion=False, trailing_collection=None, __entry__=None):
+def all_byquery(query, pipeline=None, template=None, parent_recursion=False, trailing_collections=None, __entry__=None):
     """Returns a list of ALL entries matching the query.
         Empty list if nothing matched.
 
@@ -228,7 +229,7 @@ Usage examples :
 
     # trying to match the Query in turn against each existing and walkable entry, gathering them all:
     result_list = []
-    for candidate_entry in walk(__entry__, trailing_collection=trailing_collection):
+    for candidate_entry in walk(__entry__, trailing_collections=trailing_collections):
         if parsed_query.matches_entry( candidate_entry, parent_recursion ):
             if pipeline:
                 single_result = candidate_entry.execute(pipeline)
@@ -245,11 +246,11 @@ Usage examples :
         return result_list
 
 
-def find_matching_rules(parsed_query, __entry__, trailing_collection=None):
+def find_matching_rules(parsed_query, __entry__, trailing_collections=None):
     """An internal method for finding matching rules given a query, not to be called directly
     """
     matching_rules = []
-    for advertising_entry in walk(__entry__, trailing_collection=trailing_collection):
+    for advertising_entry in walk(__entry__, trailing_collections=trailing_collections):
         for unprocessed_rule in advertising_entry.own_data().get('_producer_rules', []):        # block processing some params until they are really needed
             parsed_rule     = FilterPile( advertising_entry.nested_calls( unprocessed_rule[0] ), f"Entry: {advertising_entry.get_name()}" )
 
@@ -299,7 +300,7 @@ def find_matching_rules(parsed_query, __entry__, trailing_collection=None):
     return sorted( matching_rules, key = lambda x: len(x[1][0]), reverse=True)
 
 
-def show_matching_rules(query, trailing_collection=None, __entry__=None):
+def show_matching_rules(query, trailing_collections=None, __entry__=None):
     """Find and show all the rules (and their advertising entries) that match the given query.
 
 Usage examples :
@@ -307,7 +308,7 @@ Usage examples :
     """
     parsed_query        = FilterPile( query, "Query" )
 
-    matching_rules = find_matching_rules(parsed_query, __entry__, trailing_collection=trailing_collection)
+    matching_rules = find_matching_rules(parsed_query, __entry__, trailing_collections=trailing_collections)
 
     for advertising_entry, unprocessed_rule, parsed_rule in matching_rules:
         print( f"{advertising_entry.get_path()}:\n\t{str(unprocessed_rule)}\n")
@@ -315,7 +316,7 @@ Usage examples :
     return len(matching_rules)
 
 
-def byquery(query, produce_if_not_found=True, parent_recursion=False, trailing_collection=None, __entry__=None):
+def byquery(query, produce_if_not_found=True, parent_recursion=False, trailing_collections=None, __entry__=None):
     """Fetch an entry by query.
         If the query returns nothing on the first pass, but matching _producer_rules are defined,
         apply the matching producer_rule and return its output.
@@ -338,7 +339,7 @@ Usage examples :
         return None
 
     # trying to match the Query in turn against each existing and walkable entry, first match returns:
-    for candidate_entry in walk(__entry__, trailing_collection=trailing_collection):
+    for candidate_entry in walk(__entry__, trailing_collections=trailing_collections):
         if parsed_query.matches_entry( candidate_entry, parent_recursion ):
             if candidate_entry.get('__completed', True):    # either explicitly completed, or not carrying this attribute at all, probably a static Entry
                 return candidate_entry
@@ -350,7 +351,7 @@ Usage examples :
     if produce_if_not_found and len(parsed_query.posi_tag_set):
         logging.info(f"[{__entry__.get_name()}] byquery({query}) did not find anything, but there are tags: {parsed_query.posi_tag_set} , trying to find a producer...")
 
-        matching_rules = find_matching_rules(parsed_query, __entry__, trailing_collection=trailing_collection)
+        matching_rules = find_matching_rules(parsed_query, __entry__, trailing_collections=trailing_collections)
         logging.info(f"[{__entry__.get_name()}] A total of {len(matching_rules)} matched rules found.\n")
 
         match_idx = 0
