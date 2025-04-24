@@ -54,6 +54,7 @@
 
     "user_in_docker": "root",
     "docker_image": "axs_kernel",
+    "docker_image_tag": "latest",
     "docker_tool": [ "^", "byquery", "shell_tool,can_docker" ],
     "docker_run_extra_options": "",
 
@@ -69,6 +70,7 @@
         [ "get", "docker_tool" ],
         [ "run", [], {
             "docker_image": [ "^^", "get", "docker_image" ],
+            "docker_image_tag": [ "^^", "get", "docker_image_tag" ],
             "docker_run_extra_options": [ "^^", "get", "docker_run_extra_options" ],
             "cmd_key": "run",
             "capture_output": true,
