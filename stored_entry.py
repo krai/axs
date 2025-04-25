@@ -32,7 +32,7 @@ class Entry(Runnable):
 
 
     @classmethod
-    def bypath(cls, path, name=None, container=None, own_data=None, parent_objects=None, kernel=None):
+    def bypath(cls, path, name=None, container=None, own_data=None, parent_objects=None):
         """Fetch an entry by its path, cached by the path
             Ad-hoc entries built either form a data file (.json) or functions' file (.py) can also be created, and even manually stacked
 
@@ -40,8 +40,8 @@ Usage examples :
                 axs bypath counting_collection/germanic/dutch , dig number_mapping.5
                 axs bypath only_data/oxygen.json , substitute "Element #{name}# has symbol #{symbol}#, atomic number #{number}# and weight #{weight}#"
                 axs bypath only_code/iterative.py , factorial 6
-                axs elem: bypath only_data/carbon.json , get_kernel , code: bypath only_code/iterative.py --parent_objects,:=^:get:elem , factorial --:=^^:get:number
-                axs elem: bypath only_data/oxygen.json , get_kernel , lat: bypath latin --parent_objects,:=^:get:elem , get weight
+                axs elem: bypath only_data/carbon.json , , code: bypath only_code/iterative.py --parent_objects,:=^:get:elem , factorial --:=^^:get:number
+                axs elem: bypath only_data/oxygen.json , , lat: bypath latin --parent_objects,:=^:get:elem , get weight
         """
         path = os.path.realpath( path )
 
@@ -53,12 +53,12 @@ Usage examples :
             logging.debug(f"[{cls}] bypath: cache MISS for path={path}")
 
             if path.endswith('.json'):      # ad-hoc data entry from a .json file
-                entry_object = Entry(name=name, parameters_path=path, own_functions=False, parent_objects=parent_objects or [], is_stored=True, kernel=kernel)
+                entry_object = Entry(name=name, parameters_path=path, own_functions=False, parent_objects=parent_objects or [], is_stored=True)
             elif path.endswith('.py'):      # ad-hoc functions entry from a .py file
                 module_name = path[:-len('.py')]
-                entry_object = Entry(name=name, entry_path=path, own_data={}, module_name=module_name, parent_objects=parent_objects or [], is_stored=True, kernel=kernel)
+                entry_object = Entry(name=name, entry_path=path, own_data={}, module_name=module_name, parent_objects=parent_objects or [], is_stored=True)
             else:
-                entry_object = Entry(name=name, entry_path=path, own_data=own_data, container=container, parent_objects=parent_objects or None, kernel=kernel)
+                entry_object = Entry(name=name, entry_path=path, own_data=own_data, container=container, parent_objects=parent_objects or None)
 
             cache_hit = cls.encache( path, entry_object )
             logging.debug(f"[{cls}] bypath: successfully CACHED {cache_hit.get_name()} under path={path}")
@@ -67,7 +67,7 @@ Usage examples :
 
 
     @classmethod
-    def fresh_entry(cls, entry_path=None, own_data=None, container=None, name=None, generated_name_prefix=None, kernel=None):
+    def fresh_entry(cls, entry_path=None, own_data=None, container=None, name=None, generated_name_prefix=None):
         """Constructor for a fresh unstored Entry (optional data, no code, no filesystem path),
             which is not attached to any container (collection).
             It can be gradually populated with (more) data and stored later.
@@ -80,7 +80,64 @@ Usage examples :
 
         if own_data is None:    # sic: retain the same empty dictionary if given
             own_data = {}
-        return Entry(entry_path=entry_path, own_data=own_data, own_functions=False, container=container, name=name, generated_name_prefix=generated_name_prefix, is_stored=False, kernel=kernel)
+        return Entry(entry_path=entry_path, own_data=own_data, own_functions=False, container=container, name=name, generated_name_prefix=generated_name_prefix, is_stored=False)
+
+
+    @classmethod
+    def kernel_path(cls, rel_file_path=None):
+        """Get the path where the kernel is currently installed
+
+Usage examples :
+                axs kernel_path
+                axs kernel_path core_collection
+        """
+        kernel_dir_path = os.path.dirname( os.path.realpath(__file__) )
+        if rel_file_path:
+            return os.path.join(kernel_dir_path, rel_file_path)
+        else:
+            return kernel_dir_path
+
+
+    @classmethod
+    def get_kernel(cls):
+        return cls.bypath(cls.kernel_path())
+
+
+    @classmethod
+    def core_collection(cls):
+        """Fetch the core_collection entry
+
+Usage examples :
+                axs core_collection , help
+                axs core_collection , entry_path: get_path , , byname shell , run --shell_cmd_with_subs='ls -1 #{entry_path}#'
+        """
+        return cls.bypath( cls.kernel_path( 'core_collection' ) )
+
+
+    @classmethod
+    def work_collection(cls):
+        """Fetch the work_collection entry
+
+Usage examples :
+                axs work_collection , get_path
+                AXS_WORK_COLLECTION=~/alt_wc axs work_collection , get_path
+                axs work_collection , entry_path: get_path , , byname shell , run --shell_cmd_with_subs='ls -1 #{entry_path}#'
+        """
+        work_collection_path = os.getenv('AXS_WORK_COLLECTION') or os.path.join(os.path.expanduser('~'), 'work_collection')
+        if os.path.exists(work_collection_path):
+            work_collection_object = cls.bypath( work_collection_path )
+        else:
+            #logging.warning(f"[{self.get_name()}] Creating new empty work_collection at {work_collection_path}...")
+            work_collection_data = {
+                cls.PARAMNAME_parent_entries: [[ "^", "core_collection" ]],
+                "tags": [ "collection" ],
+                "contained_entries": { }
+            }
+            work_collection_object = cls.bypath(work_collection_path, name="work_collection", own_data=work_collection_data)
+            work_collection_object.save( completed=ufun.generate_current_timestamp() )
+
+        return work_collection_object
+
 
 
 
@@ -360,6 +417,7 @@ Usage examples :
                 axs fresh_entry coordinates , plant x 10 y -5 , save
                 axs fresh_entry , plant contained_entries '---={}' _parent_entries --,:=AS^IS:^:core_collection , save new_collection
         """
+        print(f"\nSAVE {self.get_name()}: new_path={new_path}, on_collision={on_collision}, completed={completed}")
 
         if new_path:
             self.set_path( new_path )
@@ -369,8 +427,11 @@ Usage examples :
 
         own_data = self.own_data()
 
+        logging.info(f"in SAVE {id(own_data)}: {'__completed' in own_data} , {'__query' in own_data} , {completed is not None}")
         if ("__completed" in own_data) or ("__query" in own_data) or (completed is not None):
+            logging.info(f"in SAVE {id(own_data)}: setting __completed to {completed or False}")
             self["__completed"] = completed or False
+        logging.info(f"still in SAVE {id(own_data)}: {self.get('__completed')}")
 
         parameters_path        = self.get_parameters_path()
         parameters_dirname, parameters_basename = os.path.split( parameters_path )

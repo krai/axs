@@ -21,19 +21,25 @@ class Runnable(ParamSource):
     pipeline_counter                = 0
     ESCAPE_do_not_process           = 'AS^IS'
 
-    def __init__(self, own_functions=None, kernel=None, **kwargs):
-        "Accept setting own_functions and kernel in addition to parent's parameters"
+    def __init__(self, own_functions=None, value_cache=None, **kwargs):
+        "Accept setting own_functions in addition to parent's parameters"
 
         self.own_functions_cache    = own_functions
-        self.kernel                 = kernel
+        self.value_cache            = value_cache
         self.call_cache             = {}
 
         super().__init__(**kwargs)
-        logging.debug(f"[{self.get_name()}] Initializing the Runnable with {self.list_own_functions() if self.own_functions_cache else 'no'} pre-loaded functions and kernel={self.kernel}")
+        logging.debug(f"[{self.get_name()}] Initializing the Runnable with {self.list_own_functions() if self.own_functions_cache else 'no'} pre-loaded functions")
 
 
-    def get_kernel(self):
-        return self.kernel
+    @staticmethod
+    def get_kernel():
+        return None
+
+
+    @staticmethod
+    def work_collection():
+        return None
 
 
     def own_functions(self):
@@ -208,8 +214,20 @@ Usage examples :
         """
         logging.debug(f"[{self.get_name()}]  Looking for [{param_name}]...")
 
+
+#        if param_name=='newborn_entry':
+#            print(f"+++++++++++ [{self.get_name()}] CALLING __getitem__(param_name={param_name}, parent_recursion={parent_recursion}, perform_nested_calls={perform_nested_calls})")
+
+
         if param_name=='__entry__':
             return self
+
+
+        if self.value_cache is not None and param_name in self.value_cache:
+            param_value = self.value_cache[param_name]
+#            print(f"[{self.get_name()}] ValueCache HIT: [{param_name}]={param_value}")
+            return param_value
+
 
         try:
             getitem_gen                             = self.getitem_generator( str(param_name), parent_recursion )
@@ -238,7 +256,14 @@ Usage examples :
         else:
             param_value = unprocessed_value
 
+#        if param_name=='newborn_entry':
+#            logging.info(f"============== [{self.get_name()}]  Got {param_name}={param_value} , id={id(param_value)}, .is_stored={param_value.is_stored}")
+
         logging.debug(f"[{self.get_name()}]  Got {param_name}={param_value}")
+
+#        print(f"[{self.get_name()}] ValueCache RECORD: {param_value}--->[{param_name}]")
+        if self.value_cache is not None:
+            self.value_cache[param_name] = param_value
 
         return param_value
 
@@ -284,6 +309,9 @@ Usage examples :
         if deterministic and (cache_key in self.call_cache):
             cached_value = self.call_cache[cache_key]
             logging.debug(f"[{self.get_name()}]  Call '{cache_key}' is FOUND IN CACHE, returning {cached_value}")
+            if action_name == 'own_data':
+                logging.info(f"[{self.get_name()}]  Call '{cache_key}' is FOUND IN CACHE, returning {cached_value}")
+
             return cached_value
         else:
             logging.debug(f"[{self.get_name()}]  Call '{cache_key}' NOT TAKEN from cache, have to run...")
@@ -293,7 +321,7 @@ Usage examples :
 
         imported_slice = slice_relative_to.slice( *export_params ) if (export_params and slice_relative_to) else {}
 
-        rt_call_specific = Runnable(name='rt_call_specific_'+action_name+'/'+str(pos_params), own_data=imported_slice, parent_objects = [ self ], kernel=ak)     # FIXME: overlapping entry names are not unique
+        rt_call_specific = Runnable(name='rt_call_specific_'+action_name+'/'+str(pos_params), own_data=imported_slice, parent_objects = [ self ])     # FIXME: overlapping entry names are not unique
 
         local_edits  = {}
         for one_edit in edit_dict or {}:
@@ -318,7 +346,7 @@ Usage examples :
         rt_call_specific.own_data( self.nested_calls( rt_call_specific.own_data() ) )   # perform the delayed interpretation of expressions
 
         if ak:
-            call_record_entry   = ak.fresh_entry(container=ak.record_container(), generated_name_prefix=f"generated_by_{self.get_name()}_on_{action_name}_")
+            call_record_entry   = ak.fresh_entry(container=self.work_collection(), generated_name_prefix=f"generated_by_{self.get_name()}_on_{action_name}_")
             captured_mapping    = call_record_entry.own_data()  # retain the pointer to perform modifications later
         else:
             captured_mapping    = None  # request not to capture the mapping
@@ -463,7 +491,7 @@ Usage examples :
         max_call_params     = 3     # action, pos_params, edit_dict
         pipeline_wide_data  = pipeline_wide_data or {}
 #        rt_pipeline_wide    = self.get_kernel().bypath(path=f'rt_pipeline_wide_{Runnable.pipeline_counter}', own_data=pipeline_wide_data)  # the "service" pipeline-wide entry
-        rt_pipeline_wide    = Runnable(name=f'rt_pipeline_wide_{Runnable.pipeline_counter}', own_data=pipeline_wide_data, kernel=self.get_kernel()) # the "service" pipeline-wide entry
+        rt_pipeline_wide    = Runnable(name=f'rt_pipeline_wide_{Runnable.pipeline_counter}', own_data=pipeline_wide_data) # the "service" pipeline-wide entry
         Runnable.pipeline_counter += 1
 
         local_context       = [ rt_pipeline_wide ]

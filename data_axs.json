@@ -1,0 +1,13 @@
+{
+    "_parent_entries": [
+        [ "^^", "core_collection" ]
+    ],
+    "__version__": "0.2.432",
+    "trailing_collections": [
+        [ "^", "work_collection" ],
+        [ "^", "core_collection" ]
+    ],
+    "contained_entries": {},
+    "container_to_store": [ "^", "work_collection" ],
+    "__completed": "2025.04.09_18h09m56s"
+}

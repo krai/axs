@@ -19,7 +19,9 @@ logging.basicConfig(level=logging.INFO, format=f"%(levelname)s:{log_indocker}{lo
 #logging.basicConfig(level=logging.DEBUG, format=f"%(levelname)s:{log_username}@{log_hostname} %(filename)s:%(funcName)s:%(lineno)s %(message)s") # put this BEFORE IMPORTING the kernel to see logging from the kernel
 
 from function_access import to_num_or_not_to_num
-from kernel import default_kernel as ak
+from stored_entry import Entry
+ak = Entry.get_kernel()
+
 
 def cli_parse(arglist):
     """Parse the command pipeline representing a chain of calls

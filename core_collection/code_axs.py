@@ -11,7 +11,6 @@ import ufun
 def walk(__entry__, skip_entry_names=None, trailing_collections=None):
     """An internal recursive generator not to be called directly
     """
-    ak = __entry__.get_kernel()
     collection_own_name = __entry__.get_name()
     trailing_collections = trailing_collections or []
 
@@ -29,7 +28,7 @@ def walk(__entry__, skip_entry_names=None, trailing_collections=None):
             relative_entry_path = contained_entries[entry_name]
             logging.debug(f"collection({collection_own_name}): mapping {entry_name} to relative_entry_path={relative_entry_path}")
 
-            contained_entry = __entry__.__class__.bypath(path=__entry__.get_path(relative_entry_path), name=entry_name, container=__entry__, kernel=ak) # FIXME: should go via call_cache
+            contained_entry = __entry__.__class__.bypath(path=__entry__.get_path(relative_entry_path), name=entry_name, container=__entry__) # FIXME: should go via call_cache
 
             # Have to resort to checking the declared type to avoid triggering dependencies by testing if contained_entry.can('walk'):
             if 'collection' in contained_entry.own_data().get("tags",[]):
@@ -52,13 +51,14 @@ def walk(__entry__, skip_entry_names=None, trailing_collections=None):
             raise e
 
 
-def attached_entry(entry_path=None, own_data=None, generated_name_prefix=None, __entry__=None):
+def attached_entry(entry_path=None, own_data=None, generated_name_prefix=None, container_to_store=None, __entry__=None):
     """Create a new entry with the given name and attach it to this collection
 
 Usage examples :
                 axs work_collection , attached_entry ultimate_answer ---='{"answer":42}' , save
     """
-    return __entry__.__class__.fresh_entry(container=__entry__, entry_path=entry_path, own_data=own_data, generated_name_prefix=generated_name_prefix, kernel=__entry__.get_kernel())
+    container_to_store = container_to_store or __entry__
+    return __entry__.__class__.fresh_entry(entry_path=entry_path, own_data=own_data, container=container_to_store, generated_name_prefix=generated_name_prefix)
 
 
 def byname(entry_name, trailing_collections=None, __entry__=None):
@@ -393,6 +393,10 @@ Usage examples :
                     logging.info(f"Matched Rule #{match_idx}/{len(matching_rules)} produced an entry, which matches the original query, finalizing...\n")
                     if not new_entry.get("__completed", True):
                         new_entry.save( on_collision="force", completed=ufun.generate_current_timestamp() )   # we expect a collision
+                    else:
+                        od = new_entry.own_data()
+                        logging.info(f"__COMPLETED={new_entry.get('__completed')}, ={od.get('__completed')} not saving")
+                        logging.info(f"{id(od)} OWN_DATA={od}, not saving")
                     return new_entry
                 else:
                     raise RuntimeError( f"Matched Rule #{match_idx}/{len(matching_rules)} produced an entry, but it failed to match the original query {query} - PLEASE INVESTIGATE" )
