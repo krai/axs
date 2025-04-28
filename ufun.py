@@ -221,13 +221,17 @@ def repr_dict(d, exception_pairs=None):
     """
     exception_pairs = exception_pairs or []
 
-    def safe_value(v):
+    def safe_value(k):
+        if k=='__record_entry__':
+            return '[REDACTED]'
+
+        v = d[k]
         for (exception_v, safe_v) in exception_pairs:
             if v==exception_v:
                 return safe_v
         return repr(v)
 
-    return ('{' + (','.join([ repr(k)+':'+safe_value(d[k]) for k in sorted(d.keys()) ])) + '}') if type(d)==dict else repr(d)
+    return ('{' + (','.join([ repr(k)+':'+safe_value(k) for k in sorted(d.keys()) ])) + '}') if type(d)==dict else repr(d)
 
 
 def generate_current_timestamp(time_format=None, fs_safe=True):

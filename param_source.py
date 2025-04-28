@@ -267,6 +267,7 @@ Usage examples :
                 axs byname counting_collection , byname dutch , dig number_mapping.6
                 axs dig .unzip_tool.tool_path
         """
+        print(f"\n\nCalling dig({self}, {key_path}, {safe}, {parent_recursion}, {safe_value})")
         if type(key_path)!=list:
             key_path = key_path.split('.')
 
@@ -428,7 +429,7 @@ Usage examples :
             if (edit_mode == 'AUGMENT') and hasattr(self, "nested_calls"):
                 value = self.nested_calls( value )
 
-            ufun.edit_structure(self.own_data(), key_path, value, edit_mode)
+            ufun.edit_structure(self.entry_data(), key_path, value, edit_mode)
 
             if key_path == [ self.PARAMNAME_parent_entries ]:   # magic request to reload the parents
                 self.parent_objects = None

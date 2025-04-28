@@ -401,7 +401,7 @@ Usage examples :
                 return [ "^", "byname", self.get_name()]
             else:
                 return [ "^", "bypath", self.get_path()]
-        else:
+        else:   # unstored or just deleted Entry:
             fresh_entry_opt_args = { "own_data": self.pickle_struct(self.own_data()) }
             if self.container_object:
                 fresh_entry_opt_args["container"] = self.container_object.pickle_one()
@@ -425,7 +425,7 @@ Usage examples :
         else:
             new_path = self.get_path()
 
-        own_data = self.own_data()
+        own_data = self.entry_data()
 
         logging.info(f"in SAVE {id(own_data)}: {'__completed' in own_data} , {'__query' in own_data} , {completed is not None}")
         if ("__completed" in own_data) or ("__query" in own_data) or (completed is not None):

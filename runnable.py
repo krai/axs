@@ -21,12 +21,13 @@ class Runnable(ParamSource):
     pipeline_counter                = 0
     ESCAPE_do_not_process           = 'AS^IS'
 
-    def __init__(self, own_functions=None, value_cache=None, **kwargs):
+    def __init__(self, own_functions=None, value_cache=None, overridden_entry=None, **kwargs):
         "Accept setting own_functions in addition to parent's parameters"
 
         self.own_functions_cache    = own_functions
         self.value_cache            = value_cache
         self.call_cache             = {}
+        self.overridden_entry       = overridden_entry
 
         super().__init__(**kwargs)
         logging.debug(f"[{self.get_name()}] Initializing the Runnable with {self.list_own_functions() if self.own_functions_cache else 'no'} pre-loaded functions")
@@ -40,6 +41,21 @@ class Runnable(ParamSource):
     @staticmethod
     def work_collection():
         return None
+
+
+    def base_entry(self):
+        return self.overridden_entry or self
+
+
+    def rec_base_entry(self):
+        if self.overridden_entry:
+            return self.overridden_entry.rec_base_entry()
+        else:
+            return self
+
+
+    def entry_data(self):
+        return self.base_entry().own_data()
 
 
     def own_functions(self):
@@ -90,7 +106,7 @@ Usage examples :
 
         function_object, ancestry_path = self.reach_function( action_name )
         if function_object:
-            logging.debug(f"[{self.get_name()}] reach_action({action_name}) was found as a function")
+            logging.debug(f"[{self.get_name()}] reach_action({action_name}) was found as a function in {ancestry_path}")
 
             _ancestry_path.extend( ancestry_path )
             return function_object
@@ -100,8 +116,14 @@ Usage examples :
 
             return getattr(self, action_name)
         else:
-            raise NameError( "could not find the action '{}' neither among the ancestors ({}) nor in the {} class".
-                              format(action_name, ', '.join(ancestry_path),  self.__class__.__name__) )
+            rec_base_entry = self.rec_base_entry()
+            if rec_base_entry!=self and hasattr(rec_base_entry, action_name):
+                logging.debug(f"[{self.get_name()}] reach_action({action_name}) was found as a class method in an overridden_entry")
+
+                return getattr(self.rec_base_entry(), action_name)
+            else:
+                raise NameError( "could not find the action '{}' neither among the ancestors ({}) nor in the {} class".
+                                  format(action_name, ', '.join(ancestry_path),  self.__class__.__name__) )
 
 
     def can(self, action_name):
@@ -158,19 +180,20 @@ Usage examples :
         """
         help_buffer = []
         common_format = "{:15s}: {}"
-        entry_class = self.__class__
+        code_entry  = self.base_entry()
+        entry_class = code_entry.__class__
 
         help_buffer.append( common_format.format( entry_class.__name__+' class', entry_class.__doc__ ))
         help_buffer.append( common_format.format( 'Class methods', function_access.list_function_names(entry_class) ))
 
         help_buffer.append('')
-        help_buffer.append( common_format.format( 'Specific '+entry_class.__name__, self.get_name() ))
+        help_buffer.append( common_format.format( 'Specific '+entry_class.__name__, code_entry.get_name() ))
 
         if arguments:
             action_name = arguments[0]
             try:
                 ancestry_path   = []
-                action_object   = self.reach_action(action_name, _ancestry_path=ancestry_path)
+                action_object   = code_entry.reach_action(action_name, _ancestry_path=ancestry_path)
 
                 required_arg_names, optional_arg_names, action_defaults, varargs, varkw = function_access.expected_call_structure( action_object )
 
@@ -195,13 +218,13 @@ Usage examples :
             except Exception as e:
                 logging.error( str(e) )
         else:
-            own_functions   = self.own_functions()     # the entry may not contain any code...
+            own_functions   = code_entry.own_functions()     # the entry may not contain any code...
             if own_functions:
                 doc_string      = own_functions.__doc__     # the module may not contain any DocString...
                 help_buffer.append( common_format.format('Description', doc_string))
-                help_buffer.append( common_format.format('OwnFunctions', self.list_own_functions()))
+                help_buffer.append( common_format.format('OwnFunctions', code_entry.list_own_functions()))
             else:
-                parents_names   = self.get_parents_names()
+                parents_names   = code_entry.get_parents_names()
                 parents_may_know = ", but you may want to check its parents: "+parents_names if parents_names else ""
                 help_buffer.append("This Runnable has no loadable functions" + parents_may_know)
 
@@ -220,7 +243,7 @@ Usage examples :
 
 
         if param_name=='__entry__':
-            return self
+            return self.base_entry()
 
 
         if self.value_cache is not None and param_name in self.value_cache:
@@ -286,10 +309,30 @@ Usage examples :
             action_name = action_parts[-1]
             return action_entry.local_call( action_name, *the_pos_rest, **the_named_rest )
         else:
-            return self.local_call( action_path, *the_pos_rest, **the_named_rest )
+            #
+            # 10.12.2024: move the AdHoc rt_call_specific object's creation here, and call .local_call() on it
+            # 11.12.2024: make sure the action_object is obtained from overridden_entry , not just self
+            #
+            pos_params      = the_pos_rest[0] if len(the_pos_rest)>0 else []
+            edit_dict       = the_pos_rest[1] if len(the_pos_rest)>1 else {}  # FIXME: temporarily ignore remote edits, assume they are all local
+            export_params   = the_pos_rest[2] if len(the_pos_rest)>2 else []
+            slice_relative_to   = the_named_rest.get('slice_relative_to')
+            pipeline_wide_entry = the_named_rest.get('pipeline_wide_entry')
+
+            combined_dict   = slice_relative_to.slice( *export_params ) if (export_params and slice_relative_to) else {}
+            combined_dict.update( edit_dict )
+
+            parent_objects = [ self, pipeline_wide_entry ] if pipeline_wide_entry else [ self ]
+
+            rt_call_specific = Runnable(name='extended_'+(self.get_name() or 'UNNAMED_entry')+'_for_'+action_path+'/'+str(pos_params)+';'+str(combined_dict),
+                own_data=combined_dict, parent_objects=parent_objects, kernel=self.get_kernel(), overridden_entry=self)
+
+            result_value = rt_call_specific.local_call( action_path, *the_pos_rest, **the_named_rest )
+
+            return self if result_value == rt_call_specific else result_value
 
 
-    def local_call(self, action_name, pos_params=None, edit_dict=None, export_params=None, deterministic=True, call_record_entry_ptr=None, nested_context=None, slice_relative_to=None):
+    def local_call(self, action_name, pos_params=None, edit_dict=None, export_params=None, pipeline_wide_entry=None, deterministic=True, call_record_entry_ptr=None, slice_relative_to=None):
         """Call a given function or method of a given entry and feed it
             with arguments from the current object optionally overridden by a given edit_dict
 
@@ -297,8 +340,8 @@ Usage examples :
 
             Currently all calls are assumed to be deterministic, and their results are cached (subject to context):
                 axs mi: fresh_entry , plant alpha 10  beta 20  formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula
-                axs mi: fresh_entry , plant alpha 10  beta 20  formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula , get mi , get formula
-                axs mi: fresh_entry , plant alpha 10  beta 20  formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula , get mi , get formula --alpha=100
+                axs mi: fresh_entry , plant alpha 10  beta 20  formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula , , get mi , get formula
+                axs mi: fresh_entry , plant alpha 10  beta 20  formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula , , get mi , get formula --alpha=100
         """
 
         logging.debug(f'[{self.get_name()}]  calling action "{action_name}" with pos_params={pos_params} and edit_dict={edit_dict} ...')
@@ -319,31 +362,32 @@ Usage examples :
 
         ak = self.get_kernel()
 
-        imported_slice = slice_relative_to.slice( *export_params ) if (export_params and slice_relative_to) else {}
+        # imported_slice = slice_relative_to.slice( *export_params ) if (export_params and slice_relative_to) else {}
+        #
+        # rt_call_specific = Runnable(name='rt_call_specific_'+action_name+'/'+str(pos_params), own_data=imported_slice, parent_objects = [ self ], kernel=ak)     # FIXME: overlapping entry names are not unique
+        #
+        # local_edits  = {}
+        # for one_edit in edit_dict or {}:
+        #     if one_edit.startswith('.'):    # remote edits of a named entry
+        #         _, remote_entry_name, remote_edit = one_edit.split('.', 2)
+        #         print(f"THIS IS A REMOTE EDIT: {remote_entry_name} :: {remote_edit} -> {edit_dict[one_edit]}")
+        #
+        #         remote_entry = ak.byname( remote_entry_name )
+        #         remote_entry.set_own_data( { remote_edit: edit_dict[one_edit] }, topup=True )   # FIXME: we are editing LIVE entries, DO NOT SAVE!
+        #     else:
+        #         local_edits.update( { one_edit: edit_dict[one_edit] } )
+        #
+        # rt_call_specific.set_own_data( local_edits, topup=True)   # topping up with all the local edits
+        #
+        #
+        # self.runtime_stack().append( rt_call_specific )     # FIXME: lots of collisions related to this
+        #
+        # if nested_context:
+        #     rt_call_specific.runtime_stack( nested_context )
+        #
+        # # FIXME: this is a candidate for deletion. Be sure to seriously test the hell out of it
+        # rt_call_specific.own_data( self.nested_calls( rt_call_specific.own_data() ) )   # perform the delayed interpretation of expressions
 
-        rt_call_specific = Runnable(name='rt_call_specific_'+action_name+'/'+str(pos_params), own_data=imported_slice, parent_objects = [ self ])     # FIXME: overlapping entry names are not unique
-
-        local_edits  = {}
-        for one_edit in edit_dict or {}:
-            if one_edit.startswith('.'):    # remote edits of a named entry
-                _, remote_entry_name, remote_edit = one_edit.split('.', 2)
-                print(f"THIS IS A REMOTE EDIT: {remote_entry_name} :: {remote_edit} -> {edit_dict[one_edit]}")
-
-                remote_entry = ak.byname( remote_entry_name )
-                remote_entry.set_own_data( { remote_edit: edit_dict[one_edit] }, topup=True )   # FIXME: we are editing LIVE entries, DO NOT SAVE!
-            else:
-                local_edits.update( { one_edit: edit_dict[one_edit] } )
-
-        rt_call_specific.set_own_data( local_edits, topup=True)   # topping up with all the local edits
-
-
-        self.runtime_stack().append( rt_call_specific )     # FIXME: lots of collisions related to this
-
-        if nested_context:
-            rt_call_specific.runtime_stack( nested_context )
-
-        # FIXME: this is a candidate for deletion. Be sure to seriously test the hell out of it
-        rt_call_specific.own_data( self.nested_calls( rt_call_specific.own_data() ) )   # perform the delayed interpretation of expressions
 
         if ak:
             call_record_entry   = ak.fresh_entry(container=self.work_collection(), generated_name_prefix=f"generated_by_{self.get_name()}_on_{action_name}_")
@@ -365,27 +409,26 @@ Usage examples :
 
         if action_name=='func':         # at least propagate edit_dict.  FIXME: maybe rely on func's signature if available?
             joint_arg_tuple     = pos_params
-            optional_arg_dict   = rt_call_specific.own_data()
+            optional_arg_dict   = { k:v for k,v in self.own_data().items() if k!='__record_entry__' }
         else:
-            rt_call_specific['__record_entry__'] = call_record_entry    # the order is important: first nested_calls() (potentially blocked by {"AS^IS": {}}  then add __record_entry__
+            self['__record_entry__'] = call_record_entry    # the order is important: first nested_calls() (potentially blocked by {"AS^IS": {}}  then add __record_entry__
             action_object, joint_arg_tuple, optional_arg_dict   = function_access.prep(action_object, pos_params, self, captured_mapping)
-
 
         if ak:
             # adding all key-value pairs that were mentioned in the edit_dict, but not needed by the call(), to make sure they also get recorded
-            missing_filter_keys = set(rt_call_specific.own_data()) - set(captured_mapping.keys())
+            missing_filter_keys = set(self.own_data()) - set(captured_mapping.keys())
             for mfk in missing_filter_keys:
-                call_record_entry[mfk] = rt_call_specific[mfk]
+                call_record_entry[mfk] = self[mfk]
 
             for a in ('__entry__', '__record_entry__'):
                 if a in captured_mapping:
                     del captured_mapping[a]
 
-            call_record_entry["_replay"] = [ "^^", "execute", [
-                [ [ "get_kernel" ] ] +
-                ( [ self.pickle_one()[1:] ] if hasattr(self, 'pickle_one') else [] ) +
-                [ [ action_name ] ]     # assuming all parameters have been properly recorded (scattered around) call_record_entry and are thus available
-            ] ]
+#            call_record_entry["_replay"] = [ "^^", "execute", [
+#                [ [ "get_kernel" ] ] +
+#                ( [ self.pickle_one()[1:] ] if hasattr(self, 'pickle_one') else [] ) +
+#                [ [ action_name ] ]     # assuming all parameters have been properly recorded (scattered around) call_record_entry and are thus available
+#            ] ]
 
             if call_record_entry_ptr is not None:           # making it available to the pipeline
                 call_record_entry_ptr.append( call_record_entry )
@@ -393,7 +436,7 @@ Usage examples :
 
         result          = function_access.feed(action_object, joint_arg_tuple, optional_arg_dict)
 
-        self.runtime_stack().pop()
+        # self.runtime_stack().pop()
 
         if ak and result!=call_record_entry :
             call_record_entry['__result__'] = result    # only visible if save()d after execution (not all application cases)
@@ -456,7 +499,8 @@ Usage examples :
         return processed_struct if side_effects_count else unprocessed_struct                   # keeping the original if unchanged should help with GC
 
 
-    def execute(self, pipeline, pipeline_wide_data=None):
+#    def execute(self, pipeline, pipeline_wide_data=None):
+    def execute(self, pipeline):
         """Execute a parsed pipeline (a chain of calls that starts from the kernel object).
             Whenever a result returned by a function is NOT an Runnable, the execution resets back to the kernel object.
 
@@ -489,12 +533,12 @@ Usage examples :
                 axs byname ls_output_entry , out_file_path: get_path , , byname shell , run --shell_cmd_with_subs='cat #{out_file_path}#'
         """
         max_call_params     = 3     # action, pos_params, edit_dict
-        pipeline_wide_data  = pipeline_wide_data or {}
+#        pipeline_wide_data  = pipeline_wide_data or {}
 #        rt_pipeline_wide    = self.get_kernel().bypath(path=f'rt_pipeline_wide_{Runnable.pipeline_counter}', own_data=pipeline_wide_data)  # the "service" pipeline-wide entry
-        rt_pipeline_wide    = Runnable(name=f'rt_pipeline_wide_{Runnable.pipeline_counter}', own_data=pipeline_wide_data) # the "service" pipeline-wide entry
-        Runnable.pipeline_counter += 1
+#        rt_pipeline_wide    = Runnable(name=f'rt_pipeline_wide_{Runnable.pipeline_counter}', own_data=pipeline_wide_data, kernel=self.get_kernel()) # the "service" pipeline-wide entry
+#        Runnable.pipeline_counter += 1
 
-        local_context       = [ rt_pipeline_wide ]
+#        local_context       = [ rt_pipeline_wide ]
         result              = entry = self
         passing_param       = None
 
@@ -518,7 +562,8 @@ Usage examples :
                 call_params_iter    = iter(call_params)
                 action_name         = next(call_params_iter)
                 pos_params          = next(call_params_iter, [])
-                edit_dict           = { **pipeline_wide_data, **next(call_params_iter, {}) }    # shallow dictionary merge
+#                edit_dict           = { **pipeline_wide_data, **next(call_params_iter, {}) }    # shallow dictionary merge
+                edit_dict           = next(call_params_iter, {})
                 export_params       = next(call_params_iter, None)
 
                 if type(pos_params)!=list:      # first ensure pos_params is a list
@@ -538,22 +583,25 @@ Usage examples :
 
                 if hasattr(entry, 'call'):                                  # an Entry-specific or Runnable-generic method ("func" called on an Entry will fire here)
                     # print(f"Before call({action_name}, {pos_params}, {edit_dict}, export:{export_params}, rel:+++{self}---)")
-                    result = entry.call(action_name, pos_params, edit_dict, export_params, slice_relative_to=self, call_record_entry_ptr=call_record_entry_ptr, nested_context=local_context)
+                    result = entry.call(action_name, pos_params, edit_dict, export_params, pipeline_wide_entry=self, slice_relative_to=self, call_record_entry_ptr=call_record_entry_ptr)
                 elif hasattr(entry, action_name):                           # a non-axs Object method
                     action_object   = getattr(entry, action_name)
-                    pos_params      = rt_pipeline_wide.nested_calls(pos_params)              # perform all nested calls if there are any
+#                    pos_params      = rt_pipeline_wide.nested_calls(pos_params)              # perform all nested calls if there are any
+                    pos_params      = self.nested_calls(pos_params)              # perform all nested calls if there are any
                     result          = function_access.feed(action_object, pos_params, edit_dict)
                 elif action_name[0]=='.':   # presumably a qualified action_name, let's start from self
-                    result = self.call(action_name, pos_params, edit_dict, export_params, slice_relative_to=self, call_record_entry_ptr=call_record_entry_ptr, nested_context=local_context)
+                    result = self.call(action_name, pos_params, edit_dict, export_params, pipeline_wide_entry=self, slice_relative_to=self, call_record_entry_ptr=call_record_entry_ptr)
                 else:
                     display_pipeline = "\n\t".join([str(step) for step in ["["]+pipeline]) + "\n]"
                     raise RuntimeError( f'In pipeline {display_pipeline} step {pipeline[call_idx]} cannot be executed on value ({entry}) produced by {pipeline[call_idx-1]}' )
 
                 if input_label:
-                    rt_pipeline_wide[input_label] = call_record_entry_ptr[0]
+#                    rt_pipeline_wide[input_label] = call_record_entry_ptr[0]
+                    self[input_label] = call_record_entry_ptr[0]
 
                 if output_label:
-                    rt_pipeline_wide[output_label] = function_access.to_num_or_not_to_num( result )
+#                    rt_pipeline_wide[output_label] = function_access.to_num_or_not_to_num( result )
+                    self[output_label] = function_access.to_num_or_not_to_num( result )
 
                 entry = result
 
@@ -625,13 +673,14 @@ Usage examples :
         return locals().get('_')
 
 
+#    def pickle_struct(self, input_structure, infinicursion_protect=False):
     def pickle_struct(self, input_structure):
         """Recursively pickle a data structure that may have some Entry objects as leaves. Used by save()
         """
         if type(input_structure)==list:
             return [self.pickle_struct(e) for e in input_structure]                         # all list elements are pickled
         elif type(input_structure)==dict:
-            return { k : self.pickle_struct(input_structure[k]) for k in input_structure }  # only values are pickled
+            return { k : '[REDACTED]' if k=='__record_entry__' else self.pickle_struct(input_structure[k]) for k in input_structure }  # only values are pickled
         elif hasattr(input_structure, 'pickle_one'):
             return input_structure.pickle_one()                                             # ground step
         else:
@@ -646,6 +695,7 @@ Usage examples :
         logging.error(f"Raising exception: {exception_class}({error_message})")
         exception_class = eval(exception_class)
         raise exception_class(error_message)
+
 
 def plus_one(number):
     "Adds 1 to the argument"

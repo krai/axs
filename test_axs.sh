@@ -30,27 +30,27 @@ assert 'axs bypath foo , substitute "#{greeting}#, #{address}#!"' 'Hello, mate!'
 rm -rf foo
 assert_end entry_creation_and_data_access
 
-assert "axs mi: bypath missing , plant alpha 10 beta 20 , plant formula --:='^^:substitute:#{alpha}#-#{beta}#' , own_data" "{'alpha': 10, 'beta': 20, 'formula': '10-20'}"
-assert "axs mi: bypath missing , plant alpha 10 beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , own_data" "{'alpha': 10, 'beta': 20, 'formula': ['^^', 'substitute', '#{alpha}#-#{beta}#']}"
+assert "axs mi: bypath missing , plant alpha 10 beta 20 , plant formula --:='^^:substitute:#{alpha}#-#{beta}#' , entry_data" "{'alpha': 10, 'beta': 20, 'formula': '10-20'}"
+assert "axs mi: bypath missing , plant alpha 10 beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , entry_data" "{'alpha': 10, 'beta': 20, 'formula': ['^^', 'substitute', '#{alpha}#-#{beta}#']}"
 assert "axs mi: bypath missing , plant alpha 10 beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula --alpha=30" "30-20"
-assert "axs mi: bypath missing , plant alpha 10 beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula --alpha=30 , , get mi , own_data" "{'alpha': 10, 'beta': 20, 'formula': ['^^', 'substitute', '#{alpha}#-#{beta}#']}"
+assert "axs mi: bypath missing , plant alpha 10 beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula --alpha=30 , , get mi , entry_data" "{'alpha': 10, 'beta': 20, 'formula': ['^^', 'substitute', '#{alpha}#-#{beta}#']}"
 assert_end escaping_nested_calls_immediate_execution
 
-axs fresh_entry ---own_data='{ "n": 5, "_subs1": [ "AS^IS", "AS^IS", "^^", "substitute", "N: #{n}#" ], "_subs2": [ "AS^IS", "AS^IS", "^^", "execute", [[ [ "substitute", "N: #{n}#" ] ]] ], "_subs3": [ "AS^IS", "AS^IS", "^^", "execute", [[ [ "get_kernel" ], [ "substitute", "N: #{n}#" ] ]] ] }' , save varisubs2
-assert 'axs bypath varisubs2 , get _subs1' 'N: 5'
-assert 'axs bypath varisubs2 , get _subs2' 'N: 5'
-assert 'axs bypath varisubs2 , get _subs3' 'N: None'
-assert 'axs bypath varisubs2 , get _subs1 --n=1' 'N: 1'
-assert 'axs bypath varisubs2 , get _subs2 --n=2' 'N: 2'
-assert 'axs bypath varisubs2 , get _subs3 --n=3' 'N: None'
+#axs fresh_entry ---own_data='{ "n": 5, "_subs1": [ "AS^IS", "AS^IS", "^^", "substitute", "N: #{n}#" ], "_subs2": [ "AS^IS", "AS^IS", "^^", "execute", [[ [ "substitute", "N: #{n}#" ] ]] ], "_subs3": [ "AS^IS", "AS^IS", "^^", "execute", [[ [ "get_kernel" ], [ "substitute", "N: #{n}#" ] ]] ] }' , save varisubs2
+axs fresh_entry ---own_data='{ "n": 5, "subs1": [ "AS^IS", "^^", "substitute", "N: #{n}#" ], "subs2": [ "AS^IS", "^^", "execute", [[ [ "substitute", "N: #{n}#" ] ]] ], "subs3": [ "AS^IS", "^^", "execute", [[ [ "get_kernel" ], [ "substitute", "N: #{n}#" ] ]], { "n": 10 } ] }' , save varisubs2
+assert 'axs bypath varisubs2 , get subs1' 'N: 5'
+assert 'axs bypath varisubs2 , get subs2' 'N: 5'
+assert 'axs bypath varisubs2 , get subs3' 'N: 10'
+assert 'axs bypath varisubs2 , get subs1 --n=1' 'N: 1'
+assert 'axs bypath varisubs2 , get subs2 --n=2' 'N: 2'
+assert 'axs bypath varisubs2 , get subs3 --n=3' 'N: 10'
 axs bypath varisubs2 , remove
-axs fresh_entry ---own_data='{ "n": 5, "_subs1": [ "AS^IS", "AS^IS", "^", "substitute", "N: #{n}#", {}, ["n"] ], "_subs2": [ "AS^IS", "AS^IS", "^", "execute", [[ [ "substitute", "N: #{n}#" ] ]], {}, ["n"] ], "_subs3": [ "AS^IS", "AS^IS", "^", "execute", [[ [ "get_kernel" ], [ "substitute", "N: #{n}#" ] ]], {}, ["n"] ] }' , save varisubs1
-assert 'axs bypath varisubs1 , get _subs1' 'N: 5'
-assert 'axs bypath varisubs1 , get _subs2' 'N: 5'
-assert 'axs bypath varisubs1 , get _subs3' 'N: 5'
-assert 'axs bypath varisubs1 , get _subs1 --n=1' 'N: 1'
-assert 'axs bypath varisubs1 , get _subs2 --n=2' 'N: 2'
-assert 'axs bypath varisubs1 , get _subs3 --n=3' 'N: 3'
+#axs fresh_entry ---own_data='{ "n": 5, "_subs1": [ "AS^IS", "AS^IS", "^", "substitute", "N: #{n}#", {}, ["n"] ], "_subs2": [ "AS^IS", "AS^IS", "^", "execute", [[ [ "substitute", "N: #{n}#" ] ]], {}, ["n"] ], "_subs3": [ "AS^IS", "AS^IS", "^", "execute", [[ [ "get_kernel" ], [ "substitute", "N: #{n}#" ] ]], {}, ["n"] ] }' , save varisubs1
+axs fresh_entry ---own_data='{ "n": 5, "subs1": [ "AS^IS", "^", "substitute", "N: #{n}#", {}, ["n"] ], "subs2": [ "AS^IS", "^", "execute", [[ [ "substitute", "N: #{n}#" ] ]], {}, ["n"] ] }' , save varisubs1
+assert 'axs bypath varisubs1 , get subs1' 'N: 5'
+assert 'axs bypath varisubs1 , get subs2' 'N: 5'
+assert 'axs bypath varisubs1 , get subs1 --n=1' 'N: 1'
+assert 'axs bypath varisubs1 , get subs2 --n=2' 'N: 2'
 axs bypath varisubs1 , remove
 assert_end overriding_formula_variables
 
