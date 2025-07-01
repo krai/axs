@@ -152,8 +152,10 @@ Usage examples :
 
         if return_all:
             return candidates
-        else:
+        elif len(candidates):
             return candidates[0]
+        else:
+            return None
 
 
     def get_name(self):
