@@ -6,15 +6,11 @@
     "abs_bin_dir": [ "^^", "get_path_from", "rel_bin_dir" ],
 
     "rel_bin_dir": [ "^^", "execute", [[
-        [ "get_kernel" ],
-        [ "byquery", [["python_package", ["package_name", "pprintpp"], ["desired_python_version", ["^^", "get", "python_major_dot_minor"]]]] ],
-        [ "find_file", "pypprint(.exe)?" ]
+        [ "find_file", "bin", { "looking_for_dir": true, "return_full": true } ]
     ]] ],
 
     "rel_packages_dir": [ "^^", "execute", [[
-        [ "get_kernel" ],
-        [ "byquery", [["python_package", ["package_name", "pprintpp"], ["desired_python_version", ["^^", "get", "python_major_dot_minor"]]]] ],
-        [ "find_file", "pprintpp.py" ]
+        [ "find_file", "site-packages|dist-packages", { "looking_for_dir": true, "return_full": true } ]
     ]] ],
 
     "package_version": [ "^^", "execute", [[
