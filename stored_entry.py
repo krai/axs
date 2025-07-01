@@ -103,7 +103,9 @@ Usage examples :
 Usage examples :
                 axs byquery package_name=numpy , get_path_from rel_packages_dir
         """
-        return self.get_path(self.dig(key_path))
+        rel_path = self.dig(key_path)
+
+        return self.get_path(rel_path) if rel_path is not None else None
 
 
     def get_path_of(self, resource_name, strict=True):
