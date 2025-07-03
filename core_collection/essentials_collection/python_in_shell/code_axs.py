@@ -22,7 +22,18 @@ def ext_use_python_deps(python_deps=None, inherit_env_keys=None, extra_env=None)
         new_env.update( extra_env )
 
     if python_deps:     # Note the OS-independent way of joining individual paths
-        new_env['PYTHONPATH']   = os.pathsep.join( [ dep if type(dep)==str else ( dep.get('abs_packages_dir') or dep.get_path(dep.get('file_name')) ) for dep in python_deps ] )
+        all_abs_packages_dirs = []
+        for dep in python_deps:
+            if type(dep)==str:
+                all_abs_packages_dirs.append( dep )     # the easiest way is to simply provide an absolute path
+            else:
+                abs_packages_dirs = dep.get('abs_packages_dirs')
+                if abs_packages_dirs:
+                    all_abs_packages_dirs.extend( abs_packages_dirs )   # there may be multiple, or none
+                else:
+                    all_abs_packages_dirs.append( dep.get_path(dep.get('file_name')) )  # if everything else failed, assume the entry contains python code directly
+
+        new_env['PYTHONPATH']   = os.pathsep.join( all_abs_packages_dirs )
 
         path_parts  = []
         for dep in python_deps:

@@ -3,15 +3,15 @@
 
     "abs_packages_dir": [ "^^", "get_path_from", "rel_packages_dir" ],
 
+    "abs_packages_dirs": [ "^^", "get_abs_packages_dirs" ],
+
     "abs_bin_dir": [ "^^", "get_path_from", "rel_bin_dir" ],
 
-    "rel_bin_dir": [ "^^", "execute", [[
-        [ "find_file", "bin", { "looking_for_dir": true, "return_full": true } ]
-    ]] ],
+    "rel_bin_dir": [ "^^", "find_file", ["bin"], { "looking_for_dir": true, "return_full": true } ],
 
-    "rel_packages_dir": [ "^^", "execute", [[
-        [ "find_file", "site-packages|dist-packages", { "looking_for_dir": true, "return_full": true } ]
-    ]] ],
+    "rel_packages_dir": [ "^^", "find_file", ["site-packages|dist-packages"], { "looking_for_dir": true, "return_full": true } ],
+
+    "rel_packages_dirs": [ "^^", "find_file", ["site-packages|dist-packages"], { "looking_for_dir": true, "return_full": true, "return_all": true } ],
 
     "package_version": [ "^^", "execute", [[
         [ "get_metadata", [], {"header_name": "Version"} ],
