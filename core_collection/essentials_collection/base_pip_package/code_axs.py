@@ -120,7 +120,7 @@ Usage examples :
     return getattr(module, '__file__')
 
 
-def get_abs_packages_dirs(rel_packages_dirs, __entry__):
+def get_abs_packages_dirs(rel_packages_dirs, merge=False, __entry__=None):
 
     abs_packages_dirs = []
 
@@ -128,5 +128,15 @@ def get_abs_packages_dirs(rel_packages_dirs, __entry__):
         abs_packages_dir = __entry__.get_path( rel_packages_dir )
         if abs_packages_dir:
             abs_packages_dirs.append( abs_packages_dir )
+
+    if merge and len(abs_packages_dirs)==2:
+        import os.path
+        import shutil
+
+        src_dir, dst_dir = sorted( abs_packages_dirs, key=len, reverse=True )
+        for src_item in os.listdir(src_dir):
+            src_full_path = os.path.join( src_dir, src_item )
+            shutil.move( src_full_path, dst_dir )
+        abs_packages_dirs = [ dst_dir ]
 
     return abs_packages_dirs

@@ -3,7 +3,7 @@
 
     "abs_packages_dir": [ "^^", "get_path_from", "rel_packages_dir" ],
 
-    "abs_packages_dirs": [ "^^", "get_abs_packages_dirs" ],
+    "abs_packages_dirs": [ "^^", "get_abs_packages_dirs", [], {"merge":true} ],
 
     "abs_bin_dir": [ "^^", "get_path_from", "rel_bin_dir" ],
 
