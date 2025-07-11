@@ -24,21 +24,29 @@ def walk(__entry__, skip_entry_names=None):
         contained_entries = __entry__.get('contained_entries', {})
         for entry_name in contained_entries:
             if skip_entry_names and (entry_name in skip_entry_names):
+                logging.debug(f"collection({collection_own_name}): skipping {entry_name}")
                 continue
 
-            relative_entry_path = contained_entries[entry_name]
-            logging.debug(f"collection({collection_own_name}): mapping {entry_name} to relative_entry_path={relative_entry_path}")
+            entry_value = contained_entries[entry_name]
 
-            contained_entry = ak.bypath(path=__entry__.get_path(relative_entry_path), name=entry_name, container=__entry__)
+            if type(entry_value)==str:
+                relative_entry_path = entry_value
+                logging.debug(f"collection({collection_own_name}): mapping {entry_name} to relative_entry_path={relative_entry_path}")
 
-            # Have to resort to duck typing to avoid triggering dependencies by testing if contained_entry.can('walk'):
-            if 'contained_entries' in contained_entry.own_data():
-                logging.debug(f"collection({collection_own_name}): recursively walking collection {entry_name}...")
-                yield from walk(contained_entry)
-                contained_entry.touch('_BEFORE_CODE_LOADING')
+                contained_entry = ak.bypath(path=__entry__.get_path(relative_entry_path), name=entry_name, container=__entry__)
+
+                # Have to resort to duck typing to avoid triggering dependencies by testing if contained_entry.can('walk'):
+                if 'contained_entries' in contained_entry.own_data():
+                    logging.debug(f"collection({collection_own_name}): recursively walking collection {entry_name}...")
+                    yield from walk(contained_entry)
+                    contained_entry.touch('_BEFORE_CODE_LOADING')
+                else:
+                    logging.debug(f"collection({collection_own_name}): yielding non-collection {entry_name}")
+                    yield contained_entry
             else:
-                logging.debug(f"collection({collection_own_name}): yielding non-collection {entry_name}")
-                yield contained_entry
+                logging.debug(f"collection({collection_own_name}): yielding non-filesystem entry {entry_name}")
+                yield entry_value
+
             seen_entry_names.add( entry_name )
 
     except RuntimeError as e:
