@@ -65,10 +65,10 @@ Usage examples :
     return __entry__.get_kernel().fresh_entry(container=__entry__, entry_path=entry_path, own_data=own_data, generated_name_prefix=generated_name_prefix)
 
 
-def byname(entry_name, __entry__):
+def byname(entry_name, skip_entry_names=None, __entry__=None):
     """Fetch an entry by name
     """
-    for candidate_entry in walk(__entry__):
+    for candidate_entry in walk(__entry__, skip_entry_names):
         if candidate_entry.get_name() == entry_name:
             return candidate_entry
     return None
@@ -215,7 +215,7 @@ class FilterPile:
         return candidate_still_ok
 
 
-def all_byquery(query, pipeline=None, template=None, parent_recursion=False, __entry__=None):
+def all_byquery(query, pipeline=None, template=None, parent_recursion=False, skip_entry_names=None, __entry__=None):
     """Returns a list of ALL entries matching the query.
         Empty list if nothing matched.
 
@@ -233,7 +233,7 @@ Usage examples :
 
     # trying to match the Query in turn against each existing and walkable entry, gathering them all:
     result_list = []
-    for candidate_entry in walk(__entry__):
+    for candidate_entry in walk(__entry__, skip_entry_names):
         if parsed_query.matches_entry( candidate_entry, parent_recursion ):
             if pipeline:
                 single_result = candidate_entry.execute(pipeline)
@@ -320,7 +320,7 @@ Usage examples :
     return len(matching_rules)
 
 
-def byquery(query, produce_if_not_found=True, parent_recursion=False, __entry__=None):
+def byquery(query, produce_if_not_found=True, parent_recursion=False, skip_entry_names=None, __entry__=None):
     """Fetch an entry by query.
         If the query returns nothing on the first pass, but matching _producer_rules are defined,
         apply the matching producer_rule and return its output.
@@ -341,7 +341,7 @@ Usage examples :
         return None
 
     # trying to match the Query in turn against each existing and walkable entry, first match returns:
-    for candidate_entry in walk(__entry__):
+    for candidate_entry in walk(__entry__, skip_entry_names):
         if parsed_query.matches_entry( candidate_entry, parent_recursion ):
             if candidate_entry.get('__completed', True):    # either explicitly completed, or not carrying this attribute at all, probably a static Entry
                 return candidate_entry

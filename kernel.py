@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.434'     # TODO: update with every kernel change
+__version__ = '0.2.435'     # TODO: update with every kernel change
 
 import logging
 import os
@@ -195,17 +195,17 @@ Usage examples :
         return work_collection_object
 
 
-    def byname(self, entry_name):
+    def byname(self, entry_name, skip_entry_names=None):
         """Fetch an entry by its name (delegated to work_collection)
 
 Usage examples :
                 axs byname pip , help
         """
-        logging.debug(f"[{self.get_name()}] byname({entry_name})")
-        return self.work_collection().call('byname', [entry_name])
+        logging.debug(f"[{self.get_name()}] byname({entry_name, skip_entry_names})")
+        return self.work_collection().call('byname', [entry_name, skip_entry_names])
 
 
-    def all_byquery(self, query, pipeline=None, template=None, parent_recursion=False):
+    def all_byquery(self, query, pipeline=None, template=None, parent_recursion=False, skip_entry_names=None):
         """Returns a list of ALL entries matching the query.
             Empty list if nothing matched.
 
@@ -218,8 +218,8 @@ Usage examples :
                 axs all_byquery deleteme+ ---='[["remove"]]'
                 axs all_byquery git_repo ---='[["pull"]]'
         """
-        logging.debug(f"[{self.get_name()}] all_byquery({query}, {pipeline}, {template})")
-        return self.work_collection().call('all_byquery', [query, pipeline, template, parent_recursion])
+        logging.debug(f"[{self.get_name()}] all_byquery({query}, {pipeline}, {template}, {parent_recursion}, {skip_entry_names})")
+        return self.work_collection().call('all_byquery', [query, pipeline, template, parent_recursion, skip_entry_names])
 
 
     def show_matching_rules(self, query):
@@ -232,7 +232,7 @@ Usage examples :
         return self.work_collection().call('show_matching_rules', [query])
 
 
-    def byquery(self, query, produce_if_not_found=True, parent_recursion=False):
+    def byquery(self, query, produce_if_not_found=True, parent_recursion=False, skip_entry_names=None):
         """Fetch an entry by a query over its tags (delegated to work_collection)
             Note parent_recursion is False by default, but can be switched on manually (beware of the avalanche though!).
 
@@ -240,8 +240,8 @@ Usage examples :
                 axs byquery person.,be!=Be
                 axs byquery person.,be!=Be --parent_recursion+ , get_path
         """
-        logging.debug(f"[{self.get_name()}] byquery({query})")
-        return self.work_collection().call('byquery', [query, produce_if_not_found, parent_recursion])
+        logging.debug(f"[{self.get_name()}] byquery({query}, {produce_if_not_found}, {parent_recursion}, {skip_entry_names})")
+        return self.work_collection().call('byquery', [query, produce_if_not_found, parent_recursion, skip_entry_names])
 
 
 #logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")
