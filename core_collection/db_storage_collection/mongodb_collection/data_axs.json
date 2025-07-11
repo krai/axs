@@ -1,0 +1,27 @@
+{
+    "_parent_entries": [ [ "^", "core_collection" ] ],
+
+    "tags": [ "collection" ],
+
+    "uri": "mongodb://localhost:27017/",
+    "db_name": "axs_collections",
+    "collection_name": [ "^^", "get_name" ],
+
+    "mongo_collection_obj": [ "^^", "execute", [[
+        [ "get_kernel" ],
+        [ "byquery", "python_package,package_name=pymongo", {"skip_entry_names":["core_collection"]} ],
+        [ "use" ],
+        [],
+        [ "db_connect" ]
+    ]] ],
+    "mongodb_parent_entry": [ "^", "byname", "mongodb_entry" ],
+
+    "enabled": [ "^^", "case", [ [ "^^", "get", "collection_name" ],
+        "mongodb_collection", [["noop", false]] ], { "default_value": [["noop",true]], "execute_value": true }
+    ],
+
+    "contained_entries": [ "^^", "case", [ [ "^^", "get", "enabled" ],
+        true, [[ "generate_contained_entries" ]],
+        false, [[ "noop", {} ]]
+    ], {"execute_value": true} ]
+}

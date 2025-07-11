@@ -1,0 +1,5 @@
+{
+    "_parent_entries": [ [ "^", "byname", "mongodb_collection" ] ],
+
+    "tags": [ "collection" ]
+}
