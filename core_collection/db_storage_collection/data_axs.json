@@ -1,0 +1,11 @@
+{
+    "_parent_entries": [ [ "^", "core_collection" ] ],
+    "tags": [
+        "collection"
+    ],
+    "contained_entries": {
+        "mongodb_entry": "mongodb_entry",
+        "mongodb_collection": "mongodb_collection",
+        "people_collection": "people_collection"
+    }
+}
