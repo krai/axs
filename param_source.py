@@ -105,6 +105,11 @@ Usage examples :
         if self.parent_objects==None:     # lazy-loading condition
             logging.debug(f"[{self.get_name()}] Lazy-loading the parents...")
             self.parent_objects = self.get(self.PARAMNAME_parent_entries, [])
+
+            if type(self.parent_objects)!=list:
+                logging.warning(f"[{self.get_name()}] {self.PARAMNAME_parent_entries} does not produce a list, please investigate")
+                self.parent_objects = [ self.parent_objects ]
+
             if None in self.parent_objects:
                 raise RuntimeError( f"Some of entry {self.get_name()}'s parents could not be loaded." ) # NB: part of the message should stay verbatim!
 
