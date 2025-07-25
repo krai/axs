@@ -25,7 +25,19 @@
 
         [ [ "python_package", "no_deps" ], [["install"]], { "pip_options": [ "no-deps" ] }, ["desired_python_version"] ],
         [ [ "python_package", "special", "broken_rule" ], [["install"]], {}, ["desired_python_version"] ],
-        [ [ "python_package" ], [["install"]], {}, ["desired_python_version"] ]
+        [ [ "python_package" ], [["install"]], {}, ["desired_python_version"] ],
+
+        [ [ "python_package", "from_wheel", "desired_python_version." ], [ ["get_kernel"], ["byname", "pip" ], ["install"]], {
+                "installable": [ "AS^IS", "^^", "execute", [[
+                    [ "get_kernel" ],
+					[ "byquery", [ "^^", "substitute", "python_package_wheel,setup_from_source,package_name=#{package_name}#,desired_python_version===#{desired_python_version}#" ] ],
+					[ "get_path", "*.whl" ],
+					0,
+					["func", "glob.glob"  ],
+					[ "__getitem__", 0 ]
+				 ]] ]
+            }
+        ]
     ],
 
     "_parent_entries": [ [ "^", "byname", "entry_creator" ] ],

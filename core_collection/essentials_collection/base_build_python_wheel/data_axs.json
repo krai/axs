@@ -1,0 +1,55 @@
+{
+    "_parent_entries": [ [ "^", "byname", "python_script" ] ],
+
+    "_producer_rules": [
+        [ [ "git_repo", "python_package_source", "package_name=six" ], [["get_kernel"],["byname","git"],["clone"]], {
+            "repo_name": [ "^^", "substitute", "#{package_name}#_package_source_git" ],
+            "url": "https://github.com/benjaminp/six.git"
+        } ],
+
+        [ [ "git_repo", "python_package_source", "package_name=requests" ], [["get_kernel"],["byname","git"],["clone"]], {
+            "repo_name": [ "^^", "substitute", "#{package_name}#_package_source_git" ],
+            "url": "https://github.com/psf/requests.git"
+        } ],
+
+        [ [ "python_package_wheel", "setup_from_source" ], [["get","populated_wheel_entry"]] ]
+    ],
+
+    "python_major_dot_minor": [ "^^", "dig", "python_tool_entry.major_dot_minor" ],
+
+    "python_deps": [
+        [ "^^", "python_sync_pip_package", [[ "python_package", "package_name=setuptools", "installable===\"setuptools<=70.3.0\"" ]] ],
+        [ "^^", "python_sync_pip_package", [[ "python_package", "package_name=wheel" ]] ]
+    ],
+
+    "wheel_entry": [ "^^", "execute", [[
+        [ "get", "__record_entry__" ],
+        [ "set_path", [ "^^", "substitute", "#{package_name}#_package_wheel_for_python#{python_major_dot_minor}#" ] ],
+        [ "plant", [ "^^", "substitute", [[
+            "package_name", "#{package_name}#",
+            "python_major_dot_minor", "#{python_major_dot_minor}#",
+            "desired_python_version", "#{python_major_dot_minor}#",
+            "tags", ["python_package_wheel", "setup_from_source"]
+          ]] ] ],
+        [ "attach", [ "^", "work_collection" ] ],
+        [ "save" ]
+    ]] ],
+    "wheel_entry_path": [ "^^", "execute", [[
+        [ "get", "wheel_entry" ],
+        [ "get_path" ]
+    ]] ],
+
+    "in_dir": [ "^^", "execute", [[
+        [ "get_kernel" ],
+        [ "byquery", [ "^^", "substitute", "git_repo,python_package_source,package_name=#{package_name}#" ] ],
+        [ "get_path" ]
+    ]] ],
+    "abs_script_path": "setup.py",
+    "script_extra_params": [ "^^", "substitute", "egg_info --egg-base #{wheel_entry_path}# bdist_wheel -d #{wheel_entry_path}#" ],
+
+    "populated_wheel_entry": [ "^^", "execute", [[
+        [ "run" ],
+        [],
+        [ "get", "wheel_entry" ]
+    ]] ]
+}
