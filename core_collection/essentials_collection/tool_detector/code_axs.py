@@ -62,7 +62,7 @@ Usage examples :
     """
 
     if tool_path:
-        return newborn_entry.save()
+        return newborn_entry.call("save")
     else:
         logging.warning(f"Could not detect the tool '{tool_name}'")
         return None

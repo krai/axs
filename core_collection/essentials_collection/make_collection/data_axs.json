@@ -7,7 +7,7 @@
         [ "get_kernel" ],
         [ "work_collection" ],
         [ "attached_entry", [ [ "^^", "get", "collection_name" ], {
-                "_parent_entries": [ "AS^IS", "AS^IS", [ "^", "core_collection" ] ],
+                "_parent_entries": [ "AS^IS", [ "^^", "core_collection" ] ],
                 "tags": [ "collection" ],
                 "contained_entries": {}
          } ] ],

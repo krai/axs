@@ -11,6 +11,7 @@ import re
 import socket
 import sys
 
+
 log_indocker = 'inDocker:' if os.path.exists('/.dockerenv') else ''
 log_username = getpass.getuser()
 log_hostname = socket.gethostname()
@@ -18,8 +19,10 @@ log_hostname = socket.gethostname()
 logging.basicConfig(level=logging.INFO, format=f"%(levelname)s:{log_indocker}{log_username}@{log_hostname} %(filename)s:%(funcName)s:%(lineno)s %(message)s")
 #logging.basicConfig(level=logging.DEBUG, format=f"%(levelname)s:{log_username}@{log_hostname} %(filename)s:%(funcName)s:%(lineno)s %(message)s") # put this BEFORE IMPORTING the kernel to see logging from the kernel
 
-from function_access import to_num_or_not_to_num
-from kernel import default_kernel as ak
+from ufun import pickle_struct, to_num_or_not_to_num
+from stored_entry import Entry
+ak = Entry.get_kernel()
+
 
 def cli_parse(arglist):
     """Parse the command pipeline representing a chain of calls
@@ -152,4 +155,4 @@ def main():
         logging.error(f"RuntimeError: {e}")
 
 if __name__ == '__main__':
-    print(ak.pickle_struct(main()))
+    print(pickle_struct(main()))

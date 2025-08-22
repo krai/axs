@@ -2,12 +2,14 @@
     "tags": [
         "collection"
     ],
-    "collection_name": [ "^^", "get_name" ],
+    "collection_name": [
+        "^^",
+        "get_name"
+    ],
     "contained_entries": {
-        "db_storage_collection": "db_storage_collection",
         "essentials_collection": "essentials_collection",
         "workflows_collection": "workflows_collection",
-        "remotes_collection": "remotes_collection",
         "varia_collection": "varia_collection"
-    }
+    },
+    "__completed": "2025.05.23_18h06m16s"
 }

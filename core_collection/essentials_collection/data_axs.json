@@ -13,7 +13,6 @@
         "python_user": "python_user",
 
         "pip": "pip",
-        "base_build_python_wheel": "base_build_python_wheel",
         "base_pip_package": "base_pip_package",
 
         "shell": "shell",

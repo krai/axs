@@ -11,6 +11,28 @@ import shutil
 import stat
 import sys
 
+
+def to_num_or_not_to_num(x):
+    "Convert the parameter to a number if it looks like it"
+
+    if isinstance(x, str) and len(x)>1 and x.startswith('"') and x.endswith('"'):
+        return x[1:-1]
+
+    try:
+        x_int = int(x)
+        if type(x_int)==int:
+            return x_int
+    except:
+        try:
+            x_float = float(x)
+            if type(x_float)==float:
+                return x_float
+        except:
+            pass
+
+    return x
+
+
 def load_json(json_file_path):
     """Load a data structure from given JSON file.
 
@@ -221,13 +243,17 @@ def repr_dict(d, exception_pairs=None):
     """
     exception_pairs = exception_pairs or []
 
-    def safe_value(v):
+    def safe_value(k):
+        if k=='__record_entry__':
+            return '[REDACTED]'
+
+        v = d[k]
         for (exception_v, safe_v) in exception_pairs:
             if v==exception_v:
                 return safe_v
         return repr(v)
 
-    return ('{' + (','.join([ repr(k)+':'+safe_value(d[k]) for k in sorted(d.keys()) ])) + '}') if type(d)==dict else repr(d)
+    return ('{' + (','.join([ repr(k)+':'+safe_value(k) for k in sorted(d.keys()) ])) + '}') if type(d)==dict else repr(d)
 
 
 def generate_current_timestamp(time_format=None, fs_safe=True):
@@ -241,3 +267,29 @@ Usage examples :
     time_format = time_format or ("%Y.%m.%d_%Hh%Mm%Ss" if fs_safe else "%Y.%m.%d_%H:%M:%S")
 
     return datetime.datetime.now().strftime( time_format )
+
+
+def pickle_struct(input_structure):
+    """Recursively pickle a data structure that may have some Entry objects as leaves. Used by save()
+    """
+    if type(input_structure)==list:
+        return [pickle_struct(e) for e in input_structure]              # all list elements are pickled
+    elif type(input_structure)==dict:
+        return { k : '[REDACTED]' if k=='__record_entry__' else pickle_struct(input_structure[k]) for k in input_structure }  # only values are pickled
+    elif hasattr(input_structure, 'pickle_one'):
+        return input_structure.pickle_one()                             # ground step
+    else:
+        return input_structure                                          # basement step
+
+
+if __name__ == '__main__':
+
+    print('-'*40 + ' to_num_or_not_to_num() calls: ' + '-'*40)
+
+    assert to_num_or_not_to_num("100")==100, "Converting string into int"
+
+    assert to_num_or_not_to_num("100.52")==100.52, "Converting string into float"
+
+    assert to_num_or_not_to_num("abcde")=="abcde", "Not converting into num #1"
+
+    assert to_num_or_not_to_num("100.52x")=="100.52x", "Not converting into num #2"

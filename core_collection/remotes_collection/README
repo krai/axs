@@ -1,0 +1,15 @@
+axs byquery dockerfile,docker_image=axs_kernel
+
+axs byquery dockerfile,docker_image=axs_kernel , get_path ''
+
+axs byquery shell_tool,can_docker , run --cmd_key=build --docker_image=axs_kernel
+
+docker image ls
+
+axs byquery loadgen_output,task=image_classification,framework=onnxrt --.image_classification_using_onnxrt_loadgen.collection_name=mapped_collection
+
+axs byquery program_output,task=image_classification,framework=onnxrt --.image_classification_using_onnxrt_py.experiment_collection_name=mapped_collection
+
+------------ 18 Oct'2024 -------------
+
+

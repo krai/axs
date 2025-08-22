@@ -32,20 +32,20 @@
     "downloading_tool_entry": [ "^", "byquery",
         [[ "^^", "get", "downloading_tool_query" ],
          [ "^^", "get", "downloading_tool_query_add_for_creation"]
-        ], {}, ["downloading_tool_query", "downloading_tool_query_add_for_creation"] ],
+        ], {} ],
     "downloading_tool_cmd_key": "dload",
     "downloading_tool_params": {},
 
     "md5_tool_query": [ "^^", "case", [[ "^^", "get", ["md5", null]],
         [ null, "" ], "" ],
         { "default_value": "shell_tool,can_compute_md5" } ],
-    "md5_tool_entry": [ "^", "byquery", [[ "^^", "get", "md5_tool_query" ]], {}, ["md5_tool_query"] ],
+    "md5_tool_entry": [ "^", "byquery", [[ "^^", "get", "md5_tool_query" ]], {} ],
 
     "uncompress_format": "",
     "uncompress_tool_query": [ "^^", "case", [[ "^^", "get", ["uncompress_format", null]],
         [ null, "" ], "" ],
         { "default_value":  [ "^^", "substitute", "shell_tool,can_uncompress_#{uncompress_format}#" ] } ],
-    "uncompress_tool_entry": [ "^", "byquery", [[ "^^", "get", "uncompress_tool_query" ]], {}, ["uncompress_tool_query"] ],
+    "uncompress_tool_entry": [ "^", "byquery", [[ "^^", "get", "uncompress_tool_query" ]], {} ],
 
     "patch_tool_entry": [ "^^", "case", [ [ "^^", "get", [ "abs_patch_path", null] ],
         null, [[ "noop", null ]] ],

@@ -6,14 +6,13 @@
 from copy import deepcopy
 import logging
 import os
-import ufun
+from ufun import generate_current_timestamp, to_num_or_not_to_num
 
-def walk(__entry__, skip_entry_names=None):
+def walk(__entry__, skip_entry_names=None, trailing_collections=None):
     """An internal recursive generator not to be called directly
     """
-    ak = __entry__.get_kernel()
-    assert ak != None, "__entry__'s kernel should be defined"
     collection_own_name = __entry__.get_name()
+    trailing_collections = trailing_collections or []
 
     seen_entry_names = set()
     try:
@@ -24,51 +23,48 @@ def walk(__entry__, skip_entry_names=None):
         contained_entries = __entry__.get('contained_entries', {})
         for entry_name in contained_entries:
             if skip_entry_names and (entry_name in skip_entry_names):
-                logging.debug(f"collection({collection_own_name}): skipping {entry_name}")
                 continue
 
-            entry_value = contained_entries[entry_name]
+            relative_entry_path = contained_entries[entry_name]
+            logging.debug(f"collection({collection_own_name}): mapping {entry_name} to relative_entry_path={relative_entry_path}")
 
-            if type(entry_value)==str:
-                relative_entry_path = entry_value
-                logging.debug(f"collection({collection_own_name}): mapping {entry_name} to relative_entry_path={relative_entry_path}")
+            contained_entry = __entry__.__class__.bypath(path=__entry__.get_path(relative_entry_path), name=entry_name, container=__entry__) # FIXME: should go via call_cache
 
-                contained_entry = ak.bypath(path=__entry__.get_path(relative_entry_path), name=entry_name, container=__entry__)
-
-                # Have to resort to duck typing to avoid triggering dependencies by testing if contained_entry.can('walk'):
-                if 'contained_entries' in contained_entry.own_data():
-                    logging.debug(f"collection({collection_own_name}): recursively walking collection {entry_name}...")
-                    yield from walk(contained_entry)
-                    contained_entry.touch('_BEFORE_CODE_LOADING')
-                else:
-                    logging.debug(f"collection({collection_own_name}): yielding non-collection {entry_name}")
-                    yield contained_entry
+            # Have to resort to checking the declared type to avoid triggering dependencies by testing if contained_entry.can('walk'):
+            if 'collection' in contained_entry.own_data().get("tags",[]):
+                logging.debug(f"collection({collection_own_name}): recursively walking collection {entry_name}...")
+                yield from walk(contained_entry)
+                contained_entry.touch('_BEFORE_CODE_LOADING')
             else:
-                logging.debug(f"collection({collection_own_name}): yielding non-filesystem entry {entry_name}")
-                yield entry_value
-
+                logging.debug(f"collection({collection_own_name}): yielding non-collection {entry_name}")
+                yield contained_entry
             seen_entry_names.add( entry_name )
+
+        for trailing_collection in trailing_collections:
+            yield from walk(trailing_collection)
 
     except RuntimeError as e:
         if str(e)=="dictionary changed size during iteration":
             print(f"Collection {__entry__.get_name()} modified under iteration, checking the new ones")
-            yield from walk(__entry__, seen_entry_names)
+            yield from walk(__entry__, skip_entry_names=seen_entry_names)
         else:
             raise e
 
-def attached_entry(entry_path=None, own_data=None, generated_name_prefix=None, __entry__=None):
+
+def attached_entry(entry_path=None, own_data=None, generated_name_prefix=None, container_to_store=None, __entry__=None):
     """Create a new entry with the given name and attach it to this collection
 
 Usage examples :
                 axs work_collection , attached_entry ultimate_answer ---='{"answer":42}' , save
     """
-    return __entry__.get_kernel().fresh_entry(container=__entry__, entry_path=entry_path, own_data=own_data, generated_name_prefix=generated_name_prefix)
+    container_to_store = container_to_store or __entry__
+    return __entry__.__class__.fresh_entry(entry_path=entry_path, own_data=own_data, container=container_to_store, generated_name_prefix=generated_name_prefix)
 
 
-def byname(entry_name, skip_entry_names=None, __entry__=None):
+def byname(entry_name, trailing_collections=None, __entry__=None):
     """Fetch an entry by name
     """
-    for candidate_entry in walk(__entry__, skip_entry_names):
+    for candidate_entry in walk(__entry__, trailing_collections=trailing_collections):
         if candidate_entry.get_name() == entry_name:
             return candidate_entry
     return None
@@ -89,8 +85,6 @@ class FilterPile:
                 comparison_lambda   = lambda x: x==val
 
             else:   # a pre-parsed binary op list or string that needs to be parsed (even if a tag)
-                from function_access import to_num_or_not_to_num
-
                 if type(condition)==list and len(condition)==3:
                     key_path, op, val = condition
                     pre_val = str(val)
@@ -202,7 +196,8 @@ class FilterPile:
         candidate_still_ok = True
         for key_path, op, val, query_comparison_lambda, split_key_path in self.filter_list:
             try:
-                if not query_comparison_lambda( candidate_entry.dig(split_key_path, safe=True, parent_recursion=parent_recursion) ):
+                dug = candidate_entry.dig(split_key_path, safe=True, parent_recursion=parent_recursion)
+                if not query_comparison_lambda( dug ):
                     candidate_still_ok = False
                     break
             except RuntimeError as e:
@@ -215,7 +210,7 @@ class FilterPile:
         return candidate_still_ok
 
 
-def all_byquery(query, pipeline=None, template=None, parent_recursion=False, skip_entry_names=None, __entry__=None):
+def all_byquery(query, pipeline=None, template=None, parent_recursion=False, trailing_collections=None, __entry__=None):
     """Returns a list of ALL entries matching the query.
         Empty list if nothing matched.
 
@@ -233,7 +228,7 @@ Usage examples :
 
     # trying to match the Query in turn against each existing and walkable entry, gathering them all:
     result_list = []
-    for candidate_entry in walk(__entry__, skip_entry_names):
+    for candidate_entry in walk(__entry__, trailing_collections=trailing_collections):
         if parsed_query.matches_entry( candidate_entry, parent_recursion ):
             if pipeline:
                 single_result = candidate_entry.execute(pipeline)
@@ -250,11 +245,11 @@ Usage examples :
         return result_list
 
 
-def find_matching_rules(parsed_query, __entry__):
+def find_matching_rules(parsed_query, __entry__, trailing_collections=None):
     """An internal method for finding matching rules given a query, not to be called directly
     """
     matching_rules = []
-    for advertising_entry in walk(__entry__):
+    for advertising_entry in walk(__entry__, trailing_collections=trailing_collections):
         for unprocessed_rule in advertising_entry.own_data().get('_producer_rules', []):        # block processing some params until they are really needed
             parsed_rule     = FilterPile( advertising_entry.nested_calls( unprocessed_rule[0] ), f"Entry: {advertising_entry.get_name()}" )
 
@@ -304,7 +299,7 @@ def find_matching_rules(parsed_query, __entry__):
     return sorted( matching_rules, key = lambda x: len(x[1][0]), reverse=True)
 
 
-def show_matching_rules(query, __entry__):
+def show_matching_rules(query, trailing_collections=None, __entry__=None):
     """Find and show all the rules (and their advertising entries) that match the given query.
 
 Usage examples :
@@ -312,7 +307,7 @@ Usage examples :
     """
     parsed_query        = FilterPile( query, "Query" )
 
-    matching_rules = find_matching_rules(parsed_query, __entry__)
+    matching_rules = find_matching_rules(parsed_query, __entry__, trailing_collections=trailing_collections)
 
     for advertising_entry, unprocessed_rule, parsed_rule in matching_rules:
         print( f"{advertising_entry.get_path()}:\n\t{str(unprocessed_rule)}\n")
@@ -320,7 +315,7 @@ Usage examples :
     return len(matching_rules)
 
 
-def byquery(query, produce_if_not_found=True, parent_recursion=False, skip_entry_names=None, __entry__=None):
+def byquery(query, produce_if_not_found=True, parent_recursion=False, trailing_collections=None, __entry__=None):
     """Fetch an entry by query.
         If the query returns nothing on the first pass, but matching _producer_rules are defined,
         apply the matching producer_rule and return its output.
@@ -335,13 +330,15 @@ Usage examples :
     """
     assert __entry__ != None, "__entry__ should be defined"
 
+    logging.debug(f"[{__entry__.get_name()}] byquery({query}, produce_if_not_found={produce_if_not_found}, parent_recursion={parent_recursion})")
+
     parsed_query        = FilterPile( query, "Query" )
     if not parsed_query.filter_list:
         logging.debug(f"[{__entry__.get_name()}] the query was empty => returning None")
         return None
 
     # trying to match the Query in turn against each existing and walkable entry, first match returns:
-    for candidate_entry in walk(__entry__, skip_entry_names):
+    for candidate_entry in walk(__entry__, trailing_collections=trailing_collections):
         if parsed_query.matches_entry( candidate_entry, parent_recursion ):
             if candidate_entry.get('__completed', True):    # either explicitly completed, or not carrying this attribute at all, probably a static Entry
                 return candidate_entry
@@ -353,7 +350,7 @@ Usage examples :
     if produce_if_not_found and len(parsed_query.posi_tag_set):
         logging.info(f"[{__entry__.get_name()}] byquery({query}) did not find anything, but there are tags: {parsed_query.posi_tag_set} , trying to find a producer...")
 
-        matching_rules = find_matching_rules(parsed_query, __entry__)
+        matching_rules = find_matching_rules(parsed_query, __entry__, trailing_collections=trailing_collections)
         logging.info(f"[{__entry__.get_name()}] A total of {len(matching_rules)} matched rules found.\n")
 
         match_idx = 0
@@ -379,7 +376,7 @@ Usage examples :
             logging.info(f"Pipeline: {producer_pipeline}, Cumulative params: {cumulative_params}")
 
             if type(producer_pipeline[0])==list:
-                new_entry = advertising_entry.execute(producer_pipeline, cumulative_params)
+                new_entry = advertising_entry.call("execute", pos_params=[ producer_pipeline ], own_data=cumulative_params)
             elif len(producer_pipeline)<3:
                 producer_call_params_iter   = iter(producer_pipeline)
                 producer_action_name        = next(producer_call_params_iter)
@@ -389,12 +386,23 @@ Usage examples :
                 raise SyntaxError(f"Rule parsing error: a single-call action with its own named parameters is ambiguous: {producer_pipeline}")
 
             if new_entry:
-                if not isinstance(new_entry, type(__entry__)):
-                    raise RuntimeError( f"Matched Rule #{match_idx}/{len(matching_rules)} produced something ( {repr(new_entry)} ), which is not an Entry - PLEASE INVESTIGATE" )
+                new_entry.data_tree()
+                if not hasattr(new_entry, 'own_data'):  # a cheap duck test for ParamSource'ness
+                    raise RuntimeError( f"Matched Rule #{match_idx}/{len(matching_rules)} produced something ( {repr(new_entry)} ), which is not a ParamSource - PLEASE INVESTIGATE" )
                 elif parsed_query.matches_entry( new_entry, parent_recursion ):
                     logging.info(f"Matched Rule #{match_idx}/{len(matching_rules)} produced an entry, which matches the original query, finalizing...\n")
-                    if not new_entry.get("__completed", True):
-                        new_entry.save( on_collision="force", completed=ufun.generate_current_timestamp() )   # we expect a collision
+                    entry_completed = new_entry.get("__completed", default_value='DEFAULT_COMPLETED', parent_recursion=True)
+                    entry_query = new_entry.get("__query", default_value='DEFAULT_QUERY', parent_recursion=True)
+
+                    print(f"entry_completed = {entry_completed} , entry_query = {entry_query}")
+                    print( new_entry.base_entry().own_data() )
+                    if not entry_completed:
+#                        new_entry.save( on_collision="force", completed=generate_current_timestamp() )   # we expect a collision
+                        new_entry.call("save", [], { "on_collision":"force", "completed": generate_current_timestamp() } )   # we expect a collision
+                    else:
+                        od = new_entry.own_data()
+                        logging.info(f"__COMPLETED (from new_entry)={entry_completed}, (from own_data)={od.get('__completed')} not saving")
+                        logging.info(f"{id(od)} OWN_DATA={od}, not saving")
                     return new_entry
                 else:
                     raise RuntimeError( f"Matched Rule #{match_idx}/{len(matching_rules)} produced an entry, but it failed to match the original query {query} - PLEASE INVESTIGATE" )
@@ -422,13 +430,13 @@ def add_entry_path(new_entry_path, new_entry_name=None, __entry__=None):
             raise(KeyError(f"There was already another entry named {new_entry_name} with path {existing_rel_path}, remove it first"))
     else:
         __entry__.plant(['contained_entries', new_entry_name], trimmed_new_entry_path)
-        return __entry__.save( on_collision="force", completed=ufun.generate_current_timestamp() )   # we expect a collision
+        return __entry__.save( on_collision="force", completed=generate_current_timestamp() )   # we expect a collision
 
 
 def remove_entry_name(old_entry_name, __entry__):
 
     contained_entries       = __entry__.pluck(['contained_entries', old_entry_name])
-    return __entry__.save( on_collision="force", completed=ufun.generate_current_timestamp() )   # we expect a collision
+    return __entry__.save( on_collision="force", completed=generate_current_timestamp() )   # we expect a collision
 
 
 if __name__ == '__main__':
