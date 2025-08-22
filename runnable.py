@@ -115,7 +115,7 @@ def feed(action_object, joint_arg_tuple, optional_arg_dict):
 
 class Runnable(ParamSource):
 
-    def __init__(self, action, pos_params=None, parent_entry=None, **kwargs):
+    def __init__(self, action, pos_params=None, parent_entry=None, own_data=None, **kwargs):
 
         if pos_params is None:
             self.pos_params = []                                 # allow pos_params to be missing
@@ -124,11 +124,13 @@ class Runnable(ParamSource):
         else:
             self.pos_params = pos_params
 
-        self.param_value_cache  = parent_entry.param_value_cache if parent_entry.__class__==Runnable else {}
+        self.param_value_cache  = parent_entry.param_value_cache if parent_entry.__class__==Runnable and not own_data else {}
 
         if parent_entry:
             kwargs['parent_objects'] = [ parent_entry ]
 
+        if own_data:
+            kwargs['own_data'] = own_data
         super().__init__(**kwargs)  # own_data will hopefully be defined there
 
         if type(action)==str:

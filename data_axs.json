@@ -2,7 +2,7 @@
     "_parent_entries": [
         [ "^^", "core_collection" ]
     ],
-    "__version__": "0.3.2",
+    "__version__": "0.3.3",
     "trailing_collections": [
         [ "^^", "work_collection" ],
         [ "^^", "core_collection" ]
