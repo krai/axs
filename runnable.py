@@ -124,7 +124,7 @@ class Runnable(ParamSource):
         else:
             self.pos_params = pos_params
 
-        self.param_value_cache  = {}
+        self.param_value_cache  = parent_entry.param_value_cache if parent_entry.__class__==Runnable else {}
 
         if parent_entry:
             kwargs['parent_objects'] = [ parent_entry ]
