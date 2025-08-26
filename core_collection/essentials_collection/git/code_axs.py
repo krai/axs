@@ -92,7 +92,7 @@ Clean-up:
             newborn_entry['file_name'] = rel_clone_dir
             if tags and 'collection' in tags:
                 newborn_entry['contained_entries'] = { rel_clone_dir: rel_clone_dir }
-            newborn_entry.save()
+            newborn_entry.call('save')
 
         return newborn_entry
 
