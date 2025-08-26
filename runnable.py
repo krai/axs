@@ -134,9 +134,13 @@ class Runnable(ParamSource):
         super().__init__(**kwargs)  # own_data will hopefully be defined there
 
         if type(action)==str:
-            self.action_name = action
+            if action.endswith('..'):
+                self.action_name, include_self = action[:-2], False
+            else:
+                self.action_name, include_self = action, True
+
             try:
-                _, self.action_object, _ = next( self.find_in_hierarchy_generator( "find_action_generator", self.action_name, parent_recursion='deep', include_self=True) )
+                _, self.action_object, _ = next( self.find_in_hierarchy_generator( "find_action_generator", self.action_name, parent_recursion='deep', include_self=include_self) )
             except StopIteration:
 #                logging.debug(f"[{self.get_name()}]  I don't have action '{self.action_name}', and neither do the parents - raising NameError")
                 raise NameError(self.action_name)
