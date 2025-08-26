@@ -276,7 +276,7 @@ def pickle_struct(input_structure):
         return [pickle_struct(e) for e in input_structure]              # all list elements are pickled
     elif type(input_structure)==dict:
         return { k : '[REDACTED]' if k=='__record_entry__' else pickle_struct(input_structure[k]) for k in input_structure }  # only values are pickled
-    elif hasattr(input_structure, 'pickle_one'):
+    elif hasattr(input_structure, 'pickle_one') and not isinstance(input_structure, type):
         return input_structure.pickle_one()                             # ground step
     else:
         return input_structure                                          # basement step
