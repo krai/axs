@@ -667,7 +667,7 @@ get_path}#'
 
 Usage examples :
                 axs attr json.__file__
-                axs byquery python_package,package_name=numpy , use , attr numpy.__version__
+                axs byquery python_package,package_name=numpy , use , , attr numpy.__version__
                 axs fresh_entry alpha , attr .entry_path
         """
         attr_object = None
@@ -696,8 +696,8 @@ Usage examples :
                 axs func len abcde                                                                              # built-in
                 axs func os.path.join alpha beta gamma                                                          # part of Python's core library
                 axs func numpy.arange 15                                                                        # if numpy is already installed in PYTHONPATH
-                axs byquery python_package,package_name=numpy , use , func numpy.arange 7                       # if we need our own specific numpy
-                axs byquery python_package,package_name=numpy , use , func numpy.exp2 --,=0,1,2,3,4,5,6,7,8     # same, passing a list
+                axs byquery python_package,package_name=numpy , use , , func numpy.arange 7                     # if we need our own specific numpy
+                axs byquery python_package,package_name=numpy , use , , func numpy.exp2 --,=0,1,2,3,4,5,6,7,8   # same, passing a list
         """
         if '.' in func_name:                                            # an imported "dotted" function (can be several dots deep)
             func_object = self.attr(func_name)
