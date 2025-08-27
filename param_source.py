@@ -501,7 +501,12 @@ Usage examples :
         from runnable import Runnable
 
         runnable = Runnable(action, name=self.get_name(), pos_params=pos_params, own_data=own_data, parent_entry=self)
-        return runnable()
+        result = runnable()
+
+        if result == runnable:
+            result = self
+
+        return result
 
 
     def nested_calls(self, unprocessed_struct):

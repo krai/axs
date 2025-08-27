@@ -88,6 +88,7 @@ Clean-up:
         if move_on_up:
             ufun.move_dir_contents_from_to( abs_result_path, newborn_entry_path )
             ufun.rmdir( abs_result_path )
+            newborn_entry.call('reload')
         else:
             newborn_entry['file_name'] = rel_clone_dir
             if tags and 'collection' in tags:
