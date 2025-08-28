@@ -106,7 +106,7 @@ Usage examples :
     def parents_loaded(self):
         if self.parent_objects==None:     # lazy-loading condition
             logging.debug(f"[{self.get_name()} {self} ] Lazy-loading the parents...")
-            self.parent_objects = self.nested_calls( self.get(self.PARAMNAME_parent_entries, []) )      # FIXME: would be great to go via self.call("get"...) , but causes an infinite loop
+            self.parent_objects = self.get(self.PARAMNAME_parent_entries, [], compute_expressions=True) # FIXME: would be great to go via self.call("get"...) , but causes an infinite loop
 
             for i, parent_object in enumerate(self.parent_objects):
                 if parent_object is None:
@@ -221,7 +221,7 @@ Usage examples :
                     yield (self, found_action, expected_type==FunctionType)
 
 
-    def __getitem__(self, param_name, parent_recursion=None, include_self=True):
+    def __getitem__(self, param_name, parent_recursion=None, include_self=True, compute_expressions=True):
         "Lazy parameter access: returns the parameter value from self or the closest parent"
 
         param_name = str(param_name)
@@ -235,9 +235,13 @@ Usage examples :
             param_entry, param_value, param_name_is_augmented = next( self.find_in_hierarchy_generator( "find_own_value_generator", param_name, parent_recursion=parent_recursion, include_self=include_self) )
             if param_name_is_augmented:
                 base_param_value = param_entry.__getitem__(param_name, parent_recursion=parent_recursion, include_self=False)
-                return ufun.augment(base_param_value, param_value)
+                param_value = ufun.augment(base_param_value, param_value)
+
+            if compute_expressions:
+                return self.nested_calls( param_value )
             else:
                 return param_value
+
         except StopIteration:
             logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}', and neither do the parents - raising KeyError")
             raise KeyError(param_name)
@@ -378,7 +382,7 @@ Usage examples :
         return substituted_structure
 
 
-    def get(self, param_name, default_value=None, parent_recursion=None):
+    def get(self, param_name, default_value=None, parent_recursion=None, compute_expressions=True):
         """A safe wrapper around __getitem__() - returns the default_value if missing
 
 Usage examples :
@@ -387,7 +391,7 @@ Usage examples :
                 axs byname derived_map , get fifth
         """
         try:
-            return self.__getitem__(param_name, parent_recursion=parent_recursion)
+            return self.__getitem__(param_name, parent_recursion=parent_recursion, compute_expressions=compute_expressions)
         except KeyError:
             logging.debug(f"[{self.get_name()}] caught KeyError: parameter '{param_name}' is missing, returning the default value '{default_value}'")
             return default_value

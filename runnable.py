@@ -169,7 +169,7 @@ class Runnable(ParamSource):
         return True
 
 
-    def __getitem__(self, param_name, parent_recursion=None, include_self=True):
+    def __getitem__(self, param_name, parent_recursion=None, include_self=True, compute_expressions=True):
 
         if param_name=='__entry__':
             return self.base_entry()
@@ -179,16 +179,10 @@ class Runnable(ParamSource):
             logging.debug(f"[{self.display_header()}]  FOUND IN CACHE [{param_name}] -> {param_value}")
 
         else:
-            param_value = super().__getitem__(param_name, parent_recursion=parent_recursion, include_self=include_self)
+            param_value = super().__getitem__(param_name, parent_recursion=parent_recursion, include_self=include_self, compute_expressions=compute_expressions)
 
-            logging.debug(f"[{self.display_header()}]  NOT YET IN CACHE [{param_name}] , the hierarchy (parent_recursion={parent_recursion}, include_self={include_self}) -> {param_value}")
+            logging.debug(f"[{self.display_header()}]  NOT YET IN CACHE, so CACHING [{param_name}] , the hierarchy (parent_recursion={parent_recursion}, include_self={include_self}, compute_expressions={compute_expressions}) -> {param_value}")
 
-            computed_expr_value = self.nested_calls( param_value )
-
-            logging.debug(f"[{self.display_header()}]  Running a sub-call to __getitem__({param_name}, {parent_recursion}, {include_self}) : {param_value} ---> {computed_expr_value}")
-            param_value = computed_expr_value
-
-            logging.debug(f"[{self.display_header()}]  CACHING [{param_name}] := {param_value}")
             self.param_value_cache[param_name] = param_value
 
         return param_value
