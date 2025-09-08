@@ -47,9 +47,11 @@ def rematch(input_string, regex, grab=1):
     """Find a substring matching a given regular expression and return it
 
 Usage examples :
-                axs byname kernel_python_tool , run ,0 func ufun.rematch '^Python\s((\d+)\.(\d+))\.\d+'     # parse the major.minor version from Python
+                axs byquery shell_tool,can_python , run ,0 func ufun.rematch "^Python\\s((\\d+)\\.(\\d+))\\.\\d+"   # parse the major.minor version from Python
 
-                axs func ufun.rematch A2B34C56 'A(\d)B(\d\d)C(\d)' --,=alpha,beta,gamma                     # parse multiple fields into a dictionary
+                axs func ufun.rematch A2B34C56 "A(\\d)B(\\d\\d)C(\\d)" --,=alpha,beta,gamma                         # parse multiple fields into a dictionary
+
+                axs byquery shell_tool,can_python , run ,0 func ufun.rematch "^Python\\s((\\d+)\\.(\\d+))\\.\\d+" --,=both,major,minor  # two previous examples combined
     """
     searchObj = re.search(regex, input_string, re.MULTILINE)
     if searchObj:
@@ -69,7 +71,7 @@ def fs_find(top_dir, regex, looking_for_dir=False, return_full=False, topdown=Tr
     """Find a file or directory by regex in top_dir, return the list of all matches. Note: it must be Python's regex, not Shell's!
 
 Usage examples :
-                axs byquery extracted,imagenet , get_path ,0 func ufun.fs_find 'ILSVRC2012_val_\d+.JPEG' , __getitem__ 0
+                axs byquery extracted,imagenet , get_path ,0 func ufun.fs_find "ILSVRC2012_val_\\d+.JPEG" , __getitem__ 0
     """
     containing_subdirs = []
     for dirpath,dirnames,filenames in os.walk(top_dir, topdown=topdown):
