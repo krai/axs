@@ -1,17 +1,27 @@
 #!/usr/bin/env python3
 
-import sys
 import calendar
 import json
+import os
+import sys
 
+script_name             = os.path.basename( sys.argv[0] )
 input_json_filepath     = sys.argv[1]
 output_json_filepath    = sys.argv[2]
+
+print(f"[{script_name}] Running under {sys.executable} ...", file=sys.stderr)
 
 with open(input_json_filepath, 'r') as openfile:
     input_dict = json.load(openfile)
 
-cal = calendar.TextCalendar(input_dict["first_weekday"])
-output_month = cal.formatmonth(input_dict["year"], input_dict["month"])
+first_weekday   = input_dict["first_weekday"]
+year            = input_dict["year"]
+month           = input_dict["month"]
+
+print(f"[{script_name}] Generating calendar for year={year}, month={month}, first_weekday={first_weekday}, outputting to {output_json_filepath or 'STDOUT'}\n", file=sys.stderr)
+
+cal = calendar.TextCalendar(first_weekday)
+output_month = cal.formatmonth(year, month)
 
 if output_json_filepath:
     output_dict = {
