@@ -9,7 +9,7 @@ Usage examples:
 
 import os
 
-def ext_use_python_deps(python_deps=None, inherit_env_keys=None, extra_env=None):
+def ext_use_python_deps(python_deps=None, inherit_env_keys=None, extra_env=None, python_tool_entry=None):
     """Build PYTHONPATH from a list of resolved Python dependencies.
     """
     new_env    = {}
@@ -21,6 +21,7 @@ def ext_use_python_deps(python_deps=None, inherit_env_keys=None, extra_env=None)
     if extra_env:   # FIXME: may need extra provision for interplay between inherited and extra environments
         new_env.update( extra_env )
 
+    path_parts  = []
     if python_deps:     # Note the OS-independent way of joining individual paths
         all_abs_packages_dirs = []
         for dep in python_deps:
@@ -40,9 +41,11 @@ def ext_use_python_deps(python_deps=None, inherit_env_keys=None, extra_env=None)
             if dep and type(dep)!=str and dep.get('abs_bin_dir'):
                 path_parts.append( dep.get('abs_bin_dir') )
 
-        if new_env.get('PATH'):
-            path_parts.append( new_env.get('PATH') )
+    path_parts.append( os.path.dirname( os.path.realpath(python_tool_entry.get("tool_path")) ) )
 
-        new_env['PATH'] = os.pathsep.join( path_parts )
+    if new_env.get('PATH'):
+        path_parts.append( new_env.get('PATH') )
+
+    new_env['PATH'] = os.pathsep.join( path_parts )
 
     return new_env
