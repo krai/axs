@@ -1,0 +1,55 @@
+{
+    "_parent_entries": [
+        [ "^", "byname", "python_in_shell" ],
+        [ "^", "byname", "tool_detector" ]
+    ],
+    "_producer_rules": [
+
+        [ [ "shell_tool", "can_download_url_from_google_drive" ] , [["detect"]], {
+                "tool_name": "gdown",
+                "shell_cmd_templates": {
+                    "help": "\"#{tool_path}#\" --help",
+                    "version": "\"#{tool_path}#\" --version",
+                    "dload": "\"#{tool_path}#\" -O \"#{target_path}#\" \"#{url}#\""
+                },
+                "cmd_key": "dload"
+        } ],
+        [ [ "shell_tool", "can_download_url_from_google_drive" ] , [["detect"]], {
+                "tool_name": "gdown",
+                "newborn_name_template": "#{tool_name}#_py#{python_major_dot_minor}#_tool",
+                "python_deps": [
+                    [ "AS^IS", "^^", "python_sync_pip_package", [[ "python_package", "package_name=gdown" ]] ]
+                ],
+                "shell_cmd_templates": {
+                    "help": "\"#{tool_path}#\" --help",
+                    "version": "\"#{tool_path}#\" --version",
+                    "dload": "\"#{tool_path}#\" -O \"#{target_path}#\" \"#{url}#\""
+                },
+                "cmd_key": "dload"
+        } ],
+
+        [ [ "shell_tool", "can_download_url_from_zenodo" ] , [["detect"]], {
+                "tool_name": "zenodo_get",
+                "shell_cmd_templates": {
+                    "help": "\"#{tool_path}#\" --help",
+                    "version": "\"#{tool_path}#\" --version",
+                    "dload": "\"#{tool_path}#\" --output-dir=\"#{record_entry_path}#\" --doi=\"#{url}#\""
+                },
+                "cmd_key": "dload"
+        } ],
+        [ [ "shell_tool", "can_download_url_from_zenodo" ] , [["detect"]], {
+                "tool_name": "zenodo_get",
+                "newborn_name_template": "#{tool_name}#_py#{python_major_dot_minor}#_tool",
+                "python_deps": [
+                    [ "AS^IS", "^^", "python_sync_pip_package", [[ "python_package", "package_name=zenodo-get" ]] ]
+                ],
+                "shell_cmd_templates": {
+                    "help": "\"#{tool_path}#\" --help",
+                    "version": "\"#{tool_path}#\" --version",
+                    "dload": "\"#{tool_path}#\" --output-dir=\"#{record_entry_path}#\" --doi=\"#{url}#\""
+                },
+                "cmd_key": "dload"
+        } ]
+    ],
+    "newborn_parent_names": [ "python_in_shell" ]
+}
