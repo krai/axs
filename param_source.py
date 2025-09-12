@@ -460,7 +460,7 @@ Usage examples :
         """
 
         avp_length  = len(answer_value_pairs)
-        final_value = default_value
+        final_value = [] if (default_value is None and execute_value) else default_value
         for i in range(0, avp_length, 2):
             answer  = answer_value_pairs[i]
             value   = answer_value_pairs[i+1]
