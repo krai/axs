@@ -150,6 +150,15 @@
                     [ "func", "str" ],
                     [ "rsplit", [".", 1] ],
                     [ "__getitem__", 0 ]
+                ]] ],
+                "symlink_path": [ "AS^IS", "AS^IS", "AS^IS", "^^", "get_path", "python3" ],
+                "tool_symlink": [ "AS^IS", "AS^IS", "AS^IS", "^^", "execute", [[
+                    [ "case", [
+                            [ "^^", "func", [ "os.path.exists", [ "^^", "get", "symlink_path" ] ] ],
+                            false, [[ "func", [ "os.symlink", [ "^^", "get", "tool_path" ], [ "^^", "get", "symlink_path" ] ] ]]
+                        ], { "execute_value": true } ],
+                    [ ],
+                    [ "get", "symlink_path" ]
                 ]] ]
             }, ["exec_suffixes"]
         ],

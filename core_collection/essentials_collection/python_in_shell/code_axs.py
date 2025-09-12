@@ -41,7 +41,8 @@ def ext_use_python_deps(python_deps=None, inherit_env_keys=None, extra_env=None,
             if dep and type(dep)!=str and dep.get('abs_bin_dir'):
                 path_parts.append( dep.get('abs_bin_dir') )
 
-    path_parts.append( os.path.dirname( os.path.realpath(python_tool_entry.get("tool_path")) ) )
+    tool_symlink_or_path = python_tool_entry.get('tool_symlink') or python_tool_entry.get('tool_path')
+    path_parts.append( os.path.dirname(tool_symlink_or_path) )
 
     if new_env.get('PATH'):
         path_parts.append( new_env.get('PATH') )
