@@ -25,6 +25,7 @@
         "python_tool_detector": "python_tool_detector",
 
         "make_collection": "make_collection",
-        "rclone_recipe": "rclone_recipe"
+        "rclone_recipe": "rclone_recipe",
+        "mlc_r2_downloader_recipe": "mlc_r2_downloader_recipe"
     }
 }

@@ -43,6 +43,18 @@
                 },
                 "cmd_key": "dload"
         } ],
+        [ [ "shell_tool", "can_download_url", "tool_name?=mlc_r2_downloader" ] , [["detect"]], {
+                "tool_path": [ "^", "execute", [[
+                    [ "byquery", [[ "downloaded", "mlc_r2_downloader" ]] ],
+                    [ "get_path" ]
+                ]] ],
+                "shell_cmd_templates": {
+                    "help": "\"#{tool_path}#\" -h",
+                    "dload": "\"#{tool_path}#\" -d \"#{target_path}#\" #{url}#"
+                },
+                "cmd_key": "dload"
+        } ],
+
 
         [ [ "shell_tool", "can_extract_tar" ], [["detect"]], {
                 "tool_name": "tar",

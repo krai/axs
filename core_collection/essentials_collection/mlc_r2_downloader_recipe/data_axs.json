@@ -1,0 +1,13 @@
+{
+    "_parent_entries": [ [ "^", "byname", "shell" ] ],
+    "_producer_rules": [
+        [ [ "downloaded", "mlc_r2_downloader" ], [ ["get_kernel"], ["byname","downloader"], ["download"] ], {
+	    "newborn_entry_name": "downloaded_mlc_r2_downloader",
+	    "url": "https://raw.githubusercontent.com/mlcommons/r2-downloader/refs/heads/main/mlc-r2-downloader.sh",
+	    "downloading_tool_query": "shell_tool,can_download_url,tool_name=wget",
+	    "downloading_tool_params": {
+		"shell_cmd_suffix_with_subs": "; chmod 755 \"#{target_path}#\""
+	    }
+        } ]
+    ]
+}
