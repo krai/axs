@@ -37,6 +37,8 @@
 
         "llama3_1_accuracy_script": [ "language", "llama3.1-405b", "evaluate-accuracy.py" ],
 
+	"llama3_1_8b_cnndm_accuracy_script": [ "language", "llama3.1-8b", "evaluation.py" ],
+
         "diffusion_coco2014_download_dir": [  "text_to_image", "tools" ],
         "diffusion_coco2014_download_script": [  "text_to_image", "tools", "download-coco-2014.sh" ],
         "diffusion_reference_script": [  "text_to_image", "main.py" ],
