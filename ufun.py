@@ -89,7 +89,7 @@ Usage examples :
         return False
 
 
-def fs_find(top_dir, regex, looking_for_dir=False, return_full=False, topdown=True):
+def fs_find(top_dir, regex, looking_for_dir=False, return_full=False, topdown=True, allow_nested_matches=False):
     """Find a file or directory by regex in top_dir, return the list of all matches. Note: it must be Python's regex, not Shell's!
 
 Usage examples :
@@ -97,11 +97,12 @@ Usage examples :
     """
     containing_subdirs = []
     for dirpath,dirnames,filenames in os.walk(top_dir, topdown=topdown):
-        candidate_list = dirnames if looking_for_dir else filenames
-        for candidate_name in candidate_list:
-            if re.match(regex, candidate_name):
-                containing_subdirs.append( os.path.join(dirpath, candidate_name) if return_full else dirpath )
-                break
+        if allow_nested_matches or not len(re.findall(regex, dirpath)):
+            candidate_list = dirnames if looking_for_dir else filenames
+            for candidate_name in candidate_list:
+                if re.match(regex, candidate_name):
+                    containing_subdirs.append( os.path.join(dirpath, candidate_name) if return_full else dirpath )
+                    break
 
     return containing_subdirs
 
