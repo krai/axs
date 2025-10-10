@@ -14,6 +14,7 @@
         "sysinfo": "sysinfo",
         "rule_matching_demonstrator": "rule_matching_demonstrator",
         "rule_matching_producer": "rule_matching_producer",
-        "rule_matching_advertiser": "rule_matching_advertiser"
+        "rule_matching_advertiser": "rule_matching_advertiser",
+	"graph" : "graph"
     }
 }
