@@ -6,15 +6,15 @@
 import sys
 
 
-def use(abs_packages_dir):
+def use(abs_packages_dirs):
     """Make an entry that contains an installed pip package the preferred location to import the package from.
 
 Usage examples :
                 axs byname numpy_1.16.4_pip_package , use , , python_api 'import numpy\nprint(numpy.__version__)'
                 axs np: byname numpy_1.16.4_pip_package , use , , get np , ask_package_location
     """
-    sys.path.insert(0, abs_packages_dir)
-    return abs_packages_dir
+    sys.path[0:0] = abs_packages_dirs
+    return abs_packages_dirs
 
 
 def get_metadata_path(abs_packages_dir, package_name, metadata_filename='METADATA'):
@@ -118,3 +118,25 @@ Usage examples :
     """
     module = __import__(package_name)
     return getattr(module, '__file__')
+
+
+def get_abs_packages_dirs(rel_packages_dirs, merge=False, __entry__=None):
+
+    abs_packages_dirs = []
+
+    for rel_packages_dir in rel_packages_dirs:
+        abs_packages_dir = __entry__.get_path( rel_packages_dir )
+        if abs_packages_dir:
+            abs_packages_dirs.append( abs_packages_dir )
+
+    if merge and len(abs_packages_dirs)==2:
+        import os.path
+        import shutil
+
+        src_dir, dst_dir = sorted( abs_packages_dirs, key=len, reverse=True )
+        for src_item in os.listdir(src_dir):
+            src_full_path = os.path.join( src_dir, src_item )
+            shutil.move( src_full_path, dst_dir )
+        abs_packages_dirs = [ dst_dir ]
+
+    return abs_packages_dirs
