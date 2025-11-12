@@ -1,7 +1,7 @@
 {
     "_parent_entries": [ [ "^", "core_collection" ] ],
 
-    "tags": [ "collection" ],
+    "tags": [ "db_collection" ],
 
     "uri": "mongodb://localhost:27017/",
     "db_name": "axs_collections",

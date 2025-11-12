@@ -36,7 +36,7 @@ def walk(__entry__, skip_entry_names=None):
                 contained_entry = ak.bypath(path=__entry__.get_path(relative_entry_path), name=entry_name, container=__entry__)
 
                 # Have to resort to duck typing to avoid triggering dependencies by testing if contained_entry.can('walk'):
-                if 'contained_entries' in contained_entry.own_data():
+                if 'collection' in contained_entry.own_data().get("tags",[]):
                     logging.debug(f"collection({collection_own_name}): recursively walking collection {entry_name}...")
                     yield from walk(contained_entry)
                     contained_entry.touch('_BEFORE_CODE_LOADING')

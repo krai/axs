@@ -20,13 +20,17 @@
 
         Working with a new database-based collection:
 
-                axs work_collection , attached_entry ---own_data='{"_parent_entries":[["^","byname","mongodb_collection"]],"tags":["collection"]}' , save foo_collection    # make a new database-based collection
+                axs work_collection , attached_entry ---own_data='{"_parent_entries":[["^","byname","mongodb_collection"]],"tags":["db_collection"]}' , save foo_collection # make a new database-based collection from scratch
 
                 axs byname foo_collection , attached_entry ---own_data='{"_parent_entries":[["^","byname","mongodb_entry"]],"name":"John","age":98}' , save                 # store an entry into it
 
                 axs byname foo_collection , all_byquery ''                                                                                                                  # list all entries in it (includes the collection)
 
                 axs byname foo_collection , all_byquery 'age<100'                                                                                                           # list meaningful entries (excludes the collection)
+
+                axs byname people_collection , save cities_collection                                                                                                       # make a new database-based collection by cloning an existing one (FIXME: the new one will stay in db_storage_collection , not in work_collection where it ideally should
+
+                axs byname people_collection , plant uri mongodb://krai:${SECRET_PWD}@92.25.192.164:2717/ collection_name cities_collection , save chai_cities_collection   # make a REMOTE database-based collection (by cloning) and store it in db_storage_collection
 
 """
 
