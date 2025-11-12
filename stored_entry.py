@@ -340,7 +340,8 @@ Usage examples :
         try:
             return ufun.load_json( parameters_path )
         except OSError as e:
-            return e
+            logging.warning(f"[{self.get_name()}] {e}")
+            return None
 
 
     def own_functions(self):
