@@ -21,7 +21,8 @@ class Entry(Runnable):
         "Accept setting entry_path in addition to parent's parameters"
 
         self.generated_name_prefix  = generated_name_prefix or self.PREFIX_gen_entryname
-        self.container_object       = container
+
+        self.set_container( container )
 
         if entry_path:
             self.set_path(entry_path)
@@ -58,8 +59,8 @@ Usage examples :
         if os.path.isabs( new_path ):           # absolute path
             self.entry_path = new_path
 
-        elif self.container_object:             # relative to container
-            self.entry_path = os.path.join( self.container_object.get_path( new_path ) )
+        elif self.get_container():              # relative to container
+            self.entry_path = os.path.join( self.get_container().get_path( new_path ) )
 
         else:                                   # relative to cwd
             self.entry_path = os.path.realpath( new_path )
@@ -173,7 +174,22 @@ Usage examples :
 
 
     def get_container(self):
+        """Getter of the containing collection object
+
+Usage examples :
+                axs byname pip , get_container
+        """
         return self.container_object
+
+
+    def set_container(self, new_container):
+        """Low level setter of the containing collection object
+
+Usage examples :
+                axs byname people_collection , set_container --:=^:work_collection , save cities_collection
+        """
+        self.container_object = new_container
+        return self
 
 
     def bypath(self, path, name=None):
@@ -192,7 +208,7 @@ Usage examples :
                 axs byname mlperf_inference_git_recipe , attach --:=^:work_collection , save another_git_recipe
         """
         if container:
-            self.container_object = container
+            self.set_container( container )
         else:
             container = self.get_container()
 
@@ -208,7 +224,7 @@ Usage examples :
         container = self.get_container()
         if container:
             container.call("remove_entry_name", self.get_name() )
-            self.container_object = None
+            self.set_container( None )
         else:
             logging.warning(f"[{self.get_name()}] was not attached to a container")
 
@@ -287,8 +303,8 @@ Usage examples :
                 return [ "^", "bypath", self.get_path()]
         else:
             fresh_entry_opt_args = { "own_data": self.pickle_struct(self.own_data()) }
-            if self.container_object:
-                fresh_entry_opt_args["container"] = self.container_object.pickle_one()
+            if self.get_container():
+                fresh_entry_opt_args["container"] = self.get_container().pickle_one()
             return [ "^", "fresh_entry", [], fresh_entry_opt_args ]
 
 
