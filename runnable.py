@@ -122,7 +122,7 @@ class Runnable(ParamSource):
         elif type(pos_params)!=list:
             self.pos_params = [ pos_params ]                     # simplified syntax for single positional parameter actions
         else:
-            self.pos_params = pos_params
+            self.pos_params = self.nested_calls(pos_params)      # perform all nested calls if there are any
 
         self.param_value_cache  = parent_entry.param_value_cache if parent_entry.__class__==Runnable and not own_data else {}
 
