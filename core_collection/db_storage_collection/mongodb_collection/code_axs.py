@@ -1,5 +1,10 @@
 """
     Usage examples :
+
+                axs byname mongodb_collection , help
+
+    Working with an existing database-based collection:
+
                 axs byname mongodb_collection , all_byquery 'age<99' --template='Name: #{name}# , Age: #{age}#'
 
                 axs byname mongodb_collection , byquery name=Leo , own_data
@@ -11,6 +16,21 @@
                 axs byname mongodb_collection , byquery name=Leo , plant age 49 , save
 
                 axs byname mongodb_collection , byquery name=Leo , own_data
+
+    Working with a new database-based collection:
+
+                axs work_collection , attached_entry ---own_data='{"_parent_entries":[["^","byname","mongodb_collection"]],"tags":["db_collection"]}' , save foo_collection # make a new database-based collection from scratch
+
+                axs byname foo_collection , attached_entry ---own_data='{"_parent_entries":[["^","byname","mongodb_entry"]],"name":"John","age":98}' , save                 # store an entry into it
+
+                axs byname foo_collection , all_byquery ''                                                                                                                  # list all entries in it (includes the collection)
+
+                axs byname foo_collection , all_byquery 'age<100'                                                                                                           # list meaningful entries (excludes the collection)
+
+                axs byname people_collection , set_container --:=^:work_collection , save cities_collection                                                                 # make a new database-based collection by cloning an existing one (ideally, the cloned result should live in work_collection)
+
+                axs byname people_collection , plant uri mongodb://krai:${SECRET_PWD}@92.25.192.164:2717/ collection_name cities_collection , save chai_cities_collection   # make a REMOTE database-based collection (by cloning) and store it in db_storage_collection
+
 """
 
 import ufun
