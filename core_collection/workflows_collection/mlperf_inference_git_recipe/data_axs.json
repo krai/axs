@@ -48,6 +48,6 @@
 
         "submission_accuracy_truncator_script": [ "tools", "submission", "truncate_accuracy_log.py" ],
         "submission_checker_script": [ "tools", "submission", "submission_checker.py" ],
-        "submission_compliance_tests_dir": [ "compliance", "nvidia" ]
+        "submission_compliance_tests_dir": [ "compliance" ]
     }
 }
