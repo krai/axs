@@ -115,14 +115,7 @@ def feed(action_object, joint_arg_tuple, optional_arg_dict):
 
 class Runnable(ParamSource):
 
-    def __init__(self, action, pos_params=None, parent_entry=None, own_data=None, **kwargs):
-
-        if pos_params is None:
-            self.pos_params = []                                 # allow pos_params to be missing
-        elif type(pos_params)!=list:
-            self.pos_params = [ pos_params ]                     # simplified syntax for single positional parameter actions
-        else:
-            self.pos_params = self.nested_calls(pos_params)      # perform all nested calls if there are any
+    def __init__(self, action, pos_params=None, own_data=None, parent_entry=None, **kwargs):
 
         self.param_value_cache  = parent_entry.param_value_cache if parent_entry.__class__==Runnable and not own_data else {}
 
@@ -131,7 +124,15 @@ class Runnable(ParamSource):
 
         if own_data:
             kwargs['own_data'] = own_data
+
         super().__init__(**kwargs)  # own_data will hopefully be defined there
+
+        if pos_params is None:
+            self.pos_params = []                                 # allow pos_params to be missing
+        elif type(pos_params)!=list:
+            self.pos_params = [ pos_params ]                     # simplified syntax for single positional parameter actions
+        else:
+            self.pos_params = self.nested_calls(pos_params)      # perform all nested calls if there are any
 
         if type(action)==str:
             if action.endswith('..'):
