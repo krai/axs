@@ -36,7 +36,7 @@ assert "axs mi: bypath missing , plant alpha 10 beta 20 , plant formula --:='AS^
 assert "axs mi: bypath missing , plant alpha 10 beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula --alpha=30 , , get mi , entry_data" "{'alpha': 10, 'beta': 20, 'formula': ['^^', 'substitute', '#{alpha}#-#{beta}#']}"
 assert_end escaping_nested_calls_immediate_execution
 
-axs fresh_entry ---own_data='{ "n": 5, "_subs1": [ "AS^IS", "AS^IS", "^^", "substitute", "N: #{n}#" ], "_subs2": [ "AS^IS", "AS^IS", "^^", "execute", [[ [ "substitute", "N: #{n}#" ] ]] ], "_subs3": [ "AS^IS", "AS^IS", "^^", "execute", [[ [ "get_kernel" ], [ "substitute", "N: #{n}#" ] ]] ] }' , save varisubs2
+axs fresh_entry ---own_data='{ "AS^IS": { "n": 5, "_subs1": [ "^^", "substitute", "N: #{n}#" ], "_subs2": [ "^^", "execute", [[ [ "substitute", "N: #{n}#" ] ]] ], "_subs3": [ "^^", "execute", [[ [ "get_kernel" ], [ "substitute", "N: #{n}#" ] ]] ] } }' , save varisubs2
 assert 'axs bypath varisubs2 , get _subs1' 'N: 5'
 assert 'axs bypath varisubs2 , get _subs2' 'N: 5'
 assert 'axs bypath varisubs2 , get _subs3' 'N: None'
