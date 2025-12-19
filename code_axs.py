@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+""" This is so-called "Kernel Entry" from which all the chained commands begin by default.
+    It defines the main resolution order of collections for all byname/byquery searches.
+"""
+
 import sys
 
 def version(__version__):

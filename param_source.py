@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from copy import deepcopy
+import inspect
 import logging
 import pprint
 import re
@@ -8,6 +9,17 @@ from types import MethodType, FunctionType
 import sys
 
 import ufun
+
+
+def list_function_names(module_like_object):
+    """Return the list of functions of a given Module/Class/Namespace
+    """
+    if module_like_object:
+        function_names = [name for name, function_object in inspect.getmembers(module_like_object, inspect.isfunction)]
+        logging.debug(f"Module/Class/Namespace {module_like_object.__name__ if hasattr(module_like_object, '__name__') else ''} contains the following functions: {function_names}")
+        return function_names
+    else:
+        return []
 
 
 class ParamSource:
@@ -55,13 +67,10 @@ class ParamSource:
         """A lightweight method to list all own methods of an entry
 
 Usage examples :
-                axs byname be_like , list_own_functions
                 axs byname shell , list_own_functions
+                axs byname python_tool_detector , list_own_functions
         """
-        from runnable import list_function_names
-
-        own_functions = self.base_entry().own_functions()
-        return list_function_names(own_functions) if own_functions else []
+        return list_function_names( self.base_entry().own_functions() )
 
 
     def set_own_data(self, own_data=None):
@@ -245,6 +254,25 @@ Usage examples :
         except StopIteration:
             logging.debug(f"[{self.get_name()}]  I don't have parameter '{param_name}', and neither do the parents - raising KeyError")
             raise KeyError(param_name)
+
+
+    def find_action(self, action):
+
+        if type(action)==str:
+            if action.endswith('..'):
+                action_name, include_self = action[:-2], False
+            else:
+                action_name, include_self = action, True
+
+            try:
+                action_entry, action_object, is_own_function = next( self.find_in_hierarchy_generator( "find_action_generator", action_name, parent_recursion='deep', include_self=include_self) )
+            except StopIteration:
+                raise NameError(f"A function/method {action_name} has not been found in {self.get_name()} or its parents")
+
+            return action_object, action_name, is_own_function, action_entry
+
+        else:
+            return action, "Unnamed_Function", None, None
 
 
     def noop(self, arg):
@@ -720,6 +748,80 @@ Usage examples :
         else:
             raise NameError( f"could not find the function '{func_name}'" )
 
+
+    def get_parents_names(self):
+        "Returns a string representation of the name list"
+
+        parent_objects = self.parents_loaded()
+        return repr([parent_object.get_name() for parent_object in parent_objects])
+
+
+    def help(self, *args):
+        """Reach for a Runnable's function or method and examine its DocString and calling signature.
+
+Usage examples :
+                axs help
+                axs help help
+                axs help substitute
+                axs help func
+                axs byname shell , help
+                axs byname shell , help run
+"""
+        entry_object = self.base_entry()
+
+        from runnable import expected_call_structure
+
+        help_buffer = []
+        common_format = "{:15s}: {}"
+        entry_class = entry_object.__class__
+
+        #print(f"Help called on {entry_object.get_name()} for {args} and {kwargs}\n")
+        if args:
+            help_buffer.append( common_format.format( 'Called from', entry_class.__name__ +" "+ entry_object.get_name() ))
+            try:
+                action_object, action_name, is_own_function, action_entry = self.find_action(args[0])
+
+                required_arg_names, optional_arg_names, action_defaults, varargs, varkw = expected_call_structure( action_object )
+
+                if varargs:
+                    required_arg_names.append( '*'+varargs )
+
+                signature = ', '.join(required_arg_names + [optional_arg_names[i]+'='+str(action_defaults[i]) for i in range(len(optional_arg_names))] )
+
+                if varkw:
+                    help_buffer.append( """NB: this action cannot be called via our calling mechanism,
+                              because it makes use of variable keywords (**)""" )
+
+                if is_own_function:
+                    help_buffer.append( common_format.format('Function', action_name ))
+                    help_buffer.append( common_format.format( 'Inherited from', action_entry.get_name() ))
+                else:
+                    help_buffer.append( common_format.format( 'Method', action_name ))
+                    defining_class = action_object.__func__.__qualname__.split('.')[0]
+                    help_buffer.append( common_format.format( 'Declared in', defining_class +' class inside '+ action_object.__module__+'.py file' ))
+
+                help_buffer.append( common_format.format( 'Signature', action_name+'('+signature+')' ))
+                help_buffer.append( common_format.format( 'DocString', action_object.__doc__ ))
+            except Exception as e:
+                logging.error( str(e) )
+
+        else:   # generic help for an entry, without a specific function:
+            help_buffer.append( common_format.format( 'Specific '+entry_class.__name__, entry_object.get_name() ))
+
+            own_functions   = entry_object.own_functions()  # Runnables don't have their own_functions (side-importable from code_axs),
+                                                            # so we switch to the undeflying entry_object that potentially does
+            if own_functions:
+                doc_string      = own_functions.__doc__     # The module may contain module-wide DocString (None otherwise)
+                help_buffer.append( common_format.format('Description', doc_string and doc_string.rstrip()) )
+
+            help_buffer.append( common_format.format('Own functions', entry_object.list_own_functions()))
+            help_buffer.append('')
+            help_buffer.append( common_format.format('Parent Entries', entry_object.get_parents_names()) )
+            help_buffer.append('')
+            help_buffer.append( common_format.format( entry_class.__name__+' class', entry_class.__doc__ ))
+            help_buffer.append( common_format.format( 'Class methods', list_function_names(entry_class) ))
+
+        return '\n'.join(help_buffer)
 
 
 # TESTING:

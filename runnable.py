@@ -8,14 +8,6 @@ from param_source import ParamSource
 
 logger = logging.getLogger(__name__)
 
-def list_function_names(module_like_object):
-    """Return the list of functions of a given Module/Class/Namespace
-    """
-    function_names = [name for name, function_object in inspect.getmembers(module_like_object, inspect.isfunction)]
-    logging.debug(f"Module/Class/Namespace {module_like_object.__name__ if hasattr(module_like_object, '__name__') else ''} contains the following functions: {function_names}")
-    return function_names
-
-
 def expected_call_structure(action_object):
     """Get the expected parameters of a function and their default values.
     """
@@ -134,20 +126,7 @@ class Runnable(ParamSource):
         else:
             self.pos_params = self.nested_calls(pos_params)      # perform all nested calls if there are any
 
-        if type(action)==str:
-            if action.endswith('..'):
-                self.action_name, include_self = action[:-2], False
-            else:
-                self.action_name, include_self = action, True
-
-            try:
-                _, self.action_object, _ = next( self.find_in_hierarchy_generator( "find_action_generator", self.action_name, parent_recursion='deep', include_self=include_self) )
-            except StopIteration:
-#                logging.debug(f"[{self.get_name()}]  I don't have action '{self.action_name}', and neither do the parents - raising NameError")
-                raise NameError(self.action_name)
-
-        else:
-            self.action_object, self.action_name = action, "Unnamed_Function"
+        self.action_object, self.action_name, is_own_function, action_entry = self.find_action(action)
 
         logging.debug(f"[***] Initializing Runnable(action={self.action_name}, pos_params={self.pos_params} and parent_objects={self.parent_objects}")
 
