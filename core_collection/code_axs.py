@@ -225,7 +225,9 @@ Usage examples :
                 axs all_byquery onnx_model --template="#{model_name}# : #{file_name}#"
                 axs all_byquery python_package --template="python_#{python_version}# package #{package_name}#"
                 axs all_byquery tags. --template="tags=#{tags}#"
+                axs all_byquery git_repo ---='[["pull"]]'
                 axs all_byquery deleteme+ ---='[["remove"]]'
+                axs all_byquery __completed.,__completed- ---='[["remove"]]'
     """
     assert __entry__ != None, "__entry__ should be defined"
 
@@ -321,17 +323,24 @@ Usage examples :
 
 
 def byquery(query, produce_if_not_found=True, parent_recursion=False, skip_entry_names=None, __entry__=None):
-    """Fetch an entry by query.
+    """Fetch an entry by query over its tags and attributes.
         If the query returns nothing on the first pass, but matching _producer_rules are defined,
         apply the matching producer_rule and return its output.
 
 Usage examples :
-                axs byquery python_package,package_name=numpy , get_path
-                axs byquery python_package,package_name=numpy,package_version=1.16.4 , get_metadata --header_name=Version
-                axs byquery shell_tool,tool_name=wget
-            # the query given as an explicit list of query_conditions
-                axs byquery axs byquery --:=count:romance:^french
-                axs byquery "--,=count,romance,language!=French"
+            axs byquery python_package,package_name=numpy , get_path
+            axs byquery python_package,package_name=numpy,package_version=1.16.4 , get_metadata --header_name=Version
+            axs byquery shell_tool,tool_name=wget
+
+        # parent_recursion is False by default, but can be switched on manually (beware of the avalanche though!).
+            axs byquery person.,be!=Be --parent_recursion+ , get_path
+
+        # When looking for incomplete (potentially broken) entries, this has to be specifically mentioned:
+            axs byquery shell_tool,can_extract_zip,__completed- , remove
+
+        # The query can also be given as an explicit list of query_conditions
+            axs byquery --:=count:romance:^french
+            axs byquery "--,=count,romance,language!=French"
     """
     assert __entry__ != None, "__entry__ should be defined"
 
@@ -343,8 +352,9 @@ Usage examples :
     # trying to match the Query in turn against each existing and walkable entry, first match returns:
     for candidate_entry in walk(__entry__, skip_entry_names):
         if parsed_query.matches_entry( candidate_entry, parent_recursion ):
-            if candidate_entry.get('__completed', True):    # either explicitly completed, or not carrying this attribute at all, probably a static Entry
-                return candidate_entry
+            if ( ('__completed' in parsed_query.mentioned_set)  # if __completed is part of the query and it matched, honour that match.
+                or candidate_entry.get('__completed', True) ):  # either explicitly completed, or not carrying this attribute at all, probably a static Entry
+                    return candidate_entry
             else:
                 logging.info(f"[{__entry__.get_name()}] byquery({query}) found incomplete Entry {candidate_entry.get_name()} in {candidate_entry.get_path()} , which may either be in progress or dead - PLEASE INVESTIGATE")
                 return None     # FIXME: we cannot yet distinguish between a botched installation and a still-running one

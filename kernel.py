@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.450'     # TODO: update with every kernel change
+__version__ = '0.2.451'     # TODO: update with every kernel change
 
 import logging
 import os
@@ -215,8 +215,9 @@ Usage examples :
                 axs all_byquery onnx_model --template="#{model_name}# : #{file_name}#"
                 axs all_byquery python_package --template="python_#{python_version}# package #{package_name}#"
                 axs all_byquery tags. --template="tags=#{tags}#"
-                axs all_byquery deleteme+ ---='[["remove"]]'
                 axs all_byquery git_repo ---='[["pull"]]'
+                axs all_byquery deleteme+ ---='[["remove"]]'
+                axs all_byquery __completed.,__completed- ---='[["remove"]]'
         """
         logging.debug(f"[{self.get_name()}] all_byquery({query}, {pipeline}, {template}, {parent_recursion}, {skip_entry_names})")
         return self.work_collection().call('all_byquery', [query, pipeline, template, parent_recursion, skip_entry_names])
@@ -233,12 +234,25 @@ Usage examples :
 
 
     def byquery(self, query, produce_if_not_found=True, parent_recursion=False, skip_entry_names=None):
-        """Fetch an entry by a query over its tags (delegated to work_collection)
-            Note parent_recursion is False by default, but can be switched on manually (beware of the avalanche though!).
+        """(Delegated to work_collection)
+            Fetch an entry by query over its tags and attributes.
+            If the query returns nothing on the first pass, but matching _producer_rules are defined,
+            apply the matching producer_rule and return its output.
 
 Usage examples :
-                axs byquery person.,be!=Be
+                axs byquery python_package,package_name=numpy , get_path
+                axs byquery python_package,package_name=numpy,package_version=1.16.4 , get_metadata --header_name=Version
+                axs byquery shell_tool,tool_name=wget
+
+            # parent_recursion is False by default, but can be switched on manually (beware of the avalanche though!).
                 axs byquery person.,be!=Be --parent_recursion+ , get_path
+
+            # When looking for incomplete (potentially broken) entries, this has to be specifically mentioned:
+                axs byquery shell_tool,can_extract_zip,__completed- , remove
+
+            # The query can also be given as an explicit list of query_conditions
+                axs byquery --:=count:romance:^french
+                axs byquery "--,=count,romance,language!=French"
         """
         logging.debug(f"[{self.get_name()}] byquery({query}, {produce_if_not_found}, {parent_recursion}, {skip_entry_names})")
         return self.work_collection().call('byquery', [query, produce_if_not_found, parent_recursion, skip_entry_names])
