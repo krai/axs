@@ -1,0 +1,24 @@
+{
+    "_producer_rules": [
+        [ [ "downloaded", "gh" ], [["get_kernel"],["byname","downloader"],["download"]], {
+        }, [ "url" ] ],
+
+        [ [ "extracted",  "gh" ], [["get_kernel"],["byname","extractor"],["extract"]], {
+            "archive_path": [ "^", "execute", [[
+                [ "byquery", [[ "^^", "substitute", "downloaded,gh" ]] ],
+                [ "get_path" ]
+            ]] ],
+            "rel_result_path": [  "AS^IS", "AS^IS", "AS^IS", "^^", "find_file", "^gh$", { "return_full": true } ],
+            "newborn_parent_names": [ "shell" ],
+            "gh_path": [ "AS^IS", "AS^IS", "AS^IS", "^^", "get_path" ]
+        }, [ "url" ] ]
+    ],
+
+    "gh_version": "2.85.0",
+
+    "url": [ "^^", "case", [ [ "^", "func", "platform.system"] ,
+        "Darwin",   [ "^^", "substitute", "https://github.com/cli/cli/releases/download/v#{gh_version}#/gh_#{gh_version}#_macOS_amd64.zip"],
+        "Linux",    [ "^^", "substitute", "https://github.com/cli/cli/releases/download/v#{gh_version}#/gh_#{gh_version}#_linux_amd64.tar.gz"],
+        "Windows",  [ "^^", "substitute", "https://github.com/cli/cli/releases/download/v#{gh_version}#/gh_#{gh_version}#_windows_amd64.zip"]
+    ] ]
+}
