@@ -1,10 +1,10 @@
 {
     "_producer_rules": [
-        [ [ "downloaded", "python3" ], [["get_kernel"],["byname","downloader"],["download"]], {
+        [ [ "downloaded", "python_source" ], [["get_kernel"],["byname","downloader"],["download"]], {
             "url": [ "AS^IS", "^^", "substitute", "https://www.python.org/ftp/python/3.#{minor_version}#.#{patch_version}#/Python-3.#{minor_version}#.#{patch_version}#.tgz" ]
         }, [ "minor_version", "patch_version" ] ],
 
-        [ [ "extracted",  "python3" ], [["get_kernel"],["byname","extractor"],["extract"]], {
+        [ [ "extracted",  "python_source" ], [["get_kernel"],["byname","extractor"],["extract"]], {
             "rel_install_dir": null,
             "inside_install_dir": [ "AS^IS", "^^", "substitute", "Python-3.#{minor_version}#.#{patch_version}#" ]
         }, [ "minor_version", "patch_version", "archive_path" ] ],
@@ -23,7 +23,7 @@
     ], { "default_value": 0 } ],
 
     "archive_path": [ "AS^IS", "^", "execute", [[
-        [ "byquery", [[ "^^", "substitute", "downloaded,python3,minor_version=#{minor_version}#,patch_version=#{patch_version}#" ]] ],
+        [ "byquery", [[ "^^", "substitute", "downloaded,python_source,minor_version=#{minor_version}#,patch_version=#{patch_version}#" ]] ],
         [ "get_path" ]
     ]], {}, ["minor_version","patch_version"] ],
 
@@ -34,7 +34,7 @@
 
     "in_dir": [ "^^", "execute", [[
         [ "get_kernel" ],
-        [ "byquery", [[ "^^", "substitute", "extracted,python3,minor_version=#{minor_version}#,patch_version=#{patch_version}#" ]] ],
+        [ "byquery", [[ "^^", "substitute", "extracted,python_source,minor_version=#{minor_version}#,patch_version=#{patch_version}#" ]] ],
         [ "get_path" ]
     ]] ],
 

@@ -13,6 +13,7 @@
         "gptj": "gptj",
         "c_support": "c_support",
         "nvidia_gpu_support": "nvidia_gpu_support",
+        "precompiled_python_recipe": "precompiled_python_recipe",
         "python_from_source_recipe": "python_from_source_recipe"
     }
 }

@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.452'     # TODO: update with every kernel change
+__version__ = '0.2.453'     # TODO: update with every kernel change
 
 import logging
 import os
