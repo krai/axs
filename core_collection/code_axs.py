@@ -21,7 +21,7 @@ def walk(__entry__, skip_entry_names=None):
         yield __entry__
 
         logging.debug(f"collection({collection_own_name}): walking contained_entries:")
-        contained_entries = __entry__.get('contained_entries', {})
+        contained_entries = __entry__.get("effective_contained_entries")
         for entry_name in contained_entries:
             if skip_entry_names and (entry_name in skip_entry_names):
                 logging.debug(f"collection({collection_own_name}): skipping {entry_name}")
@@ -416,29 +416,45 @@ Usage examples :
         return None
 
 
-def add_entry_path(new_entry_path, new_entry_name=None, __entry__=None):
+def add_entry_path(new_entry_path, new_entry_name=None, auto_index=False, __entry__=None):
     """Add a new entry to the collection given the path
     """
     assert __entry__ != None, "__entry__ should be defined"
 
-    trimmed_new_entry_path  = __entry__.trim_path( new_entry_path )
     new_entry_name          = new_entry_name or os.path.basename( trimmed_new_entry_path )
-    existing_rel_path       = __entry__.dig(['contained_entries', new_entry_name], safe=True)
 
-    if existing_rel_path:
-        if existing_rel_path == trimmed_new_entry_path:
-            logging.warning(f"The entry {existing_rel_path} has already been attached to the {__entry__.get_name()} collection, skipping")
-        else:
-            raise(KeyError(f"There was already another entry named {new_entry_name} with path {existing_rel_path}, remove it first"))
+    if auto_index:
+        logging.warning(f"The collection {__entry__.get_name()} is auto-indexing, so the request to add {new_entry_name} was skipped")
     else:
-        __entry__.plant(['contained_entries', new_entry_name], trimmed_new_entry_path)
+        trimmed_new_entry_path  = __entry__.trim_path( new_entry_path )
+        existing_rel_path       = __entry__.dig(["contained_entries", new_entry_name], safe=True)
+
+        if existing_rel_path:
+            if existing_rel_path == trimmed_new_entry_path:
+                logging.warning(f"The entry {existing_rel_path} has already been attached to the {__entry__.get_name()} collection, skipping")
+            else:
+                raise(KeyError(f"There was already another entry named {new_entry_name} with path {existing_rel_path}, remove it first"))
+        else:
+            __entry__.plant(["contained_entries", new_entry_name], trimmed_new_entry_path)
+            return __entry__.save( on_collision="force", completed=ufun.generate_current_timestamp() )   # we expect a collision
+
+
+def remove_entry_name(old_entry_name, auto_index, __entry__):
+    """Remove an entry from the collection given its name
+    """
+
+    if auto_index:
+        logging.warning(f"The collection {__entry__.get_name()} is auto-indexing, so the request to remove {old_entry_name} was skipped")
+    else:
+        contained_entries       = __entry__.pluck(["contained_entries", old_entry_name])
         return __entry__.save( on_collision="force", completed=ufun.generate_current_timestamp() )   # we expect a collision
 
 
-def remove_entry_name(old_entry_name, __entry__):
+def detect_work_collection(__entry__):
+    ak = __entry__.get_kernel()
+    assert ak != None, "__entry__'s kernel should be defined"
 
-    contained_entries       = __entry__.pluck(['contained_entries', old_entry_name])
-    return __entry__.save( on_collision="force", completed=ufun.generate_current_timestamp() )   # we expect a collision
+    return __entry__.get_path() == ak.expected_work_collection_path()
 
 
 if __name__ == '__main__':

@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.453'     # TODO: update with every kernel change
+__version__ = '0.2.454'     # TODO: update with every kernel change
 
 import logging
 import os
@@ -165,6 +165,11 @@ Usage examples :
         return self.record_container_value
 
 
+    def expected_work_collection_path(self):
+
+        return os.getenv('AXS_WORK_COLLECTION') or os.path.join(os.path.expanduser('~'), 'work_collection')
+
+
     def work_collection(self):
         """Fetch the work_collection entry
 
@@ -173,7 +178,8 @@ Usage examples :
                 AXS_WORK_COLLECTION=~/alt_wc axs work_collection , get_path
                 axs work_collection , entry_path: get_path , , byname shell , run --shell_cmd_with_subs='ls -1 #{entry_path}#'
         """
-        work_collection_path = os.getenv('AXS_WORK_COLLECTION') or os.path.join(os.path.expanduser('~'), 'work_collection')
+        work_collection_path = self.expected_work_collection_path()
+
         if os.path.exists(work_collection_path):
             work_collection_object = self.bypath( work_collection_path )
         else:

@@ -3,6 +3,16 @@
         "collection"
     ],
     "collection_name": [ "^^", "get_name" ],
+
+    "auto_index": [ "^^", "case", [ [ "^^", "get", "contained_entries" ],
+        [null,false,"auto"], [[ "noop", true ]]
+    ], {"default_value": [[ "noop", false ]], "execute_value": true } ],
+
+    "effective_contained_entries": [ "^^", "case", [ [ "^^", "get", "auto_index" ],
+        true, [[ "nested_calls", [ "^^", "func", [ "ufun.generate_index", [ "^^", "get_path" ], [ "^^", "detect_work_collection" ] ] ] ]],
+        false, [[ "get", "contained_entries" ]]
+    ], {"execute_value": true} ],
+
     "contained_entries": {
         "db_storage_collection": "db_storage_collection",
         "essentials_collection": "essentials_collection",
