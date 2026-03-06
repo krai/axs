@@ -3,11 +3,15 @@
         [ [ "collection"  ], [["get", "new_collection_entry"]], {} ]
     ],
 
+    "containing_collection_name": [ "^", "execute", [[
+        [ "work_collection" ],
+        [ "get_name" ]
+    ]] ],
     "contained_entries": {},
 
     "new_collection_entry": [ "^^", "execute", [[
         [ "get_kernel" ],
-        [ "work_collection" ],
+        [ "byquery", ["^^", "substitute", "collection,collection_name=#{containing_collection_name}#" ], { "parent_recursion": true } ],
         [ "attached_entry", [ [ "^^", "get", "collection_name" ], {
                 "_parent_entries": [ "AS^IS", "AS^IS", [ "^", "core_collection" ] ],
                 "tags": [ "collection" ],
