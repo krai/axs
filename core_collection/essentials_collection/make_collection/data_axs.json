@@ -3,13 +3,15 @@
         [ [ "collection"  ], [["get", "new_collection_entry"]], {} ]
     ],
 
+    "contained_entries": {},
+
     "new_collection_entry": [ "^^", "execute", [[
         [ "get_kernel" ],
         [ "work_collection" ],
         [ "attached_entry", [ [ "^^", "get", "collection_name" ], {
                 "_parent_entries": [ "AS^IS", "AS^IS", [ "^", "core_collection" ] ],
                 "tags": [ "collection" ],
-                "contained_entries": {}
+                "contained_entries": [ "^^", "get", "contained_entries" ]
          } ] ],
         [ "save" ]
     ]] ]
