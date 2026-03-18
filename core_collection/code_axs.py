@@ -96,7 +96,7 @@ class FilterPile:
                     pre_val = str(val)
                     binary_op_match = True
                 else:
-                    binary_op_match = re.match('([\\w\\.\\-]*\\w)(:=|\\?=|===|==|=|!==|!=|<>|<=|>=|<|>|:|!:)(.*)$', condition)
+                    binary_op_match = re.match('([\\w\\.\\-]*\\w)(:=|\\?=|===|==|=|!==|!=|<>|<=|>=|<|>|:|!:|-:)(.*)$', condition)
                     if binary_op_match:
                         key_path    = binary_op_match.group(1)
                         op          = binary_op_match.group(2)
@@ -135,6 +135,8 @@ class FilterPile:
                         comparison_lambda   = lambda x: type(x)==list and val in x
                     elif op=='!:' and len(pre_val)>0:
                         comparison_lambda   = lambda x: type(x)==list and val not in x
+                    elif op=='-:':      # Query masking/substitution. I'd rather have used -> , but bash would like it to be escaped, which eats into readability
+                        comparison_lambda   = lambda x: type(x)==list and key_path in x     # left side acts like a tag+ , right side will be substituted
                     else:
                         raise SyntaxError(f"Could not parse the condition '{condition}' in {context}")
                 else:
@@ -172,13 +174,14 @@ class FilterPile:
             return key_path, op, val, comparison_lambda
 
 
-        self.conditions    = conditions if type(conditions)==list else re.split(r',(?=(?:[^"]*"[^"]*")*[^"]*$)', conditions)
-        self.context       = context
-        self.posi_tag_set  = set()
-        self.posi_val_dict = {}
-        self.opti_val_dict = {}
-        self.mentioned_set = set()
-        self.filter_list   = []
+        self.conditions         = conditions if type(conditions)==list else re.split(r',(?=(?:[^"]*"[^"]*")*[^"]*$)', conditions)
+        self.context            = context
+        self.posi_tag_set       = set()
+        self.posi_val_dict      = {}
+        self.opti_val_dict      = {}
+        self.mentioned_set      = set()
+        self.filter_list        = []
+        self.masking_tag_map    = {}
 
         # parsing the Query:
         for condition in self.conditions:
@@ -193,6 +196,13 @@ class FilterPile:
                 self.opti_val_dict[key_path] = val
             elif op=='tag+':
                 self.posi_tag_set.add( val )
+            elif op=='-:':
+
+                masking_tag, masked_subquery = key_path, val
+                key_path = 'tags'                                   # will be used in the split below
+
+                self.posi_tag_set.add( masking_tag )
+                self.masking_tag_map[masking_tag]=masked_subquery
 
             self.filter_list.append( (key_path, op, val, comparison_lambda, key_path.split('.')) )
 
@@ -266,7 +276,7 @@ def find_matching_rules(parsed_query, __entry__):
                 # first matching rule's conditions against query's values:
                 for key_path, op, rule_val, rule_comparison_lambda, _ in parsed_rule.filter_list:
 
-                    if op=='tag+': continue     # we have matched them directly above
+                    if op=='tag+' or op=='-:': continue     # we have matched them directly above
 
                     if op=='tag-':  # rule doesn't want the query to contain a certain tag
                         qr_conditions_ok = rule_val not in parsed_query.posi_tag_set
@@ -286,7 +296,7 @@ def find_matching_rules(parsed_query, __entry__):
                     # then matching query's conditions against rule's values:
                     for key_path, op, query_val, query_comparison_lambda, _ in parsed_query.filter_list:
 
-                        if op=='tag+': continue     # we have matched them directly above
+                        if op=='tag+' or op=='-:': continue     # we have matched them above
 
                         if op=='tag-':  # query doesn't want the rule to contain a certain tag
                             qr_conditions_ok = query_val not in parsed_rule.posi_tag_set
@@ -378,6 +388,16 @@ Usage examples :
 
             cumulative_params = advertising_entry.slice( *export_params )   # default slice
             cumulative_params["__query"] = query                            # NB: unparsed query in its original format, DANGER!
+
+            if parsed_rule.masking_tag_map or parsed_query.masking_tag_map:     # either kind of query masking
+                modified_query = query
+                for masking_tag in sorted(parsed_rule.masking_tag_map.keys() | parsed_query.masking_tag_map.keys(), key=len, reverse=True):
+                    replace_from    = masking_tag + ( '-:' if masking_tag in parsed_query.masking_tag_map else '' )
+                    replace_to      = parsed_rule.masking_tag_map[masking_tag]+',' if masking_tag in parsed_rule.masking_tag_map else ''
+                    modified_query = modified_query.replace(replace_from, replace_to)
+
+                cumulative_params["__modified_query"] = modified_query
+
             cumulative_params.update( parsed_rule.opti_val_dict )           # optional matches on top (may override some defaults)
             cumulative_params.update( deepcopy( extra_params ) )            # extra_params on top (may override some defaults)
             cumulative_params.update( parsed_rule.posi_val_dict )           # rules on top (may override some defaults)
