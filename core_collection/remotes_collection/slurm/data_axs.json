@@ -1,0 +1,7 @@
+{
+    "query": "python_package,package_name=numpy",
+
+    "queries": [ "python_package,package_name=numpy", "python_package,package_name=scipy,no_deps", "python_package,package_name=pillow,no_deps" ],
+
+    "jobid_2_query": [ "^^", "submit_all" ]
+}

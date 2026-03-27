@@ -4,6 +4,7 @@
         "collection"
     ],
     "contained_entries": {
+        "slurm": "slurm",
         "file_from_docker": "file_from_docker",
         "file_from_ssh": "file_from_ssh",
         "entries_from_docker": "entries_from_docker",
