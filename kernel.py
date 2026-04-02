@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.460'     # TODO: update with every kernel change
+__version__ = '0.2.461'     # TODO: update with every kernel change
 
 import logging
 import os
@@ -262,6 +262,25 @@ Usage examples :
         """
         logging.debug(f"[{self.get_name()}] byquery({query}, {produce_if_not_found}, {parent_recursion}, {skip_entry_names})")
         return self.work_collection().call('byquery', [query, produce_if_not_found, parent_recursion, skip_entry_names])
+
+
+    def byqueries(self, *queries):
+        """(Delegated to work_collection)
+            Fetch an array of entries, each by a query over its tags and attributes.
+            Each query is either resolved against the collection (and its descendents), or an attempt to manufacture is made, see buquery()
+
+        NOTE incomplete delegation [this is not an accidental omission, but a limitation of the current kernel 0.2.x ] -
+            only "queries" are delegated ; if you need more control, go via the collection (longer syntax, see below).
+
+Usage examples :
+            # via the collection (potentially more control) :
+                axs work_collection , byqueries python_package,package_name=six python_package,package_name=shortuuid --produce_if_not_found-
+
+            # or directly via kernel (assumes work_collection as the starting collection) :
+                axs byqueries python_package,package_name=six python_package,package_name=shortuuid
+        """
+        logging.info(f"[{self.get_name()}] byquery({queries})")
+        return self.work_collection().call('byqueries', [ queries ])
 
 
 #logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(funcName)s %(message)s")

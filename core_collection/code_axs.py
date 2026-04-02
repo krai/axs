@@ -436,6 +436,29 @@ Usage examples :
         return None
 
 
+def byqueries(*queries, produce_if_not_found=True, parent_recursion=False, skip_entry_names=None, __entry__=None):
+    """Fetch an array of entries, each by a query over its tags and attributes.
+        Each query is either resolved against the collection (and its descendents), or an attempt to manufacture is made, see buquery()
+
+Usage examples :
+            axs work_collection , byqueries python_package,package_name=six python_package,package_name=shortuuid
+
+        # or directly via kernel (assumes work_collection as the starting collection) :
+            axs byqueries python_package,package_name=six python_package,package_name=shortuuid
+    """
+    assert __entry__ != None, "__entry__ should be defined"
+
+    print(f"QUERIES={queries}")
+    if type(queries[0])==tuple: # this ugly type substitution is needed for inferfacing with the kernel. Should hopefully be gone in 0.3.x
+        queries = queries[0]
+
+    results = []
+    for query in queries:
+        results.append( byquery(query, produce_if_not_found=produce_if_not_found, parent_recursion=parent_recursion, skip_entry_names=skip_entry_names, __entry__=__entry__) )
+
+    return results
+
+
 def add_entry_path(new_entry_path, new_entry_name=None, auto_index=False, __entry__=None):
     """Add a new entry to the collection given the path
     """
