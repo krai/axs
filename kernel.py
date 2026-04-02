@@ -10,7 +10,7 @@ else:
     from kernel import default as ak
 """
 
-__version__ = '0.2.461'     # TODO: update with every kernel change
+__version__ = '0.2.462'     # TODO: update with every kernel change
 
 import logging
 import os
@@ -279,7 +279,7 @@ Usage examples :
             # or directly via kernel (assumes work_collection as the starting collection) :
                 axs byqueries python_package,package_name=six python_package,package_name=shortuuid
         """
-        logging.info(f"[{self.get_name()}] byquery({queries})")
+        logging.debug(f"[{self.get_name()}] byquery({queries})")
         return self.work_collection().call('byqueries', [ queries ])
 
 

@@ -448,7 +448,6 @@ Usage examples :
     """
     assert __entry__ != None, "__entry__ should be defined"
 
-    print(f"QUERIES={queries}")
     if type(queries[0])==tuple: # this ugly type substitution is needed for inferfacing with the kernel. Should hopefully be gone in 0.3.x
         queries = queries[0]
 
