@@ -48,6 +48,12 @@
 
         "submission_accuracy_truncator_script": [ "tools", "submission", "truncate_accuracy_log.py" ],
         "submission_checker_script": [ "tools", "submission", "submission_checker.py" ],
-        "submission_compliance_tests_dir": [ "compliance" ]
+        "submission_compliance_tests_dir": [ "compliance" ],
+
+        "gpt_oss_reference_loadgen_script": [ "language", "gpt-oss-120b", "run_mlperf.py"],
+        "gpt_oss_accuracy_script": [ "language", "gpt-oss-120b", "eval_mlperf_accuracy.py"],
+        "gpt_oss_run_server_script": [ "language", "gpt-oss-120b", "sglang", "run_server.sh" ],
+        "gpt_oss_setup_enroot": [ "language", "gpt-oss-120b", "setup_enroot.sh" ],
+        "gpt_oss_generation_config": [ "language", "gpt-oss-120b", "generation_config.json" ]
     }
 }
