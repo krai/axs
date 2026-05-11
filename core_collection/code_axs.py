@@ -463,12 +463,12 @@ def add_entry_path(new_entry_path, new_entry_name=None, auto_index=False, __entr
     """
     assert __entry__ != None, "__entry__ should be defined"
 
+    trimmed_new_entry_path  = __entry__.trim_path( new_entry_path )
     new_entry_name          = new_entry_name or os.path.basename( trimmed_new_entry_path )
 
     if auto_index:
         logging.warning(f"The collection {__entry__.get_name()} is auto-indexing, so the request to add {new_entry_name} was skipped")
     else:
-        trimmed_new_entry_path  = __entry__.trim_path( new_entry_path )
         existing_rel_path       = __entry__.dig(["contained_entries", new_entry_name], safe=True)
 
         if existing_rel_path:
