@@ -8,7 +8,12 @@
 
         [ [ "program_output", "remote_type=docker", "exchange_type=entries", "task=object_detection", "framework=onnxrt" ], [[ "get", "pipeline" ]] ],
 
-        [ [ "program_output", "remote_type=docker", "exchange_type=entries", "task=bert", "framework=onnxrt" ], [[ "get", "pipeline" ]] ]
+        [ [ "program_output", "remote_type=docker", "exchange_type=entries", "task=bert", "framework=onnxrt" ], [[ "get", "pipeline" ]] ],
+
+        [ [ "program_output", "remote_type=docker", "exchange_type=entries", "calendar" ], [[ "get", "pipeline" ]], {
+                "execution_entry_name": "generate_calendar_py",
+                "execution_entry_product_collection_name": "collection_name"
+            } ]
     ],
 
     "hostname": [ "^", "func", "socket.gethostname" ],
