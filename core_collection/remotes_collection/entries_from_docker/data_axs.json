@@ -58,8 +58,8 @@
     "host_paths_to_pass_down": [],
 
     "user_in_docker": "root",
-    "docker_image": "axs_kernel",
-    "docker_image_tag": "latest",
+    "docker_image": "python",
+    "docker_image_tag": "3.12",
     "docker_tool": [ "^", "byquery", "shell_tool,can_docker" ],
     "docker_run_extra_options": "",
 
@@ -71,6 +71,8 @@
 
     "host_entries_mapping": [ "^^", "host_entries_mapping" ],
     "container_entries_access": [ "^^", "container_entries_access" ],
+    "host_kernel_path": [ "^", "kernel_path" ],
+    "in_docker_kernel_path": "/mnt/axs",
     "container_id": [ "^^", "execute", [[
         [ "get", "docker_tool" ],
         [ "run", [], {
@@ -80,7 +82,7 @@
             "cmd_key": "run",
             "capture_output": true,
             "docker_options": [ "^^", "substitute", "-it -d --rm --user #{user_in_docker}# #{host_entries_mapping}# #{docker_run_extra_options}#" ],
-            "run_in_docker": [ "^^", "substitute", "'watch -g axs byquery #{modified_query}# --- \"2>/dev/null\"'" ]
+            "run_in_docker": [ "^^", "substitute", "watch -g #{in_docker_kernel_path}#/axs byquery #{modified_query}# --- \"2>/dev/null\"" ]
         } ]
     ]] ],
     "pipeline": [ "^^", "execute", [[
