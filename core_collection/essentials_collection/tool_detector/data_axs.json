@@ -365,7 +365,8 @@
                     "build": "\"#{tool_path}#\" #{docker_global_options}# build -t #{docker_image}#:#{docker_image_tag}# #{dockerfile_dir}#",
                     "run": "\"#{tool_path}#\" #{docker_global_options}# run #{docker_options}# #{docker_image}#:#{docker_image_tag}# #{run_in_docker}#",
                     "stop": "\"#{tool_path}#\" #{docker_global_options}# stop #{docker_container}#",
-                    "exec": "\"#{tool_path}#\" #{docker_global_options}# exec #{docker_options}# #{docker_container}# #{run_in_docker}#"
+                    "exec": "\"#{tool_path}#\" #{docker_global_options}# exec #{docker_options}# #{docker_container}# #{run_in_docker}#",
+                    "wait_for_server": "grep -qm1 \"#{readiness_message}#\" <(\"#{tool_path}#\" logs --follow #{docker_container}# 2>&1)"
                 },
                 "cmd_key": "run",
                 "docker_global_options": "",
