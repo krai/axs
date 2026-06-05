@@ -1,0 +1,9 @@
+{
+    "_producer_rules": [
+        [ [ "tag_r", "mask_tag-:test_product,alpha=10,beta=23" ], [["run"]] ],
+        [ [ "tag_r", "mask_tag2", "alpha=10" ], [["run"]] ]
+    ],
+    "_parent_entries": [ [ "^", "byname", "shell" ] ],
+
+    "shell_cmd_with_subs": "echo axs byquery #{__modified_query}#"
+}

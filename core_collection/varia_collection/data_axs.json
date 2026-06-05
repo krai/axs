@@ -13,6 +13,7 @@
         "numpy_import_test": "numpy_import_test",
         "sysinfo": "sysinfo",
         "rule_matching_demonstrator": "rule_matching_demonstrator",
+        "rule_matching_hijacker": "rule_matching_hijacker",
         "rule_matching_producer": "rule_matching_producer",
         "rule_matching_advertiser": "rule_matching_advertiser"
     }
