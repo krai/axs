@@ -359,6 +359,11 @@
         } ],
         [ [ "shell_tool", "can_docker" ], [["detect"]], {
                 "tool_name": "docker",
+                "verbose": false,
+                "verbosity_insert": [ "AS^IS", "AS^IS", "AS^IS", "^^", "case",   [ ["^^", "get", "verbose"],
+                    true, "",
+                    false, "-n"
+                ] ],
                 "shell_cmd_templates": {
                     "help": "\"#{tool_path}#\" help",
                     "version": "\"#{tool_path}#\" version",
@@ -366,7 +371,7 @@
                     "run": "\"#{tool_path}#\" #{docker_global_options}# run #{docker_options}# #{docker_image}#:#{docker_image_tag}# #{run_in_docker}#",
                     "stop": "\"#{tool_path}#\" #{docker_global_options}# stop #{docker_container}#",
                     "exec": "\"#{tool_path}#\" #{docker_global_options}# exec #{docker_options}# #{docker_container}# #{run_in_docker}#",
-                    "wait_for_server": "bash -c 'grep -qm1 \"#{readiness_message}#\" <(\"#{tool_path}#\" logs --follow #{docker_container}# 2>&1)'"
+                    "wait_for_server": "bash -c 'sed #{verbosity_insert}# \"/#{readiness_message}#/q\" < <(\"#{tool_path}#\" logs --follow #{docker_container}# 2>&1)'"
                 },
                 "cmd_key": "run",
                 "docker_global_options": "",
