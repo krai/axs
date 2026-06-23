@@ -391,9 +391,10 @@ Usage examples :
 
             if parsed_rule.masking_tag_map or parsed_query.masking_tag_map:     # either kind of query masking
                 modified_query = query
-                for masking_tag in sorted(parsed_rule.masking_tag_map.keys() | parsed_query.masking_tag_map.keys(), key=len, reverse=True):
-                    replace_from    = masking_tag + ( '-:' if masking_tag in parsed_query.masking_tag_map else '' )
-                    replace_to      = parsed_rule.masking_tag_map[masking_tag]+',' if masking_tag in parsed_rule.masking_tag_map else ''
+
+                for masking_tag, masked in sorted((parsed_rule.masking_tag_map | parsed_query.masking_tag_map).items(), key=lambda kv: len(kv[0]), reverse=True):
+                    replace_from    = masking_tag + ( '-:'+masked if masking_tag in parsed_query.masking_tag_map else '' )
+                    replace_to      = masking_tag + ',' + masked
                     modified_query = modified_query.replace(replace_from, replace_to)
 
                 cumulative_params["__modified_query"] = modified_query

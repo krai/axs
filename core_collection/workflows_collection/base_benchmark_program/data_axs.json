@@ -5,7 +5,6 @@
     "output_entry_common_param_names": [ "dataset_name", "model_name", "framework" ],
     "output_entry_param_names": [ ],
     "output_entry_subs_listmap": [ ],
-    "output_entry_tags": [ "program_output" ],
 
     "work_collection_name": [ "^", "execute", [[
         [ "work_collection" ],
@@ -19,8 +18,7 @@
         [ "get", "__record_entry__" ],
         [ "attach",  [ "^^", "get", "collection_object" ] ],
         [ "plant", [
-                "_parent_entries", ["^^", "get", "output_entry_parents" ],
-                "tags", ["^^", "get", "output_entry_tags" ]
+                "_parent_entries", ["^^", "get", "output_entry_parents" ]
             ] ],
         [ "plant", [ "^^", "slice", ["^^", "get", "output_entry_common_param_names" ], { "plantable": true } ] ],
         [ "plant", [ "^^", "slice", ["^^", "get", "output_entry_param_names" ], { "plantable": true } ] ],
