@@ -13,11 +13,22 @@
         [ [ "program_output_in_docker-:program_output", "calendar" ], [[ "get", "pipeline" ]], {
                 "execution_entry_name": "generate_calendar_py",
                 "execution_entry_product_collection_name": "collection_name"
+            } ],
+
+        [ [ "program_output_in_docker-:program_output", "uname" ], [[ "get", "pipeline" ]], {
+                "execution_entry_name": "uname_recipe",
+                "execution_entry_product_collection_name": "collection_name"
             } ]
     ],
 
+    "user_in_docker": "root",
+    "docker_image": "python",
+    "docker_image_tag": "3.12",
+    "docker_tool": [ "^", "byquery", "shell_tool,can_docker" ],
+    "docker_run_extra_options": "",
+
     "hostname": [ "^", "func", "socket.gethostname" ],
-    "exchange_collection_name": [ "^^", "substitute", "docker_on_#{hostname}#_exchange_collection" ],
+    "exchange_collection_name": [ "^^", "substitute", "#{docker_image}#_#{docker_image_tag}#_on_#{hostname}#_docker_exchange_collection" ],
     "pre_exchange_collection": [ "^^", "execute", [[
         [ "get_kernel" ],
         [ "byquery", [[ "collection", [ "collection_name", [ "^^", "get", "exchange_collection_name" ] ] ]], { "parent_recursion": true } ]
@@ -56,12 +67,6 @@
         "/data/models"
     ],
     "host_paths_to_pass_down": [],
-
-    "user_in_docker": "root",
-    "docker_image": "python",
-    "docker_image_tag": "3.12",
-    "docker_tool": [ "^", "byquery", "shell_tool,can_docker" ],
-    "docker_run_extra_options": "",
 
     "host_entries_mapping": [ "^^", "host_entries_mapping" ],
     "container_entries_access": [ "^^", "container_entries_access" ],

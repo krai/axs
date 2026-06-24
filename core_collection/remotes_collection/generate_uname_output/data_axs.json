@@ -1,0 +1,21 @@
+{
+    "_producer_rules": [
+        [ [ "program_output", "uname" ], [[ "get", "stored_newborn_entry" ]] ]
+    ],
+    "_parent_entries": [ [ "^", "byname", "entry_creator" ] ],
+
+    "hostname": [ "^", "func", "socket.gethostname" ],
+    "newborn_parent_names": [ ],
+    "newborn_name_template": "uname_output_on_#{hostname}#",
+    "newborn_entry_param_names": [ "uname_all_output", "os_release_content", "hostname" ],
+
+    "uname_all_output": [ "^", "execute", [[
+        [ "byname", "shell" ],
+        [ "run", "uname -a", { "capture_output": true } ]
+    ]] ],
+
+    "os_release_content": [ "^", "execute", [[
+        [ "byname", "shell" ],
+        [ "run", "cat /etc/os-release", { "capture_output": true } ]
+    ]] ]
+}

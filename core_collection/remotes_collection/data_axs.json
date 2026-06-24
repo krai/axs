@@ -4,6 +4,7 @@
         "collection"
     ],
     "contained_entries": {
+        "generate_uname_output": "generate_uname_output",
         "slurm": "slurm",
         "file_from_docker": "file_from_docker",
         "file_from_ssh": "file_from_ssh",
