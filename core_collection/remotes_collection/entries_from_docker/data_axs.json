@@ -1,22 +1,30 @@
 {
     "_producer_rules": [
-        [ [ "program_output_in_docker-:program_output", "task=image_classification", "framework=onnxrt" ], [[ "get", "pipeline" ]] ],
+        [ [ "program_output_in_docker-:program_output", "task=image_classification", "framework=onnxrt" ], [[ "get", "pipeline" ]], {
+                "execution_entry_product_collection_name": "experiment_collection_name"
+            } ],
 
-        [ [ "program_output_in_docker-:program_output", "task=image_classification", "framework=pytorch" ], [[ "get", "pipeline" ]] ],
+        [ [ "program_output_in_docker-:program_output", "task=image_classification", "framework=pytorch" ], [[ "get", "pipeline" ]], {
+                "execution_entry_product_collection_name": "experiment_collection_name"
+            } ],
 
-        [ [ "program_output_in_docker-:program_output", "task=image_classification", "framework=tf" ], [[ "get", "pipeline" ]] ],
+        [ [ "program_output_in_docker-:program_output", "task=image_classification", "framework=tf" ], [[ "get", "pipeline" ]], {
+                "execution_entry_product_collection_name": "experiment_collection_name"
+            } ],
 
-        [ [ "program_output_in_docker-:program_output", "task=object_detection", "framework=onnxrt" ], [[ "get", "pipeline" ]] ],
+        [ [ "program_output_in_docker-:program_output", "task=object_detection", "framework=onnxrt" ], [[ "get", "pipeline" ]], {
+                "execution_entry_product_collection_name": "experiment_collection_name"
+            } ],
 
-        [ [ "program_output_in_docker-:program_output", "task=bert", "framework=onnxrt" ], [[ "get", "pipeline" ]] ],
+        [ [ "program_output_in_docker-:program_output", "task=bert", "framework=onnxrt" ], [[ "get", "pipeline" ]], {
+                "execution_entry_product_collection_name": "experiment_collection_name"
+            } ],
 
         [ [ "program_output_in_docker-:program_output", "calendar" ], [[ "get", "pipeline" ]], {
-                "execution_entry_name": "generate_calendar_py",
                 "execution_entry_product_collection_name": "collection_name"
             } ],
 
         [ [ "program_output_in_docker-:program_output", "uname" ], [[ "get", "pipeline" ]], {
-                "execution_entry_name": "uname_recipe",
                 "execution_entry_product_collection_name": "collection_name"
             } ]
     ],
@@ -49,11 +57,10 @@
         [ "get", "pre_exchange_collection" ]
     ]] ],
 
-    "execution_entry_name": "image_classification_using_onnxrt_py",
-    "execution_entry_product_collection_name": "experiment_collection_name",
-    "execution_entry": [ "^^", "execute", [[
-        [ "get_kernel" ],
-        [ "byname", [ "^^", "get", "execution_entry_name" ] ]
+    "execution_entry": [ "^^", "get", "__modq_advertising_entry" ],
+    "execution_entry_name": [ "^^", "execute", [[
+        [ "get", "execution_entry" ],
+        [ "get_name" ]
     ]] ],
     "EXAMPLE_host_entries_to_pass_down": [
         [ "^^", "get", "exchange_collection" ],

@@ -399,6 +399,10 @@ Usage examples :
 
                 cumulative_params["__modified_query"] = modified_query
 
+                parsed_modified_query = FilterPile( modified_query, "ModQuery" )
+                # FIXME: make sure this is not too strong an assumption - that the advertising entry is usually the execution one...
+                cumulative_params["__modq_advertising_entry"] = find_matching_rules(parsed_modified_query, __entry__)[0][0]
+
             cumulative_params.update( parsed_rule.opti_val_dict )           # optional matches on top (may override some defaults)
             cumulative_params.update( deepcopy( extra_params ) )            # extra_params on top (may override some defaults)
             cumulative_params.update( parsed_rule.posi_val_dict )           # rules on top (may override some defaults)
