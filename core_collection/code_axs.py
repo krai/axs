@@ -136,7 +136,9 @@ class FilterPile:
                     elif op=='!:' and len(pre_val)>0:
                         comparison_lambda   = lambda x: type(x)==list and val not in x
                     elif op=='-:':      # Query masking/substitution. I'd rather have used -> , but bash would like it to be escaped, which eats into readability
-                        comparison_lambda   = lambda x: type(x)==list and key_path in x     # left side acts like a tag+ , right side will be substituted
+                        masking_tag, masked_subquery = key_path, val    # locally renaming them for clarity
+                        masked_tags         = [ candidate for candidate in masked_subquery.split(',') if candidate.isidentifier() ]
+                        comparison_lambda   = lambda x: type(x)==list and (masking_tag in x) and set(x).isdisjoint(masked_tags)     # a neat combination of tag+ and (tag-)*
                     else:
                         raise SyntaxError(f"Could not parse the condition '{condition}' in {context}")
                 else:
@@ -199,7 +201,7 @@ class FilterPile:
             elif op=='-:':
 
                 masking_tag, masked_subquery = key_path, val
-                key_path = 'tags'                                   # will be used in the split below
+                key_path, val = 'tags', masking_tag             # will be used in the split below
 
                 self.posi_tag_set.add( masking_tag )
                 self.masking_tag_map[masking_tag]=masked_subquery
@@ -273,14 +275,17 @@ def find_matching_rules(parsed_query, __entry__):
             if parsed_rule.posi_tag_set.issubset(parsed_query.posi_tag_set):  # FIXME:  parsed_rule.posi_tag_set should include it
                 qr_conditions_ok  = True
 
-                # first matching rule's conditions against query's values:
+                # first - matching rule's conditions against query's values:
                 for key_path, op, rule_val, rule_comparison_lambda, _ in parsed_rule.filter_list:
 
-                    if op=='tag+' or op=='-:': continue     # we have matched them directly above
+                    if op=='tag+':  # we have matched them directly above
+                        continue
 
-                    if op=='tag-':  # rule doesn't want the query to contain a certain tag
+                    elif op=='tag-':  # rule doesn't want the query to contain a certain tag
                         qr_conditions_ok = rule_val not in parsed_query.posi_tag_set
-                        break
+
+                    elif op=='-:':
+                        qr_conditions_ok = rule_comparison_lambda( list(parsed_query.posi_tag_set) )
 
                     # we allow (only) equalities on the rule side not to have a match on the query side
                     elif (key_path in parsed_query.posi_val_dict):    # does the query contain a specific value for this rule condition's key_path?
@@ -293,7 +298,7 @@ def find_matching_rules(parsed_query, __entry__):
                     if not qr_conditions_ok: break
 
                 if qr_conditions_ok:
-                    # then matching query's conditions against rule's values:
+                    # then - matching query's conditions against rule's values:
                     for key_path, op, query_val, query_comparison_lambda, _ in parsed_query.filter_list:
 
                         if op=='tag+' or op=='-:': continue     # we have matched them above
