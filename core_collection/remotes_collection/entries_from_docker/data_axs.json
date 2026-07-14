@@ -87,7 +87,6 @@
             "docker_image_tag": [ "^^", "get", "docker_image_tag" ],
             "docker_run_extra_options": [ "^^", "get", "docker_run_extra_options" ],
             "cmd_key": "run",
-            "capture_output": true,
             "docker_options": [ "^^", "substitute", "-it --rm --user #{user_in_docker}# #{host_entries_mapping}# #{docker_run_extra_options}#" ],
             "run_in_docker": [ "^^", "substitute", "#{container_entries_access}# , byquery #{__modified_query}#  --.#{execution_entry_name}#.#{execution_entry_product_collection_name}#=#{exchange_collection_name}#" ]
         } ],
