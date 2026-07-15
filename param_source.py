@@ -251,6 +251,21 @@ Usage examples :
         return [ value for source, value in self.getitem_generator( str(param_name) ) ]
 
 
+    def debug_param(self, param_name, context="", compute_value=False):
+
+        if len(context)>0:
+            context = ', '+context
+
+        effective_value = self.get(param_name,'<VALUE NOT SET>') if compute_value else '...'
+
+        print(f"\nDEBUG [{self.get_name()}{context}] {param_name}={effective_value}")
+        for source, value in self.getitem_generator( str(param_name) ):
+            print(f"\t{value}   # from {source.get_name()}")
+        print('')
+
+        return self     # simplify chaining
+
+
     def __getitem__(self, param_name, parent_recursion=None):
         "Lazy parameter access: returns the parameter value from self or the closest parent"
 
