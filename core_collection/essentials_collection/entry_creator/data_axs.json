@@ -35,8 +35,11 @@
     ]] ],
     "collection_name": [ "^^", "get", "work_collection_name" ],
 
-    "collection_object": [ "^", "byquery", ["^^", "substitute", "collection,collection_name=#{collection_name}#" ],
-                                           { "parent_recursion": true }, [ "collection_name" ] ],
+    "collection_object": [ "^^", "execute", [[
+        [ "get_kernel" ],
+        [ "byquery", ["^^", "substitute", "collection,collection_name=#{collection_name}#" ],
+                                           { "parent_recursion": true } ]
+    ]] ],
 
     "newborn_entry": [ "^^", "execute", [[
         [ "get", "collection_object" ],
