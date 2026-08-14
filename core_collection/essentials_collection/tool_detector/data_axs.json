@@ -371,9 +371,14 @@
                     "run": "\"#{tool_path}#\" #{docker_global_options}# run #{docker_options}# #{docker_image}#:#{docker_image_tag}# #{run_in_docker}#",
                     "stop": "\"#{tool_path}#\" #{docker_global_options}# stop #{docker_container}#",
                     "exec": "\"#{tool_path}#\" #{docker_global_options}# exec #{docker_options}# #{docker_container}# #{run_in_docker}#",
+                    "find_container_id": "\"#{tool_path}#\" #{docker_global_options}# ps -q -f \"name=^#{docker_container}#$\"",
                     "wait_for_server": "bash -c 'sed #{verbosity_insert}# \"/#{readiness_message}#/q\" < <(\"#{tool_path}#\" logs --follow #{docker_container}# 2>&1)'"
                 },
                 "cmd_key": "run",
+                "FIXME_capture_output": [ "AS^IS", "AS^IS", "AS^IS", "^^", "case",   [ ["^^", "get", "cmd_key"],
+                    "find_container_id", true
+                ], {"default_value": false } ],
+
                 "docker_global_options": "",
                 "docker_options": "-it",
                 "docker_image": "ubuntu",
