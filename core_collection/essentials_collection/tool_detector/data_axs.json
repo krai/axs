@@ -367,6 +367,8 @@
                 "shell_cmd_templates": {
                     "help": "\"#{tool_path}#\" help",
                     "version": "\"#{tool_path}#\" version",
+                    "load": "\"#{tool_path}#\" load -i #{docker_tarfile}#",
+                    "pull": "\"#{tool_path}#\" pull #{docker_image}#:#{docker_image_tag}#",
                     "build": "\"#{tool_path}#\" #{docker_global_options}# build -t #{docker_image}#:#{docker_image_tag}# #{dockerfile_dir}#",
                     "run": "\"#{tool_path}#\" #{docker_global_options}# run #{docker_options}# #{docker_image}#:#{docker_image_tag}# #{run_in_docker}#",
                     "stop": "\"#{tool_path}#\" #{docker_global_options}# stop #{docker_container}#",
