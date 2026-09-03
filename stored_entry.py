@@ -38,23 +38,13 @@ class Entry(Runnable):
         logging.debug(f"[{self.get_name()}] Initializing the Entry with entry_path={self.entry_path}, parameters_path={self.parameters_path}, module_name={self.module_name}, generated_name_prefix={self.generated_name_prefix}")
 
 
-    def generate_name(self, prefix=''):
-        """Generates a unique name with a given prefix
-
-Usage examples :
-                axs generate_name
-                axs generate_name unnamed_entry_
-        """
-        return prefix + uuid.uuid4().hex
-
-
     def set_path(self, new_path):
         """Sets the path of the given Entry
 
             Please note that the output of this method is the Entry itself, not the new_path
         """
 
-        new_path = new_path or self.name or self.generate_name( self.generated_name_prefix )
+        new_path = new_path or self.name or ufun.generate_name( self.generated_name_prefix )
 
         if os.path.isabs( new_path ):           # absolute path
             self.entry_path = new_path

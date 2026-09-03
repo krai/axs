@@ -10,6 +10,7 @@ import re
 import shutil
 import stat
 import sys
+import uuid
 
 def load_json(json_file_path):
     """Load a data structure from given JSON file.
@@ -244,3 +245,13 @@ Usage examples :
     time_format = time_format or ("%Y.%m.%d_%Hh%Mm%Ss" if fs_safe else "%Y.%m.%d_%H:%M:%S")
 
     return datetime.datetime.now().strftime( time_format )
+
+
+def generate_name(prefix=''):
+    """Generates a unique name with a given prefix
+
+Usage examples :
+                axs func ufun.generate_name
+                axs func ufun.generate_name unnamed_entry_
+    """
+    return prefix + uuid.uuid4().hex
