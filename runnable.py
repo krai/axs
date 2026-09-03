@@ -79,7 +79,7 @@ Usage examples :
         "First try to reach for a Runnable's function (externally loaded code), if unavailable - try Runnable's method instead."
 
         logging.debug(f"[{self.get_name()}] reach_action({action_name}) ...")
-        if _ancestry_path == None:  # if we have to initialize it internally, the value will be lost to the caller
+        if _ancestry_path is None:  # if we have to initialize it internally, the value will be lost to the caller
             _ancestry_path = []
 
         function_object, ancestry_path = self.reach_function( action_name )

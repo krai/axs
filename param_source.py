@@ -102,7 +102,7 @@ Usage examples :
 
 
     def parents_loaded(self):
-        if self.parent_objects==None:     # lazy-loading condition
+        if self.parent_objects is None:     # lazy-loading condition
             logging.debug(f"[{self.get_name()}] Lazy-loading the parents...")
             self.parent_objects = self.get(self.PARAMNAME_parent_entries, [])
 

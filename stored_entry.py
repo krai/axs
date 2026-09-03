@@ -243,7 +243,7 @@ Usage examples :
                 axs byname be_like , own_functions
                 axs byname dont_be_like , own_functions
         """
-        if self.own_functions_cache==None:    # lazy-loading condition
+        if self.own_functions_cache is None:    # lazy-loading condition
             entry_path = self.get_path()
             if entry_path:
                 module_name = self.get_module_name()
