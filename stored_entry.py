@@ -319,6 +319,9 @@ Usage examples :
         if ("__completed" in own_data) or ("__query" in own_data) or (completed is not None):
             self["__completed"] = completed or False
 
+        if self.parent_objects and (self.get("_parent_entries", []) == []) :
+            self["_parent_entries"] = self.pickle_struct( self.parent_objects )
+
         parameters_path        = self.get_parameters_path()
         parameters_dirname, parameters_basename = os.path.split( parameters_path )
 
@@ -387,6 +390,31 @@ Usage examples :
             logging.warning(f"[{self.get_name()}] was not stored in the file system, so cannot be removed")
 
         return self
+
+
+    def inherit(self, own_data=None, new_name=None, extra_parents=None):
+        """Inherit from a specific Entry, add some overrides and either save it or use directly
+
+Usage examples :
+                axs byname shell , inherit ---='{"shell_cmd_with_subs":"ls -l #{dir}#", "dir":"."}' , run               # make override and use it in place
+
+                axs byname shell , inherit ---='{"shell_cmd_with_subs":"ls -l #{dir}#", "dir":"."}' dir_lister , save   # save the inherited entry into a standalone directory
+                axs bypath dir_lister , run --dir=..
+
+TODO : Make saving into work_collection trivial, as it will likely be the most popular use case [NOT YET WORKING AS INTENDED - attach does not relocate]
+                axs byname shell , inherit ---='{"shell_cmd_with_subs":"ls -l #{dir}#", "dir":"."}' directory_lister , attach --:=^:work_collection , save
+                axs byname directory_lister , run --dir=..
+        """
+        ak = self.get_kernel()
+
+        if extra_parents is None:
+            extra_parents = []
+
+        parent_objects = [ self ]
+        for parent in extra_parents:
+            parent_objects.append( ak.byname(parent) if isinstance(parent, str) else parent )
+
+        return Entry(name=new_name, generated_name_prefix=self.get_name()+'_', own_data=own_data, parent_objects=parent_objects, is_stored=False, kernel=ak)
 
 
 if __name__ == '__main__':
