@@ -49,64 +49,41 @@ def expected_call_structure(action_object):
 def prep(action_object, given_arg_list, dict_like_object, mapping_used=None):
     """Prepare to call a given action_object and feed it with arguments from given list and dictionary-like object (must support []).
 
-        The function can be declared as having named args and defaults.
+        The function can be declared as having both positional args (without defaults) and optional args (with defaults).
         *varargs are supported while **kwargs are not.
     """
+    signature = inspect.signature(action_object)
+    bound = signature.bind_partial(*given_arg_list)
+    missing = []
 
-    required_arg_names, optional_arg_names, defaults, varargs, varkw = expected_call_structure(action_object)
+    for name, parameter in signature.parameters.items():
+        if name in bound.arguments:
+            continue
 
-    # Topping up the list of required positional arguments, or detecting missing ones:
-    num_given                       = len(given_arg_list)
-    num_required                    = len(required_arg_names)
-    listed_optional_names           = []
-    if num_given<num_required:  # some that are required have not been given
-        non_listed_required_arg_names   = required_arg_names[num_given:]
-        if varargs:
-            listed_vararg_values        = tuple()   # just not enough
-    else:
-        non_listed_required_arg_names   = []        # all required have been given
-        if varargs:
-            listed_vararg_values        = given_arg_list[num_required:]
-        else:
-            encroached_number           = num_given-num_required
-            listed_optional_names       = optional_arg_names[:encroached_number]    # these are encroaching into optionals
-            defaults                    = defaults[encroached_number:]
-            optional_arg_names          = optional_arg_names[encroached_number:]    # the rest, still to be taken from the dict-like
+        if parameter.kind is parameter.VAR_POSITIONAL:
+            bound.arguments[name] = ()
+            continue
 
-    missing_arg_names = []
-    non_listed_required_arg_values  = []
-    for arg_name in non_listed_required_arg_names:  # topping up from the "dictionary"
         try:
-            non_listed_required_arg_values.append( dict_like_object[arg_name] )
-        except KeyError as e:
-            missing_arg_names.append( arg_name )
+            bound.arguments[name] = dict_like_object[name]
+        except KeyError:
+            if parameter.default is parameter.empty:
+                missing.append(name)
+            else:
+                bound.arguments[name] = parameter.default
 
-    if missing_arg_names:
-        raise TypeError( 'The "{}" function is missing required positional arguments: {}'
-                        .format(action_object.__name__, missing_arg_names)
+    if missing:
+        raise TypeError(
+            '{}() missing required arguments: {}'.format(
+                action_object.__name__, missing
+            )
         )
 
-    else:
-        # Forming the dictionary of values of optional arguments (taking either a provided value or a default in each case) :
-        optional_arg_dict   = {}
-        for opt_idx, arg_name in enumerate(optional_arg_names):
-            try:
-                optional_arg_dict[arg_name] = dict_like_object[arg_name]
-            except KeyError:
-                optional_arg_dict[arg_name] = defaults[opt_idx]
+    if mapping_used is not None:
+        mapping_used.update(bound.arguments)
 
-        joint_arg_tuple = (*given_arg_list, *non_listed_required_arg_values)
-
-        if mapping_used is not None:
-
-            mapping_used.update( dict(zip( (*required_arg_names, *listed_optional_names), joint_arg_tuple)) )
-            mapping_used.update( optional_arg_dict )
-            if varargs:
-                mapping_used[varargs] = listed_vararg_values
-
-        logging.debug(f"Prepared to call `{action_object.__name__}` with tuple={joint_arg_tuple}, dict={optional_arg_dict}")
-
-        return action_object, joint_arg_tuple, optional_arg_dict
+    logging.debug(f"Prepared to call `{action_object.__name__}` with tuple={bound.args}, dict={bound.kwargs}")
+    return action_object, bound.args, bound.kwargs
 
 
 def feed(action_object, joint_arg_tuple, optional_arg_dict):
