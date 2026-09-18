@@ -149,6 +149,9 @@ Usage examples :
                 axs byname be_like , help
                 axs byname dont_be_like , help meme
                 axs byname dont_be_like , help get
+                axs help func
+                axs help func hex
+                axs help func pprint.pprint
         """
         help_buffer = []
         common_format = "{:15s}: {}"
@@ -163,21 +166,29 @@ Usage examples :
         if arguments:
             action_name = arguments[0]
             try:
-                ancestry_path   = []
-                action_object   = self.reach_action(action_name, _ancestry_path=ancestry_path)
+                if action_name == 'func' and len(arguments)>1:
+                    ancestry_path = None
+                    action_name = arguments[1]
+                    action_object = self.reach_func( action_name )
+                    help_buffer = []
+                else:
+                    ancestry_path   = []
+                    action_object = self.reach_action(action_name, _ancestry_path=ancestry_path)
 
                 signature_object = inspect.signature(action_object)
 
                 if any(p.kind == inspect.Parameter.VAR_KEYWORD for p in signature_object.parameters.values()):
-                    help_buffer.append( """NB: this action cannot be called via our calling mechanism,
+                    help_buffer.append( """NB: this action/func cannot be called via our calling mechanism,
                               because it makes use of variable keywords (**)""" )
 
                 if ancestry_path:
                     help_buffer.append( common_format.format('Function', action_name ))
                     help_buffer.append( common_format.format('Ancestry path', ' --> '.join(ancestry_path) ))
-                else:
+                elif ancestry_path == []:
                     help_buffer.append( common_format.format( 'Method', action_name ))
                     help_buffer.append( common_format.format( 'Declared in', action_object.__module__+'.py' ))
+                else:
+                    help_buffer.append( common_format.format( 'Python function', action_name ))
 
                 help_buffer.append( common_format.format( 'Signature', action_name+str(signature_object) ))
                 help_buffer.append( common_format.format( 'DocString', action_object.__doc__ ))
