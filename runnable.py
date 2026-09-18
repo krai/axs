@@ -166,14 +166,9 @@ Usage examples :
                 ancestry_path   = []
                 action_object   = self.reach_action(action_name, _ancestry_path=ancestry_path)
 
-                required_arg_names, optional_arg_names, action_defaults, varargs, varkw = function_access.expected_call_structure( action_object )
+                signature_object = inspect.signature(action_object)
 
-                if varargs:
-                    required_arg_names.append( '*'+varargs )
-
-                signature = ', '.join(required_arg_names + [optional_arg_names[i]+'='+str(action_defaults[i]) for i in range(len(optional_arg_names))] )
-
-                if varkw:
+                if any(p.kind == inspect.Parameter.VAR_KEYWORD for p in signature_object.parameters.values()):
                     help_buffer.append( """NB: this action cannot be called via our calling mechanism,
                               because it makes use of variable keywords (**)""" )
 
@@ -184,7 +179,7 @@ Usage examples :
                     help_buffer.append( common_format.format( 'Method', action_name ))
                     help_buffer.append( common_format.format( 'Declared in', action_object.__module__+'.py' ))
 
-                help_buffer.append( common_format.format( 'Signature', action_name+'('+signature+')' ))
+                help_buffer.append( common_format.format( 'Signature', action_name+str(signature_object) ))
                 help_buffer.append( common_format.format( 'DocString', action_object.__doc__ ))
             except Exception as e:
                 logging.error( str(e) )

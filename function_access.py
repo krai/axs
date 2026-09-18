@@ -19,33 +19,6 @@ def list_function_names(module_like_object):
     return function_names
 
 
-def expected_call_structure(action_object):
-    """Get the expected parameters of a function and their default values.
-    """
-
-    if sys.version_info[0] < 3:
-        supported_arg_names, varargs, varkw, defaults = inspect.getargspec(action_object)
-        kwonlyargs = tuple()
-        kwonlydefaults = {}
-    else:
-        supported_arg_names, varargs, varkw, defaults, kwonlyargs, kwonlydefaults, annotations = inspect.getfullargspec(action_object)
-
-    defaults = defaults or tuple()
-    if varargs:
-        supported_arg_names += kwonlyargs
-        defaults += tuple(kwonlydefaults.values() if kwonlydefaults else [])
-
-    if inspect.ismethod(action_object):
-        supported_arg_names.pop(0)
-
-    num_required        = len(supported_arg_names) - len(defaults)
-    required_arg_names  = supported_arg_names[:num_required]
-    optional_arg_names  = supported_arg_names[num_required:]
-
-    logging.debug(f"{action_object.__name__}() required={required_arg_names}, optional={optional_arg_names}, defaults={defaults}, varargs={varargs}, varkw={varkw}")
-    return required_arg_names, optional_arg_names, defaults, varargs, varkw
-
-
 def prep(action_object, given_arg_list, dict_like_object, mapping_used=None):
     """Prepare to call a given action_object and feed it with arguments from given list and dictionary-like object (must support []).
 
@@ -197,10 +170,6 @@ if __name__ == '__main__':
 
     assert to_num_or_not_to_num("100.52x")=="100.52x", "Not converting into num #2"
 
-    print('-'*40 + ' expected_call_structure() calls: ' + '-'*40)
-
-    assert expected_call_structure(four_param_example_func)==(['alpha', 'beta'], ['gamma', 'delta'], (333, 4444), None, None)
-
     print('-'*40 + ' list_function_names() calls: ' + '-'*40)
 
-    assert sorted(list_function_names(sys.modules[__name__]))==['expected_call_structure', 'feed', 'four_param_example_func', 'list_function_names', 'prep', 'to_num_or_not_to_num', 'vararg_supporting_example_func'], "Functions defined in this module"
+    assert sorted(list_function_names(sys.modules[__name__]))==['feed', 'four_param_example_func', 'list_function_names', 'prep', 'to_num_or_not_to_num', 'vararg_supporting_example_func'], "Functions defined in this module"
