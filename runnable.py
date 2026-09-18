@@ -328,14 +328,17 @@ Usage examples :
             pos_params = [ pos_params ]                     # simplified syntax for single positional parameter actions
 
 
-        action_object       = self.reach_action(action_name)
-
-        if action_name=='func':         # at least propagate edit_dict.  FIXME: maybe rely on func's signature if available?
-            joint_arg_tuple     = pos_params
-            optional_arg_dict   = rt_call_specific.own_data()
+        if action_name=='func':     # 'func' here is either an externally callable function (e.g. pprint.pprint() ) or a builtin (e.g. hex() or len() )
+            action_object = self.reach_func( pos_params[0] )
+            try:                    # if the func has a valid signature, we can route its' execution via the same path as an action
+                _, joint_arg_tuple, optional_arg_dict   = function_access.prep(action_object, pos_params[1:], self, captured_mapping)
+            except ValueError as e: # otherwise we use the func() wrapper to feed it with whatever the user has supplied (we have no way to check)
+                joint_arg_tuple     = pos_params
+                optional_arg_dict   = rt_call_specific.own_data()
         else:
+            action_object           = self.reach_action(action_name)
             rt_call_specific['__record_entry__'] = call_record_entry    # the order is important: first nested_calls() (potentially blocked by {"AS^IS": {}}  then add __record_entry__
-            action_object, joint_arg_tuple, optional_arg_dict   = function_access.prep(action_object, pos_params, self, captured_mapping)
+            _, joint_arg_tuple, optional_arg_dict   = function_access.prep(action_object, pos_params, self, captured_mapping)
 
 
         if ak:
@@ -551,10 +554,22 @@ Usage examples :
         return attr_object
 
 
+    def reach_func(self, func_name):
+        "Find a func[tion] object (either in a Python module or a built-in)"
+
+        if '.' in func_name:                                            # an imported "dotted" function (can be several dots deep)
+            func_object = self.attr(func_name)
+        else:                                                           # a built-in function
+            func_object = __builtins__[func_name]
+
+        if func_object:
+            return func_object
+        else:
+            raise NameError( f"could not find the function '{func_name}'" )
+
+
     def func(self, func_name, *func_pos_params, **func_opt_params):
         """Run an arbitrary Python's function - either a built-in or member of a reachable module.
-
-            NB: Currently doesn't pick up parameters from the containing object.
 
 Usage examples :
                 axs func runnable.plus_one 12                                                                   # internal to AXS
@@ -563,16 +578,9 @@ Usage examples :
                 axs func numpy.arange 15                                                                        # if numpy is already installed in PYTHONPATH
                 axs byquery python_package,package_name=numpy , use , func numpy.arange 7                       # if we need our own specific numpy
                 axs byquery python_package,package_name=numpy , use , func numpy.exp2 --,=0,1,2,3,4,5,6,7,8     # same, passing a list
+                axs byname shell , own_data ,1 func pprint.pprint                                               # pass structured data to a func
         """
-        if '.' in func_name:                                            # an imported "dotted" function (can be several dots deep)
-            func_object = self.attr(func_name)
-        else:                                                           # a built-in function
-            func_object = __builtins__[func_name]
-
-        if func_object:
-            return function_access.feed(func_object, func_pos_params, func_opt_params)
-        else:
-            raise NameError( f"could not find the function '{func_name}'" )
+        pass    # just a placeholder for help()'s DocString. The code itself lives in local_call()
 
 
     def python_api(self, src_text, line_sep='\\n'):
