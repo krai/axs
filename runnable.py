@@ -340,11 +340,12 @@ Usage examples :
 
 
         if action_name=='func':     # 'func' here is either an externally callable function (e.g. pprint.pprint() ) or a builtin (e.g. hex() or len() )
-            action_object = self.reach_func( pos_params[0] )
+            action_object   = self.reach_func( pos_params[0] )
+            func_params     = pos_params[1:]
             try:                    # if the func has a valid signature, we can route its' execution via the same path as an action
-                _, joint_arg_tuple, optional_arg_dict   = function_access.prep(action_object, pos_params[1:], self, captured_mapping)
+                _, joint_arg_tuple, optional_arg_dict   = function_access.prep(action_object, func_params, self, captured_mapping)
             except ValueError as e: # otherwise we use the func() wrapper to feed it with whatever the user has supplied (we have no way to check)
-                joint_arg_tuple     = pos_params
+                joint_arg_tuple     = func_params
                 optional_arg_dict   = rt_call_specific.own_data()
         else:
             action_object           = self.reach_action(action_name)
