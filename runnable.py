@@ -20,6 +20,7 @@ class Runnable(ParamSource):
 
     pipeline_counter                = 0
     ESCAPE_do_not_process           = 'AS^IS'
+    MARKER_prev_callee              = '-'       # continue from (and return) the previous step's callee
 
     def __init__(self, own_functions=None, kernel=None, **kwargs):
         "Accept setting own_functions and kernel in addition to parent's parameters"
@@ -439,8 +440,21 @@ Usage examples :
 
 
     def execute(self, pipeline, pipeline_wide_data=None):
-        """Execute a parsed pipeline (a chain of calls that starts from the kernel object).
-            Whenever a result returned by a function is NOT an Runnable, the execution resets back to the kernel object.
+        """Execute a parsed pipeline (a chain of calls that starts from the object this method was called on
+            - the kernel when the pipeline came from the command line, but an arbitrary Entry when it came
+            from a ^^-expression stored in another Entry).
+
+            By default each step is called on the result of the previous one. That result does not have to be
+            a Runnable - any object that has a method of that name will do (see the "version , split ." examples below).
+
+            A pipeline element that is not a call is a marker that overrides what the next step gets called on:
+                []          (spelled " , , " on the command line)  the originator of this pipeline
+                "-"         (spelled " ,- ")    the callee of the previous step, discarding the result it returned
+                <int>       (spelled " ,2 ")    the originator, with the previous result inserted into pos_params at this position
+                <str>       (spelled " ,foo ")  the originator, with the previous result added to edit_dict under this name
+
+            The last two capture the previous result at the point they are reached, so " ,1 ,- " stores a step's
+            result back into the very entry that produced it.
 
 Usage examples :
                 axs si: byname sysinfo , substitute '#{os}#--#{ar}#' --os:=^^:dig:si.osname --ar:=^^:dig:si.arch
@@ -469,6 +483,18 @@ Usage examples :
                 axs work_collection , attached_entry ls_output_entry , plant file_name ls_output.txt , save , target_path: get_path , , byname shell , run --shell_cmd_with_subs='ls -l > #{target_path}#'
                 axs byname ls_output_entry , entry_dir:  get_path '' , , byname shell , run --shell_cmd_with_subs='ls -l #{entry_dir}#'
                 axs byname ls_output_entry , out_file_path: get_path , , byname shell , run --shell_cmd_with_subs='cat #{out_file_path}#'
+
+            # Continue after a call that does not return anything useful:
+                axs fresh_entry , set_own_data --,::=greeting:Hello ,- substitute '#{greeting}#, world'
+            # ",N ,-" : the result becomes an argument, the callee stays the receiver (store a result back into the entry that produced it):
+                axs byname base_for_editing , get number ,1 ,- plant copy_of_number , substitute '#{number}#/#{copy_of_number}#'
+            # ",-" : carry on from the entry after a call that was made for its side effect (shell.run() returns a return code):
+                axs byname shell , run --shell_cmd='echo Hello' ,- get_name
+            # ",- ,N" : the callee itself becomes the argument of a call on the originator:
+                axs byname shell , run --shell_cmd='echo Hello' ,- ,0 noop
+            # A trailing marker makes the pipeline return the entry instead of the last call's result:
+                axs byname base_for_editing , get number ,-
+                axs execute ---='[["fresh_entry"],["set_own_data",[{"greeting":"Hello"}]],"-"]' , substitute '#{greeting}#, world'
         """
         max_call_params     = 3     # action, pos_params, edit_dict
         pipeline_wide_data  = pipeline_wide_data or {}
@@ -477,12 +503,15 @@ Usage examples :
         Runnable.pipeline_counter += 1
 
         local_context       = [ rt_pipeline_wide ]
-        result              = entry = self
+        result              = entry = prev_callee = self
         passing_param       = None
 
         for call_idx, call_params in enumerate(pipeline):
 
-            if type(call_params) in (int, str): # a number is a signal to insert the previous result into the pos_params of the next call,
+            if call_params == self.MARKER_prev_callee:  # discard the result and go back to the callee of the previous step
+                result = entry = prev_callee
+
+            elif type(call_params) in (int, str): # a number is a signal to insert the previous result into the pos_params of the next call,
                                                 # a string param name is a signal to add the previous result into edit_dict of the next call
                 protected_result = { self.ESCAPE_do_not_process : result } if type(result) in (dict, list) else result
                 passing_param = (call_params, protected_result)
@@ -537,7 +566,8 @@ Usage examples :
                 if output_label:
                     rt_pipeline_wide[output_label] = function_access.to_num_or_not_to_num( result )
 
-                entry = result
+                prev_callee = entry
+                entry       = result
 
         return result
 

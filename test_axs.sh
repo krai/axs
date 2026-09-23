@@ -30,6 +30,29 @@ assert 'axs bypath foo , substitute "#{greeting}#, #{address}#!"' 'Hello, mate!'
 rm -rf foo
 assert_end entry_creation_and_data_access
 
+# ",-" continues from the callee of the previous step, discarding the result it returned:
+assert 'axs fresh_entry , set_own_data --,::=greeting:Hello ,- substitute "#{greeting}#, world"' 'Hello, world'
+assert 'axs fresh_entry , set_own_data --,::=greeting:Hello ,- get greeting' 'Hello'
+# the callee does not have to be an Entry:
+assert 'axs version , split . , __getitem__ 1' '2'
+assert 'axs version , split . ,- __getitem__ 1' '.'
+# after a call made for its side effect (shell.run() returns a return code):
+assert 'axs byname shell , run --shell_cmd="echo Hello" --errorize_output+ , , get_name' 'DefaultKernel'
+assert 'axs byname shell , run --shell_cmd="echo Hello" --errorize_output+ ,- get_name' 'shell'
+# ",N ,-" passes the result along, but keeps the callee as the receiver:
+assert 'axs byname base_for_editing , get number ,1 plant copy_of_number , substitute "#{number}#/#{copy_of_number}#"' 'None/7'
+assert 'axs byname base_for_editing , get number ,1 ,- plant copy_of_number , substitute "#{number}#/#{copy_of_number}#"' '7/7'
+# ",- ,N" passes the callee itself along to a call on the originator:
+assert 'axs byname shell , run --shell_cmd="echo Hello" --errorize_output+ ,0 noop' '0'
+assert 'axs byname shell , run --shell_cmd="echo Hello" --errorize_output+ ,- ,0 noop' "['^', 'byname', 'shell']"
+# a trailing marker makes the pipeline return the callee instead of the last call's result:
+assert 'axs byname base_for_editing , get number' '7'
+assert 'axs byname base_for_editing , get number ,-' "['^', 'byname', 'base_for_editing']"
+# the same marker spelled "-" inside a stored pipeline:
+assert "axs execute ---='[[\"fresh_entry\"],[\"set_own_data\",[{\"greeting\":\"Hello\"}]],\"-\",[\"substitute\",\"#{greeting}#, world\"]]'" 'Hello, world'
+assert "axs execute ---='[[\"byname\",[\"base_for_editing\"]],[\"get\",[\"number\"]],\"-\"]' , get string" 'abc'
+assert_end prev_callee_marker
+
 assert "axs mi: bypath missing , plant alpha 10 beta 20 , plant formula --:='^^:substitute:#{alpha}#-#{beta}#' , own_data" "{'alpha': 10, 'beta': 20, 'formula': '10-20'}"
 assert "axs mi: bypath missing , plant alpha 10 beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , own_data" "{'alpha': 10, 'beta': 20, 'formula': ['^^', 'substitute', '#{alpha}#-#{beta}#']}"
 assert "axs mi: bypath missing , plant alpha 10 beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula --alpha=30" "30-20"
