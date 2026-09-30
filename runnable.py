@@ -485,8 +485,8 @@ Usage examples :
                 axs byname ls_output_entry , entry_dir:  get_path '' , , byname shell , run --shell_cmd_with_subs='ls -l #{entry_dir}#'
                 axs byname ls_output_entry , out_file_path: get_path , , byname shell , run --shell_cmd_with_subs='cat #{out_file_path}#'
 
-            # Continue after a call that does not return anything useful:
-                axs fresh_entry , set_own_data --,::=greeting:Hello ,- substitute '#{greeting}#, world'
+            # Continue after a foreign function that was called for its side effect and returned nothing useful:
+                axs byname base_for_editing , own_data ,1 ,- func pprint.pprint ,- get_name
             # ",N ,-" : the result becomes an argument, but the call is made on the object of the previous step
             #           (this is how a result gets stored back into the very entry that produced it):
                 axs byname base_for_editing , get number ,1 ,- plant copy_of_number , substitute '#{number}#/#{copy_of_number}#'

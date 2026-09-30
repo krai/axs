@@ -45,7 +45,15 @@ class ParamSource:
 
 
     def set_own_data(self, mix_dict, topup=False):
+        """Replace this object's own_data with the given dictionary, or merge into it if topup is set.
+            Keys that contain a dot or end with a plus are treated as editing expressions and get planted instead.
+            Returns the object itself, so it can be chained.
 
+Usage examples :
+                axs fresh_entry , set_own_data --,::=greeting:Hello , substitute '#{greeting}#, world'
+                axs fresh_entry , set_own_data --,::=greeting:Hello , set_own_data --,::=name:Claude --topup+ , substitute '#{greeting}#, #{name}#!'
+                axs byname base_for_editing , set_own_data --,::=number:42 , get number
+        """
         if type(mix_dict)==dict:
             if (not topup or
                 not hasattr(self, "own_data_cache") or
@@ -70,6 +78,8 @@ class ParamSource:
 
         else:
             self.own_data_cache = mix_dict
+
+        return self
 
 
     def pure_data_loader(self):

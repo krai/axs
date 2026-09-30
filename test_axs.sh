@@ -30,9 +30,13 @@ assert 'axs bypath foo , substitute "#{greeting}#, #{address}#!"' 'Hello, mate!'
 rm -rf foo
 assert_end entry_creation_and_data_access
 
-# ",-" continues from the object of the previous step, discarding the result its action returned:
-assert 'axs fresh_entry , set_own_data --,::=greeting:Hello ,- substitute "#{greeting}#, world"' 'Hello, world'
-assert 'axs fresh_entry , set_own_data --,::=greeting:Hello ,- get greeting' 'Hello'
+# set_own_data() returns the object itself, so it chains without any help:
+assert 'axs fresh_entry , set_own_data --,::=greeting:Hello , substitute "#{greeting}#, world"' 'Hello, world'
+assert 'axs fresh_entry , set_own_data --,::=greeting:Hello , set_own_data --,::=name:Claude --topup+ , substitute "#{greeting}#, #{name}#!"' 'Hello, Claude!'
+# ",-" continues from the object of the previous step, discarding the result its action returned
+# (pprint.pprint() is foreign code: it prints its argument and returns None):
+assert 'axs byname base_for_editing , own_data ,1 ,- func pprint.pprint , , get_name | tail -1' 'DefaultKernel'
+assert 'axs byname base_for_editing , own_data ,1 ,- func pprint.pprint ,- get_name | tail -1' 'base_for_editing'
 # the object of the previous step does not have to be an Entry:
 assert 'axs version , split . , __getitem__ 1' '2'
 assert 'axs version , split . ,- __getitem__ 1' '.'
