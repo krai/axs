@@ -20,7 +20,7 @@ class Runnable(ParamSource):
 
     pipeline_counter                = 0
     ESCAPE_do_not_process           = 'AS^IS'
-    MARKER_prev_callee              = '-'       # continue from (and return) the previous step's callee
+    MARKER_prev_object              = '-'       # continue from (and return) the object of the previous step
 
     def __init__(self, own_functions=None, kernel=None, **kwargs):
         "Accept setting own_functions and kernel in addition to parent's parameters"
@@ -449,7 +449,8 @@ Usage examples :
 
             A pipeline element that is not a call is a marker that overrides what the next step gets called on:
                 []          (spelled " , , " on the command line)  the originator of this pipeline
-                "-"         (spelled " ,- ")    the callee of the previous step, discarding the result it returned
+                "-"         (spelled " ,- ")    the object of the previous step - the one its action was called on -
+                                                discarding the result that action returned
                 <int>       (spelled " ,2 ")    the originator, with the previous result inserted into pos_params at this position
                 <str>       (spelled " ,foo ")  the originator, with the previous result added to edit_dict under this name
 
@@ -486,13 +487,18 @@ Usage examples :
 
             # Continue after a call that does not return anything useful:
                 axs fresh_entry , set_own_data --,::=greeting:Hello ,- substitute '#{greeting}#, world'
-            # ",N ,-" : the result becomes an argument, the callee stays the receiver (store a result back into the entry that produced it):
+            # ",N ,-" : the result becomes an argument, but the call is made on the object of the previous step
+            #           (this is how a result gets stored back into the very entry that produced it):
                 axs byname base_for_editing , get number ,1 ,- plant copy_of_number , substitute '#{number}#/#{copy_of_number}#'
             # ",-" : carry on from the entry after a call that was made for its side effect (shell.run() returns a return code):
                 axs byname shell , run --shell_cmd='echo Hello' ,- get_name
-            # ",- ,N" : the callee itself becomes the argument of a call on the originator:
+            # ",- ,N" : the object of the previous step itself becomes the argument of a call on the originator:
                 axs byname shell , run --shell_cmd='echo Hello' ,- ,0 noop
-            # A trailing marker makes the pipeline return the entry instead of the last call's result:
+            # the three objects a step can continue from:
+                axs core_collection , byname git , get_name      # git             - the result of the previous step
+                axs core_collection , byname git ,- get_name     # core_collection - the object of the previous step
+                axs core_collection , byname git , , get_name    # DefaultKernel   - the originator of the pipeline
+            # A trailing marker makes the pipeline return that object instead of the last call's result:
                 axs byname base_for_editing , get number ,-
                 axs execute ---='[["fresh_entry"],["set_own_data",[{"greeting":"Hello"}]],"-"]' , substitute '#{greeting}#, world'
         """
@@ -503,22 +509,22 @@ Usage examples :
         Runnable.pipeline_counter += 1
 
         local_context       = [ rt_pipeline_wide ]
-        result              = entry = prev_callee = self
+        result              = curr_object = prev_object = self
         passing_param       = None
 
         for call_idx, call_params in enumerate(pipeline):
 
-            if call_params == self.MARKER_prev_callee:  # discard the result and go back to the callee of the previous step
-                result = entry = prev_callee
+            if call_params == self.MARKER_prev_object:  # discard the result and go back to the object of the previous step
+                result = curr_object = prev_object
 
             elif type(call_params) in (int, str): # a number is a signal to insert the previous result into the pos_params of the next call,
                                                 # a string param name is a signal to add the previous result into edit_dict of the next call
                 protected_result = { self.ESCAPE_do_not_process : result } if type(result) in (dict, list) else result
                 passing_param = (call_params, protected_result)
-                entry = self
+                curr_object = self
 
             elif call_params == []:         # an empty list is a signal to start again from self
-                entry = self
+                curr_object = self
 
             else:
                 output_label    = call_params.pop(max_call_params) if len(call_params)>max_call_params else None    # NB: the order is important!
@@ -547,18 +553,18 @@ Usage examples :
                     passing_param = None     # empty it after use
 
 
-                if hasattr(entry, 'call'):                                  # an Entry-specific or Runnable-generic method ("func" called on an Entry will fire here)
+                if hasattr(curr_object, 'call'):                                  # an Entry-specific or Runnable-generic method ("func" called on an Entry will fire here)
                     # print(f"Before call({action_name}, {pos_params}, {edit_dict}, export:{export_params}, rel:+++{self}---)")
-                    result = entry.call(action_name, pos_params, edit_dict, export_params, slice_relative_to=self, call_record_entry_ptr=call_record_entry_ptr, nested_context=local_context)
-                elif hasattr(entry, action_name):                           # a non-axs Object method
-                    action_object   = getattr(entry, action_name)
+                    result = curr_object.call(action_name, pos_params, edit_dict, export_params, slice_relative_to=self, call_record_entry_ptr=call_record_entry_ptr, nested_context=local_context)
+                elif hasattr(curr_object, action_name):                           # a non-axs Object method
+                    action_object   = getattr(curr_object, action_name)
                     pos_params      = rt_pipeline_wide.nested_calls(pos_params)              # perform all nested calls if there are any
                     result          = function_access.feed(action_object, pos_params, edit_dict)
                 elif action_name[0]=='.':   # presumably a qualified action_name, let's start from self
                     result = self.call(action_name, pos_params, edit_dict, export_params, slice_relative_to=self, call_record_entry_ptr=call_record_entry_ptr, nested_context=local_context)
                 else:
                     display_pipeline = "\n\t".join([str(step) for step in ["["]+pipeline]) + "\n]"
-                    raise RuntimeError( f'In pipeline {display_pipeline} step {pipeline[call_idx]} cannot be executed on value ({entry}) produced by {pipeline[call_idx-1]}' )
+                    raise RuntimeError( f'In pipeline {display_pipeline} step {pipeline[call_idx]} cannot be executed on value ({curr_object}) produced by {pipeline[call_idx-1]}' )
 
                 if input_label:
                     rt_pipeline_wide[input_label] = call_record_entry_ptr[0]
@@ -566,8 +572,8 @@ Usage examples :
                 if output_label:
                     rt_pipeline_wide[output_label] = function_access.to_num_or_not_to_num( result )
 
-                prev_callee = entry
-                entry       = result
+                prev_object = curr_object
+                curr_object = result
 
         return result
 
