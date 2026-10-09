@@ -75,6 +75,7 @@
     ],
     "host_paths_to_pass_down": [],
 
+    "docker_mounts": [ "^^", "docker_mounts" ],
     "host_entries_mapping": [ "^^", "host_entries_mapping" ],
     "container_entries_access": [ "^^", "container_entries_access" ],
     "host_kernel_path": [ "^", "kernel_path" ],
