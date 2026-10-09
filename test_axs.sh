@@ -61,6 +61,15 @@ assert "axs execute ---='[[\"fresh_entry\"],[\"set_own_data\",[{\"greeting\":\"H
 assert "axs execute ---='[[\"byname\",[\"base_for_editing\"]],[\"get\",[\"number\"]],\"-\"]' , get string" 'abc'
 assert_end prev_object_marker
 
+# a detected shell_tool inherits its "rule book" from a static parent instead of baking a copy,
+# but freezes the detected version, which participates in entry names and paths:
+assert 'axs byquery shell_tool,can_python , get cmd_key' 'version'
+assert 'axs byquery shell_tool,can_python , own_data , get cmd_key' 'None'
+assert 'axs byquery shell_tool,can_python , own_data , get shell_cmd_templates' 'None'
+assert 'axs byquery shell_tool,can_python , own_data , get tool_version ,0 func bool' 'True'
+assert 'axs byquery shell_tool,can_python , own_data , get major_dot_minor ,0 func bool' 'True'
+assert_end shell_tool_rulebook_inheritance
+
 assert "axs mi: bypath missing , plant alpha 10 beta 20 , plant formula --:='^^:substitute:#{alpha}#-#{beta}#' , own_data" "{'alpha': 10, 'beta': 20, 'formula': '10-20'}"
 assert "axs mi: bypath missing , plant alpha 10 beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , own_data" "{'alpha': 10, 'beta': 20, 'formula': ['^^', 'substitute', '#{alpha}#-#{beta}#']}"
 assert "axs mi: bypath missing , plant alpha 10 beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula --alpha=30" "30-20"

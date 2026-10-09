@@ -1,0 +1,67 @@
+{
+    "_parent_entries": [ [ "^", "byname", "base_python_interpreter_tool" ], [ "^", "byname", "tool_detector" ] ],
+
+    "newborn_parent_names": [ "base_python_interpreter_tool" ],
+    "newborn_entry_param_names": [ "tool_path", "tool_version", "major_dot_minor" ],
+
+    "_producer_rules": [
+        [ [ "shell_tool", "can_python", ["desired_python_version", [ "^", "kernel_python_major_dot_minor" ]] ], [["detect"]],
+            {   "tool_name": [ "AS^IS", "^^", "substitute", "python#{desired_python_version}#" ],
+                "tool_path": [ "^", "python_path" ]
+            }, ["exec_suffixes"]
+        ],
+
+        [ [ "shell_tool", "can_python", "desired_python_version.", "source?=detected" ], [["detect"]],
+            {   "tool_name": [ "AS^IS", "^^", "substitute", "python#{desired_python_version}#" ],
+                "symlink_path": [ "AS^IS", "AS^IS", "AS^IS", "^^", "get_path", "python3" ],
+                "tool_symlink": [ "AS^IS", "AS^IS", "AS^IS", "^^", "execute", [[
+                    [ "case", [
+                            [ "^^", "func", [ "os.path.exists", [ "^^", "get", "symlink_path" ] ] ],
+                            false, [[ "func", [ "os.symlink", [ "^^", "get", "tool_path" ], [ "^^", "get", "symlink_path" ] ] ]]
+                        ], { "execute_value": true } ],
+                    [ ],
+                    [ "get", "symlink_path" ]
+                ]] ]
+            }, ["exec_suffixes"]
+        ],
+
+        [ [ "shell_tool", "can_python", "desired_python_version.", "source?=precompiled" ], [["detect"]],
+            {   "minor_version": [ "AS^IS", "^^", "execute", [[
+                    [ "get", "desired_python_version" ],
+                    [ "split", "." ],
+                    [ "__getitem__", 1 ],
+                    0,
+                    [ "func", "int" ]
+                ]] ],
+                "tool_path": [ "AS^IS", "^^", "execute", [[
+                    [ "get_kernel" ],
+                    [ "byquery", [ ["extracted", "precompiled_python", [ "minor_version", [ "^^", "get", "minor_version" ] ] ] ] ],
+                    [ "get_path" ]
+                ]]]
+            }
+        ],
+
+        [ [ "shell_tool", "can_python", "desired_python_version.", "source?=built" ], [["detect"]],
+            {   "minor_version": [ "AS^IS", "^^", "execute", [[
+                    [ "get", "desired_python_version" ],
+                    [ "split", "." ],
+                    [ "__getitem__", 1 ],
+                    0,
+                    [ "func", "int" ]
+                ]] ],
+                "tool_path": [ "AS^IS", "^^", "execute", [[
+                    [ "get_kernel" ],
+                    [ "byquery", [ ["installed", "python3", [ "minor_version", [ "^^", "get", "minor_version" ] ] ] ] ],
+                    [ "get_path" ]
+                ]]]
+            }
+        ],
+
+        [ [ "shell_tool", "can_python", "desired_python_version!." ], [["detect"]],
+            {   "tool_name": [ "AS^IS", "^^", "substitute", "python#{desired_python_version}#", { "desired_python_version": ["^", "kernel_python_major_dot_minor"] } ],
+                "tool_path": [ "^", "python_path" ],
+                "desired_python_version": ["^", "kernel_python_major_dot_minor"]
+            }, ["exec_suffixes"]
+        ]
+    ]
+}

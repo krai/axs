@@ -1,0 +1,25 @@
+{
+    "_parent_entries": [ [ "^", "byname", "shell" ] ],
+
+    "shell_cmd_templates": {
+        "version": "\"#{tool_path}#\" --version",
+        "pip_install": "\"#{tool_path}#\" -m pip install #{installable}# --prefix=#{abs_install_dir}# --ignore-installed #{flattened_options}#",
+        "pip_available_versions": "\"#{tool_path}#\" -m pip install #{package_name}#==88.88.88 #{flattened_options}# #{force_binary_str}#"
+    },
+    "cmd_key": "version",
+    "capture_output": true,
+
+    "tool_version": [ "^^", "case", [ ["^^", "get", ["tool_path", ""] ],
+        [null,""], [ [ "noop", null ] ] ], { "execute_value": true, "default_value": [
+            [ "run", [], { "shell_cmd_with_subs": "\"#{tool_path}#\" --version" } ],
+            [ "split", " " ],
+            [ "__getitem__", 1 ]
+        ] } ],
+    "major_dot_minor": [ "^^", "execute", [[
+        [ "get", "tool_version" ],
+        0,
+        [ "func", "str" ],
+        [ "rsplit", [".", 1] ],
+        [ "__getitem__", 0 ]
+    ]] ]
+}

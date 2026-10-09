@@ -1,0 +1,13 @@
+{
+    "_parent_entries": [ [ "^", "core_collection" ] ],
+
+    "tags": [ "collection" ],
+
+    "contained_entries": {
+        "tool_detector": "tool_detector",
+        "python_based_tool_detector": "python_based_tool_detector",
+
+        "base_python_interpreter_tool": "base_python_interpreter_tool",
+        "python_interpreter_tool_detector": "python_interpreter_tool_detector"
+    }
+}
