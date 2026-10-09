@@ -37,24 +37,13 @@
 
     "hostname": [ "^", "func", "socket.gethostname" ],
     "exchange_collection_name": [ "^^", "substitute", "#{docker_image}#_#{docker_image_tag}#_on_#{hostname}#_docker_exchange_collection" ],
-    "pre_exchange_collection": [ "^^", "execute", [[
+    "exchange_collection": [ "^^", "execute", [[
         [ "get_kernel" ],
         [ "byquery", [[ "collection", [ "collection_name", [ "^^", "get", "exchange_collection_name" ] ] ]], { "parent_recursion": true } ]
     ]] ],
-    "pre_exchange_collection_path_on_host": [ "^^", "execute", [[
-        [ "get", "pre_exchange_collection" ],
+    "exchange_collection_path_on_host": [ "^^", "execute", [[
+        [ "get", "exchange_collection" ],
         [ "get_path", "" ]
-    ]] ],
-
-    "group_on_host": "krai",
-    "exchange_collection": [ "^^", "execute", [[
-        [ ".shell.run", [ "^^", "substitute", "chgrp -R #{group_on_host}# #{pre_exchange_collection_path_on_host}#" ] ],
-        [ ],
-        [ ".shell.run", [ "^^", "substitute", "chmod -R g+ws #{pre_exchange_collection_path_on_host}#" ] ],
-        [ ],
-        [ ".shell.run", [ "^^", "substitute", "setfacl -R -d -m group:#{group_on_host}#:rwx #{pre_exchange_collection_path_on_host}#" ] ],
-        [ ],
-        [ "get", "pre_exchange_collection" ]
     ]] ],
 
     "execution_entry": [ "^^", "get", "__modq_advertising_entry" ],
@@ -75,6 +64,30 @@
     ],
     "host_paths_to_pass_down": [],
 
+    "host_uid": [ "^", "func", "os.getuid" ],
+    "host_gid": [ "^", "func", "os.getgid" ],
+
+    "in_docker_uid_of_host_user": [ "^^", "execute", [[
+        [ "get", "docker_tool" ],
+        [ "run", [], {
+            "docker_image": [ "^^", "get", "docker_image" ],
+            "docker_image_tag": [ "^^", "get", "docker_image_tag" ],
+            "cmd_key": "run",
+            "docker_options": [ "^^", "substitute", "--rm --entrypoint stat -v #{exchange_collection_path_on_host}#:/probe:ro" ],
+            "run_in_docker": "-c %u /probe",
+            "capture_output": true
+        } ]
+    ]] ],
+    "container_root_is_host_root": [ "^^", "case", [ [ "^^", "get", "in_docker_uid_of_host_user" ],
+                                                     [ "^^", "func", [ "str", [ "^^", "get", "host_uid" ] ] ], true ],
+                                     { "default_value": false } ],
+    "use_host_user_wrapper": [ "^^", "get", "container_root_is_host_root" ],
+
+    "wrapper_path_in_docker": [ "^^", "host_to_docker_path", [[ "^^", "get_path", "become_host_user.sh" ]] ],
+    "in_docker_wrapper": [ "^^", "case", [ [ "^^", "get", "use_host_user_wrapper" ],
+                                           true, [ "^^", "substitute", "sh #{wrapper_path_in_docker}# #{host_uid}# #{host_gid}#" ] ],
+                           { "default_value": "" } ],
+
     "docker_mounts": [ "^^", "docker_mounts" ],
     "host_entries_mapping": [ "^^", "host_entries_mapping" ],
     "container_entries_access": [ "^^", "container_entries_access" ],
@@ -89,7 +102,7 @@
             "docker_run_extra_options": [ "^^", "get", "docker_run_extra_options" ],
             "cmd_key": "run",
             "docker_options": [ "^^", "substitute", "-it --rm --user #{user_in_docker}# #{host_entries_mapping}# #{docker_run_extra_options}#" ],
-            "run_in_docker": [ "^^", "substitute", "#{container_entries_access}# , byquery #{__modified_query}#  --.#{execution_entry_name}#.#{execution_entry_product_collection_name}#=#{exchange_collection_name}#" ]
+            "run_in_docker": [ "^^", "substitute", "#{in_docker_wrapper}# #{container_entries_access}# , byquery #{__modified_query}#  --.#{execution_entry_name}#.#{execution_entry_product_collection_name}#=#{exchange_collection_name}#" ]
         } ],
         [ ],
         [ "get", "exchange_collection" ],
