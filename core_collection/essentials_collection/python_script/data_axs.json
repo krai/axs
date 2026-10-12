@@ -1,7 +1,7 @@
 {
     "_parent_entries": [ [ "^", "byname", "python_in_shell" ] ],
 
-    "abs_script_path": [ "^^", "get_path_from", "rel_script_path" ],
+    "abs_script_path": [ "^^", "get_path_from", [ "rel_script_path" ], { "parent_recursion": true } ],
 
     "script_params_template": "",
 

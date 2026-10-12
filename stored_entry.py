@@ -423,6 +423,9 @@ Usage examples :
                 axs byname shell , inherit ---='{"shell_cmd_with_subs":"ls -l #{dir}#", "dir":"."}' dir_lister , save   # save the inherited entry into a standalone directory
                 axs bypath dir_lister , run --dir=..
 
+                axs byname generate_calendar_py , inherit ---='{"first_weekday":6}' sunday_calendar , save    # a Sunday-first variant that has no script of its own:
+                axs bypath sunday_calendar , get pipeline , get program_output , get calendar                # python_script finds generate_calendar.py in the parent
+
 TODO : Make saving into work_collection trivial, as it will likely be the most popular use case [NOT YET WORKING AS INTENDED - attach does not relocate]
                 axs byname shell , inherit ---='{"shell_cmd_with_subs":"ls -l #{dir}#", "dir":"."}' directory_lister , attach --:=^:work_collection , save
                 axs byname directory_lister , run --dir=..
