@@ -70,6 +70,19 @@ assert 'axs byquery shell_tool,can_python , own_data , get tool_version ,0 func 
 assert 'axs byquery shell_tool,can_python , own_data , get major_dot_minor ,0 func bool' 'True'
 assert_end shell_tool_rulebook_inheritance
 
+# get_path can look for an existing file along the inheritance chain (dont_be_like inherits from be_like, which alone has code_axs.py):
+assert 'axs byname dont_be_like , get_path code_axs.py ,0 func os.path.dirname ,0 func os.path.basename' 'dont_be_like'
+assert 'axs byname dont_be_like , get_path code_axs.py --parent_recursion+ ,0 func os.path.dirname ,0 func os.path.basename' 'be_like'
+assert 'axs byname dont_be_like , get_path data_axs.json --parent_recursion+ ,0 func os.path.dirname ,0 func os.path.basename' 'dont_be_like'
+assert 'axs byname dont_be_like , get_path not_there.txt --parent_recursion+ ,0 func os.path.dirname ,0 func os.path.basename' 'dont_be_like'
+assert 'axs byname dont_be_like , get_path not_there.txt --parent_recursion+ --strict+ 2>&1 | grep -q FileNotFoundError && echo raised' 'raised'
+# ... and so can get_path_from() and get_path_of(), which feed into get_path():
+assert 'axs byname dont_be_like , get_path_from my_file --my_file=code_axs.py --parent_recursion+ ,0 func os.path.dirname ,0 func os.path.basename' 'be_like'
+assert 'axs byname dont_be_like , get_path_from my_file --my_file=code_axs.py --strict+ 2>&1 | grep -q FileNotFoundError && echo raised' 'raised'
+assert "axs byname dont_be_like , get_path_of code ---contained_files='{\"code\":\"code_axs.py\"}' --parent_recursion+ ,0 func os.path.dirname ,0 func os.path.basename" 'be_like'
+assert "axs byname dont_be_like , get_path_of code ---contained_files='{\"code\":\"code_axs.py\"}' 2>&1 | grep -q FileNotFoundError && echo raised" 'raised'
+assert_end get_path_parent_recursion
+
 assert "axs mi: bypath missing , plant alpha 10 beta 20 , plant formula --:='^^:substitute:#{alpha}#-#{beta}#' , own_data" "{'alpha': 10, 'beta': 20, 'formula': '10-20'}"
 assert "axs mi: bypath missing , plant alpha 10 beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , own_data" "{'alpha': 10, 'beta': 20, 'formula': ['^^', 'substitute', '#{alpha}#-#{beta}#']}"
 assert "axs mi: bypath missing , plant alpha 10 beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula --alpha=30" "30-20"

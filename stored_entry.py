@@ -61,12 +61,20 @@ class Entry(Runnable):
         return self
 
 
-    def get_path(self, file_name=None):
+    def get_path(self, file_name=None, strict=False, parent_recursion=False):
         """The directory path of the stored Entry, optionally joined with a given relative name.
+            With parent_recursion, look for an existing file_name in the Entry itself, then in its parents
+            (in the same order parameters are inherited), and return the first one found -
+            so a parent's file can be overridden by a child, but is found from any of its descendants.
+            If nothing is found (or without parent_recursion), the path inside the Entry itself is returned,
+            even if it does not exist yet - so that it can be passed to the code that will create it.
+            With strict, a FileNotFoundError is raised instead of returning a non-existent path.
 
 Usage examples :
                 axs byname base_map , get_path
                 axs byname derived_map , get_path README.md
+                axs byname dont_be_like , get_path code_axs.py --parent_recursion+
+                axs byname dont_be_like , get_path code_axs.py --strict+
         """
         def ensure_path():
 
@@ -80,38 +88,52 @@ Usage examples :
                 file_name = os.path.sep.join( file_name )
 
             if os.path.isabs( file_name ):
-                return file_name
+                found_path = file_name
             else:
-                return os.path.join(ensure_path(), file_name)
+                found_path = None
+                if parent_recursion:
+                    for ancestor, _ in self.parent_generator():
+                        ancestor_path = getattr(ancestor, 'entry_path', None)   # do not assign a path to an ancestor that has none
+                        if ancestor_path and os.path.exists( os.path.join(ancestor_path, file_name) ):
+                            found_path = os.path.join(ancestor_path, file_name)
+                            break
+
+                found_path = found_path or os.path.join(ensure_path(), file_name)
         else:
-            return ensure_path()
+            found_path = ensure_path()
+
+        if strict and not os.path.exists( found_path ):
+            raise FileNotFoundError( found_path )
+
+        return found_path
 
 
-    def get_path_from(self, key_path):
+    def get_path_from(self, key_path, strict=False, parent_recursion=False):
         """A frequently needed combination of fetching a relative path from an Entry's data
             and getting an absolute file path from that relative path.
+            strict and parent_recursion are passed to get_path(); a None value still returns None.
 
 Usage examples :
                 axs byquery package_name=numpy , get_path_from rel_packages_dir
+                axs byname dont_be_like , get_path_from my_file --my_file=code_axs.py --parent_recursion+
         """
         rel_path = self.dig(key_path)
 
-        return self.get_path(rel_path) if rel_path is not None else None
+        return self.get_path(rel_path, strict=strict, parent_recursion=parent_recursion) if rel_path is not None else None
 
 
-    def get_path_of(self, resource_name, strict=True):
+    def get_path_of(self, resource_name, strict=True, parent_recursion=False):
         """Assuming the entry has contained_files{} dictionary defined,
             given the resource_name maps it to the absolute path of this resource.
-            Also optionally checks if the path exists, raising FileNotFoundError if not.
+            strict and parent_recursion are passed to get_path(); by default (strict) a missing resource
+            raises KeyError and a missing file raises FileNotFoundError.
 
 Usage examples :
                 axs byquery git_repo,repo_name=mlperf_inference_git , get_path_of bert_code_root
         """
-        abs_path = self.get_path(self.dig(["contained_files", resource_name], safe=not strict))
-        if strict and not os.path.exists( abs_path ):
-            raise FileNotFoundError( abs_path )
+        rel_path = self.dig(["contained_files", resource_name], safe=not strict)
 
-        return abs_path
+        return self.get_path(rel_path, strict=strict, parent_recursion=parent_recursion)
 
 
     def trim_path(self, input_path):
