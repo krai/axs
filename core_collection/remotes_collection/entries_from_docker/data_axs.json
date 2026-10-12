@@ -83,7 +83,7 @@
                                      { "default_value": false } ],
     "use_host_user_wrapper": [ "^^", "get", "container_root_is_host_root" ],
 
-    "wrapper_path_in_docker": [ "^^", "host_to_docker_path", [[ "^^", "get_path", "become_host_user.sh" ]] ],
+    "wrapper_path_in_docker": [ "^^", "host_to_docker_path", [[ "^^", "get_path", [ "become_host_user.sh" ], { "parent_recursion": true, "strict": true } ]] ],
     "in_docker_wrapper": [ "^^", "case", [ [ "^^", "get", "use_host_user_wrapper" ],
                                            true, [ "^^", "substitute", "sh #{wrapper_path_in_docker}# #{host_uid}# #{host_gid}#" ] ],
                            { "default_value": "" } ],
