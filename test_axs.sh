@@ -1,6 +1,11 @@
 #!/bin/bash
 
-source assert.sh
+if ! source assert.sh ; then
+    echo "ERROR: assert.sh, an essential component of this test suite, is not part of this repository." >&2
+    echo "       Please download it from https://raw.githubusercontent.com/lehmannro/assert.sh/master/assert.sh" >&2
+    echo "       into the current directory or a directory on your PATH, and run the tests again." >&2
+    exit 1
+fi
 
 # To enable compilation of source-only pip wheels on Intel Macs:
 #   https://github.com/facebookresearch/detectron2/issues/2288
