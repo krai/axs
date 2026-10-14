@@ -83,6 +83,11 @@ assert "axs byname dont_be_like , get_path_of code ---contained_files='{\"code\"
 assert "axs byname dont_be_like , get_path_of code ---contained_files='{\"code\":\"code_axs.py\"}' 2>&1 | grep -q FileNotFoundError && echo raised" 'raised'
 assert_end get_path_parent_recursion
 
+# functions and actions that declare **kwargs must still be callable (their **kwargs are left empty):
+assert "axs func json.loads '{\"hello\": \"world\"}'" "{'hello': 'world'}"
+assert "axs .shell.subst_run 'echo #{greetings}#, #{name}#' --greetings=Hello --name=World | head -1" 'Hello, World'
+assert_end callables_declaring_kwargs
+
 assert "axs mi: bypath missing , plant alpha 10 beta 20 , plant formula --:='^^:substitute:#{alpha}#-#{beta}#' , own_data" "{'alpha': 10, 'beta': 20, 'formula': '10-20'}"
 assert "axs mi: bypath missing , plant alpha 10 beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , own_data" "{'alpha': 10, 'beta': 20, 'formula': ['^^', 'substitute', '#{alpha}#-#{beta}#']}"
 assert "axs mi: bypath missing , plant alpha 10 beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula --alpha=30" "30-20"

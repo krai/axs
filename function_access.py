@@ -23,7 +23,7 @@ def prep(action_object, given_arg_list, dict_like_object, mapping_used=None):
     """Prepare to call a given action_object and feed it with arguments from given list and dictionary-like object (must support []).
 
         The function can be declared as having both positional args (without defaults) and optional args (with defaults).
-        *varargs are supported while **kwargs are not.
+        *varargs are supported, while **kwargs are not (they are left empty).
     """
     signature = inspect.signature(action_object)
     bound = signature.bind_partial(*given_arg_list)
@@ -35,6 +35,8 @@ def prep(action_object, given_arg_list, dict_like_object, mapping_used=None):
 
         if parameter.kind is parameter.VAR_POSITIONAL:
             bound.arguments[name] = ()
+            continue
+        elif parameter.kind is parameter.VAR_KEYWORD:
             continue
 
         try:
