@@ -271,7 +271,7 @@ Usage examples :
             return self.local_call( action_path, *the_pos_rest, **the_named_rest )
 
 
-    def local_call(self, action_name, pos_params=None, edit_dict=None, export_params=None, deterministic=True, call_record_entry_ptr=None, nested_context=None, slice_relative_to=None):
+    def local_call(self, action_name, pos_params=None, edit_dict=None, export_params=None, deterministic=True, call_record_entry_ptr=None, nested_context=None, slice_relative_to=None, explicit_keys=None):
         """Call a given function or method of a given entry and feed it
             with arguments from the current object optionally overridden by a given edit_dict
 
@@ -324,6 +324,11 @@ Usage examples :
         # FIXME: this is a candidate for deletion. Be sure to seriously test the hell out of it
         rt_call_specific.own_data( self.nested_calls( rt_call_specific.own_data() ) )   # perform the delayed interpretation of expressions
 
+        if explicit_keys is None:                           # unless told otherwise, all local edits are considered explicit
+            explicit_keys = local_edits.keys()
+        explicit_top_keys = { k.split('.')[0].rstrip('+') for k in explicit_keys if k in local_edits }      # 'alpha.beta' and 'gamma+' edit 'alpha' and 'gamma'
+        explicit_dict = { k: rt_call_specific.own_data()[k] for k in explicit_top_keys if k in rt_call_specific.own_data() }   # values after edits and nested_calls()
+
         if ak:
             call_record_entry   = ak.fresh_entry(container=ak.record_container(), generated_name_prefix=f"generated_by_{self.get_name()}_on_{action_name}_")
             captured_mapping    = call_record_entry.own_data()  # retain the pointer to perform modifications later
@@ -344,14 +349,14 @@ Usage examples :
             action_object   = self.reach_func( pos_params[0] )
             func_params     = pos_params[1:]
             try:                    # if the func has a valid signature, we can route its' execution via the same path as an action
-                _, joint_arg_tuple, optional_arg_dict   = function_access.prep(action_object, func_params, self, captured_mapping)
+                _, joint_arg_tuple, optional_arg_dict   = function_access.prep(action_object, func_params, self, captured_mapping, explicit_dict)
             except ValueError as e: # otherwise we use the func() wrapper to feed it with whatever the user has supplied (we have no way to check)
                 joint_arg_tuple     = func_params
                 optional_arg_dict   = rt_call_specific.own_data()
         else:
             action_object           = self.reach_action(action_name)
             rt_call_specific['__record_entry__'] = call_record_entry    # the order is important: first nested_calls() (potentially blocked by {"AS^IS": {}}  then add __record_entry__
-            _, joint_arg_tuple, optional_arg_dict   = function_access.prep(action_object, pos_params, self, captured_mapping)
+            _, joint_arg_tuple, optional_arg_dict   = function_access.prep(action_object, pos_params, self, captured_mapping, explicit_dict)
 
 
         if ak:
@@ -535,7 +540,9 @@ Usage examples :
                 call_params_iter    = iter(call_params)
                 action_name         = next(call_params_iter)
                 pos_params          = next(call_params_iter, [])
-                edit_dict           = { **pipeline_wide_data, **next(call_params_iter, {}) }    # shallow dictionary merge
+                step_edit_dict      = next(call_params_iter, {})
+                edit_dict           = { **pipeline_wide_data, **step_edit_dict }    # shallow dictionary merge
+                explicit_keys       = set(step_edit_dict)       # pipeline-wide data is broadcast, not explicit, so it never reaches **kwargs
                 export_params       = next(call_params_iter, None)
 
                 if type(pos_params)!=list:      # first ensure pos_params is a list
@@ -549,19 +556,20 @@ Usage examples :
                         pos_params.insert( param_position_or_name+insert_position_offset, param_value )
                     elif type(param_position_or_name) == str:   # add the previous call's result to the edit_dict of the current call
                         edit_dict[param_position_or_name] = param_value
+                        explicit_keys.add(param_position_or_name)
 
                     passing_param = None     # empty it after use
 
 
                 if hasattr(curr_object, 'call'):                                  # an Entry-specific or Runnable-generic method ("func" called on an Entry will fire here)
                     # print(f"Before call({action_name}, {pos_params}, {edit_dict}, export:{export_params}, rel:+++{self}---)")
-                    result = curr_object.call(action_name, pos_params, edit_dict, export_params, slice_relative_to=self, call_record_entry_ptr=call_record_entry_ptr, nested_context=local_context)
+                    result = curr_object.call(action_name, pos_params, edit_dict, export_params, slice_relative_to=self, call_record_entry_ptr=call_record_entry_ptr, nested_context=local_context, explicit_keys=explicit_keys)
                 elif hasattr(curr_object, action_name):                           # a non-axs Object method
                     action_object   = getattr(curr_object, action_name)
                     pos_params      = rt_pipeline_wide.nested_calls(pos_params)              # perform all nested calls if there are any
                     result          = function_access.feed(action_object, pos_params, edit_dict)
                 elif action_name[0]=='.':   # presumably a qualified action_name, let's start from self
-                    result = self.call(action_name, pos_params, edit_dict, export_params, slice_relative_to=self, call_record_entry_ptr=call_record_entry_ptr, nested_context=local_context)
+                    result = self.call(action_name, pos_params, edit_dict, export_params, slice_relative_to=self, call_record_entry_ptr=call_record_entry_ptr, nested_context=local_context, explicit_keys=explicit_keys)
                 else:
                     display_pipeline = "\n\t".join([str(step) for step in ["["]+pipeline]) + "\n]"
                     raise RuntimeError( f'In pipeline {display_pipeline} step {pipeline[call_idx]} cannot be executed on value ({curr_object}) produced by {pipeline[call_idx-1]}' )

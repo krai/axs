@@ -83,9 +83,25 @@ assert "axs byname dont_be_like , get_path_of code ---contained_files='{\"code\"
 assert "axs byname dont_be_like , get_path_of code ---contained_files='{\"code\":\"code_axs.py\"}' 2>&1 | grep -q FileNotFoundError && echo raised" 'raised'
 assert_end get_path_parent_recursion
 
-# functions and actions that declare **kwargs must still be callable (their **kwargs are left empty):
+# functions and actions that declare **kwargs must be callable:
 assert "axs func json.loads '{\"hello\": \"world\"}'" "{'hello': 'world'}"
 assert "axs .shell.subst_run 'echo #{greetings}#, #{name}#' --greetings=Hello --name=World | head -1" 'Hello, World'
+# **kwargs receive only the explicit overrides of the call that are not consumed by named parameters,
+# never the entry's own data, its parents' data, nor pipeline-wide data.
+# textwrap.shorten(text, width, **kwargs) passes its **kwargs on to TextWrapper(), which rejects anything unexpected:
+assert "axs func textwrap.shorten 'Hello there wide world' 12" 'Hello [...]'
+assert "axs func textwrap.shorten 'Hello there wide world' 12 --placeholder=~" 'Hello there~'
+assert "axs func textwrap.shorten 'Hello there wide world' --width=12 --placeholder=~" 'Hello there~'
+assert "axs execute ---='[[\"func\",[\"textwrap.shorten\",\"Hello there wide world\",12],{\"placeholder\":\"~\"}]]'" 'Hello there~'
+assert "axs noop '~' ,placeholder func textwrap.shorten 'Hello there wide world' 12" 'Hello there~'
+assert "axs byname base_for_editing , func textwrap.shorten 'Hello there wide world' 14 --placeholder:='^^:substitute:+#{string}#'" 'Hello+abc'
+assert "axs byname base_for_editing , func textwrap.shorten 'Hello there wide world' 12 --placeholder=~" 'Hello there~'
+assert "axs execute ---='[[\"func\",[\"textwrap.shorten\",\"Hello there wide world\",12],{\"placeholder\":\"~\"}]]' ---pipeline_wide_data='{\"zzz\":9}'" 'Hello there~'
+# an explicit edit of entry's own data (here a top-up) is explicit too, so it reaches **kwargs:
+assert "axs byname base_for_editing , func textwrap.shorten 'Hello there wide world' 12 --string+=de 2>&1 | grep -q \"unexpected keyword argument 'string'\" && echo raised" 'raised'
+# without **kwargs, unused overrides are still silently ignored, while with **kwargs a typo reaches the function:
+assert 'axs func runnable.plus_one 12 --zzz=1' '13'
+assert "axs func textwrap.shorten 'Hello there wide world' 12 --placholder=~ 2>&1 | grep -q \"unexpected keyword argument 'placholder'\" && echo raised" 'raised'
 assert_end callables_declaring_kwargs
 
 assert "axs mi: bypath missing , plant alpha 10 beta 20 , plant formula --:='^^:substitute:#{alpha}#-#{beta}#' , own_data" "{'alpha': 10, 'beta': 20, 'formula': '10-20'}"

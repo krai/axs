@@ -19,11 +19,12 @@ def list_function_names(module_like_object):
     return function_names
 
 
-def prep(action_object, given_arg_list, dict_like_object, mapping_used=None):
+def prep(action_object, given_arg_list, dict_like_object, mapping_used=None, explicit_dict=None):
     """Prepare to call a given action_object and feed it with arguments from given list and dictionary-like object (must support []).
 
         The function can be declared as having both positional args (without defaults) and optional args (with defaults).
-        *varargs are supported, while **kwargs are not (they are left empty).
+        *varargs are supported.
+        **kwargs only receive those key-value pairs of explicit_dict (the call-specific overrides) that are not consumed by named parameters.
     """
     signature = inspect.signature(action_object)
     bound = signature.bind_partial(*given_arg_list)
@@ -37,6 +38,8 @@ def prep(action_object, given_arg_list, dict_like_object, mapping_used=None):
             bound.arguments[name] = ()
             continue
         elif parameter.kind is parameter.VAR_KEYWORD:
+            bound.arguments[name] = { k: v for k, v in (explicit_dict or {}).items()
+                                      if k not in signature.parameters or signature.parameters[k].kind is parameter.POSITIONAL_ONLY }
             continue
 
         try:
