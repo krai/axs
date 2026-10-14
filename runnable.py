@@ -176,11 +176,10 @@ Usage examples :
                     ancestry_path   = []
                     action_object = self.reach_action(action_name, _ancestry_path=ancestry_path)
 
-                signature_object = inspect.signature(action_object)
-
-                if any(p.kind == inspect.Parameter.VAR_KEYWORD for p in signature_object.parameters.values()):
-                    help_buffer.append( """NB: this action/func cannot be called via our calling mechanism,
-                              because it makes use of variable keywords (**)""" )
+                try:
+                    signature_object = inspect.signature(action_object)
+                except ValueError:  # many builtins (e.g. max(), dict()) do not have an inspectable signature
+                    signature_object = None
 
                 if ancestry_path:
                     help_buffer.append( common_format.format('Function', action_name ))
@@ -191,7 +190,13 @@ Usage examples :
                 else:
                     help_buffer.append( common_format.format( 'Python function', action_name ))
 
-                help_buffer.append( common_format.format( 'Signature', action_name+str(signature_object) ))
+                if signature_object:
+                    help_buffer.append( common_format.format( 'Signature', action_name+str(signature_object) ))
+                    var_keyword_names = [ p.name for p in signature_object.parameters.values() if p.kind == inspect.Parameter.VAR_KEYWORD ]
+                    if var_keyword_names:
+                        help_buffer.append( common_format.format( 'NB', f"**{var_keyword_names[0]} only receives the explicit overrides of the call (--key=value, or the call's own edit dict) that are not consumed by named parameters" ))
+                else:
+                    help_buffer.append( common_format.format( 'Signature', "(not inspectable) receives the positional args and the explicit overrides of the call as keyword args" ))
                 help_buffer.append( common_format.format( 'DocString', action_object.__doc__ ))
             except Exception as e:
                 logging.error( str(e) )
@@ -350,9 +355,9 @@ Usage examples :
             func_params     = pos_params[1:]
             try:                    # if the func has a valid signature, we can route its' execution via the same path as an action
                 _, joint_arg_tuple, optional_arg_dict   = function_access.prep(action_object, func_params, self, captured_mapping, explicit_dict)
-            except ValueError as e: # otherwise we use the func() wrapper to feed it with whatever the user has supplied (we have no way to check)
+            except ValueError as e: # otherwise we feed it with whatever the user has explicitly supplied (we have no way to check)
                 joint_arg_tuple     = func_params
-                optional_arg_dict   = rt_call_specific.own_data()
+                optional_arg_dict   = explicit_dict     # same as **kwargs above: never pipeline-wide data or export_params (those are context for nested expressions)
         else:
             action_object           = self.reach_action(action_name)
             rt_call_specific['__record_entry__'] = call_record_entry    # the order is important: first nested_calls() (potentially blocked by {"AS^IS": {}}  then add __record_entry__

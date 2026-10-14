@@ -104,6 +104,20 @@ assert 'axs func runnable.plus_one 12 --zzz=1' '13'
 assert "axs func textwrap.shorten 'Hello there wide world' 12 --placholder=~ 2>&1 | grep -q \"unexpected keyword argument 'placholder'\" && echo raised" 'raised'
 assert_end callables_declaring_kwargs
 
+# functions without an inspectable signature (many builtins) receive only the explicit overrides of the call as keyword arguments:
+assert 'axs func dict --a=1' "{'a': 1}"
+assert 'axs byname base_for_editing , func dict --string+=de' "{'string': 'abcde'}"
+assert "axs execute ---='[[\"func\",[\"dict\"],{\"a\":1}]]' ---pipeline_wide_data='{\"zzz\":9}'" "{'a': 1}"
+assert "axs execute ---='[[\"func\",[\"max\",3,7,5]]]' ---pipeline_wide_data='{\"zzz\":9}'" '7'
+# export_params of a ^-call only provide context for nested expressions, they are never passed to the function:
+assert "axs byname base_for_editing , get res ---res='[\"^\",\"func\",[\"str\",[\"^^\",\"substitute\",\"n=#{number}#\"]],{},[\"number\"]]'" 'n=7'
+assert "axs byname base_for_editing , get res ---res='[\"^\",\"func\",[\"json.dumps\",[\"^^\",\"substitute\",\"n=#{number}#\"]],{},[\"number\"]]'" '"n=7"'
+# help() describes how **kwargs and signature-less funcs are fed:
+assert "axs help func json.loads | grep -c '^NB *: \\*\\*kw only receives the explicit overrides'" '1'
+assert "axs help func runnable.plus_one | grep -c '^NB'" '0'
+assert "axs help func max 2>&1 | grep -c '^Signature *: (not inspectable)'" '1'
+assert_end signatureless_funcs_and_export_params
+
 assert "axs mi: bypath missing , plant alpha 10 beta 20 , plant formula --:='^^:substitute:#{alpha}#-#{beta}#' , own_data" "{'alpha': 10, 'beta': 20, 'formula': '10-20'}"
 assert "axs mi: bypath missing , plant alpha 10 beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , own_data" "{'alpha': 10, 'beta': 20, 'formula': ['^^', 'substitute', '#{alpha}#-#{beta}#']}"
 assert "axs mi: bypath missing , plant alpha 10 beta 20 , plant formula --:='AS^IS:^^:substitute:#{alpha}#-#{beta}#' , get formula --alpha=30" "30-20"
