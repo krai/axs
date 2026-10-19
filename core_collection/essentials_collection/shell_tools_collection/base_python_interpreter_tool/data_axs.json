@@ -2,6 +2,8 @@
     "_parent_entries": [ [ "^", "byname", "shell" ] ],
 
     "shell_cmd_templates": {
+        "interact": "\"#{tool_path}#\"",
+        "help": "\"#{tool_path}#\" --help",
         "version": "\"#{tool_path}#\" --version",
         "pip_install": "\"#{tool_path}#\" -m pip install #{installable}# --prefix=#{abs_install_dir}# --ignore-installed #{flattened_options}#",
         "pip_available_versions": "\"#{tool_path}#\" -m pip install #{package_name}#==88.88.88 #{flattened_options}# #{force_binary_str}#"
