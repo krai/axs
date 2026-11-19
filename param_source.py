@@ -5,32 +5,46 @@
 Running this file as a script runs the tests of its Python API.
 """
 
-__version__ = "0.4.2"
+__version__ = "0.4.3"
 
 import sys
 
 
 def split_key_path(key_path):
-    """Turn a key path given as a dot-separated string or as a list into a new list of string keys.
-        Keys ending in '+' are rejected, as that suffix is reserved for augmentation.
+    """Turn a key path given as a dot-separated string or as a list into a new list of keys.
     """
-    key_path = key_path.split('.') if type(key_path)==str else [ str(key_syllable) for key_syllable in key_path ]
-    for key_syllable in key_path:
-        if key_syllable.endswith('+'):
-            raise ValueError(f"Key '{key_syllable}' ends in '+', which is reserved for augmentation")
-    return key_path
+    return key_path.split('.') if type(key_path)==str else list(key_path)
 
 
 def index_into(struct_ptr, key_syllable, vivify=False):
-    """Return the index under which key_syllable addresses struct_ptr: an integer for lists, the key itself otherwise.
-        With vivify set, a list that is too short for the index is padded with None.
+    """Return the index under which key_syllable addresses struct_ptr: an integer for lists, a string otherwise
+        (dictionary keys are strings, in line with parameter names). With vivify set, a list that is too short
+        for the index is padded with None.
     """
     if type(struct_ptr)!=list:
-        return key_syllable
+        return str(key_syllable)
     index = int(key_syllable)
     if vivify and index >= len(struct_ptr):
         struct_ptr.extend( [None] * (index - len(struct_ptr) + 1) )
     return index
+
+
+def augment_value(orig_value, diff):
+    """Return a new value combining orig_value with diff, leaving both unchanged:
+        a dictionary is topped up with another dictionary, a list gets a non-list element appended
+        or another list concatenated, strings are concatenated and numbers are added.
+        A missing original (None) is simply replaced by diff.
+    """
+    if orig_value is None:
+        return diff
+    elif type(orig_value)==dict and type(diff)==dict:
+        return { **orig_value, **diff }
+    elif type(orig_value)==list:
+        return orig_value + (diff if type(diff)==list else [ diff ])
+    try:
+        return orig_value + diff
+    except TypeError:
+        raise TypeError(f"Cannot augment a {type(orig_value).__name__} with a {type(diff).__name__}") from None
 
 
 class ParamSource:
@@ -122,18 +136,26 @@ class ParamSource:
 
     def plant(self, *keypath_value_pairs):
         """Assign values at the ends of key paths in this object's own data, creating missing structure on the way (see dig() with vivify).
-            Takes alternating key paths and values.
-            All key paths are checked before anything is changed. Returns the object itself, so that calls can be chained.
+            Takes alternating key paths and values. A path whose last key ends in '+' augments the existing value
+            instead of replacing it (see augment_value()); a missing or None value is simply assigned.
+            Returns the object itself, so that calls can be chained.
         """
         if len(keypath_value_pairs) % 2:
             raise ValueError(f"[{self.get_name()}] plant() expects alternating key paths and values, got an odd number of arguments")
-        key_paths = [ split_key_path(key_path) for key_path in keypath_value_pairs[0::2] ]
 
-        for key_path, value in zip(key_paths, keypath_value_pairs[1::2]):
+        for key_path, value in zip(keypath_value_pairs[0::2], keypath_value_pairs[1::2]):
+            key_path = split_key_path(key_path)
+            augment_mode = type(key_path[-1])==str and key_path[-1].endswith('+')
+            if augment_mode:
+                key_path[-1] = key_path[-1][:-1]
+
             # NB: once parents exist, planting below the top level of an inherited parameter
             #     will first have to copy that parameter into own data (copy-on-write).
             struct_parent_ptr = self.dig(key_path[:-1], vivify=True) if len(key_path)>1 else self.own_data()
-            struct_parent_ptr[ index_into(struct_parent_ptr, key_path[-1], vivify=True) ] = value
+            index = index_into(struct_parent_ptr, key_path[-1], vivify=True)
+            if augment_mode:
+                value = augment_value( struct_parent_ptr.get(index) if type(struct_parent_ptr)==dict else struct_parent_ptr[index], value )
+            struct_parent_ptr[index] = value
 
         return self
 
@@ -141,9 +163,10 @@ class ParamSource:
     def pluck(self, *key_paths):
         """Remove the values at the ends of the given key paths from this object's own data.
             Raises the underlying error if a path does not exist; nothing is created on the way.
-            All key paths are checked before anything is changed. Returns the object itself, so that calls can be chained.
+            Returns the object itself, so that calls can be chained.
         """
-        for key_path in [ split_key_path(key_path) for key_path in key_paths ]:
+        for key_path in key_paths:
+            key_path = split_key_path(key_path)
             struct_parent_ptr = self.dig(key_path[:-1]) if len(key_path)>1 else self.own_data()
             del struct_parent_ptr[ index_into(struct_parent_ptr, key_path[-1]) ]
 
@@ -181,8 +204,7 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
         def test_set_own_data_resets(self):         self.assertEqual( self.ps.set_own_data().own_data(), {} )
         def test_version_format(self):              self.assertRegex( __version__, r'^\d+\.\d+\.\d+$' )
         def test_all_edits_landed(self):
-            self.assertEqual( self.ps.own_data(), { 'zero': 0, 'none': None, '7': 'seven', 'late': 2, '8': 'eight', 'added': 2,
-                'greek': ['alpha', 'beta', {'y': 'filled'}, 'delta', None, {'x': 'vivified'}], 'colour': {'red': 128, 'green': 255}, 'deep': {'er': {'est': 1}} } )
+            self.assertEqual( self.ps.own_data(), { 'zero': 0, 'none': None, '7': 'seven', 'late': 2, '8': 'eight', 'added': 2, 'greek': ['alpha', 'beta', {'y': 'filled'}, 'delta', None, {'x': 'vivified'}], 'colour': {'red': 128, 'green': 255}, 'deep': {'er': {'est': 1}} } )
         def test_rejection_keeps_data(self):
             self.assertRaises( TypeError, self.ps.set_own_data, 'x' ); self.assertEqual( self.ps['7'], 'seven' )
         def test_set_own_data_replaces_and_chains(self):
@@ -192,6 +214,8 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
         def test_dig_safe(self):                    self.assertEqual( (self.ps.dig('greek.9', safe=True), self.ps.dig('colour.blue', safe=True, safe_value=0)), (None, 0) )
         def test_dig_vivify(self):                  self.assertEqual( (self.ps.dig('fresh.path', vivify=True), self.ps['fresh']), ({}, {'path': {}}) )
         def test_dig_by_reference(self):            self.assertIs( self.ps.dig('colour'), self.ps['colour'] )
+        def test_plant_list_paths(self):
+            self.ps.plant(['greek', 3], 'DELTA', ['colour', 7], 'seven'); self.assertEqual( (self.ps.dig('greek.3'), self.ps.dig('colour.7')), ('DELTA', 'seven') )
         def test_plant_chains(self):                self.assertIs( self.ps.plant('flat', 0), self.ps )
         def test_plant_into_scalar_fails(self):     self.assertRaises( TypeError, self.ps.plant, 'colour.red.deeper', 1 )
         def test_plant_odd_arguments(self):         self.assertRaises( ValueError, self.ps.plant, 'colour.blue' )
@@ -202,10 +226,18 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
             self.assertIs( self.ps.pluck('colour.red', 'greek.0', 'zero'), self.ps ); self.assertEqual( (self.ps['colour'], self.ps.dig('greek.0'), self.ps.get('zero')), ({'green': 255}, 'beta', None) )
         def test_failed_pluck_creates_nothing(self):
             self.assertRaises( KeyError, self.ps.pluck, 'nowhere.deep' ); self.assertNotIn( 'nowhere', self.ps.own_data() )
-        def test_plus_is_reserved(self):
-            for action in (lambda: self.ps.dig('greek+', safe=True), lambda: self.ps.plant('a.b+', 1), lambda: self.ps.pluck('greek+')): self.assertRaises( ValueError, action )
-        def test_reserved_plus_checked_before_editing(self):
-            self.assertRaises( ValueError, self.ps.plant, 'ok', 1, 'bad+', 2 ); self.assertNotIn( 'ok', self.ps.own_data() )
+        def test_plus_is_literal_elsewhere(self):
+            self.ps.plant('odd+.key', 1); self.assertEqual( (self.ps.dig('odd+.key'), self.ps.pluck('odd+').get('odd+')), (1, None) )
+        def test_augment_scalars_and_dicts(self):
+            self.ps.plant('deep.er+', {'more': 2}, 'zero+', 5, '7+', 'teen', 'greek.1+', '!'); self.assertEqual( [self.ps.dig(p) for p in ('deep.er', 'zero', '7', 'greek.1')], [{'est': 1, 'more': 2}, 5, 'seventeen', 'beta!'] )
+        def test_augment_lists(self):
+            self.ps.plant('greek+', 'omega', 'greek+', ['psi', 'chi']); self.assertEqual( self.ps['greek'][-3:], ['omega', 'psi', 'chi'] )
+        def test_augment_missing_or_none_assigns(self):
+            self.ps.plant('fresh.list+', [1], 'none+', 'x', 'greek.4+', 'four'); self.assertEqual( (self.ps.dig('fresh.list'), self.ps['none'], self.ps.dig('greek.4')), ([1], 'x', 'four') )
+        def test_augment_type_mismatch(self):
+            for path, value in (('colour+', 'not a dict'), ('7+', 1), ('zero+', 'one')): self.assertRaises( TypeError, self.ps.plant, path, value )
+        def test_augment_makes_a_new_value(self):
+            colour_before = self.ps['colour']; self.ps.plant('colour+', {'blue': 0}); self.assertEqual( colour_before, {'red': 128, 'green': 255} )
 
     if __name__ == '__main__':
         unittest.main(verbosity=2)
