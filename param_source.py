@@ -5,9 +5,10 @@
 Running this file as a script runs the tests of its Python API.
 """
 
-__version__ = "0.4.3"
+__version__ = "0.4.4"
 
 import sys
+from copy import deepcopy
 
 
 def split_key_path(key_path):
@@ -48,18 +49,37 @@ def augment_value(orig_value, diff):
 
 
 class ParamSource:
-    """An object of ParamSource class is a non-persistent container of parameters.
+    """An object of ParamSource class is a non-persistent container of parameters with an ordered list of parent objects.
 
-        At this stage it holds only its own data: there is no inheritance, no overriding,
-        no expressions and no persistence yet.
+        A parameter missing from an object's own data is looked up in its ancestors (see hierarchy_generator()),
+        except for parameters whose names start with '_', which are never inherited.
+        Writing (__setitem__(), plant(), pluck()) always targets the object's own data at the top level,
+        so a value set on a child shadows the inherited one without changing the parent.
+
+        Explicit edits of an inherited parameter (plant() or pluck() below its top level, augmenting it with '+',
+        or dig() with vivify) first store a deep copy of the whole parameter in own data (see own_value()),
+        so they never change the parent.
+
+        BEWARE: values are returned by reference, and edits made directly on them are not tracked. Appending to
+        or otherwise changing a value obtained from __getitem__(), get() or dig() changes it wherever it lives:
+        if it was inherited, the change is seen by the parent and all its other descendants. To edit such a value
+        for this object only, take a private copy first:
+            obj.own_value('greek').append('beta')
+
+        There are no expressions and no persistence yet.
     """
 
-    def __init__(self, name=None, own_data=None):
-        """Create a container with an optional name and an optional dictionary of own data.
-            An object without a name is anonymous; an object without data starts empty.
+    def __init__(self, name=None, own_data=None, parent_objects=None):
+        """Create a container with an optional name, an optional dictionary of own data and an optional list of parent objects.
+            An object without a name is anonymous; an object without data starts empty; an object without parents has none.
         """
         self.name = name
         self.set_own_data( own_data )
+        parent_objects = list(parent_objects or [])
+        for parent_object in parent_objects:
+            if not isinstance(parent_object, ParamSource):
+                raise TypeError(f"[{name}] parent objects should be ParamSource objects, got {type(parent_object).__name__}")
+        self.parent_objects_cache = parent_objects
 
 
     def get_name(self):
@@ -88,11 +108,55 @@ class ParamSource:
         return self.own_data_cache
 
 
-    def __getitem__(self, param_name):
-        """Return the value of a parameter, by reference. Parameter names are converted to strings.
-            Raises KeyError if the parameter is missing.
+    def parent_objects(self):
+        """Return the list of this object's parent objects, in order of priority.
         """
-        return self.own_data()[ str(param_name) ]
+        return self.parent_objects_cache
+
+
+    def hierarchy_generator(self):
+        """Yield this object followed by its ancestors, in depth-first, left-to-right order.
+            An ancestor reachable through several parents is visited more than once, which is harmless
+            for lookups, as they stop at the first object that has the parameter.
+        """
+        # DESIGN DECISION: depth-first order, as in axs 0.2. It differs from C3 (Python's own method resolution order)
+        #   only for diamonds: with D(B, C), B(A) and C(A), depth-first visits A before C, so a parameter defined
+        #   in both A and C is taken from A. C3 would give D, B, C, A; it is short to implement, but refuses some
+        #   hierarchies and needs a cached order (which brings invalidation problems once parents can change).
+        #   This order will also apply to methods once Entries have code. test_depth_first_order_in_diamond pins it.
+        yield self
+        for parent_object in self.parent_objects():
+            yield from parent_object.hierarchy_generator()
+
+
+    def own_value(self, param_name):
+        """Make sure a parameter lives in own data before it is edited in place: if it is only inherited,
+            store a deep copy of the inherited value in own data.
+            Returns the parameter's value from own data, by reference and safe to edit in place,
+            or None if the parameter is missing everywhere.
+        """
+        param_name = str(param_name)
+        own_data = self.own_data()
+        if param_name not in own_data:
+            try:
+                own_data[param_name] = deepcopy( self.__getitem__(param_name) )
+            except KeyError:
+                return None
+        return own_data[param_name]
+
+
+    def __getitem__(self, param_name):
+        """Return the value of a parameter, by reference, from the first object in the hierarchy that has it.
+            Parameters whose names start with '_' are only looked up in this object's own data.
+            Parameter names are converted to strings. Raises KeyError if the parameter is missing.
+        """
+        param_name = str(param_name)
+        for source_object in ( (self,) if param_name.startswith('_') else self.hierarchy_generator() ):
+            source_data = source_object.own_data()
+            if param_name in source_data:
+                return source_data[param_name]
+
+        raise KeyError(param_name)
 
 
     def get(self, param_name, default_value=None):
@@ -105,22 +169,26 @@ class ParamSource:
 
 
     def __setitem__(self, param_name, param_value):
-        """Set a parameter's value in this object's own data. Parameter names are converted to strings.
+        """Set a parameter's value in this object's own data, shadowing any inherited value.
+            Parameter names are converted to strings.
         """
         self.own_data()[ str(param_name) ] = param_value
 
 
     def dig(self, key_path, safe=False, safe_value=None, vivify=False):
         """Traverse a path of keys into a parameter's internal structure and return what is found there, by reference.
-            The path is a dot-separated string or a list of keys; its first key names the parameter, numeric keys index into lists.
+            The path is a dot-separated string or a list of keys; its first key names the parameter, which may be inherited.
+            Numeric keys index into lists.
             If the path cannot be traversed, raises the underlying error, or returns safe_value when safe is set.
             With vivify set, the path is created as it is traversed: missing dictionary levels and None placeholders
-            become empty dictionaries, and lists that are too short are padded with None.
+            become empty dictionaries, and lists that are too short are padded with None; an inherited parameter
+            is first copied into own data (see own_value()).
         """
         key_path = split_key_path(key_path)
         try:
-            if vivify and self.get( key_path[0] ) is None:
-                self.__setitem__( key_path[0], {} )
+            if vivify:
+                if self.own_value( key_path[0] ) is None:     # a vivifying walk is an edit, so it must only ever reach own data
+                    self.__setitem__( key_path[0], {} )
             struct_ptr = self.__getitem__( key_path[0] )
             for key_syllable in key_path[1:]:
                 index = index_into(struct_ptr, key_syllable, vivify)
@@ -138,6 +206,8 @@ class ParamSource:
         """Assign values at the ends of key paths in this object's own data, creating missing structure on the way (see dig() with vivify).
             Takes alternating key paths and values. A path whose last key ends in '+' augments the existing value
             instead of replacing it (see augment_value()); a missing or None value is simply assigned.
+            Editing below the top level of an inherited parameter, or augmenting it, first copies it into own data
+            (see own_value()), so the parent is never changed.
             Returns the object itself, so that calls can be chained.
         """
         if len(keypath_value_pairs) % 2:
@@ -149,8 +219,8 @@ class ParamSource:
             if augment_mode:
                 key_path[-1] = key_path[-1][:-1]
 
-            # NB: once parents exist, planting below the top level of an inherited parameter
-            #     will first have to copy that parameter into own data (copy-on-write).
+            if augment_mode and len(key_path)==1:
+                self.own_value( key_path[0] )       # for longer paths dig(vivify=True) does this
             struct_parent_ptr = self.dig(key_path[:-1], vivify=True) if len(key_path)>1 else self.own_data()
             index = index_into(struct_parent_ptr, key_path[-1], vivify=True)
             if augment_mode:
@@ -162,11 +232,17 @@ class ParamSource:
 
     def pluck(self, *key_paths):
         """Remove the values at the ends of the given key paths from this object's own data.
+            Plucking a top-level parameter lets an inherited value of the same name show through again;
+            plucking an inherited top-level parameter raises KeyError. Below the top level, an inherited
+            parameter is first copied into own data (see own_value()), so the parent is never changed.
             Raises the underlying error if a path does not exist; nothing is created on the way.
             Returns the object itself, so that calls can be chained.
         """
         for key_path in key_paths:
             key_path = split_key_path(key_path)
+            if len(key_path)>1:
+                self.dig(key_path)                      # raises if the path does not exist, before anything is copied
+                self.own_value( key_path[0] )
             struct_parent_ptr = self.dig(key_path[:-1]) if len(key_path)>1 else self.own_data()
             del struct_parent_ptr[ index_into(struct_parent_ptr, key_path[-1]) ]
 
@@ -191,6 +267,11 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
             self.ps['added'] = 2                    # overwriting
             ParamSource()['leak'] = 1               # must not leak into other default-constructed objects
             self.ps.plant('colour.green', 255, 'deep.er.est', 1, 'greek.3', 'delta', 'greek.5.x', 'vivified', 'greek.2.y', 'filled')
+            # A diamond: child(left, right), left(base), right(base)
+            self.base   = ParamSource('base',  { 'x': 'base', 'w': 'base', 'greek': ['alpha'], 'colour': {'red': 0}, 'nested': {'inner': {'a': 1}}, '_private': 'base' })
+            self.left   = ParamSource('left',  { 'x': 'left' }, [self.base])
+            self.right  = ParamSource('right', { 'x': 'right', 'y': 'right', 'w': 'right' }, [self.base])
+            self.child  = ParamSource('child', { 'z': 'child' }, [self.left, self.right])
 
         def test_name(self):                        self.assertEqual( self.ps.get_name(), 'alpha' )
         def test_anonymous(self):                   self.assertIsNone( self.blank.get_name() )
@@ -238,6 +319,36 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
             for path, value in (('colour+', 'not a dict'), ('7+', 1), ('zero+', 'one')): self.assertRaises( TypeError, self.ps.plant, path, value )
         def test_augment_makes_a_new_value(self):
             colour_before = self.ps['colour']; self.ps.plant('colour+', {'blue': 0}); self.assertEqual( colour_before, {'red': 128, 'green': 255} )
+
+        def test_inherited_lookup(self):            self.assertEqual( [self.child[p] for p in ('z', 'x', 'y', 'greek')], ['child', 'left', 'right', ['alpha']] )
+        def test_depth_first_order_in_diamond(self): self.assertEqual( self.child['w'], 'base' )      # C3 would give 'right': see hierarchy_generator()
+        def test_hierarchy_order(self):             self.assertEqual( [o.get_name() for o in self.child.hierarchy_generator()], ['child', 'left', 'base', 'right', 'base'] )
+        def test_underscore_not_inherited(self):    self.assertEqual( (self.base['_private'], self.child.get('_private')), ('base', None) )
+        def test_missing_in_hierarchy_raises(self): self.assertRaises( KeyError, self.child.__getitem__, 'missing' )
+        def test_parents_must_be_param_sources(self): self.assertRaises( TypeError, ParamSource, 'bad', {}, [{'x': 1}] )
+        def test_dig_through_inheritance(self):     self.assertEqual( self.child.dig('colour.red'), 0 )
+        def test_setitem_shadows(self):
+            self.child['x'] = 'own'; self.assertEqual( (self.child['x'], self.left['x']), ('own', 'left') )
+        def test_pluck_reveals_inherited(self):
+            self.child['x'] = 'own'; self.child.pluck('x'); self.assertEqual( self.child['x'], 'left' )
+        def test_pluck_inherited_raises(self):      self.assertRaises( KeyError, self.child.pluck, 'x' )
+        def test_augment_inherited_top_level(self):
+            self.child.plant('greek+', 'beta'); self.assertEqual( (self.child['greek'], self.base['greek']), (['alpha', 'beta'], ['alpha']) )
+        def test_nested_plant_copies_on_write(self):
+            self.child.plant('colour.green', 255, 'colour.red+', 1); self.assertEqual( (self.child['colour'], self.base['colour']), ({'red': 1, 'green': 255}, {'red': 0}) )
+        def test_own_value_is_deep(self):
+            self.child.plant('nested+', {'b': 2}, 'nested.inner.c', 3); self.assertEqual( self.base['nested'], {'inner': {'a': 1}} )
+        def test_nested_pluck_copies_on_write(self):
+            self.child.pluck('colour.red'); self.assertEqual( (self.child['colour'], self.base['colour']), ({}, {'red': 0}) )
+        def test_failed_nested_pluck_copies_nothing(self):
+            self.assertRaises( KeyError, self.child.pluck, 'colour.blue' ); self.assertNotIn( 'colour', self.child.own_data() )
+        def test_own_value_missing(self):           self.assertEqual( (self.child.own_value('missing'), 'missing' in self.child.own_data()), (None, False) )
+        def test_dig_vivify_copies_on_write(self):
+            self.child.dig('colour.shade', vivify=True); self.assertEqual( (self.child['colour'], self.base['colour']), ({'red': 0, 'shade': {}}, {'red': 0}) )
+        def test_explicit_own_value(self):      # the snippet from the class DocString
+            self.child.own_value('greek').append('beta'); self.assertEqual( (self.child['greek'], self.base['greek']), (['alpha', 'beta'], ['alpha']) )
+        def test_returned_reference_edits_parent(self):   # documented hazard, see the class DocString
+            self.child['greek'].append('beta'); self.assertEqual( self.base['greek'], ['alpha', 'beta'] )
 
     if __name__ == '__main__':
         unittest.main(verbosity=2)
