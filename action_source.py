@@ -110,14 +110,15 @@ class ActionSource(ParamSource):
 
 
     def call(self, action_name, pos_params=None, named_params=None):
-        """Find the named action, fill its parameters (see prep()) from an override that holds named_params on top of this object,
+        """Find the named action, fill its parameters (see prep()) from an override (of the same class) that holds named_params on top of this object,
             and run it. Methods found as actions stay bound to this object. Returns whatever the action returns.
             The call itself changes neither this object nor its parents.
         """
-        action_object   = self.find_action(action_name)
+        pos_params      = pos_params or []
         named_params    = named_params or {}
-        call_override   = ActionSource(own_data=dict(named_params), parent_objects=[self], is_override=True)
-        return feed( *prep(action_object, pos_params or [], named_params, call_override) )
+        action_object   = self.find_action(action_name)
+        call_override   = type(self)(own_data=dict(named_params), parent_objects=[self], is_override=True)
+        return feed( *prep(action_object, pos_params, named_params, call_override) )
 
 
 if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or collected by unittest/pytest (which have already loaded unittest)
