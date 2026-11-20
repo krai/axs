@@ -61,13 +61,18 @@ class ActionSource(ParamSource):
         or a public method of the object itself (such as get() or plant()).
         When an action is called, its parameters are looked up starting from the object it was called on,
         even if the function itself was found in a parent.
+
+        Each call creates an override (see ParamSource) holding the call's named parameters, on top of the object called.
+        A function that declares the parameter __entry__ receives that override: lookups and nested calls made through it
+        see the call's named parameters, while edits made through it go to the real object (see ParamSource.base_object()).
     """
 
-    def __init__(self, name=None, own_data=None, parent_objects=None, own_functions=None):
+    def __init__(self, name=None, own_data=None, parent_objects=None, own_functions=None, is_override=False):
         """Create a container with an optional name, an optional dictionary of own data, an optional list of parent objects
             and an optional namespace of own functions (any object whose attributes are functions, such as a module).
+            With is_override set, the object becomes an override (see ParamSource).
         """
-        super().__init__(name=name, own_data=own_data, parent_objects=parent_objects)
+        super().__init__(name=name, own_data=own_data, parent_objects=parent_objects, is_override=is_override)
         self.own_functions_cache = own_functions
 
 
@@ -75,6 +80,14 @@ class ActionSource(ParamSource):
         """Return this object's namespace of own functions, or None if it has none.
         """
         return self.own_functions_cache
+
+
+    def __getitem__(self, param_name):
+        """Return the value of a parameter as ParamSource does, except that the special name __entry__ gives this object itself.
+        """
+        if str(param_name)=='__entry__':
+            return self
+        return super().__getitem__(param_name)
 
 
     def find_action(self, action_name):
@@ -97,11 +110,14 @@ class ActionSource(ParamSource):
 
 
     def call(self, action_name, pos_params=None, named_params=None):
-        """Find the named action, fill its parameters (see prep()) using this object as the source of parameters, and run it.
-            Returns whatever the action returns. The call itself changes neither this object nor its parents.
+        """Find the named action, fill its parameters (see prep()) from an override that holds named_params on top of this object,
+            and run it. Methods found as actions stay bound to this object. Returns whatever the action returns.
+            The call itself changes neither this object nor its parents.
         """
-        action_object = self.find_action(action_name)
-        return feed( *prep(action_object, pos_params or [], named_params or {}, self) )
+        action_object   = self.find_action(action_name)
+        named_params    = named_params or {}
+        call_override   = ActionSource(own_data=dict(named_params), parent_objects=[self], is_override=True)
+        return feed( *prep(action_object, pos_params or [], named_params, call_override) )
 
 
 if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or collected by unittest/pytest (which have already loaded unittest)
@@ -121,6 +137,10 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
                 with_kwargs = lambda a, **extra: (a, extra),
                 explode     = lambda a: 1/0,
                 get_name    = lambda: 'redefined by code',
+                peek        = lambda __entry__: __entry__['b'],
+                outer       = lambda __entry__: __entry__.call('add3'),
+                bump        = lambda __entry__: __entry__.plant('counter+', 1),
+                who         = lambda __entry__: (__entry__.is_override(), __entry__.base_object().get_name()),
             )
             self.base   = ActionSource('base',  { 'a': 1, 'b': 2 }, own_functions=self.funcs)
             self.child  = ActionSource('child', { 'b': 20 }, [self.base])
@@ -148,6 +168,17 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
         def test_prep_reports_arguments(self):      self.assertEqual( prep(self.funcs.add3, [], {'c': 5}, self.child), (self.funcs.add3, (1, 20, 5), {}) )
         def test_call_has_no_side_effects(self):
             self.child.call('add3', named_params={'a': 7, 'c': 5}); self.assertEqual( (self.child.own_data(), self.base.own_data()), ({'b': 20}, {'a': 1, 'b': 2}) )
+
+        def test_named_reach_lookups_inside(self):  self.assertEqual( (self.child.call('peek', named_params={'b': 99}), self.child.call('peek')), (99, 20) )
+        def test_named_reach_nested_calls(self):    self.assertEqual( self.child.call('outer', named_params={'c': 5}), 26 )
+        def test_entry_is_the_override(self):       self.assertEqual( self.child.call('who'), (True, 'child') )
+        def test_entry_outside_a_call(self):        self.assertIs( self.child['__entry__'], self.child )
+        def test_edits_through_entry_persist(self):
+            self.child.call('bump'); self.child.call('bump'); self.assertEqual( (self.child['counter'], 'counter' in self.base.own_data()), (2, False) )
+        def test_method_action_edits_object(self):
+            self.child.call('plant', ['counter', 5]); self.assertEqual( self.child.own_data(), {'b': 20, 'counter': 5} )
+        def test_nested_call_has_no_side_effects(self):
+            self.child.call('outer', named_params={'a': 7, 'c': 5}); self.assertEqual( (self.child.own_data(), self.base.own_data()), ({'b': 20}, {'a': 1, 'b': 2}) )
 
     if __name__ == '__main__':
         unittest.main(verbosity=2)
