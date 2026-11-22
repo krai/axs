@@ -405,6 +405,9 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
         def test_byname_missing(self):              self.assertIsNone( self.kernel.call('byname', ['missing']) )
         def test_search_path_is_a_parameter(self):  self.assertIsNone( self.kernel.call('byname', ['foo'], {'collection_search_path': []}) )
         def test_bypath_gives_cached_entry(self):   self.assertIs( self.kernel.call('bypath', [os.path.join(KERNEL_PATH, 'core_collection', 'foo')]), self.kernel.call('byname', ['foo']) )
+        def test_execute_from_kernel(self):         self.assertEqual( self.kernel.execute([ ['byname', 'baz'], ['get', 'foo_only'] ]), 'inherited from foo' )   # axs byname baz , get foo_only
+        def test_execute_fresh_entry_pipeline(self):
+            temp_dir = tempfile.TemporaryDirectory(); self.addCleanup(temp_dir.cleanup); path = os.path.join(temp_dir.name, 'hello'); self.kernel.execute([ ['fresh_entry', path], ['plant', ['message', 'Hello']], ['save'] ]); self.assertEqual( Entry(storage_key=path).own_data(), {'message': 'Hello'} )
         def test_fresh_entry(self):
             fresh = self.kernel.call('fresh_entry', [], {'own_data': {'x': 1}}); self.assertEqual( (fresh['x'], fresh.storage_key(), fresh.own_functions()), (1, None, False) )
         def test_fresh_entry_saved(self):

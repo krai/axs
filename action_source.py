@@ -131,6 +131,44 @@ class ActionSource(ParamSource):
         return feed( *prep(action_object, pos_params, named_params, call_override) )
 
 
+    def execute(self, pipeline):
+        """Run a pipeline of calls starting from this object (the originator), and return the result of the last call.
+            Each step is a list [action_name], [action_name, pos_params] or [action_name, pos_params, named_params];
+            pos_params that is not a list is a single positional parameter. Each step is called on the result of the previous one:
+            an ActionSource through call(), any other object by calling its method of that name directly.
+            Markers between steps change what the next step is called on:
+                []      (" , , " on the command line)   the originator again;
+                "-"     (" ,- " on the command line)    the object the previous step was called on, discarding that step's result.
+            A trailing marker makes the pipeline return that object. An empty pipeline returns the originator.
+        """
+        result = current_object = previous_object = self
+
+        for step in pipeline:
+            if step == []:
+                current_object = self
+                continue
+            if step == '-':
+                result = current_object = previous_object
+                continue
+            if len(step) > 3:
+                raise ValueError(f"[{self.get_name()}] a pipeline step has at most 3 elements (action_name, pos_params, named_params), got {step}")
+
+            action_name     = step[0]
+            pos_params      = step[1] if len(step) > 1 else []
+            named_params    = step[2] if len(step) > 2 else {}
+            if type(pos_params) != list:
+                pos_params = [ pos_params ]
+
+            previous_object = current_object
+            if isinstance(current_object, ActionSource):
+                result = current_object.call(action_name, pos_params, named_params)
+            else:
+                result = getattr(current_object, action_name)(*pos_params, **named_params)
+            current_object = result
+
+        return result
+
+
 if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or collected by unittest/pytest (which have already loaded unittest)
 
     import unittest
@@ -153,9 +191,11 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
                 bump        = lambda __entry__: __entry__.plant('counter+', 1),
                 who         = lambda __entry__: (__entry__.is_override(), __entry__.base_object().get_name()),
             )
+            self.peer   = ActionSource('peer',  { 'a': 100, 'b': 200 }, own_functions=self.funcs)
             self.base   = ActionSource('base',  { 'a': 1, 'b': 2 }, own_functions=self.funcs)
             self.child  = ActionSource('child', { 'b': 20 }, [self.base])
             self.mixed  = ActionSource('mixed', {}, [ParamSource('plain', { 'a': 1, 'b': 2 })], own_functions=self.funcs)
+            self.start  = ActionSource('start', { 'peer': self.peer, 'words': 'alpha-beta-gamma' }, [self.child])    # where the pipeline tests start
 
         def test_fill_from_hierarchy(self):         self.assertEqual( self.child.call('add3'), 21 )     # a inherited, b own, c default
         def test_params_from_asking_object(self):   self.assertEqual( (self.base.call('add3'), self.child.call('add3')), (3, 21) )
@@ -191,6 +231,20 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
             self.child.call('plant', ['counter', 5]); self.assertEqual( self.child.own_data(), {'b': 20, 'counter': 5} )
         def test_nested_call_has_no_side_effects(self):
             self.child.call('outer', named_params={'a': 7, 'c': 5}); self.assertEqual( (self.child.own_data(), self.base.own_data()), ({'b': 20}, {'a': 1, 'b': 2}) )
+
+        def test_execute_one_step(self):            self.assertEqual( self.start.execute([ ['add3', [], {'c': 5}] ]), 26 )
+        def test_execute_chains_on_result(self):    self.assertEqual( self.start.execute([ ['get', ['peer']], ['add3'] ]), 300 )
+        def test_execute_plain_object_methods(self): self.assertEqual( self.start.execute([ ['get', 'words'], ['split', '-'], ['__getitem__', 1] ]), 'beta' )
+        def test_execute_back_to_originator(self):  self.assertEqual( self.start.execute([ ['get', ['peer']], [], ['add3'] ]), 21 )
+        def test_execute_previous_object_marker(self): self.assertEqual( self.start.execute([ ['get', 'peer'], ['add3'], '-', ['get', 'a'] ]), 100 )   # continue from peer, not from 300
+        def test_execute_trailing_marker_returns_object(self): self.assertIs( self.start.execute([ ['get', 'peer'], ['add3'], '-' ]), self.peer )
+        def test_execute_marker_after_side_effect(self):    # dict.update() returns None, so only ,- lets the chain carry on from the dict
+            self.assertEqual( self.start.execute([ ['get', 'peer'], ['own_data'], ['update', {'note': 'set'}], '-', ['pop', 'note'] ]), 'set' )
+        def test_execute_empty_pipeline(self):      self.assertIs( self.start.execute([]), self.start )
+        def test_execute_as_an_action(self):        self.assertEqual( self.start.call('execute', [[ ['get', 'peer'], ['get', 'b'] ]]), 200 )
+        def test_execute_step_too_long(self):       self.assertRaises( ValueError, self.child.execute, [ ['add3', [], {}, 'label'] ] )
+        def test_execute_has_no_side_effects(self):
+            self.start.execute([ ['add3', [], {'a': 7}], [], ['get', 'peer'], ['add3', [], {'c': 1}] ]); self.assertEqual( (self.start.own_data(), self.child.own_data(), self.peer.own_data()), ({'peer': self.peer, 'words': 'alpha-beta-gamma'}, {'b': 20}, {'a': 100, 'b': 200}) )
 
     if __name__ == '__main__':
         unittest.main(verbosity=2)
