@@ -1,0 +1,6 @@
+{
+    "_contained_entries": {
+        "foo": "foo",
+        "bar_collection": "bar_collection"
+    }
+}

@@ -5,6 +5,7 @@
 Running this file as a script runs the tests of its Python API.
 """
 
+import os
 import sys
 from types import SimpleNamespace
 
@@ -50,6 +51,9 @@ class Entry(ActionSource):
         A stored Entry loads its data, and its code, only when they are first needed. Only the filesystem storage backend
         provides code: Entries stored elsewhere get their behaviour by inheriting from Entries that have code.
         Parents are not stored yet: they can only be given as objects.
+
+        A stored Entry without a given name takes the name its storage backend derives from its key, if the backend can.
+        An Entry reached through a collection knows that collection as its containing collection (see get_containing_collection()).
     """
 
     def __init__(self, name=None, own_data=None, parent_objects=None, own_functions=None, is_override=False, storage_backend=None, storage_key=None):
@@ -63,6 +67,9 @@ class Entry(ActionSource):
         self.assigned_storage_backend   = storage_backend
         self.assigned_storage_key       = None if storage_key is None else storage_backend.call('canonical_key', [storage_key])
         self.data_loaded                = own_data is not None or storage_key is None
+        self.containing_collection_object = None
+        if self.name is None and storage_key is not None and storage_backend.can('name_from_key'):
+            self.name = storage_backend.call('name_from_key', [self.assigned_storage_key])
 
 
     def storage_backend(self):
@@ -75,6 +82,18 @@ class Entry(ActionSource):
         """Return the key under which the storage backend keeps this Entry (in canonical form), or None if it is not stored.
         """
         return self.assigned_storage_key
+
+
+    def get_containing_collection(self):
+        """Return the collection through which this Entry was reached, or None.
+        """
+        return self.containing_collection_object
+
+
+    def set_containing_collection(self, containing_collection):
+        """Record the collection that contains this Entry. Called by collections as they walk their contents.
+        """
+        self.containing_collection_object = containing_collection
 
 
     def set_own_data(self, own_data=None):
@@ -100,12 +119,10 @@ class Entry(ActionSource):
         """
         if self.own_functions_cache is None and self.storage_key() is not None:
             storage_backend = self.storage_backend()
-            try:
-                storage_backend.find_action('load_functions')
-            except NameError:
-                self.own_functions_cache = False    # storage backends other than the filesystem one provide no code
-            else:
+            if storage_backend.can('load_functions'):
                 self.own_functions_cache = storage_backend.call('load_functions', [self.storage_key()])
+            else:
+                self.own_functions_cache = False    # storage backends other than the filesystem one provide no code
         return self.own_functions_cache
 
 
@@ -170,6 +187,10 @@ BASE_STORAGE_BACKEND = Entry('base_storage_backend', own_functions=SimpleNamespa
 # and its own data are the parameters those functions use.
 FILESYSTEM_STORAGE_BACKEND = Entry('filesystem_storage_backend', own_functions=filesystem_storage_backend, parent_objects=[BASE_STORAGE_BACKEND],
                                    own_data={ 'data_file_name': 'data_axs.json', 'code_file_name': 'code_axs.py' })
+
+
+# core_collection lives in a fixed place relative to the kernel's Python files.
+CORE_COLLECTION_PATH = os.path.join( os.path.dirname(os.path.abspath(__file__)), 'core_collection' )
 
 
 if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or collected by unittest/pytest (which have already loaded unittest)
@@ -270,6 +291,23 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
             cached = self.bypath(self.base_path); Entry(storage_backend=self.fs, storage_key=self.base_path).save(os.path.join(self.root, 'copy')); self.assertIs( self.bypath(self.base_path), cached )
         def test_saved_direct_entry_replaces_cached(self):
             direct = Entry(storage_backend=self.fs, storage_key=self.base_path).save(); self.assertIs( self.bypath(self.base_path), direct )
+
+
+    class TestCoreCollection(unittest.TestCase):
+
+        def setUp(self):
+            """The real core_collection, with its temporary contents: foo, and bar_collection containing baz.
+            """
+            self.core_collection = FILESYSTEM_STORAGE_BACKEND.call('bypath', [CORE_COLLECTION_PATH])
+
+        def test_found_by_path_and_named(self):     self.assertEqual( (self.core_collection.get_name(), '_contained_entries' in self.core_collection.own_data()), ('core_collection', True) )
+        def test_walk_order(self):                  self.assertEqual( [e.get_name() for e in self.core_collection.call('walk')], ['core_collection', 'foo', 'bar_collection', 'baz'] )
+        def test_byname_direct(self):               self.assertEqual( (self.core_collection.call('byname', ['foo'])['greeting'], self.core_collection.call('byname', ['foo']).get_containing_collection() is self.core_collection), ('hello from foo', True) )
+        def test_byname_nested(self):               self.assertEqual( self.core_collection.call('byname', ['baz']).get_containing_collection().get_name(), 'bar_collection' )
+        def test_byname_missing(self):              self.assertIsNone( self.core_collection.call('byname', ['missing']) )
+        def test_byname_gives_cached_entry(self):   self.assertIs( self.core_collection.call('byname', ['baz']), FILESYSTEM_STORAGE_BACKEND.call('bypath', [os.path.join(CORE_COLLECTION_PATH, 'bar_collection', 'baz')]) )
+        def test_nested_collection_needs_no_code(self): self.assertEqual( (self.core_collection.call('byname', ['bar_collection']).own_functions(), self.core_collection.can('walk')), (False, True) )
+        def test_plain_entry_is_no_collection(self): self.assertNotIn( '_contained_entries', self.core_collection.call('byname', ['foo']).own_data() )
 
     if __name__ == '__main__':
         unittest.main(verbosity=2)

@@ -5,7 +5,7 @@
 Running this file as a script runs the tests of its Python API.
 """
 
-__version__ = "0.4.8"
+__version__ = "0.4.9"
 
 import sys
 from copy import deepcopy

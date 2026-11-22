@@ -23,6 +23,18 @@ def canonical_key(storage_key):
     return os.path.realpath(storage_key)
 
 
+def name_from_key(storage_key):
+    """Return the name an Entry stored under the key has by default: the last component of its path.
+    """
+    return os.path.basename(storage_key)
+
+
+def resolve_key(storage_key, relative_path):
+    """Return the key of whatever lies at relative_path from the Entry stored under storage_key (used by collections for their contents).
+    """
+    return os.path.join(storage_key, relative_path)
+
+
 def load_data(storage_key, data_file_name):
     """Return the data stored under the key, or an empty dictionary if the Entry's directory has no data file.
     """
@@ -94,6 +106,7 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
         def test_missing_data_is_empty(self):       self.assertEqual( load_data(self.root, DATA), {} )
         def test_missing_code_is_false(self):       self.assertIs( load_functions(self.root, CODE), False )
         def test_code_loaded(self):                 self.assertEqual( load_functions(self.key, CODE).double(21), 42 )
+        def test_name_and_relative_key(self):       self.assertEqual( (name_from_key(self.key), resolve_key(self.root, 'entry')), ('entry', self.key) )
         def test_canonical_key(self):               self.assertEqual( canonical_key(os.path.join(self.key, '..', 'entry')), os.path.realpath(self.key) )
         def test_save_data_keeps_code_and_no_temp(self):
             save_data(self.key, {'b': 2}, DATA); self.assertEqual( sorted(os.listdir(self.key)), sorted([CODE, DATA]) )

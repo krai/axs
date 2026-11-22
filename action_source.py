@@ -109,6 +109,16 @@ class ActionSource(ParamSource):
         raise NameError(f"[{self.get_name()}] has no action '{action_name}': neither a function in the hierarchy nor a public method")
 
 
+    def can(self, action_name):
+        """Return whether this object has the named action (see find_action()).
+        """
+        try:
+            self.find_action(action_name)
+            return True
+        except NameError:
+            return False
+
+
     def call(self, action_name, pos_params=None, named_params=None):
         """Find the named action, fill its parameters (see prep()) from an override (of the same class) that holds named_params on top of this object,
             and run it. Methods found as actions stay bound to this object. Returns whatever the action returns.
@@ -160,6 +170,7 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
         def test_method_as_action(self):            self.assertEqual( (self.child.call('get', ['a']), self.child.call('own_data')), (1, {'b': 20}) )
         def test_code_redefines_method(self):       self.assertEqual( (self.child.call('get_name'), self.child.get_name()), ('redefined by code', 'child') )
         def test_private_method_not_an_action(self): self.assertRaises( NameError, self.child.call, '__getitem__', ['a'] )
+        def test_can(self):                         self.assertEqual( (self.child.can('add3'), self.child.can('get'), self.child.can('no_such_action')), (True, True, False) )
         def test_unknown_action_raises(self):       self.assertRaises( NameError, self.child.call, 'no_such_action' )
         def test_plain_param_source_parent(self):   self.assertEqual( self.mixed.call('add3'), 3 )
         def test_own_function_shadows_parents(self):
