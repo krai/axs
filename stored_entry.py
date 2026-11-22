@@ -50,7 +50,8 @@ class Entry(ActionSource):
 
         A stored Entry loads its data, and its code, only when they are first needed. Only the filesystem storage backend
         provides code: Entries stored elsewhere get their behaviour by inheriting from Entries that have code.
-        Parents are not stored yet: they can only be given as objects.
+        Parents are stored by name, in _parent_names, and resolved lazily through the kernel Entry's byname() (see parent_objects()).
+        Names and objects can both be set; whichever was set last decides, and setting both at once must agree.
 
         A stored Entry without a given name takes the name its storage backend derives from its key, if the backend can.
         An Entry reached through a collection knows that collection as its containing collection (see get_containing_collection()).
@@ -60,8 +61,14 @@ class Entry(ActionSource):
         """Create an Entry. Without a storage key, it is an unsaved Entry built from the given data, parents and functions.
             With a storage key, its data and code are loaded lazily from the storage backend (by default, the filesystem one),
             unless own_data or own_functions are given explicitly.
+            Parents given here are set as by set_parent_objects() once the Entry is created; if the given own_data also names parents,
+            the two must agree. An override's single parent is simply the object it covers.
         """
-        super().__init__(name=name, own_data=own_data, parent_objects=parent_objects, own_functions=own_functions, is_override=is_override)
+        if parent_objects is not None and own_data is not None and '_parent_names' in own_data and not is_override:
+            given_parent_names = [ parent_object.get_name() for parent_object in parent_objects ]
+            if own_data['_parent_names']!=given_parent_names:
+                raise ValueError(f"[{name}] own_data names parents {own_data['_parent_names']}, which conflicts with the parents given {given_parent_names}")
+        super().__init__(name=name, own_data=own_data, parent_objects=parent_objects if is_override else None, own_functions=own_functions, is_override=is_override)
         if storage_key is not None and storage_backend is None:
             storage_backend = FILESYSTEM_STORAGE_BACKEND
         self.assigned_storage_backend   = storage_backend
@@ -70,6 +77,10 @@ class Entry(ActionSource):
         self.containing_collection_object = None
         if self.name is None and storage_key is not None and storage_backend.can('name_from_key'):
             self.name = storage_backend.call('name_from_key', [self.assigned_storage_key])
+        self.resolved_parent_names      = None      # the names the current parent objects correspond to
+        self.resolving_parent_names     = False
+        if parent_objects is not None and not is_override:
+            self.set_parent_objects(parent_objects)
 
 
     def storage_backend(self):
@@ -106,7 +117,42 @@ class Entry(ActionSource):
             new_parent_names    = [ parent_object.get_name() for parent_object in parent_objects ]
             if stored_parent_names is not None and stored_parent_names!=new_parent_names:
                 raise ValueError(f"[{self.get_name()}] stored data names parents {stored_parent_names}, which conflicts with the parents being set {new_parent_names}")
-        return super().set_parent_objects(parent_objects)
+        super().set_parent_objects(parent_objects)
+        if not self.is_override():
+            self.resolved_parent_names = self.own_data().get('_parent_names')
+        return self
+
+
+    def parent_objects(self):
+        """Return this Entry's parent objects, resolving _parent_names through the kernel Entry's byname() whenever they differ
+            from the names the current parent objects correspond to: so names set after objects (say, by plant()) win,
+            and removing the names removes the parents. Raises LookupError for a parent that cannot be found,
+            and ValueError if the names lead round in a cycle. An override never resolves names: its parent is the object it covers.
+        """
+        if self.is_override():
+            return super().parent_objects()
+
+        parent_names = self.own_data().get('_parent_names')
+        if parent_names!=self.resolved_parent_names:
+            if self.resolving_parent_names:
+                raise ValueError(f"[{self.get_name()}] parent names lead round in a cycle back to this Entry")
+            self.resolving_parent_names = True
+            try:
+                resolved_parents = []
+                for parent_name in (parent_names or []):
+                    parent_object = kernel().call('byname', [parent_name])
+                    if parent_object is None:
+                        raise LookupError(f"[{self.get_name()}] cannot find the parent named '{parent_name}'")
+                    resolved_parents.append(parent_object)
+                for parent_object in resolved_parents:     # walking up the new parents re-enters here if they lead back
+                    for ancestor in parent_object.hierarchy_generator():
+                        pass
+            finally:
+                self.resolving_parent_names = False
+            self.parent_objects_cache   = resolved_parents
+            self.resolved_parent_names  = None if parent_names is None else list(parent_names)
+
+        return self.parent_objects_cache
 
 
     def set_own_data(self, own_data=None):
@@ -271,9 +317,9 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
         def test_unsaved_cannot_remove(self):       self.assertRaises( ValueError, self.child.remove )
         def test_no_code_file(self):                self.assertIs( self.child.save(os.path.join(self.root, 'child')).own_functions(), False )
         def test_data_loaded_lazily(self):
-            write_file(os.path.join(self.base_path, 'data_axs.json'), '{"a": 100}'); self.assertEqual( self.base['a'], 100 )   # changed after creation, before first use
+            fresh = Entry(storage_key=self.base_path); write_file(os.path.join(self.base_path, 'data_axs.json'), '{"a": 100}'); self.assertEqual( fresh['a'], 100 )   # changed after creation, before first use
         def test_save_as_and_reload(self):
-            self.child.save(os.path.join(self.root, 'child')); self.assertEqual( self.reload(os.path.join(self.root, 'child')), {'b': 20} )
+            self.child.save(os.path.join(self.root, 'child')); self.assertEqual( self.reload(os.path.join(self.root, 'child')), {'b': 20, '_parent_names': ['base']} )
         def test_edit_and_save(self):
             self.base.plant('c', 3).save(); self.assertEqual( self.reload(self.base_path), {'a': 1, 'b': 2, 'c': 3} )
         def test_save_untouched_keeps_data(self):
@@ -363,6 +409,33 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
             fresh = self.kernel.call('fresh_entry', [], {'own_data': {'x': 1}}); self.assertEqual( (fresh['x'], fresh.storage_key(), fresh.own_functions()), (1, None, False) )
         def test_fresh_entry_saved(self):
             temp_dir = tempfile.TemporaryDirectory(); self.addCleanup(temp_dir.cleanup); self.kernel.call('fresh_entry', [os.path.join(temp_dir.name, 'hello')]).plant('message', 'Hello').save(); self.assertEqual( Entry(storage_key=os.path.join(temp_dir.name, 'hello')).own_data(), {'message': 'Hello'} )
+
+
+    class TestParentsByName(unittest.TestCase):
+
+        def setUp(self):
+            """The real core_collection's temporary contents: baz (inside bar_collection) names foo as its parent.
+            """
+            self.kernel = kernel()
+            self.foo, self.baz = self.kernel.call('byname', ['foo']), self.kernel.call('byname', ['baz'])
+
+        def test_child_loaded_alone_finds_parent(self): self.assertEqual( (self.baz['foo_only'], self.baz['greeting']), ('inherited from foo', 'hello from baz') )
+        def test_resolved_parent_is_cached(self):   self.assertIs( self.baz.parent_objects()[0], self.foo )
+        def test_kernel_parent_stable(self):        self.assertEqual( [p.get_name() for p in self.kernel.parent_objects()], ['core_collection'] )
+        def test_missing_parent_raises(self):       self.assertRaises( LookupError, Entry(own_data={'_parent_names': ['no_such_entry']}).parent_objects )
+        def test_override_never_resolves(self):     self.assertEqual( Entry(own_data={'_parent_names': ['bar_collection']}, parent_objects=[self.baz], is_override=True)['foo_only'], 'inherited from foo' )
+        def test_constructor_conflict(self):        self.assertRaises( ValueError, Entry, None, {'_parent_names': ['bar_collection']}, [self.foo] )
+        def test_constructor_agreement(self):       self.assertEqual( Entry(None, {'_parent_names': ['foo']}, [self.foo])['foo_only'], 'inherited from foo' )
+        def test_names_set_last_win(self):
+            kid = Entry(own_data={'x': 1}, parent_objects=[self.foo]); kid.plant('_parent_names', ['baz']); self.assertEqual( (kid['greeting'], kid.parent_objects()[0] is self.baz), ('hello from baz', True) )
+        def test_objects_set_last_win(self):
+            kid = Entry(own_data={'_parent_names': ['baz']}); kid.parent_objects(); kid.set_parent_objects([self.foo]); self.assertEqual( kid['greeting'], 'hello from foo' )
+        def test_removing_names_removes_parents(self):
+            kid = Entry(own_data={'_parent_names': ['foo']}); kid.parent_objects(); kid.pluck('_parent_names'); self.assertEqual( kid.parent_objects(), [] )
+        def test_unnamed_parents_kept(self):
+            anonymous = Entry(own_data={'q': 1}); kid = Entry(parent_objects=[anonymous]); self.assertEqual( (kid['q'], '_parent_names' in kid.own_data()), (1, False) )
+        def test_cycle_by_names_refused(self):
+            self.addCleanup(self.foo.pluck, '_parent_names'); self.foo.plant('_parent_names', ['baz']); self.assertRaises( ValueError, self.foo.parent_objects )
 
     if __name__ == '__main__':
         unittest.main(verbosity=2)

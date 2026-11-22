@@ -1,3 +1,6 @@
 {
+    "_parent_names": [
+        "foo"
+    ],
     "greeting": "hello from baz"
 }

@@ -1,3 +1,4 @@
 {
-    "greeting": "hello from foo"
+    "greeting": "hello from foo",
+    "foo_only": "inherited from foo"
 }
