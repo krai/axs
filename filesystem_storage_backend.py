@@ -79,12 +79,6 @@ def load_functions(storage_key, code_file_name):
     return module
 
 
-def bypath(storage_key, __entry__):
-    """Return the one Entry object for the path: the generic bykey() lookup (inherited by every storage backend) under its usual name.
-    """
-    return __entry__.call('bykey', [storage_key])
-
-
 if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or collected by unittest/pytest (which have already loaded unittest)
 
     import tempfile

@@ -26,8 +26,9 @@ def walk(__entry__):
 
 def byname(entry_name, __entry__):
     """Return the first Entry named entry_name found by walk(), or None if there is none.
+        walk() is called as an action, so that an Entry inheriting this code can redefine it (as the kernel Entry does).
     """
-    for candidate_entry in walk(__entry__):
+    for candidate_entry in __entry__.call('walk'):
         if candidate_entry.get_name()==entry_name:
             return candidate_entry
     return None

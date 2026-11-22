@@ -5,8 +5,6 @@
 Running this file as a script runs the tests of its Python API.
 """
 
-__version__ = "0.4.9"
-
 import sys
 from copy import deepcopy
 
@@ -125,6 +123,32 @@ class ParamSource:
         """Return the list of this object's parent objects, in order of priority.
         """
         return self.parent_objects_cache
+
+
+    def set_parent_objects(self, parent_objects):
+        """Replace this object's parents (on an override, those of base_object() instead), refusing any change that would create a cycle.
+            Keeps the data truthful: _parent_names in own data becomes the list of the new parents' names if they all have one,
+            and is removed otherwise. Whatever was set last, names or objects, decides.
+            Returns the object itself, so that calls can be chained.
+        """
+        if self.is_override():
+            self.base_object().set_parent_objects(parent_objects)
+            return self
+
+        parent_objects = list(parent_objects)
+        for parent_object in parent_objects:
+            if not isinstance(parent_object, ParamSource):
+                raise TypeError(f"[{self.get_name()}] parent objects should be ParamSource objects, got {type(parent_object).__name__}")
+            if any( ancestor is self for ancestor in parent_object.hierarchy_generator() ):
+                raise ValueError(f"[{self.get_name()}] cannot have [{parent_object.get_name()}] as a parent: that would create a cycle")
+
+        self.parent_objects_cache = parent_objects
+        parent_names = [ parent_object.get_name() for parent_object in parent_objects ]
+        if None in parent_names:
+            self.own_data().pop('_parent_names', None)
+        else:
+            self.own_data()['_parent_names'] = parent_names
+        return self
 
 
     def is_override(self):
@@ -334,7 +358,6 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
         def test_missing_raises(self):              self.assertRaises( KeyError, self.ps.__getitem__, 'missing' )
         def test_non_dict_rejected_at_init(self):   self.assertRaises( TypeError, ParamSource, own_data=[1] )
         def test_set_own_data_resets(self):         self.assertEqual( self.ps.set_own_data().own_data(), {} )
-        def test_version_format(self):              self.assertRegex( __version__, r'^\d+\.\d+\.\d+$' )
         def test_all_edits_landed(self):
             self.assertEqual( self.ps.own_data(), { 'zero': 0, 'none': None, '7': 'seven', 'late': 2, '8': 'eight', 'added': 2, 'greek': ['alpha', 'beta', {'y': 'filled'}, 'delta', None, {'x': 'vivified'}], 'colour': {'red': 128, 'green': 255}, 'deep': {'er': {'est': 1}} } )
         def test_rejection_keeps_data(self):
@@ -418,6 +441,18 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
             self.over_over.plant('x', 'stored', 'y+', '!'); self.assertEqual( (self.over.own_data(), self.over_over.own_data()), ({'x': 'over', '_flag': 'over'}, {'y': 'over2'}) )
         def test_override_still_shadows_edit(self):
             self.over.plant('x', 'stored'); self.assertEqual( (self.child['x'], self.over['x']), ('stored', 'over') )
+
+        def test_set_parent_objects(self):
+            self.assertIs( self.left.set_parent_objects([self.right]), self.left ); self.assertEqual( (self.left['y'], self.left['_parent_names']), ('right', ['right']) )
+        def test_set_unnamed_parents_drops_names(self):
+            self.left.set_parent_objects([ParamSource(own_data={'q': 1})]); self.assertEqual( (self.left['q'], '_parent_names' in self.left.own_data()), (1, False) )
+        def test_set_parents_last_setter_wins(self):
+            self.left.plant('_parent_names', ['someone_else']).set_parent_objects([self.base]); self.assertEqual( self.left['_parent_names'], ['base'] )
+        def test_set_parents_refuses_cycle(self):
+            self.assertRaises( ValueError, self.base.set_parent_objects, [self.child] ); self.assertEqual( self.base.parent_objects(), [] )
+        def test_set_parents_type_check(self):      self.assertRaises( TypeError, self.left.set_parent_objects, [{'x': 1}] )
+        def test_set_parents_through_override(self):
+            self.over.set_parent_objects([self.right]); self.assertEqual( ([p.get_name() for p in self.child.parent_objects()], self.over.parent_objects()[0] is self.child), (['right'], True) )
 
     if __name__ == '__main__':
         unittest.main(verbosity=2)

@@ -96,6 +96,19 @@ class Entry(ActionSource):
         self.containing_collection_object = containing_collection
 
 
+    def set_parent_objects(self, parent_objects):
+        """Replace this Entry's parents, as ParamSource does. If its data has not been loaded yet, it is loaded first,
+            since the names of the parents are written there: if the stored data already names parents, the new ones must match
+            them name by name, otherwise this is reported as a conflict. Once the data has been seen, whatever was set last decides.
+        """
+        if not self.is_override() and not self.data_loaded:
+            stored_parent_names = self.own_data().get('_parent_names')      # provokes the lazy loading
+            new_parent_names    = [ parent_object.get_name() for parent_object in parent_objects ]
+            if stored_parent_names is not None and stored_parent_names!=new_parent_names:
+                raise ValueError(f"[{self.get_name()}] stored data names parents {stored_parent_names}, which conflicts with the parents being set {new_parent_names}")
+        return super().set_parent_objects(parent_objects)
+
+
     def set_own_data(self, own_data=None):
         """Replace this Entry's own data, as ParamSource does; the Entry no longer needs to load its data from storage.
         """
@@ -189,8 +202,20 @@ FILESYSTEM_STORAGE_BACKEND = Entry('filesystem_storage_backend', own_functions=f
                                    own_data={ 'data_file_name': 'data_axs.json', 'code_file_name': 'code_axs.py' })
 
 
-# core_collection lives in a fixed place relative to the kernel's Python files.
-CORE_COLLECTION_PATH = os.path.join( os.path.dirname(os.path.abspath(__file__)), 'core_collection' )
+# The kernel Entry lives in the directory of the kernel's Python files, and is named after it.
+KERNEL_PATH = os.path.dirname(os.path.abspath(__file__))
+
+
+def kernel():
+    """Return the kernel Entry: the starting point for finding everything else, always the same cached object.
+        Its parent, core_collection (which provides byname() and other collection code), is found by path, never by name,
+        since names are resolved through the kernel Entry itself: the kernel Entry's own core_collection() finds it,
+        and it is attached the first time the kernel Entry is asked for.
+    """
+    kernel_entry = FILESYSTEM_STORAGE_BACKEND.call('bykey', [KERNEL_PATH])
+    if not kernel_entry.parent_objects():
+        kernel_entry.set_parent_objects([ kernel_entry.call('core_collection') ])
+    return kernel_entry
 
 
 if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or collected by unittest/pytest (which have already loaded unittest)
@@ -236,7 +261,7 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
             return Entry(storage_key=path).own_data()
 
         def bypath(self, path, storage_backend=None):
-            return (storage_backend or self.fs).call('bypath', [path])
+            return (storage_backend or self.fs).call('bykey', [path])
 
         def test_data_and_code_from_storage(self):  self.assertEqual( (self.base['a'], self.base.call('add3')), (1, 3) )
         def test_code_inherited_by_unsaved(self):   self.assertEqual( self.child.call('add3'), 21 )
@@ -259,6 +284,12 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
             self.base.remove(); self.assertEqual( (os.path.exists(self.base_path), self.base.storage_key(), self.base['a'], self.base.call('add3')), (False, None, 1, 3) )
         def test_save_through_override(self):       # an override's own data (the call's 'value') is never stored
             self.base.call('remember', named_params={'value': 5}); self.assertEqual( self.reload(self.base_path), {'a': 1, 'b': 2, 'memo': 5} )
+        def test_set_parents_loads_and_matches(self):
+            write_file(os.path.join(self.root, 'kid', 'data_axs.json'), '{"_parent_names": ["base"]}'); kid = Entry(storage_key=os.path.join(self.root, 'kid')).set_parent_objects([self.base]); self.assertEqual( kid.call('add3', named_params={'b': 0}), 1 )
+        def test_set_parents_conflicting_stored_names(self):
+            write_file(os.path.join(self.root, 'kid', 'data_axs.json'), '{"_parent_names": ["other"]}'); self.assertRaises( ValueError, Entry(storage_key=os.path.join(self.root, 'kid')).set_parent_objects, [self.base] )
+        def test_set_parents_after_loading_overwrites(self):
+            write_file(os.path.join(self.root, 'kid', 'data_axs.json'), '{"_parent_names": ["other"]}'); kid = Entry(storage_key=os.path.join(self.root, 'kid')); kid.own_data(); self.assertEqual( kid.set_parent_objects([self.base])['_parent_names'], ['base'] )
         def test_memory_backend_round_trip(self):
             Entry(own_data={'x': 1}, storage_backend=self.memory, storage_key='m').save(); self.assertEqual( Entry(storage_backend=self.memory, storage_key='m')['x'], 1 )
         def test_memory_backend_code_by_inheritance(self):
@@ -298,16 +329,40 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
         def setUp(self):
             """The real core_collection, with its temporary contents: foo, and bar_collection containing baz.
             """
-            self.core_collection = FILESYSTEM_STORAGE_BACKEND.call('bypath', [CORE_COLLECTION_PATH])
+            self.core_collection = kernel().call('core_collection')
 
         def test_found_by_path_and_named(self):     self.assertEqual( (self.core_collection.get_name(), '_contained_entries' in self.core_collection.own_data()), ('core_collection', True) )
         def test_walk_order(self):                  self.assertEqual( [e.get_name() for e in self.core_collection.call('walk')], ['core_collection', 'foo', 'bar_collection', 'baz'] )
         def test_byname_direct(self):               self.assertEqual( (self.core_collection.call('byname', ['foo'])['greeting'], self.core_collection.call('byname', ['foo']).get_containing_collection() is self.core_collection), ('hello from foo', True) )
         def test_byname_nested(self):               self.assertEqual( self.core_collection.call('byname', ['baz']).get_containing_collection().get_name(), 'bar_collection' )
         def test_byname_missing(self):              self.assertIsNone( self.core_collection.call('byname', ['missing']) )
-        def test_byname_gives_cached_entry(self):   self.assertIs( self.core_collection.call('byname', ['baz']), FILESYSTEM_STORAGE_BACKEND.call('bypath', [os.path.join(CORE_COLLECTION_PATH, 'bar_collection', 'baz')]) )
+        def test_byname_gives_cached_entry(self):   self.assertIs( self.core_collection.call('byname', ['baz']), FILESYSTEM_STORAGE_BACKEND.call('bykey', [os.path.join(self.core_collection.storage_key(), 'bar_collection', 'baz')]) )
         def test_nested_collection_needs_no_code(self): self.assertEqual( (self.core_collection.call('byname', ['bar_collection']).own_functions(), self.core_collection.can('walk')), (False, True) )
         def test_plain_entry_is_no_collection(self): self.assertNotIn( '_contained_entries', self.core_collection.call('byname', ['foo']).own_data() )
+
+
+    class TestKernel(unittest.TestCase):
+
+        def setUp(self):
+            """The real kernel Entry, in the directory of the kernel's Python files, with core_collection as its parent.
+            """
+            self.kernel = kernel()
+
+        def test_one_kernel(self):                  self.assertIs( kernel(), self.kernel )
+        def test_named_after_directory(self):       self.assertEqual( self.kernel.get_name(), os.path.basename(KERNEL_PATH) )
+        def test_version(self):                     self.assertRegex( self.kernel.call('version'), r'^\d+\.\d+\.\d+$' )
+        def test_parent_is_core_collection(self): self.assertEqual( ([p.get_name() for p in self.kernel.parent_objects()], self.kernel['_parent_names']), (['core_collection'], ['core_collection']) )
+        def test_not_a_collection(self):            self.assertNotIn( '_contained_entries', self.kernel.own_data() )
+        def test_core_collection(self):             self.assertIs( self.kernel.call('core_collection'), FILESYSTEM_STORAGE_BACKEND.call('bykey', [os.path.join(KERNEL_PATH, 'core_collection')]) )
+        def test_walk_follows_search_path(self):    self.assertEqual( [e.get_name() for e in self.kernel.call('walk')], ['core_collection', 'foo', 'bar_collection', 'baz'] )
+        def test_byname(self):                      self.assertEqual( [self.kernel.call('byname', [n]).get_name() for n in ('core_collection', 'foo', 'baz')], ['core_collection', 'foo', 'baz'] )
+        def test_byname_missing(self):              self.assertIsNone( self.kernel.call('byname', ['missing']) )
+        def test_search_path_is_a_parameter(self):  self.assertIsNone( self.kernel.call('byname', ['foo'], {'collection_search_path': []}) )
+        def test_bypath_gives_cached_entry(self):   self.assertIs( self.kernel.call('bypath', [os.path.join(KERNEL_PATH, 'core_collection', 'foo')]), self.kernel.call('byname', ['foo']) )
+        def test_fresh_entry(self):
+            fresh = self.kernel.call('fresh_entry', [], {'own_data': {'x': 1}}); self.assertEqual( (fresh['x'], fresh.storage_key(), fresh.own_functions()), (1, None, False) )
+        def test_fresh_entry_saved(self):
+            temp_dir = tempfile.TemporaryDirectory(); self.addCleanup(temp_dir.cleanup); self.kernel.call('fresh_entry', [os.path.join(temp_dir.name, 'hello')]).plant('message', 'Hello').save(); self.assertEqual( Entry(storage_key=os.path.join(temp_dir.name, 'hello')).own_data(), {'message': 'Hello'} )
 
     if __name__ == '__main__':
         unittest.main(verbosity=2)
