@@ -66,6 +66,15 @@ assert 'axs noop --arg,:=x:10,y:20' "[['x', 10], ['y', 20]]"
 assert 'axs noop --arg,::=x:10,y:20' "{'x': 10, 'y': 20}"
 assert_end named_data_types
 
+assert 'axs noop --arg.x.y=1' "{'x': {'y': 1}}"
+assert 'axs noop ---arg.x=null' "{'x': None}"
+assert 'axs noop --arg.x' "{'x': True}"
+assert 'axs noop --arg.x-' "{'x': False}"
+assert 'axs dig greek --greek,=alpha --greek+,=beta,gamma' "['alpha', 'beta', 'gamma']"
+assert 'axs dig greek.1 --greek,=alpha,beta --greek.1=BETA' 'BETA'
+assert 'axs byname foo , get greeting --greeting+=_and_more , , byname foo , get greeting' 'hello from foo'   # the Entry itself is untouched
+assert_end editing_named_arguments
+
 assert 'axs byname baz , get foo_only' 'inherited from foo'
 assert 'axs byname baz , get greeting' 'hello from baz'
 assert 'axs byname baz' 'axs byname baz'                     # an Entry is printed as the command line that loads it

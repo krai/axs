@@ -9,8 +9,9 @@ import difflib
 import inspect
 import sys
 import textwrap
+from copy import deepcopy
 
-from param_source import ParamSource
+from param_source import ParamSource, split_key_path
 
 
 def prep(action_object, pos_params, named_params, param_source):
@@ -132,16 +133,35 @@ class ActionSource(ParamSource):
     def call(self, action_name, pos_params=None, named_params=None):
         """Create an override (of the same class) holding named_params on top of this object, find the named action on it,
             fill its parameters from it (see prep()), and run it. Methods found as actions are therefore bound to the override.
+            A named parameter whose key contains a dot or ends in '+' edits the value the call sees instead of replacing it:
+            the whole inherited value is first copied into the override (unless the call gives that parameter itself),
+            then the edit is planted into the copy (see ParamSource.plant()), in the order given, after the plain parameters.
+            Such edits never match a function's parameters or reach its **kwargs: their effect reaches functions through the override.
             Returns whatever the action returns. The call itself changes neither this object nor its parents.
 
             Usage examples:
                 axs byname baz , call get --,=greeting                                   # => hello from baz
+                axs noop --arg.colour.green=255                                          # => {'colour': {'green': 255}}
+                axs dig greek.2 --greek,=alpha,beta --greek+=gamma                       # => gamma
+                axs byname foo , get greeting --greeting+=_and_more                      # => hello from foo_and_more
         """
         pos_params      = pos_params or []
         named_params    = named_params or {}
-        call_override   = type(self)(own_data=dict(named_params), parent_objects=[self], is_override=True)
+        plain_params    = { key: value for key, value in named_params.items() if not is_edit_key(key) }
+        override_data   = dict(plain_params)
+
+        edits = [ (key, value) for key, value in named_params.items() if is_edit_key(key) ]
+        if edits:
+            edited_layer = ParamSource(own_data=override_data)      # plants straight into override_data
+            for key_path, value in edits:
+                top_name = split_key_path(key_path)[0].rstrip('+')
+                if top_name not in override_data and self.get(top_name) is not None:
+                    override_data[top_name] = deepcopy( self.get(top_name) )     # copy-on-write: never edit what lies beneath
+                edited_layer.plant(key_path, value)
+
+        call_override   = type(self)(own_data=override_data, parent_objects=[self], is_override=True)
         action_object   = call_override.find_action(action_name)
-        return feed( *prep(action_object, pos_params, named_params, call_override) )
+        return feed( *prep(action_object, pos_params, plain_params, call_override) )
 
 
     def help(self, action_name: str = None) -> str:
@@ -280,6 +300,12 @@ class ActionSource(ParamSource):
         return result
 
 
+def is_edit_key(key):
+    """Return whether a named parameter's key edits a value (contains a dot, or ends in '+') rather than replacing it.
+    """
+    return '.' in key or key.endswith('+')
+
+
 HELP_LABEL_WIDTH = 30
 
 def help_line(label, value):
@@ -394,11 +420,14 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
                 who         = lambda __entry__: (__entry__.is_override(), __entry__.real_entry().get_name()),
                 real_name   = lambda __real_entry__: (__real_entry__.is_override(), __real_entry__.get_name()),
                 promote_deeper = lambda __entry__: __entry__.call('promote', [], {'y': 2}),
+                nested_colour = lambda __entry__: __entry__.call('get', ['colour']),
             )
             self.peer   = ActionSource('peer',  { 'a': 100, 'b': 200 }, own_functions=self.funcs)
             self.base   = ActionSource('base',  { 'a': 1, 'b': 2 }, own_functions=self.funcs)
             self.child  = ActionSource('child', { 'b': 20 }, [self.base])
             self.mixed  = ActionSource('mixed', {}, [ParamSource('plain', { 'a': 1, 'b': 2 })], own_functions=self.funcs)
+            self.palette = ActionSource('palette', { 'colour': {'red': 1, 'green': 2}, 'greek': ['alpha'] }, [self.base])
+            self.kid    = ActionSource('kid', {}, [self.palette])
             self.start  = ActionSource('start', { 'peer': self.peer, 'words': 'alpha-beta-gamma' }, [self.child])    # where the pipeline tests start
 
         def test_fill_from_hierarchy(self):         self.assertEqual( self.child.call('add3'), 21 )     # a inherited, b own, c default
@@ -475,6 +504,19 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
         def test_help_method_kind(self):            self.assertIn( 'built-in method of the ParamSource class, declared in param_source.py', self.child.help('get') )
         def test_help_special_parameters(self):     self.assertIn( "special: receives the call's override", self.child.help('peek') )
         def test_help_suggests_names(self):         self.assertEqual( self.child.help('ad3'), "[child] has no action 'ad3'. Did you mean: add3?" )
+
+        def test_edit_at_path(self):
+            self.assertEqual( (self.palette.call('get', ['colour'], {'colour.green': 20}), self.palette['colour']), ({'red': 1, 'green': 20}, {'red': 1, 'green': 2}) )
+        def test_edit_by_augmenting(self):
+            self.assertEqual( (self.palette.call('get', ['greek'], {'greek+': 'beta'}), self.palette['greek']), (['alpha', 'beta'], ['alpha']) )
+        def test_edit_inherited_value(self):
+            self.assertEqual( (self.kid.call('get', ['colour'], {'colour.red': 9}), self.palette['colour'], self.kid.own_data()), ({'red': 9, 'green': 2}, {'red': 1, 'green': 2}, {}) )
+        def test_edit_creates_missing_levels(self): self.assertEqual( self.palette.call('get', ['fresh'], {'fresh.deep': 1}), {'deep': 1} )
+        def test_edits_follow_plain_params(self):   self.assertEqual( self.palette.call('get', ['colour'], {'colour.green': 4, 'colour': {'blue': 3}}), {'blue': 3, 'green': 4} )
+        def test_edits_reach_nested_calls(self):    self.assertEqual( self.palette.call('nested_colour', [], {'colour.green': 7}), {'red': 1, 'green': 7} )
+        def test_edits_reach_function_arguments(self): self.assertEqual( self.child.call('add3', [], {'a+': 10}), 31 )     # a: inherited 1, augmented by 10
+        def test_edits_never_reach_kwargs(self):    self.assertEqual( self.child.call('with_kwargs', [], {'a': 7, 'x.y': 1, 'z+': 2, 'w': 3}), (7, {'w': 3}) )
+        def test_edit_keys(self):                   self.assertEqual( [is_edit_key(k) for k in ('plain', 'a.b', 'greek+', 'a.b+')], [False, True, True, True] )
 
     if __name__ == '__main__':
         unittest.main(verbosity=2)

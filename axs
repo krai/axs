@@ -20,6 +20,10 @@ Arguments:
     --name,:=x:10,y:20              a named 2D list (the first delimiter separates the rows, the second their elements)
     --name,::=x:10,y:20             a named dictionary (the first delimiter separates the pairs, the second each key from its value)
 
+Named arguments can also edit, instead of replacing, the value the call sees (see ActionSource.call()):
+    --colour.green=255              plant a value at a path inside it (with any of the value forms above)
+    --greek+=gamma  --greek+,=a,b   augment it (append to a list, top up a dictionary, add to a number or a string)
+
 Between the calls of a pipeline:
     ,                               the next call is made on the result of the previous one
     , ,                             the next call is made on the kernel Entry again
@@ -75,14 +79,14 @@ def parse_call(tokens):
     for token in tokens[1:]:
         if not token.startswith('--'):
             name, value = None, to_num_or_not_to_num(token)
-        elif re.match(r'^---(\w*)=(.*)$', token, re.DOTALL):
-            matched = re.match(r'^---(\w*)=(.*)$', token, re.DOTALL)
+        elif re.match(r'^---([\w.]*\+?)=(.*)$', token, re.DOTALL):
+            matched = re.match(r'^---([\w.]*\+?)=(.*)$', token, re.DOTALL)
             name, value = matched.group(1), json.loads(matched.group(2))
-        elif re.match(r'^--(\w*)([ ,;:/]{0,3})=(.*)$', token, re.DOTALL):
-            matched = re.match(r'^--(\w*)([ ,;:/]{0,3})=(.*)$', token, re.DOTALL)
+        elif re.match(r'^--([\w.]*\+?)([ ,;:/]{0,3})=(.*)$', token, re.DOTALL):
+            matched = re.match(r'^--([\w.]*\+?)([ ,;:/]{0,3})=(.*)$', token, re.DOTALL)
             name, value = matched.group(1), parse_delimited(matched.group(2), matched.group(3))
-        elif re.match(r'^--(\w*)([,+-]?)$', token):
-            matched = re.match(r'^--(\w*)([,+-]?)$', token)
+        elif re.match(r'^--([\w.]*)([,+-]?)$', token):
+            matched = re.match(r'^--([\w.]*)([,+-]?)$', token)
             name, value = matched.group(1), ([] if matched.group(2)==',' else matched.group(2)!='-')
         else:
             raise ValueError(f"Cannot understand the option '{token}'")
