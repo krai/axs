@@ -115,6 +115,10 @@ class ActionSource(ParamSource):
 
     def can(self, action_name):
         """Return whether this object has the named action (see find_action()).
+
+            Usage examples:
+                axs byname baz , can get                                                 # => True
+                axs can fly                                                              # => False
         """
         try:
             self.find_action(action_name)
@@ -127,6 +131,9 @@ class ActionSource(ParamSource):
         """Create an override (of the same class) holding named_params on top of this object, find the named action on it,
             fill its parameters from it (see prep()), and run it. Methods found as actions are therefore bound to the override.
             Returns whatever the action returns. The call itself changes neither this object nor its parents.
+
+            Usage examples:
+                axs byname baz , call get --,=greeting                                   # => hello from baz
         """
         pos_params      = pos_params or []
         named_params    = named_params or {}
@@ -144,6 +151,9 @@ class ActionSource(ParamSource):
                 []      (" , , " on the command line)   the originator again;
                 "-"     (" ,- " on the command line)    the object the previous step was called on, discarding that step's result.
             A trailing marker makes the pipeline return that object. An empty pipeline returns the originator.
+
+            Usage examples:
+                axs execute ---='[["byname", "baz"], ["get", "greeting"]]'               # => hello from baz
         """
         result = current_object = previous_object = self
 
@@ -254,6 +264,7 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
 
         def test_methods_see_call_params(self):     self.assertEqual( self.child.call('get', ['xyz'], {'xyz': 123}), 123 )
         def test_own_data_is_the_calls(self):       self.assertEqual( (self.child.call('own_data', [], {'q': 1}), self.child.call('entry_data', [], {'q': 1})), ({'q': 1}, {'b': 20}) )
+        def test_entry_parents_through_call(self):  self.assertEqual( (self.child.call('entry_parents', [], {'q': 1}), self.child.call('parent_objects', [], {'q': 1})[0] is self.child), ([self.base], True) )
         def test_identity_through_call(self):       self.assertEqual( ActionSource('plain', {'b': 1}).call('get_name', [], {'q': 1}), 'plain' )   # an object whose hierarchy does not redefine get_name
         def test_edits_return_real_object(self):    self.assertIs( self.child.call('plant', ['k', 1]), self.child )
         def test_real_entry_parameter(self):        self.assertEqual( self.child.call('real_name', [], {'q': 1}), (False, 'child') )

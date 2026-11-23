@@ -5,7 +5,10 @@
 Running this file as a script runs the tests of its Python API.
 """
 
+import inspect
+import json
 import os
+import shlex
 import sys
 from types import SimpleNamespace
 
@@ -28,6 +31,9 @@ def bykey(storage_key, __entry__):
     """The generic lookup action of every storage backend: return the one Entry object for the key,
         loading it (lazily, see Entry) and remembering it the first time, so that later lookups of the same key,
         however it is spelled, return the same object.
+
+        Usage examples:
+            axs byname foo , storage_backend , bykey "$(axs byname foo , storage_key)" , get greeting  # => hello from foo
     """
     storage_backend = __entry__.real_entry()
     storage_key     = storage_backend.call('canonical_key', [storage_key])
@@ -85,8 +91,28 @@ class Entry(ActionSource):
 
 
     @on_real_entry
+    def pickle_one(self):
+        """Return the command line that would load this Entry again (used by pickle_struct()): byname if it was reached
+            through a collection, bypath if it is stored, otherwise fresh_entry with its data. Any part of it can be copied and reused.
+
+            Usage examples:
+                axs byname baz , pickle_one                                         # => axs byname baz
+                axs fresh_entry ---own_data='{"x": 1}' , pickle_one                 # => axs fresh_entry '---own_data={"x": 1}'
+        """
+        if self.storage_key() is not None:
+            if self.get_containing_collection() is not None:
+                return f"axs byname {shlex.quote(self.get_name())}"
+            return f"axs bypath {shlex.quote(self.storage_key())}"
+        own_data = pickle_struct(self.own_data())
+        return "axs fresh_entry" + ( " " + shlex.quote("---own_data=" + json.dumps(own_data)) if own_data else "" )
+
+
+    @on_real_entry
     def storage_backend(self):
         """Return the storage backend of this Entry, or None if it has never been given one.
+
+            Usage examples:
+                axs byname foo , storage_backend , get data_file_name                    # => data_axs.json
         """
         return self.assigned_storage_backend
 
@@ -94,6 +120,9 @@ class Entry(ActionSource):
     @on_real_entry
     def storage_key(self):
         """Return the key under which the storage backend keeps this Entry (in canonical form), or None if it is not stored.
+
+            Usage examples:
+                axs byname foo , storage_key
         """
         return self.assigned_storage_key
 
@@ -101,6 +130,9 @@ class Entry(ActionSource):
     @on_real_entry
     def get_containing_collection(self):
         """Return the collection through which this Entry was reached, or None.
+
+            Usage examples:
+                axs byname baz , get_containing_collection                               # => axs byname bar_collection
         """
         return self.containing_collection_object
 
@@ -196,6 +228,9 @@ class Entry(ActionSource):
             The saved Entry becomes the one its storage backend keeps for its key (see loaded_entries()).
             Only data is written, never code. On an override, real_entry() is saved instead.
             Returns the Entry itself, so that calls can be chained.
+
+            Usage examples:
+                axs fresh_entry hello , plant message Hello , save
         """
         if storage_key is not None:
             self.own_data()                     # load data and code from the old location (if any) before leaving it
@@ -217,6 +252,9 @@ class Entry(ActionSource):
         """Remove this Entry from storage, and from the Entries its storage backend keeps (see loaded_entries()).
             The Entry stays usable in memory, as an Entry that is not stored.
             On an override, real_entry() is removed instead. Returns the Entry itself, so that calls can be chained.
+
+            Usage examples:
+                axs fresh_entry goodbye , save , remove                                  # => axs fresh_entry
         """
         if self.storage_key() is None:
             raise ValueError(f"[{self.get_name()}] an Entry that is not stored cannot be removed")
@@ -235,6 +273,22 @@ class Entry(ActionSource):
             if entries.get( self.storage_key() ) is self:
                 del entries[ self.storage_key() ]
         self.assigned_storage_key = None
+
+
+def pickle_struct(input_structure):
+    """Return a copy of a data structure in which every Entry is replaced by the command line that would load it again (see Entry.pickle_one()),
+        and every generator by the list of what it yields, so that the result can be printed (as the command line does with results).
+    """
+    if inspect.isgenerator(input_structure):
+        input_structure = list(input_structure)
+    if type(input_structure)==list:
+        return [ pickle_struct(element) for element in input_structure ]
+    elif type(input_structure)==dict:
+        return { key: pickle_struct(value) for key, value in input_structure.items() }
+    elif hasattr(input_structure, 'pickle_one') and not isinstance(input_structure, type):
+        return input_structure.pickle_one()
+    else:
+        return input_structure
 
 
 # The parent of every storage backend, providing the generic lookup action bykey().
@@ -409,6 +463,8 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
         def test_identity_through_call(self):       self.assertEqual( (self.kernel.call('byname', ['foo']).call('storage_key', [], {'q': 1}), self.kernel.call('byname', ['foo']).call('get_containing_collection') is self.kernel.call('core_collection')), (os.path.join(self.kernel.storage_key(), 'core_collection', 'foo'), True) )
         def test_promote_and_save(self):
             temp_dir = tempfile.TemporaryDirectory(); self.addCleanup(temp_dir.cleanup); self.kernel.call('byname', ['foo']).call('promote', [], {'x': 1}).save(os.path.join(temp_dir.name, 'promoted')); self.assertEqual( Entry(storage_key=os.path.join(temp_dir.name, 'promoted')).own_data(), {'x': 1, '_parent_names': ['foo']} )
+        def test_pickle_struct(self):               self.assertEqual( pickle_struct([ self.kernel.call('byname', ['baz']), {'k': self.kernel}, (n for n in (1, 2)) ]), [ 'axs byname baz', {'k': 'axs bypath ' + shlex.quote(self.kernel.storage_key())}, [1, 2] ] )
+        def test_pickle_override_as_real_entry(self): self.assertEqual( Entry(own_data={'q': 1}, parent_objects=[self.kernel.call('byname', ['baz'])], is_override=True).pickle_one(), 'axs byname baz' )
         def test_fresh_entry(self):
             fresh = self.kernel.call('fresh_entry', [], {'own_data': {'x': 1}}); self.assertEqual( (fresh['x'], fresh.storage_key(), fresh.own_functions()), (1, None, False) )
         def test_fresh_entry_saved(self):

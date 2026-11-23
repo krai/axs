@@ -108,6 +108,9 @@ class ParamSource:
     @on_real_entry
     def get_name(self):
         """Read-only access to the name. Anonymous objects return None.
+
+            Usage examples:
+                axs byname baz , get_name                                                # => baz
         """
         return self.name
 
@@ -130,6 +133,10 @@ class ParamSource:
 
     def own_data(self):
         """Return the dictionary of this object's own data, by reference.
+
+            Usage examples:
+                axs own_data --alpha=1 --beta=2                                          # => {'alpha': 1, 'beta': 2}
+                axs byname baz , own_data --xyz=1                                        # => {'xyz': 1}
         """
         return self.own_data_cache
 
@@ -137,14 +144,34 @@ class ParamSource:
     @on_real_entry
     def entry_data(self):
         """Return the own data of the real object (see real_entry()), even when called on an override, by reference.
+
+            Usage examples:
+                axs byname baz , entry_data                                              # => {'_parent_names': ['foo'], 'greeting': 'hello from baz'}
         """
         return self.own_data()
+
+
+    @on_real_entry
+    def entry_parents(self):
+        """Return the parent objects of the real object (see real_entry()), even when called on an override,
+            whose own parent_objects() is just the object it covers. The command line prints each parent Entry
+            as the command line that would load it, but within a pipeline it is the Entry itself.
+
+            Usage examples:
+                axs byname baz , entry_parents                                           # => ['axs byname foo']
+                axs byname baz , entry_parents , __getitem__ 0 , get greeting            # => hello from foo
+        """
+        return self.parent_objects()
 
 
     def promote(self):
         """Return a new object of the real object's kind, neither an override nor stored, holding everything that the override
             layers it is called on contributed: their data merged (deep copies, inner layers winning), with real_entry() as its parent.
             It can then be edited and saved like any other object. Called on an object that is not an override, it has no data of its own.
+
+            Usage examples:
+                axs byname baz , promote --x=1 , entry_data                              # => {'x': 1, '_parent_names': ['baz']}
+                axs byname baz , promote --x=1 , get foo_only                            # => inherited from foo
         """
         real_entry     = self.real_entry()
         merged_data     = {}
@@ -155,6 +182,10 @@ class ParamSource:
 
     def noop(self, arg):
         """Return its own single argument (handy at the start of a pipeline, or for echoing a value).
+
+            Usage examples:
+                axs noop 42                                                              # => 42
+                axs noop --arg,=alpha,beta                                               # => ['alpha', 'beta']
         """
         return arg
 
@@ -207,6 +238,9 @@ class ParamSource:
 
     def real_entry(self):
         """Return the nearest object that is not an override: this object itself, unless it is an override.
+
+            Usage examples:
+                axs byname baz , real_entry                                              # => axs byname baz
         """
         for source_object in self.override_chain_generator():
             pass
@@ -234,6 +268,9 @@ class ParamSource:
             store a deep copy of the inherited value in own data.
             Returns the parameter's value from own data, by reference and safe to edit in place,
             or None if the parameter is missing everywhere. On an override, this is done in real_entry() instead.
+
+            Usage examples:
+                axs byname baz , own_value foo_only                                      # => inherited from foo
         """
         param_name = str(param_name)
         own_data = self.own_data()
@@ -261,6 +298,13 @@ class ParamSource:
 
     def get(self, param_name, default_value=None):
         """A safe wrapper around __getitem__(): returns default_value if the parameter is missing.
+
+            Usage examples:
+                axs byname baz , get greeting                                            # => hello from baz
+                axs byname baz , get foo_only                                            # => inherited from foo
+                axs byname baz , get greeting --greeting=hi                              # => hi
+                axs get xyz --xyz=123                                                    # => 123
+                axs byname baz , get missing 42                                          # => 42
         """
         try:
             return self.__getitem__(param_name)
@@ -284,6 +328,10 @@ class ParamSource:
             With vivify set, the path is created as it is traversed: missing dictionary levels and None placeholders
             become empty dictionaries, and lists that are too short are padded with None; an inherited parameter
             is first copied into own data (see own_value()). On an override, a vivifying dig() is done in real_entry() instead.
+
+            Usage examples:
+                axs dig greek.2 --greek,=alpha,beta,gamma                                # => gamma
+                axs dig greek.5 --greek,=alpha,beta --safe                               # => None
         """
         if vivify and self.is_override():
             return self.real_entry().dig(key_path, safe=safe, safe_value=safe_value, vivify=True)
@@ -313,6 +361,10 @@ class ParamSource:
             Editing below the top level of an inherited parameter, or augmenting it, first copies it into own data
             (see own_value()), so the parent is never changed. On an override, the planting is done in real_entry() instead.
             Returns the object itself, so that calls can be chained.
+
+            Usage examples:
+                axs fresh_entry , plant greeting Hello , get greeting                    # => Hello
+                axs fresh_entry , plant greek --,=alpha , plant greek+ beta , get greek  # => ['alpha', 'beta']
         """
         if len(keypath_value_pairs) % 2:
             raise ValueError(f"[{self.get_name()}] plant() expects alternating key paths and values, got an odd number of arguments")
@@ -342,6 +394,9 @@ class ParamSource:
             parameter is first copied into own data (see own_value()), so the parent is never changed.
             Raises the underlying error if a path does not exist; nothing is created on the way.
             On an override, the plucking is done in real_entry() instead. Returns the real object, so that calls can be chained.
+
+            Usage examples:
+                axs fresh_entry ---own_data='{"a": 1, "b": 2}' , pluck a , entry_data    # => {'b': 2}
         """
         for key_path in key_paths:
             key_path = split_key_path(key_path)
@@ -487,6 +542,7 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
         def test_set_parents_through_override(self):
             self.over.set_parent_objects([self.right]); self.assertEqual( ([p.get_name() for p in self.child.parent_objects()], self.over.parent_objects()[0] is self.child), (['right'], True) )
 
+        def test_entry_parents_from_override(self): self.assertEqual( ([p.get_name() for p in self.over_over.entry_parents()], self.over_over.parent_objects()[0] is self.over), (['left', 'right'], True) )
         def test_identity_from_override(self):      self.assertEqual( (self.over_over.get_name(), self.over_over.entry_data() is self.child.own_data(), self.over_over.own_data()), ('child', True, {'y': 'over2'}) )
         def test_promote(self):
             promoted = self.over_over.promote(); self.assertEqual( (promoted.is_override(), promoted.parent_objects()[0] is self.child, promoted.own_data()), (False, True, {'x': 'over', '_flag': 'over', 'y': 'over2'}) )

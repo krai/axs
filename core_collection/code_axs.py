@@ -10,6 +10,9 @@ def walk(__real_entry__):
     """Yield the collection itself, then the Entries it contains, in order, walking into contained collections depth-first.
         Contained collections are recognised by _contained_entries in their own data, and walked by this very function,
         so they need no code of their own. Each Entry is found through the collection's storage backend, so it is the cached one.
+
+        Usage examples:
+            axs core_collection , walk
     """
     collection      = __real_entry__
     storage_backend = collection.storage_backend()
@@ -27,6 +30,10 @@ def walk(__real_entry__):
 def byname(entry_name, __entry__):
     """Return the first Entry named entry_name found by walk(), or None if there is none.
         walk() is called as an action, so that an Entry inheriting this code can redefine it (as the kernel Entry does).
+
+        Usage examples:
+            axs byname baz , get greeting                                            # => hello from baz
+            axs byname no_such_entry                                                 # => None
     """
     for candidate_entry in __entry__.call('walk'):
         if candidate_entry.get_name()==entry_name:
