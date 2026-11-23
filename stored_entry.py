@@ -430,7 +430,7 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
             self.core_collection = kernel().call('core_collection')
 
         def test_found_by_path_and_named(self):     self.assertEqual( (self.core_collection.get_name(), '_contained_entries' in self.core_collection.own_data()), ('core_collection', True) )
-        def test_walk_order(self):                  self.assertEqual( [e.get_name() for e in self.core_collection.call('walk')], ['core_collection', 'foo', 'bar_collection', 'baz'] )
+        def test_walk_order(self):                  self.assertEqual( [e.get_name() for e in self.core_collection.call('walk')], ['core_collection', 'foo', 'bar_collection', 'baz', 'pyramid'] )
         def test_byname_direct(self):               self.assertEqual( (self.core_collection.call('byname', ['foo'])['greeting'], self.core_collection.call('byname', ['foo']).get_containing_collection() is self.core_collection), ('hello from foo', True) )
         def test_byname_nested(self):               self.assertEqual( self.core_collection.call('byname', ['baz']).get_containing_collection().get_name(), 'bar_collection' )
         def test_byname_missing(self):              self.assertIsNone( self.core_collection.call('byname', ['missing']) )
@@ -452,7 +452,7 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
         def test_parent_is_core_collection(self): self.assertEqual( ([p.get_name() for p in self.kernel.parent_objects()], self.kernel['_parent_names']), (['core_collection'], ['core_collection']) )
         def test_not_a_collection(self):            self.assertNotIn( '_contained_entries', self.kernel.own_data() )
         def test_core_collection(self):             self.assertIs( self.kernel.call('core_collection'), FILESYSTEM_STORAGE_BACKEND.call('bykey', [os.path.join(KERNEL_PATH, 'core_collection')]) )
-        def test_walk_follows_search_path(self):    self.assertEqual( [e.get_name() for e in self.kernel.call('walk')], ['core_collection', 'foo', 'bar_collection', 'baz'] )
+        def test_walk_follows_search_path(self):    self.assertEqual( [e.get_name() for e in self.kernel.call('walk')], ['core_collection', 'foo', 'bar_collection', 'baz', 'pyramid'] )
         def test_byname(self):                      self.assertEqual( [self.kernel.call('byname', [n]).get_name() for n in ('core_collection', 'foo', 'baz')], ['core_collection', 'foo', 'baz'] )
         def test_byname_missing(self):              self.assertIsNone( self.kernel.call('byname', ['missing']) )
         def test_search_path_is_a_parameter(self):  self.assertIsNone( self.kernel.call('byname', ['foo'], {'collection_search_path': []}) )

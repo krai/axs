@@ -57,6 +57,9 @@ def feed(action_object, args, kwargs):
     return action_object(*args, **kwargs)
 
 
+EXPRESSIONS_BEING_FIRED = set()     # (id of the holding object, parameter name) of the inert expressions currently being computed
+
+
 class ActionSource(ParamSource):
     """An object of ActionSource class is a ParamSource that can also find and call actions.
 
@@ -95,6 +98,29 @@ class ActionSource(ParamSource):
         if str(param_name)=='__real_entry__':
             return self.real_entry()
         return super().__getitem__(param_name)
+
+
+    def fire_inert_expression(self, param_name, inert_expression, holding_object):
+        """Compute a parameter from its inert expression [action_name], [action_name, pos_params] or [action_name, pos_params, named_params]
+            (pos_params that is not a list is a single positional parameter), by calling the named action on this object, the asking one,
+            whichever object holds the expression. So the expression's positional parameters bind the action's arguments directly,
+            its named parameters form the top layer of the call, and everything else comes from where the lookup started.
+            Raises ValueError if computing the parameter needs the same expression again (a cycle).
+        """
+        if type(inert_expression)!=list or not 1 <= len(inert_expression) <= 3 or type(inert_expression[0])!=str:
+            raise ValueError(f"[{holding_object.get_name()}] '@{param_name}' should be [action_name], [action_name, pos_params] or [action_name, pos_params, named_params], got {inert_expression!r}")
+        firing_key = ( id(holding_object), param_name )
+        if firing_key in EXPRESSIONS_BEING_FIRED:
+            raise ValueError(f"[{holding_object.get_name()}] '@{param_name}' needs its own value to be computed (a cycle)")
+
+        action_name     = inert_expression[0]
+        pos_params      = inert_expression[1] if len(inert_expression) > 1 and inert_expression[1] is not None else []
+        named_params    = inert_expression[2] if len(inert_expression) > 2 and inert_expression[2] is not None else {}
+        EXPRESSIONS_BEING_FIRED.add(firing_key)
+        try:
+            return self.call(action_name, pos_params if type(pos_params)==list else [ pos_params ], named_params)
+        finally:
+            EXPRESSIONS_BEING_FIRED.discard(firing_key)
 
 
     def find_action(self, action_name):
@@ -405,8 +431,11 @@ def describe_parameter(param, context_object):
         parts.append('special: receives the real entry')
     elif param.kind not in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
         layers = context_object.override_chain_generator() if param.name.startswith('_') else context_object.hierarchy_generator()
-        provider = next( (layer for layer in layers if param.name in layer.own_data()), None )
-        if provider is not None:
+        provider = next( (layer for layer in layers if param.name in layer.own_data() or '@'+param.name in layer.own_data()), None )
+        if provider is not None and '@'+param.name in provider.own_data():
+            source = 'this call' if provider.is_override() else str(provider.get_name())
+            parts.append( f"now: computed by @{param.name} = {textwrap.shorten(repr(provider.own_data()['@'+param.name]), 50)} (from {source})" )
+        elif provider is not None:
             value = repr( provider.own_data()[param.name] )
             source = 'this call' if provider.is_override() else str(provider.get_name())
             parts.append( f"now: {textwrap.shorten(value, 40)} (from {source})" )
@@ -447,6 +476,7 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
                 real_name   = lambda __real_entry__: (__real_entry__.is_override(), __real_entry__.get_name()),
                 promote_deeper = lambda __entry__: __entry__.call('promote', [], {'y': 2}),
                 nested_colour = lambda __entry__: __entry__.call('get', ['colour']),
+                double      = lambda x: 2 * x,
             )
             self.peer   = ActionSource('peer',  { 'a': 100, 'b': 200 }, own_functions=self.funcs)
             self.base   = ActionSource('base',  { 'a': 1, 'b': 2 }, own_functions=self.funcs)
@@ -454,6 +484,8 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
             self.mixed  = ActionSource('mixed', {}, [ParamSource('plain', { 'a': 1, 'b': 2 })], own_functions=self.funcs)
             self.palette = ActionSource('palette', { 'colour': {'red': 1, 'green': 2}, 'greek': ['alpha'] }, [self.base])
             self.kid    = ActionSource('kid', {}, [self.palette])
+            self.calc   = ActionSource('calc', { 'x': 2, '@doubled': ['double', [], {}], '@of_three': ['double', [3]], '@of_four': ['double', [], {'x': 4}] }, [self.base])
+            self.calc_kid = ActionSource('calc_kid', { 'x': 5 }, [self.calc])
             self.start  = ActionSource('start', { 'peer': self.peer, 'words': 'alpha-beta-gamma' }, [self.child])    # where the pipeline tests start
 
         def test_fill_from_hierarchy(self):         self.assertEqual( self.child.call('add3'), 21 )     # a inherited, b own, c default
@@ -554,6 +586,28 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
         def test_execute_passes_only_once(self):    self.assertEqual( self.start.execute([ ['noop', 7], 'c', ['add3'], [], ['add3'] ]), 21 )   # the second add3 gets no c
         def test_execute_leaves_steps_unchanged(self):
             pipeline = [ ['noop', 7], 'c', ['add3', [], {'b': 1}], [], ['noop', 2], 0, ['add3', [5]] ]; self.start.execute(pipeline); self.assertEqual( pipeline, [ ['noop', 7], 'c', ['add3', [], {'b': 1}], [], ['noop', 2], 0, ['add3', [5]] ] )
+
+        def test_inert_fires(self):                 self.assertEqual( self.calc['doubled'], 4 )
+        def test_inert_fires_on_asking_object(self): self.assertEqual( self.calc_kid['doubled'], 10 )            # the expression is calc's, x is calc_kid's
+        def test_inert_plain_value_above_wins(self): self.assertEqual( self.calc.call('get', ['doubled'], {'doubled': 99}), 99 )
+        def test_inert_context_reaches_it(self):    self.assertEqual( self.calc.call('get', ['doubled'], {'x': 100}), 200 )
+        def test_inert_positionals_bind(self):      self.assertEqual( self.calc.call('get', ['of_three'], {'x': 100}), 6 )
+        def test_inert_named_bind(self):            self.assertEqual( self.calc.call('get', ['of_four'], {'x': 100}), 8 )
+        def test_inert_raw_expression(self):        self.assertEqual( self.calc['@of_three'], ['double', [3]] )
+        def test_inert_both_forms_rejected(self):   self.assertRaises( ValueError, ActionSource(own_data={'x': 1, '@x': ['noop', 1]}).__getitem__, 'x' )
+        def test_inert_malformed_rejected(self):    self.assertRaises( ValueError, ActionSource(own_data={'@x': 'noop'}).__getitem__, 'x' )
+        def test_inert_cycle_detected(self):        self.assertRaises( ValueError, ActionSource(own_data={'@loop': ['get', ['loop']]}).__getitem__, 'loop' )
+        def test_inert_needs_action_source(self):   self.assertRaises( TypeError, ParamSource(own_data={'@y': ['noop', 1]}).__getitem__, 'y' )
+        def test_inert_set_by_call(self):           self.assertEqual( self.calc.call('get', ['tripled'], {'@tripled': ['double', [], {'x': 1.5}]}), 3.0 )
+        def test_inert_edited_by_call(self):
+            self.assertEqual( (self.calc.call('get', ['doubled'], {'@doubled.named_params.x': 7}), self.calc['@doubled']), (14, ['double', [], {}]) )
+        def test_inert_part_aliases(self):          self.assertEqual( [split_key_path('@e.' + part + '.k') for part in ('action_name', 'pos_params', 'named_params')], [['@e', '0', 'k'], ['@e', '1', 'k'], ['@e', '2', 'k']] )
+        def test_inert_edit_one_element_expression(self):
+            self.assertEqual( ActionSource('short', {'@e': ['double']}, [self.base]).call('get', ['e'], {'@e.named_params.x': 5}), 10 )
+        def test_inert_none_slots_are_empty(self):  self.assertEqual( ActionSource('short', {'@e': ['double', None, {'x': 3}]}, [self.base])['e'], 6 )
+        def test_inert_inspect_edited_unfired(self):
+            self.assertEqual( ActionSource('short', {'@e': ['no_such_action']}).call('dig', ['@e.named_params'], {'@e.named_params.x': 5}), {'x': 5} )
+        def test_help_shows_computed_parameter(self): self.assertIn( "now: computed by @x = ['double', [], {}] (from this call)", self.calc.call('help', ['double'], {'@x': ['double', [], {}]}) )
 
     if __name__ == '__main__':
         unittest.main(verbosity=2)

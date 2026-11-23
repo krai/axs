@@ -1,0 +1,8 @@
+{
+    "a": 3,
+    "b": 4,
+    "c": 5,
+    "height": 6,
+    "@base_area": [ "heron_area" ],
+    "@volume": [ "pyramid_volume" ]
+}

@@ -115,7 +115,7 @@ while IFS= read -r example; do
     else
         assert_raises "( cd \"$TEMP_DIR\" && $example )" 0
     fi
-done < <(grep -h -E '^[[:space:]]+axs ' "$AXS_DIR"/*.py "$AXS_DIR"/core_collection/code_axs.py | sed -E 's/^[[:space:]]+//')
+done < <(find "$AXS_DIR" -name '*.py' -not -path '*/__pycache__/*' -print0 | sort -z | xargs -0 grep -h -E '^[[:space:]]+axs ' | sed -E 's/^[[:space:]]+//')
 assert_end docstring_examples
 
 

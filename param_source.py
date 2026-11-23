@@ -10,10 +10,39 @@ import sys
 from copy import deepcopy
 
 
+INERT_EXPRESSION_PARTS = { 'action_name': '0', 'pos_params': '1', 'named_params': '2' }
+
 def split_key_path(key_path):
     """Turn a key path given as a dot-separated string or as a list into a new list of keys.
+        In a path into an inert expression (whose first key starts with '@'), the second key may name a part of the expression
+        instead of giving its index: action_name, pos_params or named_params stand for 0, 1 and 2.
     """
-    return key_path.split('.') if type(key_path)==str else list(key_path)
+    key_path = key_path.split('.') if type(key_path)==str else list(key_path)
+    if len(key_path)>1 and str(key_path[0]).startswith('@') and key_path[1] in INERT_EXPRESSION_PARTS:
+        key_path[1] = INERT_EXPRESSION_PARTS[ key_path[1] ]
+    return key_path
+
+
+def looks_like_index(key_syllable):
+    """Return whether a key addresses a position in a list: an int, or a string of digits (as keys from the command line are).
+    """
+    return type(key_syllable)==int or ( type(key_syllable)==str and key_syllable.isdigit() )
+
+
+def new_container(next_key_syllable):
+    """Return the empty structure to create for a missing level, judging by the key that will address into it:
+        a list for a position, a dictionary otherwise (including when no key follows).
+    """
+    return [] if next_key_syllable is not None and looks_like_index(next_key_syllable) else {}
+
+
+def fill_expression_slots(inert_expression):
+    """Give the parameter slots of an inert expression (a list) their known types where padding has left None:
+        slot 1 (pos_params) becomes a list, slot 2 (named_params) a dictionary.
+    """
+    for slot, empty_structure in ( (1, []), (2, {}) ):
+        if len(inert_expression) > slot and inert_expression[slot] is None:
+            inert_expression[slot] = empty_structure
 
 
 def index_into(struct_ptr, key_syllable, vivify=False):
@@ -77,6 +106,10 @@ class ParamSource:
         although within the override an edited parameter stays shadowed by the override's own value.
         own_data() is the exception: it is the data of the very object it is called on, so on an override, that override's data.
         Parameters whose names start with '_' are looked up through overrides, down to and including that object.
+
+        A parameter can also be given as an inert expression: a key '@name' holding [action_name], [action_name, pos_params] or
+        [action_name, pos_params, named_params]. Looking up 'name' fires it at the first layer that has it (see __getitem__()),
+        unless a layer above gives 'name' plainly. Looking up '@name' itself returns the expression, unfired, as plain data.
 
         BEWARE: values are returned by reference, and edits made directly on them are not tracked. Appending to
         or otherwise changing a value obtained from __getitem__(), get() or dig() changes it wherever it lives:
@@ -286,14 +319,27 @@ class ParamSource:
         """Return the value of a parameter, by reference, from the first object in the hierarchy that has it.
             Parameters whose names start with '_' are only looked up in this object's own data, and through overrides
             (see override_chain_generator()). Parameter names are converted to strings. Raises KeyError if the parameter is missing.
+            A layer that has an inert expression '@name' instead of 'name' provides the result of firing it on this object
+            (see fire_inert_expression()); a layer that has both is an error. Asking for '@name' returns the expression itself.
         """
-        param_name = str(param_name)
+        param_name  = str(param_name)
+        inert_name  = None if param_name.startswith('@') else '@' + param_name
         for source_object in ( self.override_chain_generator() if param_name.startswith('_') else self.hierarchy_generator() ):
             source_data = source_object.own_data()
+            if inert_name in source_data:
+                if param_name in source_data:
+                    raise ValueError(f"[{source_object.get_name()}] has both '{param_name}' and '{inert_name}': only one of them is allowed")
+                return self.fire_inert_expression(param_name, source_data[inert_name], source_object)
             if param_name in source_data:
                 return source_data[param_name]
 
         raise KeyError(param_name)
+
+
+    def fire_inert_expression(self, param_name, inert_expression, holding_object):
+        """Compute a parameter from its inert expression. Only an ActionSource can fire expressions, so here this is an error.
+        """
+        raise TypeError(f"[{self.get_name()}] cannot compute '{param_name}' from an inert expression: only an ActionSource can fire them")
 
 
     def get(self, param_name, default_value=None):
@@ -320,31 +366,40 @@ class ParamSource:
         self.own_data()[ str(param_name) ] = param_value
 
 
-    def dig(self, key_path, safe=False, safe_value=None, vivify=False):
+    def dig(self, key_path, safe=False, safe_value=None, vivify=False, next_key=None):
         """Traverse a path of keys into a parameter's internal structure and return what is found there, by reference.
             The path is a dot-separated string or a list of keys; its first key names the parameter, which may be inherited.
             Numeric keys index into lists.
             If the path cannot be traversed, raises the underlying error, or returns safe_value when safe is set.
-            With vivify set, the path is created as it is traversed: missing dictionary levels and None placeholders
-            become empty dictionaries, and lists that are too short are padded with None; an inherited parameter
+            With vivify set, the path is created as it is traversed: a missing level or a None placeholder becomes an empty list
+            if the key that follows it is a position, and an empty dictionary otherwise (next_key is the key that will follow the path,
+            if the caller knows it); lists that are too short are padded with None. In an inert expression (a path starting with '@'),
+            the parameter slots have known types: pos_params becomes a list and named_params a dictionary. An inherited parameter
             is first copied into own data (see own_value()). On an override, a vivifying dig() is done in real_entry() instead.
 
             Usage examples:
                 axs dig greek.2 --greek,=alpha,beta,gamma                                # => gamma
                 axs dig greek.5 --greek,=alpha,beta --safe                               # => None
+                axs byname pyramid , dig @volume.action_name                             # => pyramid_volume
+                axs byname pyramid , dig @base_area.named_params --@base_area.named_params.a=5     # => {'a': 5}
         """
         if vivify and self.is_override():
-            return self.real_entry().dig(key_path, safe=safe, safe_value=safe_value, vivify=True)
-        key_path = split_key_path(key_path)
+            return self.real_entry().dig(key_path, safe=safe, safe_value=safe_value, vivify=True, next_key=next_key)
+        key_path    = split_key_path(key_path)
+        following   = key_path[1:] + [ next_key ]       # the key that will address into each level
+        is_inert    = str(key_path[0]).startswith('@')
         try:
             if vivify:
                 if self.own_value( key_path[0] ) is None:     # a vivifying walk is an edit, so it must only ever reach own data
-                    self.__setitem__( key_path[0], {} )
+                    self.__setitem__( key_path[0], new_container(following[0]) )
             struct_ptr = self.__getitem__( key_path[0] )
-            for key_syllable in key_path[1:]:
+            for depth, key_syllable in enumerate(key_path[1:], start=1):
                 index = index_into(struct_ptr, key_syllable, vivify)
-                if vivify and ((type(struct_ptr)==dict and index not in struct_ptr) or struct_ptr[index] is None):
-                    struct_ptr[index] = {}
+                if vivify:
+                    if is_inert and depth==1:
+                        fill_expression_slots(struct_ptr)
+                    if (type(struct_ptr)==dict and index not in struct_ptr) or struct_ptr[index] is None:
+                        struct_ptr[index] = new_container(following[depth])
                 struct_ptr = struct_ptr[index]
             return struct_ptr
         except (KeyError, IndexError, ValueError, TypeError):
@@ -377,8 +432,10 @@ class ParamSource:
 
             if augment_mode and len(key_path)==1:
                 self.own_value( key_path[0] )       # for longer paths dig(vivify=True) does this
-            struct_parent_ptr = self.dig(key_path[:-1], vivify=True) if len(key_path)>1 else self.own_data()
+            struct_parent_ptr = self.dig(key_path[:-1], vivify=True, next_key=key_path[-1]) if len(key_path)>1 else self.own_data()
             index = index_into(struct_parent_ptr, key_path[-1], vivify=True)
+            if len(key_path)==2 and str(key_path[0]).startswith('@') and type(struct_parent_ptr)==list:
+                fill_expression_slots(struct_parent_ptr)
             if augment_mode:
                 value = augment_value( struct_parent_ptr.get(index) if type(struct_parent_ptr)==dict else struct_parent_ptr[index], value )
             struct_parent_ptr[index] = value
@@ -552,6 +609,15 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
             layer = ParamSource(None, {'L': [1]}, [self.child], True); layer.promote().own_data()['L'].append(2); self.assertEqual( layer.own_data(), {'L': [1]} )
         def test_promote_non_override(self):        self.assertEqual( (self.child.promote().own_data(), self.child.promote().parent_objects()[0] is self.child), ({}, True) )
         def test_noop(self):                        self.assertEqual( self.ps.noop([1, 'two']), [1, 'two'] )
+
+        def test_vivify_list_for_positions(self):
+            self.ps.plant('fresh.0.x', 1, 'other.k.1', 'v'); self.assertEqual( (self.ps['fresh'], self.ps['other']), ([{'x': 1}], {'k': [None, 'v']}) )
+        def test_vivify_inert_slots(self):
+            self.ps.plant('@e', ['act'], '@e.named_params.a', 5); self.ps.plant('@f', ['act'], '@f.pos_params.0', 4); self.assertEqual( (self.ps['@e'], self.ps['@f']), (['act', [], {'a': 5}], ['act', [4]]) )
+        def test_vivify_inert_slot_directly(self):
+            self.ps.plant('@g', ['act'], '@g.named_params', {'b': 1}); self.assertEqual( self.ps['@g'], ['act', [], {'b': 1}] )
+        def test_dig_inside_inert_without_firing(self):
+            self.ps['@broken'] = ['no_such_action', [1], {'k': 2}]; self.assertEqual( [self.ps.dig('@broken.' + part) for part in ('action_name', 'pos_params.0', 'named_params.k')], ['no_such_action', 1, 2] )
 
     if __name__ == '__main__':
         unittest.main(verbosity=2)
