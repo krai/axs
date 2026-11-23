@@ -264,15 +264,29 @@ class ActionSource(ParamSource):
             Each step is a list [action_name], [action_name, pos_params] or [action_name, pos_params, named_params];
             pos_params that is not a list is a single positional parameter. Each step is called on the result of the previous one:
             an ActionSource through call(), any other object by calling its method of that name directly.
-            Markers between steps change what the next step is called on:
-                []      (" , , " on the command line)   the originator again;
-                "-"     (" ,- " on the command line)    the object the previous step was called on, discarding that step's result.
-            A trailing marker makes the pipeline return that object. An empty pipeline returns the originator.
+            Markers between steps change how the next step is made:
+                []      (" , , " on the command line)   it is called on the originator again;
+                "-"     (" ,- " on the command line)    it is called on the object the previous step was called on,
+                                                        discarding that step's result;
+                N       (" ,N " on the command line)    the previous result is inserted at position N of its positional parameters,
+                                                        and it is called on the originator;
+                "name"  (" ,name " on the command line) the previous result becomes its named parameter "name",
+                                                        and it is called on the originator.
+            A passing marker followed by "-" makes the call on the previous step's object instead ("this is how a result gets stored
+            back into the Entry that produced it"); "-" followed by a passing marker passes the previous step's object itself.
+            A trailing "-" or [] makes the pipeline return that object. An empty pipeline returns the originator.
+            The steps themselves are never changed, so a pipeline can be run again.
 
             Usage examples:
                 axs execute ---='[["byname", "baz"], ["get", "greeting"]]'               # => hello from baz
+                axs execute ---='[["noop", "x"], 0, ["noop"]]'                           # => x
+                axs noop greek.1 ,0 dig --greek,=alpha,beta                              # => beta
+                axs noop hello ,arg noop                                                 # => hello
+                axs byname foo , get greeting ,1 ,- plant copy , get copy                # => hello from foo
+                axs byname baz , get_name ,- ,0 noop                                     # => axs byname baz
         """
         result = current_object = previous_object = self
+        passing = None      # (position or name, value) to pass into the next call
 
         for step in pipeline:
             if step == []:
@@ -280,6 +294,10 @@ class ActionSource(ParamSource):
                 continue
             if step == '-':
                 result = current_object = previous_object
+                continue
+            if type(step) in (int, str):
+                passing = (step, result)
+                current_object = self
                 continue
             if len(step) > 3:
                 raise ValueError(f"[{self.get_name()}] a pipeline step has at most 3 elements (action_name, pos_params, named_params), got {step}")
@@ -289,6 +307,14 @@ class ActionSource(ParamSource):
             named_params    = step[2] if len(step) > 2 else {}
             if type(pos_params) != list:
                 pos_params = [ pos_params ]
+
+            if passing is not None:
+                position_or_name, passed_value = passing
+                if type(position_or_name) == int:
+                    pos_params = pos_params[:position_or_name] + [ passed_value ] + pos_params[position_or_name:]
+                else:
+                    named_params = { **named_params, position_or_name: passed_value }
+                passing = None
 
             previous_object = current_object
             if isinstance(current_object, ActionSource):
@@ -517,6 +543,17 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
         def test_edits_reach_function_arguments(self): self.assertEqual( self.child.call('add3', [], {'a+': 10}), 31 )     # a: inherited 1, augmented by 10
         def test_edits_never_reach_kwargs(self):    self.assertEqual( self.child.call('with_kwargs', [], {'a': 7, 'x.y': 1, 'z+': 2, 'w': 3}), (7, {'w': 3}) )
         def test_edit_keys(self):                   self.assertEqual( [is_edit_key(k) for k in ('plain', 'a.b', 'greek+', 'a.b+')], [False, True, True, True] )
+
+        def test_execute_passes_by_position(self):  self.assertEqual( self.start.execute([ ['noop', 100], 0, ['add3'] ]), 120 )      # a=100, b=20 from child
+        def test_execute_passes_into_the_middle(self): self.assertEqual( self.start.execute([ ['noop', 5], 1, ['add3', [100]] ]), 105 )
+        def test_execute_passes_by_name(self):      self.assertEqual( self.start.execute([ ['noop', 7], 'c', ['add3'] ]), 28 )
+        def test_execute_passing_calls_originator(self): self.assertIs( self.start.execute([ ['get', 'peer'], 0, ['noop'] ]), self.peer )
+        def test_execute_pass_then_previous_object(self):
+            self.assertIs( self.start.execute([ ['get', 'peer'], ['get', 'a'], 1, '-', ['plant', ['copy']] ]), self.peer ); self.assertEqual( self.peer['copy'], 100 )
+        def test_execute_previous_object_then_pass(self): self.assertIs( self.start.execute([ ['get', 'peer'], ['get', 'a'], '-', 0, ['noop'] ]), self.peer )
+        def test_execute_passes_only_once(self):    self.assertEqual( self.start.execute([ ['noop', 7], 'c', ['add3'], [], ['add3'] ]), 21 )   # the second add3 gets no c
+        def test_execute_leaves_steps_unchanged(self):
+            pipeline = [ ['noop', 7], 'c', ['add3', [], {'b': 1}], [], ['noop', 2], 0, ['add3', [5]] ]; self.start.execute(pipeline); self.assertEqual( pipeline, [ ['noop', 7], 'c', ['add3', [], {'b': 1}], [], ['noop', 2], 0, ['add3', [5]] ] )
 
     if __name__ == '__main__':
         unittest.main(verbosity=2)

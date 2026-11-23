@@ -82,6 +82,8 @@ assert 'axs byname no_such_entry' None
 assert 'axs byname baz , get greeting , , byname foo , get greeting' 'hello from foo'
 assert 'axs noop alpha-beta , split - ,- upper' 'ALPHA-BETA'
 assert 'axs byname foo , get greeting ,-' 'axs byname foo'
+assert 'axs noop 3 ,0 noop , __add__ 1' 4
+assert 'axs noop 3 ,arg noop , __add__ 1' 4
 assert_end pipelines_and_markers
 
 axs fresh_entry "$TEMP_DIR/hello" , plant message Hello , save >/dev/null

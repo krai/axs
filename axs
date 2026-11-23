@@ -28,6 +28,9 @@ Between the calls of a pipeline:
     ,                               the next call is made on the result of the previous one
     , ,                             the next call is made on the kernel Entry again
     ,-                              the next call is made on the object of the previous call, discarding its result
+    ,N                              the result is inserted at position N of the next call's positional arguments (N is a number),
+                                    and the next call is made on the kernel Entry
+    ,name                           the result becomes the next call's named argument "name", and the next call is made on the kernel Entry
 """
 
 import json
@@ -105,7 +108,7 @@ def cli_parse(arglist):
     pipeline, call_tokens = [], []
 
     for token in arglist:
-        if token in (',', ',-'):
+        if token in (',', ',-') or re.match(r'^,\w+$', token):
             if call_tokens:
                 pipeline.append( parse_call(call_tokens) )
                 call_tokens = []
@@ -113,6 +116,8 @@ def cli_parse(arglist):
                 pipeline.append( [] )       # " , , ": an empty call between two separators means "back to the kernel Entry"
             if token==',-':
                 pipeline.append( '-' )
+            elif token!=',':
+                pipeline.append( int(token[1:]) if token[1:].isdigit() else token[1:] )     # ",N" or ",name": pass the result on
         else:
             call_tokens.append(token)
 
