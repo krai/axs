@@ -81,6 +81,12 @@ assert "axs fresh_entry ---own_data='{\"x\": 1}'" "axs fresh_entry '---own_data=
 assert "$(axs fresh_entry ---own_data='{"x": 1}') , get x" 1          # the printed command line works as it is
 assert_end entry_creation
 
+assert 'axs help help | grep -c "^Signature .*: help(action_name: str = None) -> str$"' 1
+assert 'axs help byname | grep "^Ancestry path"' "Ancestry path                 : $(basename "$AXS_DIR") --> core_collection"
+assert 'axs byname baz , help gte' "[baz] has no action 'gte'. Did you mean: get?"
+assert 'axs help | head -1 | cut -d: -f1 | xargs' Entry          # piping into head must not raise a broken pipe error
+assert_end help
+
 assert_raises 'axs no_such_action' 1
 assert_raises "axs 'not an action'" 1
 assert_raises 'axs noop ---arg=not_json' 1

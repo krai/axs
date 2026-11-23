@@ -27,7 +27,7 @@ def walk(__real_entry__):
             yield contained_entry
 
 
-def byname(entry_name, __entry__):
+def byname(entry_name: str, __entry__):
     """Return the first Entry named entry_name found by walk(), or None if there is none.
         walk() is called as an action, so that an Entry inheriting this code can redefine it (as the kernel Entry does).
 

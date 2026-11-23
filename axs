@@ -118,7 +118,12 @@ def cli_parse(arglist):
 
 
 def main():
-    print( pickle_struct( kernel().execute( cli_parse(sys.argv[1:]) ) ) )
+    result = pickle_struct( kernel().execute( cli_parse(sys.argv[1:]) ) )
+    try:
+        print( result )
+        sys.stdout.flush()
+    except BrokenPipeError:     # the reader (say, head) stopped early: not an error worth a traceback
+        os.dup2( os.open(os.devnull, os.O_WRONLY), sys.stdout.fileno() )
 
 
 if __name__ == '__main__':

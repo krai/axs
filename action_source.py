@@ -5,8 +5,10 @@
 Running this file as a script runs the tests of its Python API.
 """
 
+import difflib
 import inspect
 import sys
+import textwrap
 
 from param_source import ParamSource
 
@@ -142,6 +144,101 @@ class ActionSource(ParamSource):
         return feed( *prep(action_object, pos_params, named_params, call_override) )
 
 
+    def help(self, action_name: str = None) -> str:
+        """Describe this object, or one of its actions, using its DocStrings and the action's signature.
+            Without an action name: the object's identity, the module DocString of its code, and every action available to it
+            with the first sentence of its DocString, grouped by where the action comes from (own code, each ancestor's code, built-in methods).
+            With an action name: where the action comes from, its signature (with any declared types), each parameter with its kind,
+            declared type, default and where its value would come from in this very call, and the full DocString.
+
+            Usage examples:
+                axs help
+                axs help help
+                axs byname baz , help
+                axs byname baz , help get
+                axs byname baz , help get --greeting=hi
+                axs help bypath
+        """
+        return self._describe_action(action_name) if action_name else self._describe_object()
+
+
+    def _describe_object(self):
+        """Return the text of help() for the object itself (see help()).
+        """
+        real_entry  = self.real_entry()
+        lines       = []
+        add         = lambda label, value: lines.append( help_line(label, value) )
+
+        add( type(real_entry).__name__, real_entry.get_name() or '(anonymous)' )
+        add( 'Class', first_line(type(real_entry).__doc__) )
+        if getattr(real_entry, 'storage_key', None) and real_entry.storage_key():
+            add( 'Stored as', real_entry.storage_key() + '  (by ' + str(real_entry.storage_backend().get_name()) + ')' )
+        if getattr(real_entry, 'get_containing_collection', None) and real_entry.get_containing_collection():
+            add( 'In collection', real_entry.get_containing_collection().get_name() )
+        parents = real_entry.parent_objects()
+        add( 'Parents', ', '.join( str(parent.get_name()) for parent in parents ) if parents else '(none)' )
+
+        own_functions = real_entry.own_functions() if isinstance(real_entry, ActionSource) else None
+        if inspect.getdoc(own_functions) and inspect.ismodule(own_functions):
+            add( 'Description', inspect.getdoc(own_functions) )
+
+        seen_actions = set()
+        for source_object, functions in functions_by_source(real_entry):
+            lines.append('')
+            lines.append( ('Own functions' if source_object is real_entry else f"Functions inherited from {source_object.get_name()}") + ':' )
+            for function_name, function_object in functions:
+                note = '  [shadowed by an earlier definition]' if function_name in seen_actions else ''
+                lines.append( help_line('    '+function_name, first_line(function_object.__doc__) + note) )
+                seen_actions.add(function_name)
+
+        lines.append('')
+        lines.append( f"Built-in methods of {type(real_entry).__name__}:" )
+        for method_name in builtin_method_names(real_entry):
+            note = '  [redefined by code above]' if method_name in seen_actions else ''
+            lines.append( help_line('    '+method_name, first_line(getattr(type(real_entry), method_name).__doc__) + note) )
+
+        return '\n'.join(lines)
+
+
+    def _describe_action(self, action_name):
+        """Return the text of help() for one action (see help()).
+        """
+        real_entry  = self.real_entry()
+        lines       = []
+        add         = lambda label, value: lines.append( help_line(label, value) )
+
+        try:
+            action_object = self.find_action(action_name)
+        except NameError:
+            candidates  = [ name for _, functions in functions_by_source(real_entry) for name, _ in functions ] + builtin_method_names(real_entry)
+            suggestions = difflib.get_close_matches(action_name, candidates)
+            return f"[{real_entry.get_name()}] has no action '{action_name}'" + ( f". Did you mean: {', '.join(suggestions)}?" if suggestions else '' )
+
+        add( 'Action', action_name )
+        if inspect.ismethod(action_object):
+            defining_class = action_object.__func__.__qualname__.split('.')[0]
+            add( 'Kind', f"built-in method of the {defining_class} class, declared in {action_object.__func__.__module__}.py" )
+        else:
+            defining_source = next( source for source, functions in functions_by_source(real_entry) if any(name==action_name for name, _ in functions) )
+            add( 'Kind', f"function in the code of {defining_source.get_name()}" + ( ' (redefining a built-in method)' if action_name in builtin_method_names(real_entry) else '' ) )
+            ancestry_path = [ str(source.get_name()) for source in unique_hierarchy(real_entry) ]
+            add( 'Ancestry path', ' --> '.join( ancestry_path[:ancestry_path.index(str(defining_source.get_name()))+1] ) )
+
+        try:
+            signature = inspect.signature(action_object)
+        except ValueError:      # some built-in callables have no inspectable signature
+            add( 'Signature', '(not inspectable)' )
+        else:
+            add( 'Signature', action_name + str(signature) )
+            if signature.parameters:
+                lines.append( 'Parameters:' )
+                for param in signature.parameters.values():
+                    lines.append( help_line( '    '+param.name, describe_parameter(param, self) ) )
+
+        add( 'DocString', inspect.cleandoc(action_object.__doc__) if action_object.__doc__ else '(none)' )
+        return '\n'.join(lines)
+
+
     def execute(self, pipeline):
         """Run a pipeline of calls starting from this object (the originator), and return the result of the last call.
             Each step is a list [action_name], [action_name, pos_params] or [action_name, pos_params, named_params];
@@ -183,6 +280,89 @@ class ActionSource(ParamSource):
         return result
 
 
+HELP_LABEL_WIDTH = 30
+
+def help_line(label, value):
+    """Format one line of help(): the label in a column of fixed width, then the value, with any further lines indented under it.
+    """
+    value_lines = str(value).split('\n')
+    return '\n'.join( [ f"{label:{HELP_LABEL_WIDTH}s}: {value_lines[0]}" ] + [ ' ' * (HELP_LABEL_WIDTH+2) + line for line in value_lines[1:] ] )
+
+
+def first_line(doc_string):
+    """Return the first sentence of a DocString's first paragraph (shortened if very long), or '(no DocString)'.
+    """
+    if not doc_string:
+        return '(no DocString)'
+    first_paragraph = ' '.join( inspect.cleandoc(doc_string).split('\n\n')[0].split() )
+    sentence_end    = first_paragraph.find('. ')
+    first_sentence  = first_paragraph[:sentence_end+1] if sentence_end>=0 else first_paragraph
+    return textwrap.shorten(first_sentence, 120, placeholder=' ...')
+
+
+def unique_hierarchy(source_object):
+    """Return the objects of hierarchy_generator() in order, each only once.
+    """
+    seen = []
+    for ancestor in source_object.hierarchy_generator():
+        if not any(ancestor is known for known in seen):
+            seen.append(ancestor)
+    return seen
+
+
+def functions_by_source(source_object):
+    """Return (ancestor, [(function_name, function_object), ...]) for every ancestor whose code defines functions, in lookup order.
+        Functions merely imported into a code module (defined in another module) are left out.
+    """
+    groups = []
+    for ancestor in unique_hierarchy(source_object):
+        functions_ns = ancestor.own_functions() if isinstance(ancestor, ActionSource) else None
+        if functions_ns:
+            functions = [ (name, function_object) for name, function_object in inspect.getmembers(functions_ns, inspect.isfunction)
+                          if not inspect.ismodule(functions_ns) or function_object.__module__==functions_ns.__name__ ]
+            if functions:
+                groups.append( (ancestor, functions) )
+    return groups
+
+
+def builtin_method_names(source_object):
+    """Return the names of the public methods of the object's class, which are its built-in actions.
+    """
+    return [ name for name, _ in inspect.getmembers(type(source_object), inspect.isfunction) if not name.startswith('_') ]
+
+
+def describe_parameter(param, context_object):
+    """Describe one parameter of an action for help(): its kind, declared type, default, and where its value would come from
+        if the action were called on context_object (an override carrying the parameters given to help() itself, if any).
+    """
+    parts = []
+    if param.kind is param.VAR_POSITIONAL:
+        parts.append('*args: takes any further positional arguments')
+    elif param.kind is param.VAR_KEYWORD:
+        parts.append("**kwargs: receives the call's named parameters that match no other parameter")
+    elif param.kind is param.KEYWORD_ONLY:
+        parts.append('keyword-only')
+    if param.annotation is not param.empty:
+        parts.append( 'type ' + inspect.formatannotation(param.annotation) )
+    if param.default is not param.empty:
+        parts.append( 'default ' + repr(param.default) )
+
+    if param.name=='__entry__':
+        parts.append("special: receives the call's override")
+    elif param.name=='__real_entry__':
+        parts.append('special: receives the real entry')
+    elif param.kind not in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
+        layers = context_object.override_chain_generator() if param.name.startswith('_') else context_object.hierarchy_generator()
+        provider = next( (layer for layer in layers if param.name in layer.own_data()), None )
+        if provider is not None:
+            value = repr( provider.own_data()[param.name] )
+            source = 'this call' if provider.is_override() else str(provider.get_name())
+            parts.append( f"now: {textwrap.shorten(value, 40)} (from {source})" )
+        elif param.default is param.empty:
+            parts.append( f"required: give it positionally or as --{param.name}=..." )
+    return ', '.join(parts)
+
+
 if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or collected by unittest/pytest (which have already loaded unittest)
 
     import unittest
@@ -193,7 +373,15 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
         def setUp(self):
             """A parent with functions and data, a child with data only, and a parent that is a plain ParamSource.
             """
+            def typed(count: int, label: str = 'item') -> list:
+                """Make a list
+                    of labels. Each label is the same.
+
+                    A second paragraph that summaries leave out.
+                """
+                return [label] * count
             self.funcs = SimpleNamespace(
+                typed       = typed,
                 add3        = lambda a, b, c=0: a + b + c,
                 collect     = lambda first, *rest, label='L': (first, rest, label),
                 kw_only     = lambda a, *, k: (a, k),
@@ -272,6 +460,21 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
             promoted = self.child.call('promote', [], {'x': 1}); self.assertEqual( (promoted.own_data(), promoted['b'], promoted.is_override()), ({'x': 1}, 20, False) )
         def test_promote_flattens_nested_calls(self):
             self.assertEqual( self.child.call('promote_deeper', [], {'x': 1}).own_data(), {'x': 1, 'y': 2} )
+
+        def test_help_object_groups(self):
+            text = ActionSource('shadow', {}, [self.child], own_functions=SimpleNamespace(add3=lambda a: -a)).help(); self.assertEqual( [line in text for line in ('Own functions:', 'Functions inherited from base:', 'Built-in methods of ActionSource:')], [True, True, True] )
+        def test_help_object_marks_shadowing(self):
+            text = ActionSource('shadow', {}, [self.child], own_functions=SimpleNamespace(add3=lambda a: -a)).help(); self.assertEqual( (text.count('[shadowed by an earlier definition]'), 'redefined by code above' in text), (1, True) )
+        def test_help_summary_is_first_sentence(self): self.assertIn( ': Make a list of labels.\n', self.child.help() )
+        def test_help_action_kind_and_path(self):
+            text = self.child.help('add3'); self.assertEqual( ('function in the code of base' in text, 'child --> base' in text), (True, True) )
+        def test_help_parameter_sources(self):
+            text = self.child.call('help', ['add3'], {'c': 5}); self.assertEqual( [s in text for s in ('now: 1 (from base)', 'now: 20 (from child)', 'default 0, now: 5 (from this call)')], [True, True, True] )
+        def test_help_declared_types(self):
+            text = self.child.help('typed'); self.assertEqual( [s in text for s in ('typed(count: int, label: str = ', ') -> list', 'type int, required', "type str, default 'item'")], [True, True, True, True] )
+        def test_help_method_kind(self):            self.assertIn( 'built-in method of the ParamSource class, declared in param_source.py', self.child.help('get') )
+        def test_help_special_parameters(self):     self.assertIn( "special: receives the call's override", self.child.help('peek') )
+        def test_help_suggests_names(self):         self.assertEqual( self.child.help('ad3'), "[child] has no action 'ad3'. Did you mean: add3?" )
 
     if __name__ == '__main__':
         unittest.main(verbosity=2)

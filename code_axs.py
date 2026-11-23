@@ -5,7 +5,7 @@ so that every such function searches the collections of collection_search_path, 
 """
 
 
-def version(__version__):
+def version(__version__) -> str:
     """Return the version of axs, kept in the kernel Entry's own data.
 
         Usage examples:
@@ -35,7 +35,7 @@ def walk(collection_search_path, __entry__):
         yield from __entry__.call(collection_action_name).call('walk')
 
 
-def bypath(path, __real_entry__):
+def bypath(path: str, __real_entry__):
     """Return the one Entry object stored at the path, through the kernel Entry's own storage backend.
 
         Usage examples:
@@ -44,7 +44,7 @@ def bypath(path, __real_entry__):
     return __real_entry__.storage_backend().call('bykey', [path])
 
 
-def fresh_entry(entry_path=None, own_data=None, name=None, __real_entry__=None):
+def fresh_entry(entry_path: str = None, own_data: dict = None, name: str = None, __real_entry__=None):
     """Return a new Entry that is not stored yet: with optional data, no code, and an optional path under which save() will store it.
         Without a name, an Entry with a path is named after it.
 
