@@ -6,12 +6,12 @@ The leading underscore keeps contents from being inherited: a collection's desce
 """
 
 
-def walk(__entry__):
+def walk(__real_entry__):
     """Yield the collection itself, then the Entries it contains, in order, walking into contained collections depth-first.
         Contained collections are recognised by _contained_entries in their own data, and walked by this very function,
         so they need no code of their own. Each Entry is found through the collection's storage backend, so it is the cached one.
     """
-    collection      = __entry__.base_object()
+    collection      = __real_entry__
     storage_backend = collection.storage_backend()
     yield collection
 

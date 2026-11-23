@@ -5,6 +5,7 @@
 Running this file as a script runs the tests of its Python API.
 """
 
+import functools
 import sys
 from copy import deepcopy
 
@@ -46,6 +47,17 @@ def augment_value(orig_value, diff):
         raise TypeError(f"Cannot augment a {type(orig_value).__name__} with a {type(diff).__name__}") from None
 
 
+def on_real_entry(method):
+    """Decorate a method so that, called on an override, it acts on real_entry() instead: edits and questions of identity
+        always concern the real object. The method's result is that of the real object, so a method returning self returns it.
+        The decorated method keeps the original's signature (functools.wraps), so argument filling still sees its parameters.
+    """
+    @functools.wraps(method)
+    def on_real_entry_wrapper(self, *args, **kwargs):
+        return method(self.real_entry(), *args, **kwargs)
+    return on_real_entry_wrapper
+
+
 class ParamSource:
     """An object of ParamSource class is a non-persistent container of parameters with an ordered list of parent objects.
 
@@ -59,9 +71,11 @@ class ParamSource:
         so they never change the parent.
 
         An override (created with is_override=True) is a transient layer on top of exactly one parent, used to hold
-        the parameters of a call. Its data is fixed when it is created: all edits made through it (__setitem__(), plant(),
-        pluck(), own_value(), dig() with vivify) go to the nearest non-override object underneath (see base_object()),
-        although within the override that object's edited parameter stays shadowed by the override's own value.
+        the parameters of a call. Its data is fixed when it is created. Lookups through it see its data first.
+        Edits made through it (__setitem__(), plant(), pluck(), own_value(), dig() with vivify) and questions of identity
+        (get_name(), entry_data()) concern the nearest non-override object underneath (see real_entry() and on_real_entry()),
+        although within the override an edited parameter stays shadowed by the override's own value.
+        own_data() is the exception: it is the data of the very object it is called on, so on an override, that override's data.
         Parameters whose names start with '_' are looked up through overrides, down to and including that object.
 
         BEWARE: values are returned by reference, and edits made directly on them are not tracked. Appending to
@@ -91,6 +105,7 @@ class ParamSource:
         self.is_override_flag = bool(is_override)
 
 
+    @on_real_entry
     def get_name(self):
         """Read-only access to the name. Anonymous objects return None.
         """
@@ -119,22 +134,44 @@ class ParamSource:
         return self.own_data_cache
 
 
+    @on_real_entry
+    def entry_data(self):
+        """Return the own data of the real object (see real_entry()), even when called on an override, by reference.
+        """
+        return self.own_data()
+
+
+    def promote(self):
+        """Return a new object of the real object's kind, neither an override nor stored, holding everything that the override
+            layers it is called on contributed: their data merged (deep copies, inner layers winning), with real_entry() as its parent.
+            It can then be edited and saved like any other object. Called on an object that is not an override, it has no data of its own.
+        """
+        real_entry     = self.real_entry()
+        merged_data     = {}
+        for layer in reversed([ layer for layer in self.override_chain_generator() if layer.is_override() ]):
+            merged_data.update( deepcopy(layer.own_data()) )
+        return type(real_entry)(own_data=merged_data, parent_objects=[real_entry])
+
+
+    def noop(self, arg):
+        """Return its own single argument (handy at the start of a pipeline, or for echoing a value).
+        """
+        return arg
+
+
     def parent_objects(self):
         """Return the list of this object's parent objects, in order of priority.
         """
         return self.parent_objects_cache
 
 
+    @on_real_entry
     def set_parent_objects(self, parent_objects):
-        """Replace this object's parents (on an override, those of base_object() instead), refusing any change that would create a cycle.
+        """Replace this object's parents (on an override, those of real_entry() instead), refusing any change that would create a cycle.
             Keeps the data truthful: _parent_names in own data becomes the list of the new parents' names if they all have one,
             and is removed otherwise. Whatever was set last, names or objects, decides.
             Returns the object itself, so that calls can be chained.
         """
-        if self.is_override():
-            self.base_object().set_parent_objects(parent_objects)
-            return self
-
         parent_objects = list(parent_objects)
         for parent_object in parent_objects:
             if not isinstance(parent_object, ParamSource):
@@ -159,7 +196,7 @@ class ParamSource:
 
     def override_chain_generator(self):
         """Yield this object and, while the yielded object is an override, the one parent underneath it,
-            ending with the first object that is not an override (see base_object()).
+            ending with the first object that is not an override (see real_entry()).
         """
         source_object = self
         yield source_object
@@ -168,7 +205,7 @@ class ParamSource:
             yield source_object
 
 
-    def base_object(self):
+    def real_entry(self):
         """Return the nearest object that is not an override: this object itself, unless it is an override.
         """
         for source_object in self.override_chain_generator():
@@ -191,14 +228,13 @@ class ParamSource:
             yield from parent_object.hierarchy_generator()
 
 
+    @on_real_entry
     def own_value(self, param_name):
         """Make sure a parameter lives in own data before it is edited in place: if it is only inherited,
             store a deep copy of the inherited value in own data.
             Returns the parameter's value from own data, by reference and safe to edit in place,
-            or None if the parameter is missing everywhere. On an override, this is done in base_object() instead.
+            or None if the parameter is missing everywhere. On an override, this is done in real_entry() instead.
         """
-        if self.is_override():
-            return self.base_object().own_value(param_name)
         param_name = str(param_name)
         own_data = self.own_data()
         if param_name not in own_data:
@@ -232,11 +268,12 @@ class ParamSource:
             return default_value
 
 
+    @on_real_entry
     def __setitem__(self, param_name, param_value):
-        """Set a parameter's value in this object's own data, shadowing any inherited value (on an override, in base_object() instead).
+        """Set a parameter's value in this object's own data, shadowing any inherited value (on an override, in real_entry() instead).
             Parameter names are converted to strings.
         """
-        self.base_object().own_data()[ str(param_name) ] = param_value
+        self.own_data()[ str(param_name) ] = param_value
 
 
     def dig(self, key_path, safe=False, safe_value=None, vivify=False):
@@ -246,10 +283,10 @@ class ParamSource:
             If the path cannot be traversed, raises the underlying error, or returns safe_value when safe is set.
             With vivify set, the path is created as it is traversed: missing dictionary levels and None placeholders
             become empty dictionaries, and lists that are too short are padded with None; an inherited parameter
-            is first copied into own data (see own_value()). On an override, a vivifying dig() is done in base_object() instead.
+            is first copied into own data (see own_value()). On an override, a vivifying dig() is done in real_entry() instead.
         """
         if vivify and self.is_override():
-            return self.base_object().dig(key_path, safe=safe, safe_value=safe_value, vivify=True)
+            return self.real_entry().dig(key_path, safe=safe, safe_value=safe_value, vivify=True)
         key_path = split_key_path(key_path)
         try:
             if vivify:
@@ -268,17 +305,15 @@ class ParamSource:
             raise
 
 
+    @on_real_entry
     def plant(self, *keypath_value_pairs):
         """Assign values at the ends of key paths in this object's own data, creating missing structure on the way (see dig() with vivify).
             Takes alternating key paths and values. A path whose last key ends in '+' augments the existing value
             instead of replacing it (see augment_value()); a missing or None value is simply assigned.
             Editing below the top level of an inherited parameter, or augmenting it, first copies it into own data
-            (see own_value()), so the parent is never changed. On an override, the planting is done in base_object() instead.
+            (see own_value()), so the parent is never changed. On an override, the planting is done in real_entry() instead.
             Returns the object itself, so that calls can be chained.
         """
-        if self.is_override():
-            self.base_object().plant(*keypath_value_pairs)
-            return self
         if len(keypath_value_pairs) % 2:
             raise ValueError(f"[{self.get_name()}] plant() expects alternating key paths and values, got an odd number of arguments")
 
@@ -299,17 +334,15 @@ class ParamSource:
         return self
 
 
+    @on_real_entry
     def pluck(self, *key_paths):
         """Remove the values at the ends of the given key paths from this object's own data.
             Plucking a top-level parameter lets an inherited value of the same name show through again;
             plucking an inherited top-level parameter raises KeyError. Below the top level, an inherited
             parameter is first copied into own data (see own_value()), so the parent is never changed.
             Raises the underlying error if a path does not exist; nothing is created on the way.
-            On an override, the plucking is done in base_object() instead. Returns the object itself, so that calls can be chained.
+            On an override, the plucking is done in real_entry() instead. Returns the real object, so that calls can be chained.
         """
-        if self.is_override():
-            self.base_object().pluck(*key_paths)
-            return self
         for key_path in key_paths:
             key_path = split_key_path(key_path)
             if len(key_path)>1:
@@ -426,13 +459,13 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
 
         def test_override_needs_one_parent(self):
             for parents in ([], [self.left, self.right]): self.assertRaises( ValueError, ParamSource, None, {}, parents, True )
-        def test_base_object(self):                 self.assertEqual( [o.base_object().get_name() for o in (self.over_over, self.over, self.child)], ['child', 'child', 'child'] )
+        def test_real_entry(self):                 self.assertEqual( [o.real_entry().get_name() for o in (self.over_over, self.over, self.child)], ['child', 'child', 'child'] )
         def test_override_lookup(self):             self.assertEqual( [self.over_over[p] for p in ('y', 'x', 'z', 'greek', '_flag')], ['over2', 'over', 'child', ['alpha'], 'over'] )
         def test_underscore_through_overrides(self):
             self.assertEqual( (ParamSource(None, {}, [ParamSource(None, {}, [self.base], True)], True).get('_private'), self.over.get('_private')), ('base', None) )
         def test_override_data_is_fixed(self):      self.assertRaises( TypeError, self.over.set_own_data, {} )
         def test_plant_through_override(self):
-            self.assertIs( self.over_over.plant('new', 1, 'colour.green', 2), self.over_over ); self.assertEqual( (self.child['new'], self.child['colour'], self.base['colour']), (1, {'red': 0, 'green': 2}, {'red': 0}) )
+            self.assertIs( self.over_over.plant('new', 1, 'colour.green', 2), self.child )   # edits return the real object; self.assertEqual( (self.child['new'], self.child['colour'], self.base['colour']), (1, {'red': 0, 'green': 2}, {'red': 0}) )
         def test_other_edits_through_override(self):
             self.over['k'] = 1; self.over.pluck('z'); self.over.own_value('greek').append('beta'); self.assertEqual( self.child.own_data(), {'k': 1, 'greek': ['alpha', 'beta']} )
         def test_dig_vivify_through_override(self):
@@ -453,6 +486,16 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
         def test_set_parents_type_check(self):      self.assertRaises( TypeError, self.left.set_parent_objects, [{'x': 1}] )
         def test_set_parents_through_override(self):
             self.over.set_parent_objects([self.right]); self.assertEqual( ([p.get_name() for p in self.child.parent_objects()], self.over.parent_objects()[0] is self.child), (['right'], True) )
+
+        def test_identity_from_override(self):      self.assertEqual( (self.over_over.get_name(), self.over_over.entry_data() is self.child.own_data(), self.over_over.own_data()), ('child', True, {'y': 'over2'}) )
+        def test_promote(self):
+            promoted = self.over_over.promote(); self.assertEqual( (promoted.is_override(), promoted.parent_objects()[0] is self.child, promoted.own_data()), (False, True, {'x': 'over', '_flag': 'over', 'y': 'over2'}) )
+        def test_promote_inner_layer_wins(self):
+            outer = ParamSource(None, {'k': 'outer', 'm': 1}, [self.child], True); self.assertEqual( ParamSource(None, {'k': 'inner'}, [outer], True).promote().own_data(), {'k': 'inner', 'm': 1} )
+        def test_promote_copies_deeply(self):
+            layer = ParamSource(None, {'L': [1]}, [self.child], True); layer.promote().own_data()['L'].append(2); self.assertEqual( layer.own_data(), {'L': [1]} )
+        def test_promote_non_override(self):        self.assertEqual( (self.child.promote().own_data(), self.child.promote().parent_objects()[0] is self.child), ({}, True) )
+        def test_noop(self):                        self.assertEqual( self.ps.noop([1, 'two']), [1, 'two'] )
 
     if __name__ == '__main__':
         unittest.main(verbosity=2)

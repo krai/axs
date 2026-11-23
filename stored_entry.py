@@ -10,6 +10,7 @@ import sys
 from types import SimpleNamespace
 
 from action_source import ActionSource
+from param_source import on_real_entry
 import filesystem_storage_backend
 
 
@@ -17,7 +18,7 @@ def loaded_entries(storage_backend):
     """Return the dictionary of the Entries a storage backend has loaded or saved, keyed by their canonical storage keys.
         It is kept on the real backend object (never on an override of it), and created when first needed.
     """
-    storage_backend = storage_backend.base_object()
+    storage_backend = storage_backend.real_entry()
     if not hasattr(storage_backend, 'loaded_entries_by_key'):
         storage_backend.loaded_entries_by_key = {}
     return storage_backend.loaded_entries_by_key
@@ -28,7 +29,7 @@ def bykey(storage_key, __entry__):
         loading it (lazily, see Entry) and remembering it the first time, so that later lookups of the same key,
         however it is spelled, return the same object.
     """
-    storage_backend = __entry__.base_object()
+    storage_backend = __entry__.real_entry()
     storage_key     = storage_backend.call('canonical_key', [storage_key])
     entries         = loaded_entries(storage_backend)
     if storage_key not in entries:
@@ -83,18 +84,21 @@ class Entry(ActionSource):
             self.set_parent_objects(parent_objects)
 
 
+    @on_real_entry
     def storage_backend(self):
         """Return the storage backend of this Entry, or None if it has never been given one.
         """
         return self.assigned_storage_backend
 
 
+    @on_real_entry
     def storage_key(self):
         """Return the key under which the storage backend keeps this Entry (in canonical form), or None if it is not stored.
         """
         return self.assigned_storage_key
 
 
+    @on_real_entry
     def get_containing_collection(self):
         """Return the collection through which this Entry was reached, or None.
         """
@@ -107,19 +111,19 @@ class Entry(ActionSource):
         self.containing_collection_object = containing_collection
 
 
+    @on_real_entry
     def set_parent_objects(self, parent_objects):
         """Replace this Entry's parents, as ParamSource does. If its data has not been loaded yet, it is loaded first,
             since the names of the parents are written there: if the stored data already names parents, the new ones must match
             them name by name, otherwise this is reported as a conflict. Once the data has been seen, whatever was set last decides.
         """
-        if not self.is_override() and not self.data_loaded:
+        if not self.data_loaded:
             stored_parent_names = self.own_data().get('_parent_names')      # provokes the lazy loading
             new_parent_names    = [ parent_object.get_name() for parent_object in parent_objects ]
             if stored_parent_names is not None and stored_parent_names!=new_parent_names:
                 raise ValueError(f"[{self.get_name()}] stored data names parents {stored_parent_names}, which conflicts with the parents being set {new_parent_names}")
         super().set_parent_objects(parent_objects)
-        if not self.is_override():
-            self.resolved_parent_names = self.own_data().get('_parent_names')
+        self.resolved_parent_names = self.own_data().get('_parent_names')
         return self
 
 
@@ -185,17 +189,14 @@ class Entry(ActionSource):
         return self.own_functions_cache
 
 
+    @on_real_entry
     def save(self, storage_key=None):
         """Store this Entry's own data, under its current storage key or under the given one ("save as").
             Saving under a new key keeps the old copy in storage; the Entry then refers to the new one.
             The saved Entry becomes the one its storage backend keeps for its key (see loaded_entries()).
-            Only data is written, never code. On an override, base_object() is saved instead.
+            Only data is written, never code. On an override, real_entry() is saved instead.
             Returns the Entry itself, so that calls can be chained.
         """
-        if self.is_override():
-            self.base_object().save(storage_key)
-            return self
-
         if storage_key is not None:
             self.own_data()                     # load data and code from the old location (if any) before leaving it
             self.own_functions()
@@ -211,15 +212,12 @@ class Entry(ActionSource):
         return self
 
 
+    @on_real_entry
     def remove(self):
         """Remove this Entry from storage, and from the Entries its storage backend keeps (see loaded_entries()).
             The Entry stays usable in memory, as an Entry that is not stored.
-            On an override, base_object() is removed instead. Returns the Entry itself, so that calls can be chained.
+            On an override, real_entry() is removed instead. Returns the Entry itself, so that calls can be chained.
         """
-        if self.is_override():
-            self.base_object().remove()
-            return self
-
         if self.storage_key() is None:
             raise ValueError(f"[{self.get_name()}] an Entry that is not stored cannot be removed")
         self.own_data()                         # keep the in-memory Entry complete once its storage is gone
@@ -408,6 +406,9 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
         def test_execute_from_kernel(self):         self.assertEqual( self.kernel.execute([ ['byname', 'baz'], ['get', 'foo_only'] ]), 'inherited from foo' )   # axs byname baz , get foo_only
         def test_execute_fresh_entry_pipeline(self):
             temp_dir = tempfile.TemporaryDirectory(); self.addCleanup(temp_dir.cleanup); path = os.path.join(temp_dir.name, 'hello'); self.kernel.execute([ ['fresh_entry', path], ['plant', ['message', 'Hello']], ['save'] ]); self.assertEqual( Entry(storage_key=path).own_data(), {'message': 'Hello'} )
+        def test_identity_through_call(self):       self.assertEqual( (self.kernel.call('byname', ['foo']).call('storage_key', [], {'q': 1}), self.kernel.call('byname', ['foo']).call('get_containing_collection') is self.kernel.call('core_collection')), (os.path.join(self.kernel.storage_key(), 'core_collection', 'foo'), True) )
+        def test_promote_and_save(self):
+            temp_dir = tempfile.TemporaryDirectory(); self.addCleanup(temp_dir.cleanup); self.kernel.call('byname', ['foo']).call('promote', [], {'x': 1}).save(os.path.join(temp_dir.name, 'promoted')); self.assertEqual( Entry(storage_key=os.path.join(temp_dir.name, 'promoted')).own_data(), {'x': 1, '_parent_names': ['foo']} )
         def test_fresh_entry(self):
             fresh = self.kernel.call('fresh_entry', [], {'own_data': {'x': 1}}); self.assertEqual( (fresh['x'], fresh.storage_key(), fresh.own_functions()), (1, None, False) )
         def test_fresh_entry_saved(self):
