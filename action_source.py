@@ -11,7 +11,7 @@ import sys
 import textwrap
 from copy import deepcopy
 
-from param_source import ParamSource, split_key_path
+from param_source import ParamSource, split_key_path, FIRING_STACK, versioned, dependencies_still_hold
 
 
 def prep(action_object, pos_params, named_params, param_source):
@@ -55,9 +55,6 @@ def feed(action_object, args, kwargs):
     """Call action_object with the positional args and keyword kwargs (as prepared by prep()) and return the result.
     """
     return action_object(*args, **kwargs)
-
-
-EXPRESSIONS_BEING_FIRED = set()     # (id of the holding object, parameter name) of the inert expressions currently being computed
 
 
 class ActionSource(ParamSource):
@@ -105,22 +102,48 @@ class ActionSource(ParamSource):
             (pos_params that is not a list is a single positional parameter), by calling the named action on this object, the asking one,
             whichever object holds the expression. So the expression's positional parameters bind the action's arguments directly,
             its named parameters form the top layer of the call, and everything else comes from where the lookup started.
-            Raises ValueError if computing the parameter needs the same expression again (a cycle).
+            The value is cached together with every lookup made while computing it (see ParamSource), and reused while all those
+            lookups would still find the same providers unchanged. It is cached in this object, or, if this object is an override
+            with no data of its own, in the first object beneath it that has some (see cache_owner()): an empty override cannot change
+            what any lookup finds, so computations through any number of them can share one result.
+            Raises ValueError for a cycle: the same expression needed again for the same cache owner while it is being computed,
+            which would only repeat the same computation; a recursion that brings new parameters each time is fine.
         """
         if type(inert_expression)!=list or not 1 <= len(inert_expression) <= 3 or type(inert_expression[0])!=str:
             raise ValueError(f"[{holding_object.get_name()}] '@{param_name}' should be [action_name], [action_name, pos_params] or [action_name, pos_params, named_params], got {inert_expression!r}")
-        firing_key = ( id(holding_object), param_name )
-        if firing_key in EXPRESSIONS_BEING_FIRED:
-            raise ValueError(f"[{holding_object.get_name()}] '@{param_name}' needs its own value to be computed (a cycle)")
 
-        action_name     = inert_expression[0]
-        pos_params      = inert_expression[1] if len(inert_expression) > 1 and inert_expression[1] is not None else []
-        named_params    = inert_expression[2] if len(inert_expression) > 2 and inert_expression[2] is not None else {}
-        EXPRESSIONS_BEING_FIRED.add(firing_key)
-        try:
-            return self.call(action_name, pos_params if type(pos_params)==list else [ pos_params ], named_params)
-        finally:
-            EXPRESSIONS_BEING_FIRED.discard(firing_key)
+        cache_owner = self.cache_owner()
+        cached      = cache_owner.computed_values.get(param_name)
+        if cached and dependencies_still_hold(cached[1]):
+            value, dependencies = cached
+        else:
+            firing_key = ( id(holding_object), param_name )
+            if any( frame[0]==firing_key and frame[1] is cache_owner for frame in FIRING_STACK ):
+                raise ValueError(f"[{holding_object.get_name()}] '@{param_name}' needs its own value to be computed (a cycle)")
+
+            action_name     = inert_expression[0]
+            pos_params      = inert_expression[1] if len(inert_expression) > 1 and inert_expression[1] is not None else []
+            named_params    = inert_expression[2] if len(inert_expression) > 2 and inert_expression[2] is not None else {}
+            FIRING_STACK.append( [ firing_key, cache_owner, [ (self, param_name, versioned(holding_object)) ] ] )
+            try:
+                value = self.call(action_name, pos_params if type(pos_params)==list else [ pos_params ], named_params)
+            finally:
+                dependencies = FIRING_STACK.pop()[2]
+            cache_owner.computed_values[param_name] = ( value, dependencies )
+
+        if FIRING_STACK:
+            FIRING_STACK[-1][2].extend(dependencies)     # whatever needed this value depends on what it depends on
+        return value
+
+
+    def cache_owner(self):
+        """Return the object whose cache serves this one (see fire_inert_expression()): this object itself,
+            unless it is an override with no data of its own, in which case the first object beneath it that has some data, or is real.
+        """
+        owner = self
+        while owner.is_override() and not owner.own_data():
+            owner = owner.parent_objects()[0]
+        return owner
 
 
     def find_action(self, action_name):
@@ -477,6 +500,11 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
                 promote_deeper = lambda __entry__: __entry__.call('promote', [], {'y': 2}),
                 nested_colour = lambda __entry__: __entry__.call('get', ['colour']),
                 double      = lambda x: 2 * x,
+                counted_double = lambda x, extra=0: ( self.firings.append(x), 2 * x + extra )[1],
+                fact        = lambda n, __entry__: 1 if n <= 1 else n * __entry__.call('get', ['factorial'], {'n': n-1}),
+                twice_c     = lambda __entry__: ( __entry__['c'], __entry__['c'] ),
+                plus_one_real = lambda __real_entry__: __real_entry__['c'] + 1,
+                pair        = lambda first, second: (first, second),
             )
             self.peer   = ActionSource('peer',  { 'a': 100, 'b': 200 }, own_functions=self.funcs)
             self.base   = ActionSource('base',  { 'a': 1, 'b': 2 }, own_functions=self.funcs)
@@ -486,6 +514,9 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
             self.kid    = ActionSource('kid', {}, [self.palette])
             self.calc   = ActionSource('calc', { 'x': 2, '@doubled': ['double', [], {}], '@of_three': ['double', [3]], '@of_four': ['double', [], {'x': 4}] }, [self.base])
             self.calc_kid = ActionSource('calc_kid', { 'x': 5 }, [self.calc])
+            self.firings  = []
+            self.counter  = ActionSource('counter', { 'x': 2, '@c': ['counted_double'], '@first': ['get', ['c']], '@second': ['get', ['c']], '@pair_of_c': ['pair'] }, [self.base])
+            self.counter_kid = ActionSource('counter_kid', {}, [self.counter])
             self.start  = ActionSource('start', { 'peer': self.peer, 'words': 'alpha-beta-gamma' }, [self.child])    # where the pipeline tests start
 
         def test_fill_from_hierarchy(self):         self.assertEqual( self.child.call('add3'), 21 )     # a inherited, b own, c default
@@ -608,6 +639,30 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
         def test_inert_inspect_edited_unfired(self):
             self.assertEqual( ActionSource('short', {'@e': ['no_such_action']}).call('dig', ['@e.named_params'], {'@e.named_params.x': 5}), {'x': 5} )
         def test_help_shows_computed_parameter(self): self.assertIn( "now: computed by @x = ['double', [], {}] (from this call)", self.calc.call('help', ['double'], {'@x': ['double', [], {}]}) )
+
+        def test_cache_computes_once(self):         self.assertEqual( ([self.counter['c'], self.counter['c']], self.firings), ([4, 4], [2]) )
+        def test_cache_invalidated_by_own_edit(self):
+            self.counter['c']; self.counter['x'] = 10; self.assertEqual( (self.counter['c'], self.firings), (20, [2, 10]) )
+        def test_cache_invalidated_by_parent_edit(self):
+            self.counter_kid['c']; self.counter.plant('x', 7); self.assertEqual( (self.counter_kid['c'], self.firings), (14, [2, 7]) )
+        def test_cache_invalidated_by_shadowing(self):
+            self.counter_kid['c']; self.counter_kid['x'] = 3; self.assertEqual( (self.counter_kid['c'], self.counter['c'], self.firings), (6, 4, [2, 3, 2]) )
+        def test_cache_invalidated_by_missing_appearing(self):
+            self.counter_kid['c']; self.counter_kid['extra'] = 1; self.assertEqual( (self.counter_kid['c'], self.firings), (5, [2, 2]) )   # extra appears outside the holder of @c
+        def test_cache_invalidated_by_new_expression_above(self):
+            self.counter_kid['c']; self.counter_kid['@c'] = ['double', [], {'x': 50}]; self.assertEqual( (self.counter_kid['c'], self.firings), (100, [2]) )
+        def test_cache_invalidated_by_expression_edit(self):
+            self.counter['c']; self.counter.plant('@c.named_params.x', 9); self.assertEqual( (self.counter['c'], self.firings), (18, [2, 9]) )
+        def test_cache_per_asking_object(self):     self.assertEqual( (self.counter['c'], self.counter_kid['c'], self.counter['c'], self.firings), (4, 4, 4, [2, 2]) )
+        def test_cache_within_one_call(self):       self.assertEqual( (self.counter.call('twice_c', [], {'x': 6}), self.firings), ((12, 12), [6]) )
+        def test_cache_separate_calls(self):        self.assertEqual( (self.counter.call('get', ['c'], {'x': 6}), self.counter.call('get', ['c'], {'x': 7}), self.firings), (12, 14, [6, 7]) )
+        def test_cache_reuse_passes_dependencies_on(self):    # c is reused while computing e, and c depends on x held by another object
+            x_source = ActionSource('x_source', {'x': 2}, [self.base]); kid = ActionSource('kid', {'@e': ['plus_one_real']}, [ActionSource('c_holder', {'@c': ['counted_double']}, [x_source])]); kid['c']; kid['e']; x_source['x'] = 10; self.assertEqual( (kid['e'], self.firings), (21, [2, 10]) )
+        def test_recursion_with_new_parameters(self): self.assertEqual( ActionSource('fact', {'n': 5, '@factorial': ['fact']}, [self.base])['factorial'], 120 )
+
+        def test_cache_shared_through_empty_overrides(self): self.assertEqual( (self.counter.call('get', ['pair_of_c'], {'x': 6}), self.firings), ((12, 12), [6]) )   # two expressions need c
+        def test_cache_owner(self):                 self.assertEqual( (ActionSource(None, {}, [ActionSource(None, {'q': 1}, [self.counter], is_override=True)], is_override=True).cache_owner().own_data(), ActionSource(None, {}, [self.counter], is_override=True).cache_owner() is self.counter), ({'q': 1}, True) )
+        def test_substitute_computes_once(self):    self.assertEqual( (self.counter.call('substitute', ['#{c}# #{c}# #{c}# #{c}#'], {'x': 6}), self.firings), ('12 12 12 12', [6]) )
 
     if __name__ == '__main__':
         unittest.main(verbosity=2)

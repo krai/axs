@@ -6,6 +6,7 @@ Running this file as a script runs the tests of its Python API.
 """
 
 import functools
+import re
 import sys
 from copy import deepcopy
 
@@ -76,6 +77,29 @@ def augment_value(orig_value, diff):
         raise TypeError(f"Cannot augment a {type(orig_value).__name__} with a {type(diff).__name__}") from None
 
 
+FIRING_STACK = []   # one frame per inert expression being computed: [ (id of its holder, name), cache owner, dependencies ]
+
+def versioned(provider_object):
+    """Return the pair (provider_object, its data version), or (None, None) when nothing provides a parameter.
+    """
+    return ( provider_object, provider_object.data_version if provider_object is not None else None )
+
+
+def record_dependency(asking_object, param_name, provider_object):
+    """Note, for the inert expression currently being computed (if any), that asking_object looked up param_name
+        and found it in provider_object (None if nowhere), at provider_object's current data version.
+    """
+    if FIRING_STACK:
+        FIRING_STACK[-1][2].append( (asking_object, param_name, versioned(provider_object)) )
+
+
+def dependencies_still_hold(dependencies):
+    """Return whether every recorded lookup (see record_dependency()), repeated by the object that made it,
+        would still find the same provider at the same data version.
+    """
+    return all( versioned(asking_object.provider_of(param_name))==recorded for asking_object, param_name, recorded in dependencies )
+
+
 def on_real_entry(method):
     """Decorate a method so that, called on an override, it acts on real_entry() instead: edits and questions of identity
         always concern the real object. The method's result is that of the real object, so a method returning self returns it.
@@ -117,7 +141,11 @@ class ParamSource:
         for this object only, take a private copy first:
             obj.own_value('greek').append('beta')
 
-        There are no expressions and no persistence yet.
+        Values computed by firing inert expressions are cached in the object that asked for them (see computed_values),
+        together with every lookup made while computing them. A cached value is reused only while all those lookups would still find
+        the same providers unchanged: each object keeps a data version, increased by every edit made through its methods.
+        BEWARE: edits made directly on returned values or on own_data() dictionaries bypass the data versions, so cached values
+        that depend on them may become stale.
     """
 
     def __init__(self, name=None, own_data=None, parent_objects=None, is_override=False):
@@ -127,6 +155,8 @@ class ParamSource:
         """
         self.name = name
         self.is_override_flag = False
+        self.data_version = 0
+        self.computed_values = {}       # param_name -> (value, dependencies), see fire_inert_expression()
         self.set_own_data( own_data )
         parent_objects = list(parent_objects or [])
         for parent_object in parent_objects:
@@ -161,7 +191,14 @@ class ParamSource:
             raise TypeError(f"[{self.get_name()}] own_data should be a dictionary, got {type(own_data).__name__}")
 
         self.own_data_cache = own_data
+        self.bump_data_version()
         return self
+
+
+    def bump_data_version(self):
+        """Note that this object's data or parents have changed, so that cached values depending on them are recomputed.
+        """
+        self.data_version += 1
 
 
     def own_data(self):
@@ -249,6 +286,7 @@ class ParamSource:
             self.own_data().pop('_parent_names', None)
         else:
             self.own_data()['_parent_names'] = parent_names
+        self.bump_data_version()
         return self
 
 
@@ -310,36 +348,89 @@ class ParamSource:
         if param_name not in own_data:
             try:
                 own_data[param_name] = deepcopy( self.__getitem__(param_name) )
+                self.bump_data_version()
             except KeyError:
                 return None
         return own_data[param_name]
 
 
     def __getitem__(self, param_name):
-        """Return the value of a parameter, by reference, from the first object in the hierarchy that has it.
+        """Return the value of a parameter, by reference, from the first object in the hierarchy that has it (see provider_of()).
             Parameters whose names start with '_' are only looked up in this object's own data, and through overrides
             (see override_chain_generator()). Parameter names are converted to strings. Raises KeyError if the parameter is missing.
             A layer that has an inert expression '@name' instead of 'name' provides the result of firing it on this object
             (see fire_inert_expression()); a layer that has both is an error. Asking for '@name' returns the expression itself.
         """
         param_name  = str(param_name)
+        provider    = self.provider_of(param_name)
+        record_dependency(self, param_name, provider)
+        if provider is None:
+            raise KeyError(param_name)
+
+        provider_data   = provider.own_data()
+        inert_name      = '@' + param_name
+        if not param_name.startswith('@') and inert_name in provider_data:
+            if param_name in provider_data:
+                raise ValueError(f"[{provider.get_name()}] has both '{param_name}' and '{inert_name}': only one of them is allowed")
+            return self.fire_inert_expression(param_name, provider_data[inert_name], provider)
+        return provider_data[param_name]
+
+
+    def provider_of(self, param_name):
+        """Return the first object in the hierarchy (as __getitem__() searches it) that has the parameter, plainly or as an
+            inert expression, or None if none has it. Nothing is fired.
+        """
+        param_name  = str(param_name)
         inert_name  = None if param_name.startswith('@') else '@' + param_name
         for source_object in ( self.override_chain_generator() if param_name.startswith('_') else self.hierarchy_generator() ):
             source_data = source_object.own_data()
-            if inert_name in source_data:
-                if param_name in source_data:
-                    raise ValueError(f"[{source_object.get_name()}] has both '{param_name}' and '{inert_name}': only one of them is allowed")
-                return self.fire_inert_expression(param_name, source_data[inert_name], source_object)
-            if param_name in source_data:
-                return source_data[param_name]
-
-        raise KeyError(param_name)
+            if param_name in source_data or inert_name in source_data:
+                return source_object
+        return None
 
 
     def fire_inert_expression(self, param_name, inert_expression, holding_object):
         """Compute a parameter from its inert expression. Only an ActionSource can fire expressions, so here this is an error.
         """
         raise TypeError(f"[{self.get_name()}] cannot compute '{param_name}' from an inert expression: only an ActionSource can fire them")
+
+
+    def substitute(self, input_structure, times=1):
+        """Replace the parameter anchors #{key.path}# in the given structure by the values found at those key paths (see dig()),
+            looked up through this object, so on a call's override the call's parameters take part. A string that is exactly one anchor
+            becomes the value itself, keeping its type; in any other string, each anchor is replaced by the value as a string.
+            Lists and dictionaries are substituted element by element, keys included, except that ["AS#IS", x] stands for x itself.
+            A missing value gives None. times repeats the whole substitution, for anchors that substitution itself produces.
+
+            Usage examples:
+                axs substitute "Hello, #{mate}#!" --mate=world                           # => Hello, world!
+                axs substitute '#{greek.1}#' --greek,=alpha,beta                         # => beta
+                axs byname pyramid , substitute '#{height}#' , __add__ 1                 # => 7
+                axs byname pyramid , substitute 'area #{base_area}#, volume #{volume}#'  # => area 6.0, volume 12.0
+        """
+        whole_anchor    = re.compile( r'^#\{([\w.@]+)\}#$' )
+        some_anchor     = re.compile( r'#\{([\w.@]+)\}#' )
+
+        def substitute_scalar(template):
+            whole_match = whole_anchor.match(template)
+            if whole_match:
+                return self.dig( whole_match.group(1), safe=True )
+            return some_anchor.sub( lambda anchor_match: str( self.dig(anchor_match.group(1), safe=True) ), template )
+
+        def substitute_once(structure):
+            if type(structure)==list:
+                if len(structure)==2 and structure[0]=='AS#IS':
+                    return structure[1]
+                return [ substitute_once(element) for element in structure ]
+            elif type(structure)==dict:
+                return { substitute_once(key): substitute_once(value) for key, value in structure.items() }
+            elif type(structure)==str:
+                return substitute_scalar(structure)
+            return structure
+
+        for _ in range(times):
+            input_structure = substitute_once(input_structure)
+        return input_structure
 
 
     def get(self, param_name, default_value=None):
@@ -364,6 +455,7 @@ class ParamSource:
             Parameter names are converted to strings.
         """
         self.own_data()[ str(param_name) ] = param_value
+        self.bump_data_version()
 
 
     def dig(self, key_path, safe=False, safe_value=None, vivify=False, next_key=None):
@@ -440,6 +532,7 @@ class ParamSource:
                 value = augment_value( struct_parent_ptr.get(index) if type(struct_parent_ptr)==dict else struct_parent_ptr[index], value )
             struct_parent_ptr[index] = value
 
+        self.bump_data_version()
         return self
 
 
@@ -463,6 +556,7 @@ class ParamSource:
             struct_parent_ptr = self.dig(key_path[:-1]) if len(key_path)>1 else self.own_data()
             del struct_parent_ptr[ index_into(struct_parent_ptr, key_path[-1]) ]
 
+        self.bump_data_version()
         return self
 
 
@@ -618,6 +712,19 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
             self.ps.plant('@g', ['act'], '@g.named_params', {'b': 1}); self.assertEqual( self.ps['@g'], ['act', [], {'b': 1}] )
         def test_dig_inside_inert_without_firing(self):
             self.ps['@broken'] = ['no_such_action', [1], {'k': 2}]; self.assertEqual( [self.ps.dig('@broken.' + part) for part in ('action_name', 'pos_params.0', 'named_params.k')], ['no_such_action', 1, 2] )
+
+        def test_data_version_bumps(self):
+            versions = [self.child.data_version]; self.child['k'] = 1; versions.append(self.child.data_version); self.child.plant('k', 2); versions.append(self.child.data_version); self.child.pluck('k'); versions.append(self.child.data_version); self.assertEqual( len(set(versions)), 4 )
+        def test_copy_on_write_bumps(self):
+            before = self.child.data_version; self.child.own_value('greek'); self.assertGreater( self.child.data_version, before )
+        def test_provider_of(self):                 self.assertEqual( [ (self.child.provider_of(p) or ParamSource('none')).get_name() for p in ('z', 'x', 'w', 'missing') ], ['child', 'left', 'base', 'none'] )
+
+        def test_substitute_in_string(self):        self.assertEqual( self.child.substitute('#{x}# and #{y}#, not #{missing}#'), 'left and right, not None' )
+        def test_substitute_whole_anchor_keeps_type(self): self.assertEqual( self.child.substitute('#{greek}#'), ['alpha'] )
+        def test_substitute_dotted_path(self):      self.assertEqual( self.child.substitute('#{colour.red}#'), 0 )
+        def test_substitute_structures(self):       self.assertEqual( self.child.substitute({'#{z}#': ['#{x}#', ['AS#IS', '#{x}#']]}), {'child': ['left', '#{x}#']} )
+        def test_substitute_times(self):
+            self.child['indirect'] = '#{x}#'; self.assertEqual( (self.child.substitute('#{indirect}#'), self.child.substitute('#{indirect}#', times=2)), ('#{x}#', 'left') )
 
     if __name__ == '__main__':
         unittest.main(verbosity=2)
