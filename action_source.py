@@ -5,7 +5,9 @@
 Running this file as a script runs the tests of its Python API.
 """
 
+import builtins
 import difflib
+import importlib
 import inspect
 import sys
 import textwrap
@@ -21,10 +23,14 @@ def prep(action_object, pos_params, named_params, param_source):
         Positional parameters beyond the function's named ones go into its *args, if it has any.
         Its **kwargs, if it has them, receive those entries of named_params that match none of its named parameters
         (never values from param_source); without **kwargs such entries do not reach the function.
+        A callable without an inspectable signature (such as Python's max) receives only pos_params and named_params, as they are.
         Raises TypeError if there are too many positional parameters or if a required parameter has no value.
         Returns a tuple (action_object, args, kwargs) that can be passed to feed().
     """
-    signature   = inspect.signature(action_object)
+    try:
+        signature   = inspect.signature(action_object)
+    except ValueError:
+        return action_object, list(pos_params), dict(named_params)
     bound       = signature.bind_partial(*pos_params)
     missing     = []
 
@@ -55,6 +61,30 @@ def feed(action_object, args, kwargs):
     """Call action_object with the positional args and keyword kwargs (as prepared by prep()) and return the result.
     """
     return action_object(*args, **kwargs)
+
+
+PYTHON_SCHEME = 'py:'
+
+def reach_python_callable(python_name):
+    """Return the Python callable that python_name names, written exactly as in Python: a built-in (len, max),
+        or a dotted path whose longest importable prefix is a module and whose rest are attributes (os.path.join, operator.mul),
+        or attributes of a built-in (str.upper). Raises NameError if there is no such callable.
+    """
+    name_parts = python_name.split('.')
+    for split_at in range(len(name_parts)-1, -1, -1):
+        try:
+            current_object = importlib.import_module('.'.join(name_parts[:split_at])) if split_at else builtins
+        except ImportError:
+            continue
+        try:
+            for attribute_name in name_parts[split_at:]:
+                current_object = getattr(current_object, attribute_name)
+        except AttributeError:
+            break
+        if callable(current_object):
+            return current_object
+        break
+    raise NameError(f"there is no Python callable '{python_name}'")
 
 
 class ActionSource(ParamSource):
@@ -151,8 +181,22 @@ class ActionSource(ParamSource):
             Own functions are searched first, through the hierarchy in depth-first order (see hierarchy_generator()),
             skipping parents that have no functions. Only if no own function is found, a public method of this object is used,
             so that an object's code can redefine a built-in method for itself and all its descendants.
+            A name starting with 'py:' is any Python callable, written after it exactly as in Python (see reach_python_callable()):
+            it becomes the action itself, so its parameters are filled like any action's, including by name from the call's context.
             Raises NameError if there is no such action.
+
+            Usage examples:
+                axs py:len abcde                                                         # => 5
+                axs py:os.path.join alpha beta                                           # => alpha/beta
+                axs py:str.upper hello                                                   # => HELLO
+                axs py:operator.mul --a=6 --b=7                                          # => 42
+                axs py:max 3 7 5                                                         # => 7
+                axs noop --,=alpha,beta ,0 py:len                                        # => 2
+                axs byname pyramid , py:operator.mul --b=10                              # => 30
         """
+        if action_name.startswith(PYTHON_SCHEME):
+            return reach_python_callable( action_name[len(PYTHON_SCHEME):] )
+
         for source_object in self.hierarchy_generator():
             functions_ns = source_object.own_functions() if isinstance(source_object, ActionSource) else None
             found_function = getattr(functions_ns, action_name, None)
@@ -186,6 +230,8 @@ class ActionSource(ParamSource):
             the whole inherited value is first copied into the override (unless the call gives that parameter itself),
             then the edit is planted into the copy (see ParamSource.plant()), in the order given, after the plain parameters.
             Such edits never match a function's parameters or reach its **kwargs: their effect reaches functions through the override.
+            Neither do inert expressions given as '@name': they become part of the call's layer, so they fire when anything
+            during the call (including other expressions fired during it) asks for 'name'.
             Returns whatever the action returns. The call itself changes neither this object nor its parents.
 
             Usage examples:
@@ -196,7 +242,7 @@ class ActionSource(ParamSource):
         """
         pos_params      = pos_params or []
         named_params    = named_params or {}
-        plain_params    = { key: value for key, value in named_params.items() if not is_edit_key(key) }
+        plain_params    = { key: value for key, value in named_params.items() if not is_edit_key(key) }     # including '@name' expressions
         override_data   = dict(plain_params)
 
         edits = [ (key, value) for key, value in named_params.items() if is_edit_key(key) ]
@@ -210,7 +256,8 @@ class ActionSource(ParamSource):
 
         call_override   = type(self)(own_data=override_data, parent_objects=[self], is_override=True)
         action_object   = call_override.find_action(action_name)
-        return feed( *prep(action_object, pos_params, plain_params, call_override) )
+        argument_params = { key: value for key, value in plain_params.items() if not key.startswith('@') }
+        return feed( *prep(action_object, pos_params, argument_params, call_override) )
 
 
     def help(self, action_name: str = None) -> str:
@@ -227,6 +274,7 @@ class ActionSource(ParamSource):
                 axs byname baz , help get
                 axs byname baz , help get --greeting=hi
                 axs help bypath
+                axs help py:math.hypot
         """
         return self._describe_action(action_name) if action_name else self._describe_object()
 
@@ -284,7 +332,9 @@ class ActionSource(ParamSource):
             return f"[{real_entry.get_name()}] has no action '{action_name}'" + ( f". Did you mean: {', '.join(suggestions)}?" if suggestions else '' )
 
         add( 'Action', action_name )
-        if inspect.ismethod(action_object):
+        if action_name.startswith(PYTHON_SCHEME):
+            add( 'Kind', f"Python callable from module {getattr(action_object, '__module__', None) or 'builtins'}" )
+        elif inspect.ismethod(action_object):
             defining_class = action_object.__func__.__qualname__.split('.')[0]
             add( 'Kind', f"built-in method of the {defining_class} class, declared in {action_object.__func__.__module__}.py" )
         else:
@@ -505,6 +555,8 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
                 twice_c     = lambda __entry__: ( __entry__['c'], __entry__['c'] ),
                 plus_one_real = lambda __real_entry__: __real_entry__['c'] + 1,
                 pair        = lambda first, second: (first, second),
+                sum3        = lambda a, b, c: a + b + c,
+                prod2       = lambda a, b=2: a * b,
             )
             self.peer   = ActionSource('peer',  { 'a': 100, 'b': 200 }, own_functions=self.funcs)
             self.base   = ActionSource('base',  { 'a': 1, 'b': 2 }, own_functions=self.funcs)
@@ -663,6 +715,18 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
         def test_cache_shared_through_empty_overrides(self): self.assertEqual( (self.counter.call('get', ['pair_of_c'], {'x': 6}), self.firings), ((12, 12), [6]) )   # two expressions need c
         def test_cache_owner(self):                 self.assertEqual( (ActionSource(None, {}, [ActionSource(None, {'q': 1}, [self.counter], is_override=True)], is_override=True).cache_owner().own_data(), ActionSource(None, {}, [self.counter], is_override=True).cache_owner() is self.counter), ({'q': 1}, True) )
         def test_substitute_computes_once(self):    self.assertEqual( (self.counter.call('substitute', ['#{c}# #{c}# #{c}# #{c}#'], {'x': 6}), self.firings), ('12 12 12 12', [6]) )
+
+        def test_py_builtin_and_dotted(self):       self.assertEqual( [self.child.call('py:len', ['abcde']), self.child.call('py:os.path.join', ['a', 'b']), self.child.call('py:str.upper', ['hi'])], [5, 'a/b', 'HI'] )
+        def test_py_fills_from_context(self):       self.assertEqual( self.child.call('py:operator.mul', [], {'@a': ['get', ['b']], 'b': 7}), 49 )   # b is 7 here, a computed from it
+        def test_py_fills_from_hierarchy(self):     self.assertEqual( self.child.call('py:operator.mul', [], {'a': 3}), 60 )                         # b=20 inherited from child
+        def test_py_without_signature(self):        self.assertEqual( self.child.call('py:max', [3, 7, 5]), 7 )
+        def test_py_unknown(self):                  self.assertEqual( (self.child.can('py:len'), self.child.can('py:no_such_module.nothing'), self.child.can('py:os.sep')), (True, False, False) )
+        def test_py_in_pipeline(self):              self.assertEqual( self.start.execute([ ['noop', [['a', 'b', 'c']]], 0, ['py:len'] ]), 3 )
+        def test_py_in_inert_expression(self):      self.assertEqual( ActionSource('calc_py', {'@total': ['py:sum', [[1, 2, 3]]]})['total'], 6 )
+        def test_help_python_callable(self):        self.assertEqual( [s in self.child.help('py:operator.mul') for s in ('Python callable from module _operator', 'py:operator.mul(a, b, /)', 'now: 20 (from child)')], [True, True, True] )
+        def test_prep_without_signature(self):      self.assertEqual( prep(max, [3, 9], {}, self.child), (max, [3, 9], {}) )
+        def test_inert_keys_never_reach_kwargs(self): self.assertEqual( self.child.call('with_kwargs', [], {'a': 7, '@k': ['noop', [1]], 'w': 3}), (7, {'w': 3}) )
+        def test_inert_in_named_params_chain(self): self.assertEqual( ActionSource('chain', {'@r': ['sum3', [], {'@b': ['prod2', [], {'@a': ['get', ['d']], 'b': 5}]}]}, [self.base]).call('get', ['r'], {'a': 1, 'c': 1, 'd': 10}), 52 )
 
     if __name__ == '__main__':
         unittest.main(verbosity=2)

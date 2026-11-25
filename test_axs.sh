@@ -96,6 +96,8 @@ assert 'axs help help | grep -c "^Signature .*: help(action_name: str = None) ->
 assert 'axs help byname | grep "^Ancestry path"' "Ancestry path                 : $(basename "$AXS_DIR") --> core_collection"
 assert 'axs byname baz , help gte' "[baz] has no action 'gte'. Did you mean: get?"
 assert 'axs help | head -1 | cut -d: -f1 | xargs' Entry          # piping into head must not raise a broken pipe error
+assert 'axs help py:os.path.join | grep "^Kind"' "Kind                          : Python callable from module posixpath"
+assert 'axs os.path.join alpha beta 2>&1 | grep "^ValueError:"' "ValueError: Cannot understand 'os.path.join' as an action name"     # dots only after py:
 assert_end help
 
 assert_raises 'axs no_such_action' 1

@@ -79,7 +79,7 @@ def parse_call(tokens):
     """Parse the tokens of one call into [action_name, pos_params, named_params].
     """
     action_name = tokens[0]
-    if not re.match(r'^\w+$', action_name):
+    if not re.match(r'^(\w+|py:\w+(\.\w+)*)$', action_name):      # dots only in Python names, after py:
         raise ValueError(f"Cannot understand '{action_name}' as an action name")
     pos_params, named_params = [], {}
 
