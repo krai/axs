@@ -81,6 +81,16 @@ class Entry(ActionSource):
         return "axs fresh_entry" + ( " " + shlex.quote("---own_data=" + json.dumps(own_data)) if own_data else "" )
 
 
+    def kernel(self):
+        """Return the kernel Entry (see the module function kernel()), so that any Entry, and any expression in its data,
+            can reach it as an action: for instance to find other Entries by name from there.
+
+            Usage examples:
+                axs byname foo , kernel , byname baz , get greeting                      # => hello from baz
+        """
+        return kernel()
+
+
     @on_real_entry
     def storage_backend(self):
         """Return the storage backend of this Entry, or None if it has never been given one.
@@ -455,6 +465,8 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
         def test_pickle_override_as_real_entry(self): self.assertEqual( Entry(own_data={'q': 1}, parent_objects=[self.kernel.call('byname', ['baz'])], is_override=True).pickle_one(), 'axs byname baz' )
         def test_pure_data_factorial(self):         self.assertEqual( [ self.kernel.call('byname', ['factorial']).call('get', ['factorial'], {'n': n}) for n in (0, 1, 5, 10) ], [1, 1, 120, 3628800] )
         def test_deliberate_bottomless_loop(self):  self.assertRaises( ValueError, self.kernel.call('byname', ['factorial']).call, 'get', ['bottomless'] )
+        def test_kernel_from_any_entry(self):       self.assertIs( self.kernel.call('byname', ['baz']).call('kernel'), self.kernel )
+        def test_kernel_from_an_expression(self):   self.assertEqual( Entry(own_data={'@greeting': ['execute', [[ ['kernel'], ['byname', 'foo'], ['get', 'greeting'] ]]]})['greeting'], 'hello from foo' )
         def test_fresh_entry(self):
             fresh = self.kernel.call('fresh_entry', [], {'own_data': {'x': 1}}); self.assertEqual( (fresh['x'], fresh.storage_key(), fresh.own_functions()), (1, None, False) )
         def test_fresh_entry_saved(self):
