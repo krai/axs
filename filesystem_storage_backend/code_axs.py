@@ -27,7 +27,7 @@ def name_from_key(storage_key):
     """Return the name an Entry stored under the key has by default: the last component of its path.
 
         Usage examples:
-            axs byname foo , storage_backend , name_from_key /some/path/entry        # => entry
+            axs storage_backend , name_from_key /some/path/entry                     # => entry
     """
     return os.path.basename(storage_key)
 
@@ -36,7 +36,7 @@ def resolve_key(storage_key, relative_path):
     """Return the key of whatever lies at relative_path from the Entry stored under storage_key (used by collections for their contents).
 
         Usage examples:
-            axs byname foo , storage_backend , resolve_key /some/path entry          # => /some/path/entry
+            axs storage_backend , resolve_key /some/path entry                       # => /some/path/entry
     """
     return os.path.join(storage_key, relative_path)
 
