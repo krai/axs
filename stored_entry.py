@@ -5,6 +5,7 @@
 Running this file as a script runs the tests of its Python API.
 """
 
+import importlib.util
 import inspect
 import json
 import os
@@ -14,7 +15,6 @@ from types import SimpleNamespace
 
 from action_source import ActionSource
 from param_source import on_real_entry
-import filesystem_storage_backend
 
 
 def loaded_entries(storage_backend):
@@ -47,8 +47,8 @@ class Entry(ActionSource):
     """An object of Entry class is an ActionSource that can be stored by a storage backend.
 
         A storage backend is an Entry with the actions canonical_key, load_data, save_data and remove, optionally load_functions,
-        which inherits the generic lookup action bykey() from BASE_STORAGE_BACKEND. The filesystem storage backend is built
-        by the kernel; any other one lives in an Entry. An Entry's identity is the pair (storage_backend(), storage_key());
+        which inherits the generic lookup action bykey() from BASE_STORAGE_BACKEND. The filesystem storage backend is an Entry
+        in the kernel Entry's directory, bootstrapped and then kept by itself; any other one lives in an Entry. An Entry's identity is the pair (storage_backend(), storage_key());
         an Entry without a storage key is not stored (yet).
 
         Each storage backend keeps one Entry object per key (see loaded_entries()): bykey() returns it, save() puts an Entry there,
@@ -212,6 +212,8 @@ class Entry(ActionSource):
         """Return this Entry's namespace of own functions, loading it from storage the first time if necessary.
             Returns False if the Entry is stored by a storage backend that provides no code, or if it has no code.
         """
+        if self.is_override():          # an override has no code of its own: lookup reaches the code of the Entry it covers
+            return False
         if self.own_functions_cache is None and self.storage_key() is not None:
             storage_backend = self.storage_backend()
             if storage_backend.can('load_functions'):
@@ -294,14 +296,26 @@ def pickle_struct(input_structure):
 # The parent of every storage backend, providing the generic lookup action bykey().
 BASE_STORAGE_BACKEND = Entry('base_storage_backend', own_functions=SimpleNamespace(bykey=bykey))
 
-# The one storage backend that is part of the kernel: its actions are the functions of the filesystem_storage_backend module,
-# and its own data are the parameters those functions use.
-FILESYSTEM_STORAGE_BACKEND = Entry('filesystem_storage_backend', own_functions=filesystem_storage_backend, parent_objects=[BASE_STORAGE_BACKEND],
-                                   own_data={ 'data_file_name': 'data_axs.json', 'code_file_name': 'code_axs.py' })
-
-
 # The kernel Entry lives in the directory of the kernel's Python files, and is named after it.
 KERNEL_PATH = os.path.dirname(os.path.abspath(__file__))
+
+
+def bootstrap_filesystem_storage_backend(backend_path):
+    """Return the filesystem storage backend Entry: its code is imported directly, since there is no backend yet to load it with,
+        and then its own functions load its data and name it. It becomes its own storage backend, kept in its own identity map,
+        so from here on it is an ordinary stored Entry: bypath to its directory gives this same object.
+    """
+    backend_path    = os.path.realpath(backend_path)
+    spec            = importlib.util.spec_from_file_location(f"code_axs[{backend_path}]", os.path.join(backend_path, 'code_axs.py'))
+    code            = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(code)
+    backend         = Entry(code.name_from_key(backend_path), code.load_data(backend_path, 'data_axs.json'), [BASE_STORAGE_BACKEND], code)
+    backend.assigned_storage_backend, backend.assigned_storage_key = backend, backend_path
+    loaded_entries(backend)[backend_path] = backend
+    return backend
+
+
+FILESYSTEM_STORAGE_BACKEND = bootstrap_filesystem_storage_backend( os.path.join(KERNEL_PATH, 'filesystem_storage_backend') )
 
 
 def kernel():
@@ -397,8 +411,9 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
         def test_memory_backend_remove(self):
             self.store['m'] = {'x': 1}; Entry(storage_backend=self.memory, storage_key='m').remove(); self.assertEqual( self.store, {} )
 
-        def test_backend_is_unsaved_entry(self):    self.assertEqual( (isinstance(FILESYSTEM_STORAGE_BACKEND, Entry), FILESYSTEM_STORAGE_BACKEND.storage_key()), (True, None) )
-        def test_backends_inherit_bykey(self):      self.assertEqual( (FILESYSTEM_STORAGE_BACKEND.find_action('bykey') is bykey, hasattr(filesystem_storage_backend, 'bykey')), (True, False) )
+        def test_backend_stores_itself(self):       self.assertIs( kernel().call('bypath', [os.path.join(KERNEL_PATH, 'filesystem_storage_backend')]).storage_backend(), FILESYSTEM_STORAGE_BACKEND )
+        def test_override_loads_no_code(self):      self.assertEqual( (Entry(own_data={}, parent_objects=[kernel()], is_override=True).own_functions(), kernel().own_functions() is not False), (False, True) )
+        def test_backends_inherit_bykey(self):      self.assertEqual( (FILESYSTEM_STORAGE_BACKEND.find_action('bykey') is bykey, hasattr(FILESYSTEM_STORAGE_BACKEND.own_functions(), 'bykey')), (True, False) )
         def test_variant_backend_file_names(self):  # a variant backend is just a child Entry overriding a parameter
             Entry(own_data={'v': 1}, storage_backend=self.new_filesystem_backend(data_file_name='params.json')).save(os.path.join(self.root, 'v')); self.assertEqual( os.listdir(os.path.join(self.root, 'v')), ['params.json'] )
         def test_bykey_gives_one_object(self):      self.assertIs( self.bypath(self.base_path), self.fs.call('bykey', [os.path.join(self.root, 'x', '..', 'base')]) )

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-"""axs04: the filesystem storage backend, the only storage backend that is part of the kernel itself.
+"""axs04: the code of the filesystem storage backend, an Entry beside core_collection in the kernel Entry's directory.
 
-Every other storage backend lives in an Entry, which is ultimately loaded through this one.
+The kernel bootstraps it (see stored_entry.bootstrap_filesystem_storage_backend()); every other Entry is loaded through it.
 Its module-level functions are the backend's actions, just as the functions of an Entry's code_axs.py are its actions.
 A storage key is the absolute real path of an Entry's directory, which holds the Entry's data in a data file
 and, optionally, its code in a code file. The names of these files are parameters (data_file_name, code_file_name)
