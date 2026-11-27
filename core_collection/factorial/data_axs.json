@@ -4,5 +4,6 @@
         "@question": [ "execute", [[ [ "get", "n" ], [ "__le__", 1 ] ]] ],
         "True":      1,
         "@False":    [ "execute", [[ [ "get", "n" ], [ "__sub__", 1 ], "n", [ "get", "factorial" ], "b", [ "py:operator.mul", [], { "@a": [ "get", "n" ] } ] ]] ]
-    } ]
+    } ],
+    "@bottomless": [ "noop", [], { "@arg": [ "get", "bottomless" ] } ]
 }

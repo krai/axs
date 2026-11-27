@@ -63,6 +63,28 @@ def feed(action_object, args, kwargs):
     return action_object(*args, **kwargs)
 
 
+def layers_between(top_object, bottom_object):
+    """Return the own data of the overrides from top_object down to bottom_object (excluded),
+        or None if bottom_object does not lie beneath top_object in its chain of overrides.
+    """
+    layers_data     = []
+    current_object  = top_object
+    while current_object is not bottom_object:
+        if not current_object.is_override():
+            return None
+        layers_data.append( current_object.own_data() )
+        current_object = current_object.parent_objects()[0]
+    return layers_data
+
+
+def rounds_repeat(asking_object, previous_asking_object, earlier_asking_object):
+    """Return whether the layers added in the latest round of a recursion (from previous_asking_object up to asking_object)
+        hold the same data as those added in the round before (from earlier_asking_object up to previous_asking_object).
+    """
+    latest_layers = layers_between(asking_object, previous_asking_object)
+    return latest_layers is not None and latest_layers == layers_between(previous_asking_object, earlier_asking_object)
+
+
 PYTHON_SCHEME = 'py:'
 
 def reach_python_callable(python_name):
@@ -136,8 +158,10 @@ class ActionSource(ParamSource):
             lookups would still find the same providers unchanged. It is cached in this object, or, if this object is an override
             with no data of its own, in the first object beneath it that has some (see cache_owner()): an empty override cannot change
             what any lookup finds, so computations through any number of them can share one result.
-            Raises ValueError for a cycle: the same expression needed again for the same cache owner while it is being computed,
-            which would only repeat the same computation; a recursion that brings new parameters each time is fine.
+            Raises ValueError for a cycle: the same expression needed again while it is being computed, either for the same cache owner,
+            or with the layers added since its previous round identical to those added in the round before (see rounds_repeat()).
+            Either way every lookup would find what it found before, so the computation could only repeat itself; a recursion
+            whose layers change from round to round (say, with n decreasing) is fine.
         """
         if type(inert_expression)!=list or not 1 <= len(inert_expression) <= 3 or type(inert_expression[0])!=str:
             raise ValueError(f"[{holding_object.get_name()}] '@{param_name}' should be [action_name], [action_name, pos_params] or [action_name, pos_params, named_params], got {inert_expression!r}")
@@ -148,13 +172,15 @@ class ActionSource(ParamSource):
             value, dependencies = cached
         else:
             firing_key = ( id(holding_object), param_name )
-            if any( frame[0]==firing_key and frame[1] is cache_owner for frame in FIRING_STACK ):
+            earlier_rounds = [ frame for frame in FIRING_STACK if frame[0]==firing_key ]
+            if any( frame[1] is cache_owner for frame in earlier_rounds ) or (
+               len(earlier_rounds) >= 2 and rounds_repeat(self, earlier_rounds[-1][3], earlier_rounds[-2][3]) ):
                 raise ValueError(f"[{holding_object.get_name()}] '@{param_name}' needs its own value to be computed (a cycle)")
 
             action_name     = inert_expression[0]
             pos_params      = inert_expression[1] if len(inert_expression) > 1 and inert_expression[1] is not None else []
             named_params    = inert_expression[2] if len(inert_expression) > 2 and inert_expression[2] is not None else {}
-            FIRING_STACK.append( [ firing_key, cache_owner, [ (self, param_name, versioned(holding_object)) ] ] )
+            FIRING_STACK.append( [ firing_key, cache_owner, [ (self, param_name, versioned(holding_object)) ], self ] )
             try:
                 value = self.call(action_name, pos_params if type(pos_params)==list else [ pos_params ], named_params)
             finally:
@@ -778,6 +804,10 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
         def test_case_shared_outcome(self):         self.assertEqual( [ self.child.call('case', [q], {'1': 'yes', '@True': ['get', ['1']]}) for q in (1, True) ], ['yes', 'yes'] )
         def test_case_question_by_name(self):       self.assertEqual( self.child.call('case', [], {'@question': ['get', ['b']], '20': 'b is twenty'}), 'b is twenty' )
         def test_printed_form(self):                self.assertEqual( [printed_form(v) for v in (True, None, 10, 'zip', [1, 'a'])], ['True', 'None', '10', 'zip', "[1, 'a']"] )
+
+        def test_cycle_by_repeated_rounds(self):    self.assertRaises( ValueError, ActionSource('mixed_bs', {'@r': ['sum3', [], {'@b': ['prod2', [], {'@a': ['get', ['d']]}]}]}, [self.base]).call, 'get', ['r'], {'a': 1, 'c': 1, 'd': 10} )
+        def test_rounds_repeat(self):
+            base = ActionSource('b'); one = ActionSource(None, {'k': 1}, [base], is_override=True); two = ActionSource(None, {'k': 1}, [one], is_override=True); self.assertEqual( (rounds_repeat(two, one, base), rounds_repeat(ActionSource(None, {'k': 2}, [two], is_override=True), two, one), layers_between(base, two)), (True, False, None) )
 
     if __name__ == '__main__':
         unittest.main(verbosity=2)

@@ -466,6 +466,7 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
         def test_pickle_struct(self):               self.assertEqual( pickle_struct([ self.kernel.call('byname', ['baz']), {'k': self.kernel}, (n for n in (1, 2)) ]), [ 'axs byname baz', {'k': 'axs bypath ' + shlex.quote(self.kernel.storage_key())}, [1, 2] ] )
         def test_pickle_override_as_real_entry(self): self.assertEqual( Entry(own_data={'q': 1}, parent_objects=[self.kernel.call('byname', ['baz'])], is_override=True).pickle_one(), 'axs byname baz' )
         def test_pure_data_factorial(self):         self.assertEqual( [ self.kernel.call('byname', ['factorial']).call('get', ['factorial'], {'n': n}) for n in (0, 1, 5, 10) ], [1, 1, 120, 3628800] )
+        def test_deliberate_bottomless_loop(self):  self.assertRaises( ValueError, self.kernel.call('byname', ['factorial']).call, 'get', ['bottomless'] )
         def test_fresh_entry(self):
             fresh = self.kernel.call('fresh_entry', [], {'own_data': {'x': 1}}); self.assertEqual( (fresh['x'], fresh.storage_key(), fresh.own_functions()), (1, None, False) )
         def test_fresh_entry_saved(self):

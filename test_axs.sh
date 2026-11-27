@@ -100,6 +100,10 @@ assert 'axs help py:os.path.join | grep "^Kind"' "Kind                          
 assert 'axs os.path.join alpha beta 2>&1 | grep "^ValueError:"' "ValueError: Cannot understand 'os.path.join' as an action name"     # dots only after py:
 assert_end help
 
+assert 'axs byname factorial , get factorial --n=6' 720                         # a recursion that changes n each round runs
+assert 'axs byname factorial , get bottomless 2>&1 | grep "^ValueError:"' "ValueError: [factorial] '@bottomless' needs its own value to be computed (a cycle)"
+assert_end recursion
+
 assert_raises 'axs no_such_action' 1
 assert_raises "axs 'not an action'" 1
 assert_raises 'axs noop ---arg=not_json' 1
