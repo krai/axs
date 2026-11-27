@@ -358,6 +358,35 @@ class ActionSource(ParamSource):
         return '\n'.join(lines)
 
 
+    def case(self, question):
+        """Return the outcome given with this call under the name that question prints as (see printed_form()),
+            for example "False", "None", "10" or "zip"; if there is none, the default_value given with this call (which may be null).
+            If there is neither, the answer was not foreseen, so LookupError is raised rather than a value made up.
+            Only what is given with this very call is consulted, never values found further down, so that a case
+            fired by another case, or run on an Entry that happens to have such parameters, cannot pick up their outcomes or default.
+            An outcome given as an inert expression ("@False": [...]) is computed only if it is chosen; so is "@default_value".
+            Several answers can share one outcome by referring to it: "@True": ["get", "1"].
+
+            Consulted only when needed (named parameters, not in the signature):
+                <the question's printed form>   the outcome for that answer, plainly or as an inert expression
+                default_value                   the outcome when no answer matches, plainly or as an inert expression
+
+            Usage examples:
+                axs case 20 --10=ten --20=twenty --30=thirty                             # => twenty
+                axs case 40 --10=ten --20=twenty --default_value=other                   # => other
+                axs py:os.path.isfile /no/such/file ,question case --True=file --False=absent     # => absent
+                axs byname factorial , get factorial                                     # => 120
+                axs byname factorial , get factorial --n=10                              # => 3628800
+        """
+        this_call_data = self.own_data()
+        for name in ( printed_form(question), 'default_value' ):
+            if name in this_call_data or '@'+name in this_call_data:
+                return self[name]       # an inert expression fires only now
+
+        outcome_names = sorted( name.lstrip('@') for name in this_call_data if name.lstrip('@')!='question' )
+        raise LookupError(f"[{self.get_name()}] case() has no outcome for '{printed_form(question)}' (outcomes given: {outcome_names}) and no default_value")
+
+
     def execute(self, pipeline):
         """Run a pipeline of calls starting from this object (the originator), and return the result of the last call.
             Each step is a list [action_name], [action_name, pos_params] or [action_name, pos_params, named_params];
@@ -429,6 +458,13 @@ def is_edit_key(key):
     """Return whether a named parameter's key edits a value (contains a dot, or ends in '+') rather than replacing it.
     """
     return '.' in key or key.endswith('+')
+
+
+def printed_form(value):
+    """Return the text the command line prints for a value: an Entry as the command line that loads it (see Entry.pickle_one()),
+        anything else as Python's str() does (so True, None, 10 and "zip" print as True, None, 10 and zip).
+    """
+    return value.pickle_one() if hasattr(value, 'pickle_one') and not isinstance(value, type) else str(value)
 
 
 HELP_LABEL_WIDTH = 30
@@ -555,6 +591,7 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
                 twice_c     = lambda __entry__: ( __entry__['c'], __entry__['c'] ),
                 plus_one_real = lambda __real_entry__: __real_entry__['c'] + 1,
                 pair        = lambda first, second: (first, second),
+                branch_run  = lambda label: ( self.firings.append(label), label )[1],
                 sum3        = lambda a, b, c: a + b + c,
                 prod2       = lambda a, b=2: a * b,
             )
@@ -727,6 +764,20 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
         def test_prep_without_signature(self):      self.assertEqual( prep(max, [3, 9], {}, self.child), (max, [3, 9], {}) )
         def test_inert_keys_never_reach_kwargs(self): self.assertEqual( self.child.call('with_kwargs', [], {'a': 7, '@k': ['noop', [1]], 'w': 3}), (7, {'w': 3}) )
         def test_inert_in_named_params_chain(self): self.assertEqual( ActionSource('chain', {'@r': ['sum3', [], {'@b': ['prod2', [], {'@a': ['get', ['d']], 'b': 5}]}]}, [self.base]).call('get', ['r'], {'a': 1, 'c': 1, 'd': 10}), 52 )
+
+        def test_case_chooses(self):                self.assertEqual( self.child.call('case', [20], {'10': 'ten', '20': 'twenty'}), 'twenty' )
+        def test_case_printed_forms(self):          self.assertEqual( [ self.child.call('case', [q], {'False': 'f', 'None': 'n', '10': 't', 'zip': 'z'}) for q in (False, None, 10, 'zip') ], ['f', 'n', 't', 'z'] )
+        def test_case_default(self):                self.assertEqual( (self.child.call('case', [3], {'1': 'one', 'default_value': 'other'}), self.child.call('case', [3], {'1': 'one', 'default_value': None})), ('other', None) )
+        def test_case_unforeseen_answer(self):      self.assertRaises( LookupError, self.child.call, 'case', [3], {'1': 'one'} )
+        def test_case_error_not_masked_by_get(self): self.assertRaises( LookupError, ActionSource('wrapper', {'@x': ['case', [3], {'1': 'one'}]}, [self.child]).get, 'x', 'masked' )
+        def test_case_only_this_call(self):         self.assertRaises( LookupError, ActionSource('leaky', {'b': 'from entry', 'default_value': 'from entry'}, [self.child]).call, 'case', ['b'] )
+        def test_case_nested_no_leak(self):         self.assertRaises( LookupError, self.child.call, 'case', ['x'], {'default_value': 'outer', '@x': ['case', ['nothing']]} )
+        def test_case_lazy_outcomes(self):
+            self.assertEqual( (self.child.call('case', [2], {'@1': ['branch_run', ['one']], '@2': ['branch_run', ['two']], '@default_value': ['branch_run', ['default']]}), self.firings), ('two', ['two']) )
+        def test_case_lazy_default(self):           self.assertEqual( (self.child.call('case', [9], {'@1': ['branch_run', ['one']], '@default_value': ['branch_run', ['default']]}), self.firings), ('default', ['default']) )
+        def test_case_shared_outcome(self):         self.assertEqual( [ self.child.call('case', [q], {'1': 'yes', '@True': ['get', ['1']]}) for q in (1, True) ], ['yes', 'yes'] )
+        def test_case_question_by_name(self):       self.assertEqual( self.child.call('case', [], {'@question': ['get', ['b']], '20': 'b is twenty'}), 'b is twenty' )
+        def test_printed_form(self):                self.assertEqual( [printed_form(v) for v in (True, None, 10, 'zip', [1, 'a'])], ['True', 'None', '10', 'zip', "[1, 'a']"] )
 
     if __name__ == '__main__':
         unittest.main(verbosity=2)

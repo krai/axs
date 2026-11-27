@@ -430,7 +430,7 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
             self.core_collection = kernel().call('core_collection')
 
         def test_found_by_path_and_named(self):     self.assertEqual( (self.core_collection.get_name(), '_contained_entries' in self.core_collection.own_data()), ('core_collection', True) )
-        def test_walk_order(self):                  self.assertEqual( [e.get_name() for e in self.core_collection.call('walk')], ['core_collection', 'foo', 'bar_collection', 'baz', 'pyramid'] )
+        def test_walk_order(self):                  self.assertEqual( [e.get_name() for e in self.core_collection.call('walk')], ['core_collection', 'foo', 'bar_collection', 'baz', 'pyramid', 'factorial'] )
         def test_byname_direct(self):               self.assertEqual( (self.core_collection.call('byname', ['foo'])['greeting'], self.core_collection.call('byname', ['foo']).get_containing_collection() is self.core_collection), ('hello from foo', True) )
         def test_byname_nested(self):               self.assertEqual( self.core_collection.call('byname', ['baz']).get_containing_collection().get_name(), 'bar_collection' )
         def test_byname_missing(self):              self.assertIsNone( self.core_collection.call('byname', ['missing']) )
@@ -452,7 +452,7 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
         def test_parent_is_core_collection(self): self.assertEqual( ([p.get_name() for p in self.kernel.parent_objects()], self.kernel['_parent_names']), (['core_collection'], ['core_collection']) )
         def test_not_a_collection(self):            self.assertNotIn( '_contained_entries', self.kernel.own_data() )
         def test_core_collection(self):             self.assertIs( self.kernel.call('core_collection'), FILESYSTEM_STORAGE_BACKEND.call('bykey', [os.path.join(KERNEL_PATH, 'core_collection')]) )
-        def test_walk_follows_search_path(self):    self.assertEqual( [e.get_name() for e in self.kernel.call('walk')], ['core_collection', 'foo', 'bar_collection', 'baz', 'pyramid'] )
+        def test_walk_follows_search_path(self):    self.assertEqual( [e.get_name() for e in self.kernel.call('walk')], ['core_collection', 'foo', 'bar_collection', 'baz', 'pyramid', 'factorial'] )
         def test_byname(self):                      self.assertEqual( [self.kernel.call('byname', [n]).get_name() for n in ('core_collection', 'foo', 'baz')], ['core_collection', 'foo', 'baz'] )
         def test_byname_missing(self):              self.assertIsNone( self.kernel.call('byname', ['missing']) )
         def test_search_path_is_a_parameter(self):  self.assertIsNone( self.kernel.call('byname', ['foo'], {'collection_search_path': []}) )
@@ -465,6 +465,7 @@ if __name__ == '__main__' or 'unittest' in sys.modules:    # run as a script, or
             temp_dir = tempfile.TemporaryDirectory(); self.addCleanup(temp_dir.cleanup); self.kernel.call('byname', ['foo']).call('promote', [], {'x': 1}).save(os.path.join(temp_dir.name, 'promoted')); self.assertEqual( Entry(storage_key=os.path.join(temp_dir.name, 'promoted')).own_data(), {'x': 1, '_parent_names': ['foo']} )
         def test_pickle_struct(self):               self.assertEqual( pickle_struct([ self.kernel.call('byname', ['baz']), {'k': self.kernel}, (n for n in (1, 2)) ]), [ 'axs byname baz', {'k': 'axs bypath ' + shlex.quote(self.kernel.storage_key())}, [1, 2] ] )
         def test_pickle_override_as_real_entry(self): self.assertEqual( Entry(own_data={'q': 1}, parent_objects=[self.kernel.call('byname', ['baz'])], is_override=True).pickle_one(), 'axs byname baz' )
+        def test_pure_data_factorial(self):         self.assertEqual( [ self.kernel.call('byname', ['factorial']).call('get', ['factorial'], {'n': n}) for n in (0, 1, 5, 10) ], [1, 1, 120, 3628800] )
         def test_fresh_entry(self):
             fresh = self.kernel.call('fresh_entry', [], {'own_data': {'x': 1}}); self.assertEqual( (fresh['x'], fresh.storage_key(), fresh.own_functions()), (1, None, False) )
         def test_fresh_entry_saved(self):
